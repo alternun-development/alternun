@@ -92,6 +92,91 @@ void test('admin group claims map explicit admin groups to only canonical least-
   assert.doesNotMatch(template, /"read_only_admin"/);
 });
 
+const adminAuthGuardPath = path.resolve('../../apps/api/src/common/admin-auth/admin-auth.guard.ts');
+
+function readAdminGroupRoles(template: string): Record<string, string> {
+  const block = template.match(/admin_group_roles = \{\n([\s\S]*?)\n {4}\}/)?.[1];
+  assert.ok(block, 'admin_group_roles block not found');
+  const entries: Record<string, string> = {};
+  for (const line of block.split('\n')) {
+    const match = line.match(/^\s*(admin_group|"[^"]+"):\s*"([a-z_]+)",$/);
+    assert.ok(match, `unexpected admin_group_roles line: ${line}`);
+    entries[match[1].replace(/"/g, '')] = match[2];
+  }
+  return entries;
+}
+
+function readApiAdminRoles(): string[] {
+  const source = fs.readFileSync(adminAuthGuardPath, 'utf8');
+  const block = source.match(/export const ADMIN_ROLES = \[([\s\S]*?)\] as const;/)?.[1];
+  assert.ok(block, 'ADMIN_ROLES not found in the API guard');
+  return block
+    .split(',')
+    .map((entry: string) => entry.trim().replace(/'/g, ''))
+    .filter((entry: string) => entry.length > 0);
+}
+
+// Mirrors the claim expression: a role is emitted only for a mapped group the user belongs to.
+function rolesForGroups(groupRoles: Record<string, string>, userGroups: string[]): string[] {
+  return Object.entries(groupRoles)
+    .filter(([groupName]) => userGroups.includes(groupName))
+    .map(([, role]) => role);
+}
+
+void test('every Alternun admin role has its own Authentik group', () => {
+  const groupRoles = readAdminGroupRoles(fs.readFileSync(templatePath, 'utf8'));
+  const roleGroups = {
+    'Alternun Platform Owner': 'platform_owner',
+    'Alternun Internal Admin': 'internal_admin',
+    'Alternun Moderator': 'moderator',
+    'Alternun Partner Operator': 'partner_operator',
+    'Alternun Sub Admin': 'sub_admin',
+    'Alternun Partner Read Only': 'partner_readonly',
+  };
+
+  for (const [groupName, role] of Object.entries(roleGroups)) {
+    assert.equal(groupRoles[groupName], role, groupName);
+    assert.deepEqual(rolesForGroups(groupRoles, [groupName]), [role], groupName);
+  }
+  const apiRoles = readApiAdminRoles();
+  assert.deepEqual([...new Set(Object.values(roleGroups))].sort(), [...apiRoles].sort());
+  for (const role of Object.values(groupRoles)) assert.ok(apiRoles.includes(role), role);
+});
+
+void test('an unknown or look-alike group grants no admin role', () => {
+  const template = fs.readFileSync(templatePath, 'utf8');
+  const groupRoles = readAdminGroupRoles(template);
+
+  assert.match(
+    template,
+    /role for group_name, role in group_roles\.items\(\) if group_name in user_groups/
+  );
+  assert.match(template, /if user\.groups\.filter\(name__in=list\(allowed_groups\)\)\.exists\(\):/);
+  for (const groups of [
+    ['Alternun Moderators'],
+    ['alternun moderator'],
+    ['Alternun Super Admin'],
+    ['moderator'],
+    ['platform_owner'],
+    [],
+  ]) {
+    assert.deepEqual(rolesForGroups(groupRoles, groups), [], JSON.stringify(groups));
+  }
+  assert.deepEqual(rolesForGroups(groupRoles, ['Alternun Sub Admin', 'Hotel Staff']), [
+    'sub_admin',
+  ]);
+});
+
+void test('bootstrap creates every mapped admin role group before using it', () => {
+  const template = fs.readFileSync(templatePath, 'utf8');
+
+  assert.match(
+    template,
+    /admin_group_roles = \{[\s\S]*?\n {4}\}\n[\s\S]*?for group_name in sorted\(group for group in admin_group_roles if group\):\n\s*_, group_created = Group\.objects\.get_or_create\(name=group_name\)[\s\S]*?ensure_admin_group_claim_mapping\(admin_group_roles\)/
+  );
+  assert.match(template, /results\["admin_role_groups"\] = \{/);
+});
+
 void test('admin OIDC logout redirects back to the admin app instead of the Authentik logout page', () => {
   const template = fs.readFileSync(templatePath, 'utf8');
 
