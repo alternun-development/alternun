@@ -32,8 +32,9 @@ export function normalizeExecutionProvider(value: unknown): string | null {
 }
 
 function bearerToken(authorization?: string): string | null {
-  const match = authorization?.trim().match(/^Bearer\s+(.+)$/i);
-  return match?.[1]?.trim() ?? null;
+  // \S+ (disjoint from the preceding \s+) keeps the match linear for adversarial headers.
+  const match = authorization?.trim().match(/^Bearer\s+(\S+)$/i);
+  return match?.[1] ?? null;
 }
 
 function verificationSignal(): AbortSignal {
