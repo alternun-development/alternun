@@ -45,6 +45,7 @@ import type {
   Translate,
 } from './explorar.types';
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
+import { getContentGutter } from '../utils/layout';
 import {
   resolveMarketplaceContactMailto,
   submitProjectProposal,
@@ -287,7 +288,7 @@ function HeroCarousel({
 }): React.JSX.Element {
   const { width } = useWindowDimensions();
   const [activeSlide, setActiveSlide] = useState(0);
-  const slideWidth = Math.max(width - 32, 290);
+  const slideWidth = Math.max(width - getContentGutter(width) * 2 - 32, 290);
   const mediaHeight = Math.min(Math.max(slideWidth * 0.56, 208), 316);
   const launchKickerColor = isDark ? '#a6f7d6' : '#087f63';
   const launchTitleColor = isDark ? '#f0fff6' : '#073f32';
