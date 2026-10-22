@@ -153,6 +153,20 @@ describe('ParticipationFactorBar', () => {
     expect(queryByTestId('dashboard-rbi-factor-wave-front')).toHaveLength(1);
   });
 
+  it.each(['off', 'low'])(
+    'skips every animation when the app motion level is %s',
+    async (motionLevel) => {
+      const loop = jest.spyOn(Animated, 'loop');
+      const timing = jest.spyOn(Animated, 'timing');
+      await render({ percent: 50, motionLevel }, { reduced: false });
+      layoutTrack(302);
+
+      expect(loop).not.toHaveBeenCalled();
+      expect(timing).not.toHaveBeenCalled();
+      expect(style(byTestId('dashboard-rbi-factor-fill')).width).toBe('50%');
+    }
+  );
+
   it('fills with a short animation and loops the waves once the track is measured', async () => {
     const loopHandle = { start: jest.fn(), stop: jest.fn() };
     const fillHandle = { start: jest.fn(), stop: jest.fn() };
