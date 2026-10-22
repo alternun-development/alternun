@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Review fix/share-link-preview (Airs title/description/logo in static web head); pending: design delivers a 1200x630 Airs share image to replace public/airs-logo-share.png
+Next micro-step: Review fix/rbi-formula-check (provisional FP 50% estimated, progress >= 0 %); pending: approve RBI explanation text, community equivalent AIRS via new balance-sum RPC + migration (needs Edward's approval)
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
