@@ -150,7 +150,8 @@ export const marketplaceCopy = {
     createProject: 'Only project administrators can create projects.',
     editProject: 'Your role can view this content but cannot edit it.',
     changeStatus: 'Only Alternun platform administrators can change project status.',
-    award: 'Your role cannot approve points.',
+    award:
+      'Activities are approved by the project administrator or the Alternun team, because approving one awards points.',
     reverse: 'Only a platform owner can reverse awarded points.',
     team: 'Only project administrators can manage the team.',
     moderateComments: 'Your role can read comments but cannot moderate them.',
@@ -234,6 +235,8 @@ export const marketplaceCopy = {
     added: 'Media added.',
     reordered: 'Gallery order updated.',
     removed: 'Media removed.',
+    brandRestricted:
+      'The logo and cover image are part of the brand, so only the enterprise administrator or the Alternun team can change or remove them.',
     kinds: {
       logo: 'Logo',
       cover: 'Cover image',
@@ -422,6 +425,7 @@ export const marketplaceCopy = {
     fallbackAction: 'made an administrative change',
     reasons: {
       PROTECTED_FIELD_WRITE_DENIED: 'tried to change a protected field',
+      BRAND_ASSET_WRITE_DENIED: 'tried to change the logo or cover image',
       PROJECT_SCOPE_DENIED: 'tried to access a project outside their responsibility',
       ENTERPRISE_SCOPE_DENIED: 'tried to access an enterprise outside their responsibility',
       PERMISSION_DENIED: 'their role did not allow this action',
@@ -478,6 +482,8 @@ export const marketplaceCopy = {
     INVALID_PAGINATION: 'The requested page is not available.',
     ROLE_ESCALATION_DENIED: "You can't assign that level of access.",
     PROTECTED_FIELD_WRITE_DENIED: "You can't change that protected information.",
+    BRAND_ASSET_WRITE_DENIED:
+      'Only the enterprise administrator or the Alternun team can change the logo or cover image.',
     SELF_MEMBERSHIP_CHANGE_DENIED: "You can't change your own team access.",
     ENTERPRISE_NOT_FOUND: 'This enterprise could not be found.',
     PROJECT_NOT_FOUND: 'This project could not be found.',

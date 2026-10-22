@@ -180,9 +180,6 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'project_memberships:read',
     'activities:read',
     'completions:read',
-    'completions:create',
-    'completions:award',
-    'completions:reject',
     'comments:read',
     'comments:moderate',
     'audit:read',
@@ -314,6 +311,14 @@ export function rolesWithPermission(
   permission: AdminPermission
 ): string[] {
   return principal.roles.filter((role) => permissionsByRole[role]?.includes(permission));
+}
+
+const globalAdminRoles = new Set<string>(['platform_owner', 'internal_admin', 'moderator']);
+
+// Scope checks may be skipped only when a global role itself grants the permission,
+// so a global role held next to a scoped role never lifts the scoped role's limits.
+export function grantsGlobally(principal: AdminPrincipal, permission: AdminPermission): boolean {
+  return rolesWithPermission(principal, permission).some((role) => globalAdminRoles.has(role));
 }
 
 function hasKnownAdminRole(principal: AdminPrincipal): boolean {

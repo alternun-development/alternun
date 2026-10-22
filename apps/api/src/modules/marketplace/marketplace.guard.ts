@@ -1,5 +1,6 @@
 import { Injectable, SetMetadata, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import {
+  grantsGlobally,
   hasPermission,
   rolesWithPermission,
   type AdminPermission,
@@ -25,10 +26,6 @@ export function RequireMarketplacePermission(
     permission,
     scope,
   } satisfies MarketplaceAuthorizationMetadata);
-}
-
-function isGlobalRole(roles: readonly string[]): boolean {
-  return roles.some((role) => ['platform_owner', 'internal_admin', 'moderator'].includes(role));
 }
 
 @Injectable()
@@ -63,7 +60,7 @@ export class MarketplaceAdminGuard implements CanActivate {
 
     const permissionGranted = hasPermission(principal, metadata.permission);
     let hasScope = true;
-    if (permissionGranted && enterpriseId && !isGlobalRole(principal.roles)) {
+    if (permissionGranted && enterpriseId && !grantsGlobally(principal, metadata.permission)) {
       hasScope = await this.repository.actorHasScope(
         actorFromPrincipal(principal),
         principal.roles,
