@@ -1119,6 +1119,7 @@
         "video": "Video",
         "openVideo": "Ver video",
         "openPresentation": "Ver presentación",
+        "presentationTitle": "Presentación de {{project}}",
         "comments": {
           "title": "Comentarios",
           "loading": "Cargando comentarios…",
