@@ -2,18 +2,14 @@
 
 ### Bug Fixes
 
-- **repo:** fix(repo): artifact, graph.db
-- **repo:** fix(repo): artifact, graph.db
-- **repo:** fix(identity): promote @alternun.io users to internal and add shared dev admin
-- **repo:** test(mobile): cover AirsIntroVideoCard picture-in-picture control
-- **repo:** feat(mobile): neutral Explorer palette, banner video/Canva, PiP, normalized footer
-
-### Bug Fixes
-
-- **identity:** promote [@alternun](https://github.com/alternun).io users to internal and add shared dev admin ([53f6e5c](https://github.com/alternun-development/alternun/commit/53f6e5cff715ed2c0d017511c1f4b6e80350cbca))
-- **mobile:** size Explorer hero slides to the inset content width ([5ab688f](https://github.com/alternun-development/alternun/commit/5ab688fc71925a02b597443957c0f2dcefb0f526))
 - **repo:** artifact, graph.db ([06abc0e](https://github.com/alternun-development/alternun/commit/06abc0ed904042f04bf3fa7a72f57d028b9d5346))
 - **repo:** artifact, graph.db ([24d7834](https://github.com/alternun-development/alternun/commit/24d78345f177e0244a149f2b8f0792d9466cfd65))
+- **identity:** promote @alternun.io users to internal and add shared dev admin ([53f6e5c](https://github.com/alternun-development/alternun/commit/53f6e5cff715ed2c0d017511c1f4b6e80350cbca))
+- **mobile:** size Explorer hero slides to the inset content width ([5ab688f](https://github.com/alternun-development/alternun/commit/5ab688fc71925a02b597443957c0f2dcefb0f526))
+
+### Changes
+
+- **mobile:** cover AirsIntroVideoCard picture-in-picture control ([7018ec5](https://github.com/alternun-development/alternun/commit/7018ec5b37b9e601911212ce484fff750ad8dbec))
 
 ### Features
 
