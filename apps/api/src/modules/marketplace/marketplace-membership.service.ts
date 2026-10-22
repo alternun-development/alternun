@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  grantsGlobally,
   hasPermission,
   rolesWithPermission,
   type AdminPermission,
@@ -89,7 +90,7 @@ export class MarketplaceMembershipService {
         enterpriseId,
         projectId
       );
-    if (!enterpriseId || isGlobal(principal)) return;
+    if (!enterpriseId || grantsGlobally(principal, permission)) return;
     const allowed = await this.adminRepository.actorHasScope(
       actorFromPrincipal(principal),
       principal.roles,

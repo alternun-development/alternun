@@ -111,6 +111,10 @@ function normalizeOptionalTrimmedString(value?: string | null): string | null {
   return trimmed && trimmed.length > 0 ? trimmed : null;
 }
 
+function resolveExecutionBearerToken(input: IdentityExchangeInput): string | null {
+  return normalizeOptionalTrimmedString(input.executionSession?.exchangeBearerToken);
+}
+
 function normalizeBackendRoles(roles: unknown, fallback: string[]): string[] {
   if (!Array.isArray(roles)) {
     return fallback;
@@ -272,6 +276,8 @@ export class AuthentikIssuerProvider implements IdentityIssuerProvider {
 
   private buildBackendExchangeRequest(input: IdentityExchangeInput): Record<string, unknown> {
     const executionSession = input.executionSession;
+    const { authExchangeUrl: _authExchangeUrl, ...context } = input.context ?? {};
+    void _authExchangeUrl;
 
     return {
       externalIdentity: input.externalIdentity,
@@ -285,12 +291,7 @@ export class AuthentikIssuerProvider implements IdentityIssuerProvider {
             linkedAccounts: executionSession.linkedAccounts ?? [],
           }
         : undefined,
-      context: {
-        ...(input.context ?? {}),
-        authExchangeUrl: this.authExchangeUrl,
-      },
-      claims: input.claims ?? input.externalIdentity.rawClaims,
-      redirectTo: input.redirectTo ?? null,
+      context,
     };
   }
 
@@ -357,10 +358,14 @@ export class AuthentikIssuerProvider implements IdentityIssuerProvider {
       return null;
     }
 
+    const bearerToken = resolveExecutionBearerToken(input);
+
     const response = await this.fetchFn(this.authExchangeUrl, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'content-type': 'application/json',
+        ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}),
       },
       body: JSON.stringify(this.buildBackendExchangeRequest(input)),
     });

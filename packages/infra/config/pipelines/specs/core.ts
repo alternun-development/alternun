@@ -154,6 +154,7 @@ export function buildCorePipelineSpecs({
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: 'on',
+        MARKETPLACE_CONTACT_EMAIL: env.MARKETPLACE_CONTACT_EMAIL ?? '',
       },
     },
     dev: {
@@ -178,6 +179,7 @@ export function buildCorePipelineSpecs({
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: 'on',
+        MARKETPLACE_CONTACT_EMAIL: env.MARKETPLACE_CONTACT_EMAIL ?? '',
       },
     },
     mobile: {
@@ -202,6 +204,7 @@ export function buildCorePipelineSpecs({
           authentikAllowCustomProviderFlowSlugs,
         EXPO_PUBLIC_AUTHENTIK_PROVIDER_FLOW_SLUGS: authentikProviderFlowSlugs,
         EXPO_PUBLIC_RELEASE_UPDATE_MODE: 'on',
+        MARKETPLACE_CONTACT_EMAIL: env.MARKETPLACE_CONTACT_EMAIL ?? '',
       },
     },
   };

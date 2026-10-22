@@ -1,5 +1,8 @@
 {
   "shared": {
+    "webMeta": {
+      "tabTitle": "Airs | ¿Cuál es tu score regenerativo?"
+    },
     "labels": {
       "backToTop": "Inicio",
       "by": "Por",
@@ -21,6 +24,21 @@
     },
     "templates": {
       "welcome": "Bienvenido, {{name}}"
+    },
+    "projectProposalEmail": {
+      "subject": "Nueva propuesta de proyecto del marketplace",
+      "intro": "Se envió una nueva propuesta de proyecto desde Explorer.",
+      "projectName": "Nombre del proyecto",
+      "location": "Ubicación",
+      "category": "Categoría",
+      "contactName": "Nombre de contacto",
+      "contactEmail": "Correo de contacto",
+      "language": "Idioma",
+      "message": "Mensaje",
+      "categories": {
+        "productive": "Productivo",
+        "conservation": "Conservación"
+      }
     }
   },
   "mobile": {
@@ -268,10 +286,10 @@
           "closeLabel": "Cerrar",
           "atnBalanceTitle": "Saldo ATN",
           "atnBalance": "Es tu saldo ATN disponible, informado por tu cuenta de recompensas.",
-          "participationFactor": "Es el factor de participación aplicado a tus AIRS según los Términos y Condiciones.",
+          "participationFactor": "El FP es el factor de participación aplicado a tus AIRS. Empieza en 50 % y puede ir de 0 % a 100 %, según los Términos y Condiciones.",
           "eligibleAirs": "AIRS equivalentes = AIRS × FP.",
           "eligibleUsers": "Es el total de usuarios elegibles informado por el sistema para la proyección RBI.",
-          "aliquot": "Alícuota = mis AIRS elegibles / suma de AIRS elegibles × 100 %."
+          "aliquot": "Alícuota = mis AIRS equivalentes / suma de AIRS equivalentes de la comunidad × 100 %."
         },
         "position": {
           "title": "Tu posición",
@@ -290,8 +308,8 @@
           "eligibleUsers": "Usuarios elegibles",
           "aliquot": "Alícuota",
           "notAvailable": "Aún no disponible",
+          "estimated": "estimado",
           "participationNote": "Para entender cómo funciona el FP, lee los",
-          "termsAndConditions": "Términos y Condiciones",
           "whatIsRbi": "¿Qué es el RBI?",
           "explanation": "El Regenerative Basic Income es un ingreso periódico que se distribuye entre los usuarios de Alternun que contribuyen al ecosistema.\n\nNo depende de cuánto dinero tengas, sino de tu participación, tu compromiso y tu impacto, medidos a través de tu puntaje AIRS.\n\nCada vez que Alternun facilita una compensación, una venta desde el compensation pool o una actividad económica dentro de la plataforma, una parte de ese valor se destina directamente al fondo del RBI.",
           "fullDocumentation": "Documentación completa"
@@ -1080,6 +1098,18 @@
         "empty": "Aún no hay empresas disponibles.",
         "error": "No se pudieron cargar las empresas.",
         "retry": "Reintentar",
+        "view": {
+          "label": "Vista del directorio",
+          "list": "Lista",
+          "grid": "Cuadrícula",
+          "compact": "Compacta"
+        },
+        "pagination": {
+          "label": "Páginas de empresas",
+          "previous": "Anterior",
+          "next": "Siguiente",
+          "page": "Página {{page}} de {{total}}"
+        },
         "detail": {
           "back": "Volver a empresas",
           "loading": "Cargando empresa…",
@@ -1118,6 +1148,7 @@
         "video": "Video",
         "openVideo": "Ver video",
         "openPresentation": "Ver presentación",
+        "presentationTitle": "Presentación de {{project}}",
         "comments": {
           "title": "Comentarios",
           "loading": "Cargando comentarios…",
@@ -1176,8 +1207,15 @@
         "location": "País o territorio",
         "productive": "Productivo",
         "conservation": "Conservación",
-        "continueTelegram": "Continuar en Telegram",
-        "finePrint": "Comparte los detalles de tu propuesta con @alternun_io."
+        "contactName": "Nombre de contacto",
+        "contactEmail": "Correo de contacto",
+        "message": "Mensaje (opcional)",
+        "submit": "Enviar propuesta",
+        "submitting": "Enviando…",
+        "sent": "Tu propuesta fue enviada. Gracias por compartirla.",
+        "validationError": "Revisa los campos e inténtalo de nuevo.",
+        "submitError": "No pudimos enviar tu propuesta. Inténtalo de nuevo.",
+        "finePrint": "Guardaremos tu propuesta para que el equipo de Alternun pueda revisarla."
       }
     }
   },
