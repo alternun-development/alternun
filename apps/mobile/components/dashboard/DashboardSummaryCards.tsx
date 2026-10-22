@@ -18,6 +18,7 @@ import { getDashboardSummaryCardsLayout } from './dashboardSummaryCardsLayout';
 import { calculateRbiProjection } from './rbiProjection';
 import { MetricInfoTooltip } from './MetricInfoTooltip';
 import ParticipationFactorBar from './ParticipationFactorBar';
+import type { MotionLevel } from '../settings/AppPreferencesProvider';
 import type { DashboardSummaryCardsProps, RewardAsset } from './types';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
@@ -249,6 +250,7 @@ function RBICard({
   participationFactor,
   participationFactorEstimated = false,
   communityEligibleAirs,
+  motionLevel,
   minHeight,
 }: {
   isDark: boolean;
@@ -263,6 +265,7 @@ function RBICard({
   participationFactor?: number | null;
   participationFactorEstimated?: boolean;
   communityEligibleAirs?: number | null;
+  motionLevel?: MotionLevel;
   minHeight?: number;
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -361,6 +364,7 @@ function RBICard({
           neutralTickColor={p.factorTick}
           markerColor={p.title}
           markerBorderColor={p.cardBg}
+          motionLevel={motionLevel}
         />
         <View style={styles.factorMarks}>
           {PARTICIPATION_FACTOR_MARKS.map((mark) => (
@@ -737,6 +741,7 @@ export default function DashboardSummaryCards({
   participationFactorEstimated,
   communityEligibleAirs,
   rewardAssets,
+  motionLevel,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width, fontScale = 1 } = useWindowDimensions();
@@ -845,6 +850,7 @@ export default function DashboardSummaryCards({
             participationFactor={participationFactor}
             participationFactorEstimated={participationFactorEstimated}
             communityEligibleAirs={communityEligibleAirs}
+            motionLevel={motionLevel}
             minHeight={desktopMinHeight}
           />
         </View>
