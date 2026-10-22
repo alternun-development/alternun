@@ -594,6 +594,7 @@ results = {
     "user_sync_webhook": "skipped",
     "admin_user": "skipped",
     "admin_application_policy": "skipped",
+    "admin_role_groups": "skipped",
     "oidc_signing_key": "skipped",
     "admin_oidc_provider": "skipped",
     "docs_cms_application_policy": "skipped",
@@ -854,8 +855,21 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         "Alternun Dashboard Admins": "internal_admin",
         "Alternun Platform Owner": "platform_owner",
         "Alternun Internal Admin": "internal_admin",
+        "Alternun Moderator": "moderator",
         "Alternun Partner Operator": "partner_operator",
+        "Alternun Sub Admin": "sub_admin",
         "Alternun Partner Read Only": "partner_readonly",
+    }
+    # Every mapped group must exist so it can be assigned in Authentik; the
+    # access policy and the alternun_roles claim below are built from this map.
+    created_admin_role_groups = []
+    for group_name in sorted(group for group in admin_group_roles if group):
+        _, group_created = Group.objects.get_or_create(name=group_name)
+        if group_created:
+            created_admin_role_groups.append(group_name)
+    results["admin_role_groups"] = {
+        "status": "configured",
+        "created": created_admin_role_groups,
     }
     admin_group_claim_mapping, admin_group_claim_mapping_created, admin_group_claim_mapping_changed = (
         ensure_admin_group_claim_mapping(admin_group_roles)

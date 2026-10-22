@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { isIP } from 'node:net';
 import { Injectable } from '@nestjs/common';
 import {
+  grantsGlobally,
   hasPermission,
   rolesWithPermission,
   type AdminPermission,
@@ -29,12 +30,6 @@ import {
   type ProjectRecord,
   type PublicProjectActivity,
 } from './marketplace.types';
-
-const GLOBAL_ROLES = new Set(['platform_owner', 'internal_admin', 'moderator']);
-
-function isGlobal(principal: AdminPrincipal): boolean {
-  return principal.roles.some((role) => GLOBAL_ROLES.has(role));
-}
 
 function hasRole(principal: AdminPrincipal, ...roles: string[]): boolean {
   return principal.roles.some((role) => roles.includes(role));
@@ -211,7 +206,7 @@ export class MarketplaceActivityService {
     if (!project) marketplaceError('PROJECT_NOT_FOUND');
     if (!hasPermission(principal, permission))
       await this.deny(principal, requestId, projectId, 'PERMISSION_DENIED');
-    if (!isGlobal(principal)) {
+    if (!grantsGlobally(principal, permission)) {
       const allowed = await this.adminRepository.actorHasScope(
         actorFromPrincipal(principal),
         principal.roles,
@@ -339,18 +334,21 @@ export class MarketplaceActivityService {
     activityId: string,
     reason?: string
   ): Promise<ProjectActivityRecord> {
-    await this.authorizeProject(principal, 'activities:read', requestId, projectId);
-    if (
-      !hasRole(
-        principal,
-        'platform_owner',
-        'internal_admin',
-        'moderator',
-        'partner_operator',
-        'sub_admin'
-      )
-    )
-      await this.deny(principal, requestId, projectId, 'PERMISSION_DENIED');
+    const project = await this.authorizeProject(principal, 'activities:read', requestId, projectId);
+    // The global moderator may not pause activities. Scoped roles need their own
+    // membership here, because activities:read alone may come from a global role.
+    if (!hasRole(principal, 'platform_owner', 'internal_admin')) {
+      if (!hasRole(principal, 'partner_operator', 'sub_admin'))
+        await this.deny(principal, requestId, projectId, 'PERMISSION_DENIED');
+      const allowed = await this.adminRepository.actorHasScope(
+        actorFromPrincipal(principal),
+        principal.roles,
+        project.enterpriseId,
+        projectId,
+        ['partner_operator', 'sub_admin']
+      );
+      if (!allowed) await this.deny(principal, requestId, projectId, 'PROJECT_SCOPE_DENIED');
+    }
     const before = await this.repository.find(projectId, activityId);
     if (!before) marketplaceError('ACTIVITY_NOT_FOUND');
     if (!['published', 'paused'].includes(before.status))
