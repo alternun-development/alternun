@@ -120,17 +120,24 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.102**
+Current version: **1.1.103**
 
-## 📋 Latest Changes (v1.1.102)
+## 📋 Latest Changes (v1.1.103)
 
 ### Bug Fixes
 
-- **repo:** artifact, graph.db ([a6dc886](https://github.com/alternun-development/alternun/commit/a6dc886142a1b2efefe4a1e5a30119b209b78251))
+- **repo:** artifact, graph.db ([06abc0e](https://github.com/alternun-development/alternun/commit/06abc0ed904042f04bf3fa7a72f57d028b9d5346))
+- **repo:** artifact, graph.db ([24d7834](https://github.com/alternun-development/alternun/commit/24d78345f177e0244a149f2b8f0792d9466cfd65))
+- **identity:** promote @alternun.io users to internal and add shared dev admin ([53f6e5c](https://github.com/alternun-development/alternun/commit/53f6e5cff715ed2c0d017511c1f4b6e80350cbca))
+- **mobile:** size Explorer hero slides to the inset content width ([5ab688f](https://github.com/alternun-development/alternun/commit/5ab688fc71925a02b597443957c0f2dcefb0f526))
+
+### Changes
+
+- **mobile:** cover AirsIntroVideoCard picture-in-picture control ([7018ec5](https://github.com/alternun-development/alternun/commit/7018ec5b37b9e601911212ce484fff750ad8dbec))
 
 ### Features
 
-- **mobile:** center content column with max width and gutters on large screens ([89ddf7a](https://github.com/alternun-development/alternun/commit/89ddf7ae251d821c090a11e0e964fc26de948484))
+- **mobile:** neutral Explorer palette, banner video/Canva, PiP, normalized footer ([f6fd61b](https://github.com/alternun-development/alternun/commit/f6fd61bc380fc3fc790cfedd21989e546099363d))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
