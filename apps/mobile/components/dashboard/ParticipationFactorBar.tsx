@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { DARK_PALETTE, LIGHT_PALETTE } from '../theme/palette';
+import type { MotionLevel } from '../settings/AppPreferencesProvider';
 
 const TRACK_HEIGHT = 14;
 const TRACK_BORDER = 1;
@@ -83,6 +84,7 @@ export default function ParticipationFactorBar({
   neutralTickColor,
   markerColor,
   markerBorderColor,
+  motionLevel,
 }: {
   percent: number | null;
   isDark: boolean;
@@ -93,11 +95,17 @@ export default function ParticipationFactorBar({
   neutralTickColor: string;
   markerColor: string;
   markerBorderColor: string;
+  motionLevel?: MotionLevel;
 }): React.JSX.Element {
   const c = isDark ? DARK_PALETTE : LIGHT_PALETTE;
   const available = percent !== null;
   const gradientId = `fpLiquid${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-  const motionAllowed = useMotionAllowed();
+  const systemMotionAllowed = useMotionAllowed();
+  // The app-level "Off"/"Low" setting also stops the animation, like TierAvatarBorder.
+  const motionAllowed =
+    systemMotionAllowed === null
+      ? null
+      : systemMotionAllowed && (motionLevel == null || motionLevel === 'full');
   const fill = useRef(new Animated.Value(0)).current;
   const phase = useRef(new Animated.Value(0)).current;
   const [trackWidth, setTrackWidth] = useState(0);
