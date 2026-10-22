@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 
+- **mobile:** localize the web tab title and link the FP note to the docs ([19b600e](https://github.com/alternun-development/alternun/commit/19b600e2250d99402a2cd92d42b89483c413093d))
 - **api:** address CodeQL alerts from release v1.1.101 ([6a1c956](https://github.com/alternun-development/alternun/commit/6a1c9563ee9c3d7d36e4d4a019e7378f099df306))
 - **db:** close moderator media reorder and sub_admin approval in SQL ([55b7ece](https://github.com/alternun-development/alternun/commit/55b7ece56b61bdea187e541573e59ca21aca57cf))
 - **marketplace:** stop global moderator from pausing activities ([62c1f13](https://github.com/alternun-development/alternun/commit/62c1f1381ea5c857f8aefd3fa9f69d7242cec30d))
