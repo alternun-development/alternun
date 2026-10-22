@@ -194,3 +194,13 @@ void test('admin OIDC logout redirects back to the admin app instead of the Auth
   );
   assert.match(template, /invalidation_flow = admin_invalidation_flow/);
 });
+
+void test('bootstrap promotes platform users to internal and provisions the shared dev admin', () => {
+  const template = fs.readFileSync(templatePath, 'utf8');
+
+  assert.match(template, /ALTERNUN_BOOTSTRAP_SUPER_ADMIN_EMAILS/);
+  assert.match(template, /ALTERNUN_BOOTSTRAP_INTERNAL_EMAIL_DOMAINS/);
+  assert.match(template, /ALTERNUN_BOOTSTRAP_DEV_SHARED_ADMIN_PASSWORD/);
+  assert.match(template, /def promote_platform_user\(user, group_names\):/);
+  assert.match(template, /user\.type = "internal"/);
+});

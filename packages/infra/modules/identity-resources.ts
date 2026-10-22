@@ -631,6 +631,19 @@ export function deployIdentityInfrastructure(
     }
   );
 
+  // Shared developers@alternun.io account (non-production only). Generated once, kept in
+  // Pulumi state and written to the integration-config secret as devSharedAdminPassword.
+  const devSharedAdminPassword = new RandomPassword(
+    `${resourceBaseName}-dev-shared-admin-password`,
+    {
+      length: 24,
+      lower: true,
+      number: true,
+      special: false,
+      upper: true,
+    }
+  );
+
   const bootstrapAdminPasswordValue = args.settings.integration.bootstrap.admin.password
     ? pulumi.output(args.settings.integration.bootstrap.admin.password)
     : bootstrapAdminPassword.result;
@@ -781,6 +794,7 @@ export function deployIdentityInfrastructure(
           docsCmsOidcClientSecret.result,
           bootstrapAdminPasswordValue,
           userSyncWebhookSecret.result,
+          devSharedAdminPassword.result,
         ])
         .apply(
           ([
@@ -789,10 +803,19 @@ export function deployIdentityInfrastructure(
             docsCmsClientSecret,
             adminPassword,
             webhookSecret,
+            sharedDevAdminPassword,
           ]) =>
             JSON.stringify({
               adminEmail: args.settings.integration.bootstrap.admin.email,
               adminGroup: args.settings.integration.bootstrap.admin.group,
+              // Social-login users are "external" and blocked from /if/user/ until promoted.
+              superAdminEmails: ['edward@alternun.io'],
+              internalEmailDomains: ['alternun.io'],
+              // Development-only platform admin; never granted in production.
+              devAdminEmails: productionIdentityStage ? [] : ['branner@lstech.solutions'],
+              // Shared dev account; never created in production.
+              devSharedAdminEmail: productionIdentityStage ? '' : 'developers@alternun.io',
+              devSharedAdminPassword: productionIdentityStage ? '' : sharedDevAdminPassword,
               adminName: args.settings.integration.bootstrap.admin.name,
               adminAllowedEmailDomain: args.settings.integration.adminOidc.allowedEmailDomain,
               adminOidcApplicationName: args.settings.integration.adminOidc.applicationName,

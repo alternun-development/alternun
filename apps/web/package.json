@@ -1,6 +1,6 @@
 {
   "name": "@alternun/web",
-  "version": "1.1.102",
+  "version": "1.1.103",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,7 +15,7 @@
     "@gsap/react": "^2.1.2",
     "gsap": "^3.14.2",
     "lucide-react": "^1.7.0",
-    "next": "15.5.24",
+    "next": "15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
