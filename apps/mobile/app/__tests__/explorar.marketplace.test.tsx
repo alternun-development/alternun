@@ -5,6 +5,7 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ExplorarScreen, { loadMarketplaceProjects, MarketplaceProjectBrowser } from '../explorar';
 
 const mockPush = jest.fn();
+const originalMarketplaceContactEmail = process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL;
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
@@ -132,6 +133,11 @@ describe('Explorer marketplace projects', () => {
     }
     jest.restoreAllMocks();
     mockPush.mockReset();
+    if (originalMarketplaceContactEmail === undefined) {
+      delete process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL;
+    } else {
+      process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL = originalMarketplaceContactEmail;
+    }
   });
 
   it('loads published projects and selects the first safe image URL', async () => {
@@ -255,6 +261,7 @@ describe('Explorer marketplace projects', () => {
   });
 
   it('renders the hero and proposal form and navigates to projects and enterprises', async () => {
+    process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL = 'marketplace@example.com';
     jest.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: [publishedProject] }),
@@ -277,20 +284,142 @@ describe('Explorer marketplace projects', () => {
       renderer.root.findByProps({ testID: 'explorer-directory-enterprises' }).props.onPress()
     );
     const enterpriseBrowser = renderer.root.findByType('MockEnterpriseBrowser' as never);
+    await act(async () => {
+      renderer.root.findByProps({ testID: 'explorer-enterprise-list' }).props.onLayout({
+        nativeEvent: { layout: { y: 640 } },
+      });
+      await Promise.resolve();
+    });
+    expect(() => enterpriseBrowser.props.onListNavigate()).not.toThrow();
     await act(() => enterpriseBrowser.props.onOpenEnterprise('forest-enterprise'));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/explorar/empresa/[slug]',
       params: { slug: 'forest-enterprise' },
     });
 
-    const projectName = renderer.root.findByProps({ placeholder: 'explorer.form.projectName' });
-    const location = renderer.root.findByProps({ placeholder: 'explorer.form.location' });
-    await act(() => projectName.props.onChangeText('Community forest'));
-    await act(() => location.props.onChangeText('Andes'));
-    await act(() => pressableWithText(renderer, 'explorer.form.conservation').props.onPress());
-
     await act(() => pressableWithText(renderer, 'explorer.collaborate').props.onPress());
-    await act(() => pressableWithText(renderer, 'explorer.form.continueTelegram').props.onPress());
+    await act(() => pressableWithText(renderer, 'explorer.submitProject').props.onPress());
     expect(openUrl).toHaveBeenCalledTimes(2);
+    expect(openUrl).toHaveBeenNthCalledWith(1, 'mailto:marketplace@example.com');
+    expect(openUrl).toHaveBeenNthCalledWith(2, 'mailto:marketplace@example.com');
+  });
+
+  it('submits a valid project proposal and shows the sent state', async () => {
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockImplementation((url) => {
+      if (String(url).includes('/v1/project-proposals')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ accepted: true }),
+        } as Response);
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: [publishedProject] }),
+      } as Response);
+    });
+    const renderer = await renderExplorerScreen();
+
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.projectName' })
+        .props.onChangeText('Community forest')
+    );
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.location' })
+        .props.onChangeText('Andes')
+    );
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.contactName' })
+        .props.onChangeText('Proposal Test')
+    );
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.contactEmail' })
+        .props.onChangeText('Proposer@Example.com')
+    );
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.message' })
+        .props.onChangeText('Restore native forest.')
+    );
+    await act(() => pressableWithText(renderer, 'explorer.form.conservation').props.onPress());
+    await act(async () => {
+      renderer.root.findByProps({ testID: 'explorer-project-proposal-submit' }).props.onPress();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(renderer.root.findByProps({ testID: 'explorer-project-proposal-sent' })).toBeTruthy();
+    const postCall = fetchMock.mock.calls.find(([url]) =>
+      String(url).includes('/v1/project-proposals')
+    );
+    expect(postCall?.[1]?.method).toBe('POST');
+    expect(JSON.parse(String(postCall?.[1]?.body))).toMatchObject({
+      projectName: 'Community forest',
+      category: 'conservation',
+      contactEmail: 'proposer@example.com',
+      contactName: 'Proposal Test',
+      language: 'en',
+      website: '',
+    });
+  });
+
+  it('validates a project proposal before sending it', async () => {
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [] }),
+    } as Response);
+    const renderer = await renderExplorerScreen();
+
+    await act(() =>
+      renderer.root.findByProps({ testID: 'explorer-project-proposal-submit' }).props.onPress()
+    );
+
+    expect(renderer.root.findByProps({ testID: 'explorer-project-proposal-error' })).toBeTruthy();
+    expect(renderer.root.findByProps({ children: 'explorer.form.validationError' })).toBeTruthy();
+    expect(
+      fetchMock.mock.calls.some(([url]) => String(url).includes('/v1/project-proposals'))
+    ).toBe(false);
+  });
+
+  it('shows a friendly error when project proposal submission fails', async () => {
+    jest.spyOn(globalThis, 'fetch').mockImplementation((url) => {
+      if (String(url).includes('/v1/project-proposals')) {
+        return Promise.resolve({ ok: false } as Response);
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) } as Response);
+    });
+    const renderer = await renderExplorerScreen();
+
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.projectName' })
+        .props.onChangeText('Community forest')
+    );
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.location' })
+        .props.onChangeText('Andes')
+    );
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.contactName' })
+        .props.onChangeText('Proposal Test')
+    );
+    await act(() =>
+      renderer.root
+        .findByProps({ placeholder: 'explorer.form.contactEmail' })
+        .props.onChangeText('proposer@example.com')
+    );
+    await act(async () => {
+      renderer.root.findByProps({ testID: 'explorer-project-proposal-submit' }).props.onPress();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(renderer.root.findByProps({ testID: 'explorer-project-proposal-error' })).toBeTruthy();
+    expect(renderer.root.findByProps({ children: 'explorer.form.submitError' })).toBeTruthy();
   });
 });

@@ -195,7 +195,6 @@ function Divider({
 
 const RBI_DOCUMENTATION_URL =
   'https://docs.alternun.io/docs/tutorial-basics/airs-tu-huella-regenerativa';
-const TERMS_URL = 'https://docs.alternun.io/terms';
 const PARTICIPATION_FACTOR_MARKS = [0, 15, 50, 100] as const;
 
 function formatMetricValue(value: number | null): string | null {
@@ -248,6 +247,7 @@ function RBICard({
   airsScore,
   airsScoreLoading = false,
   participationFactor,
+  participationFactorEstimated = false,
   communityEligibleAirs,
   minHeight,
 }: {
@@ -261,6 +261,7 @@ function RBICard({
   airsScore?: number | null;
   airsScoreLoading?: boolean;
   participationFactor?: number | null;
+  participationFactorEstimated?: boolean;
   communityEligibleAirs?: number | null;
   minHeight?: number;
 }): React.JSX.Element {
@@ -276,7 +277,9 @@ function RBICard({
   const factorPercent = metrics.participationFactorPercent;
   const factorAvailable = factorPercent !== null;
   const factorValueText = factorAvailable
-    ? `FP ${formatFactorPercent(factorPercent)} %`
+    ? `FP ${formatFactorPercent(factorPercent)} %${
+        participationFactorEstimated ? ` · ${t.t('dashboard.summaryCards.rbi.estimated')}` : ''
+      }`
     : t.t('dashboard.summaryCards.rbi.notAvailable');
   const markerOffset = factorPercent === 0 ? 0 : factorPercent === 100 ? -12 : -6;
   const metricRows = [
@@ -565,14 +568,14 @@ function RBICard({
         </Text>
         <TouchableOpacity
           onPress={() => {
-            void Linking.openURL(TERMS_URL);
+            void Linking.openURL(RBI_DOCUMENTATION_URL);
           }}
           accessibilityRole='link'
-          accessibilityLabel={t.t('dashboard.summaryCards.rbi.termsAndConditions')}
+          accessibilityLabel={t.t('dashboard.summaryCards.rbi.fullDocumentation')}
           activeOpacity={0.7}
         >
           <Text style={[styles.factorTermsLink, { color: p.accent }]}>
-            {t.t('dashboard.summaryCards.rbi.termsAndConditions')}
+            {t.t('dashboard.summaryCards.rbi.fullDocumentation')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -780,6 +783,7 @@ export default function DashboardSummaryCards({
   signedIn,
   airsBalance,
   participationFactor,
+  participationFactorEstimated,
   communityEligibleAirs,
   rewardAssets,
 }: DashboardSummaryCardsProps): React.JSX.Element {
@@ -888,6 +892,7 @@ export default function DashboardSummaryCards({
             airsScore={airsBalance}
             airsScoreLoading={airsScoreLoading}
             participationFactor={participationFactor}
+            participationFactorEstimated={participationFactorEstimated}
             communityEligibleAirs={communityEligibleAirs}
             minHeight={desktopMinHeight}
           />
