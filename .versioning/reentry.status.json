@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-22T10:42:19.699Z",
+  "lastUpdated": "2026-10-22T17:44:12.957Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Ship release v1.1.101 (8 PRs integrated): merge the develop→master release PR, then sync master back into develop; pending: approve community equivalent AIRS balance-sum RPC + migration",
+      "description": "Open PR feat/fp-liquid-progress -> develop (liquid RBI participation factor bar, theme tokens, progressbar a11y, reduced motion); follow-up: honor the in-app motion level setting in the bar; still pending from before: approve community equivalent AIRS balance-sum RPC + migration",
       "id": "next",
       "priority": 1
     }
