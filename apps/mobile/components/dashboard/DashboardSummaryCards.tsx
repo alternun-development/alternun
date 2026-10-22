@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import { ChevronDown, ChevronRight, Coins, Wallet, type LucideProps } from 'lucide-react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
@@ -18,6 +17,8 @@ import { resolveWalletSummaryState } from './walletSummary';
 import { getDashboardSummaryCardsLayout } from './dashboardSummaryCardsLayout';
 import { calculateRbiProjection } from './rbiProjection';
 import { MetricInfoTooltip } from './MetricInfoTooltip';
+import ParticipationFactorBar from './ParticipationFactorBar';
+import type { MotionLevel } from '../settings/AppPreferencesProvider';
 import type { DashboardSummaryCardsProps, RewardAsset } from './types';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
@@ -249,6 +250,7 @@ function RBICard({
   participationFactor,
   participationFactorEstimated = false,
   communityEligibleAirs,
+  motionLevel,
   minHeight,
 }: {
   isDark: boolean;
@@ -263,6 +265,7 @@ function RBICard({
   participationFactor?: number | null;
   participationFactorEstimated?: boolean;
   communityEligibleAirs?: number | null;
+  motionLevel?: MotionLevel;
   minHeight?: number;
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -281,7 +284,6 @@ function RBICard({
         participationFactorEstimated ? ` · ${t.t('dashboard.summaryCards.rbi.estimated')}` : ''
       }`
     : t.t('dashboard.summaryCards.rbi.notAvailable');
-  const markerOffset = factorPercent === 0 ? 0 : factorPercent === 100 ? -12 : -6;
   const metricRows = [
     {
       testID: 'dashboard-rbi-eligible-airs',
@@ -324,17 +326,6 @@ function RBICard({
 
       <View
         testID='dashboard-rbi-status'
-        accessibilityRole='adjustable'
-        accessibilityLabel={t.t('dashboard.summaryCards.rbi.subtitle')}
-        accessibilityState={{ disabled: !factorAvailable }}
-        aria-disabled={!factorAvailable}
-        aria-valuetext={factorValueText}
-        aria-valuenow={factorPercent ?? undefined}
-        accessibilityValue={
-          factorAvailable
-            ? { min: 0, max: 100, now: factorPercent, text: factorValueText }
-            : { text: factorValueText }
-        }
         style={[
           styles.factorPanel,
           compact && styles.factorPanelCompact,
@@ -363,54 +354,18 @@ function RBICard({
             {factorValueText}
           </Text>
         </View>
-        <View style={styles.factorTrackArea}>
-          <View
-            testID='dashboard-rbi-factor-track'
-            style={[
-              styles.factorGradientTrack,
-              !factorAvailable && { backgroundColor: p.factorTrack },
-            ]}
-          >
-            {factorAvailable && (
-              <Svg width='100%' height='100%' viewBox='0 0 100 12' preserveAspectRatio='none'>
-                <Defs>
-                  <LinearGradient id='rbi-factor-gradient' x1='0%' y1='0%' x2='100%' y2='0%'>
-                    <Stop offset='0%' stopColor='#D6534D' />
-                    <Stop offset='100%' stopColor='#219A70' />
-                  </LinearGradient>
-                </Defs>
-                <Rect width='100' height='12' rx='6' fill='url(#rbi-factor-gradient)' />
-              </Svg>
-            )}
-          </View>
-          {PARTICIPATION_FACTOR_MARKS.map((mark) => (
-            <View
-              key={mark}
-              style={[
-                styles.factorTick,
-                {
-                  left: `${mark}%`,
-                  backgroundColor: p.factorTick,
-                },
-              ]}
-            />
-          ))}
-          {factorAvailable && (
-            <View
-              testID='dashboard-rbi-factor-marker'
-              accessibilityLabel={factorValueText}
-              style={[
-                styles.factorMarker,
-                {
-                  left: `${factorPercent}%`,
-                  borderColor: p.cardBg,
-                  backgroundColor: p.title,
-                  transform: [{ translateX: markerOffset }],
-                },
-              ]}
-            />
-          )}
-        </View>
+        <ParticipationFactorBar
+          percent={factorPercent}
+          isDark={isDark}
+          marks={PARTICIPATION_FACTOR_MARKS}
+          label={t.t('dashboard.summaryCards.rbi.subtitle')}
+          valueText={factorValueText}
+          neutralTrackColor={p.factorTrack}
+          neutralTickColor={p.factorTick}
+          markerColor={p.title}
+          markerBorderColor={p.cardBg}
+          motionLevel={motionLevel}
+        />
         <View style={styles.factorMarks}>
           {PARTICIPATION_FACTOR_MARKS.map((mark) => (
             <View
@@ -786,6 +741,7 @@ export default function DashboardSummaryCards({
   participationFactorEstimated,
   communityEligibleAirs,
   rewardAssets,
+  motionLevel,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width, fontScale = 1 } = useWindowDimensions();
@@ -894,6 +850,7 @@ export default function DashboardSummaryCards({
             participationFactor={participationFactor}
             participationFactorEstimated={participationFactorEstimated}
             communityEligibleAirs={communityEligibleAirs}
+            motionLevel={motionLevel}
             minHeight={desktopMinHeight}
           />
         </View>
@@ -1066,32 +1023,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     textAlign: 'right',
-  },
-  factorTrackArea: {
-    height: 20,
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  factorGradientTrack: {
-    height: 12,
-    width: '100%',
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
-  factorTick: {
-    position: 'absolute',
-    width: 2,
-    height: 12,
-    top: 4,
-    opacity: 0.78,
-  },
-  factorMarker: {
-    position: 'absolute',
-    top: 0,
-    width: 12,
-    height: 20,
-    borderRadius: 6,
-    borderWidth: 2,
   },
   factorMarks: {
     height: 16,
