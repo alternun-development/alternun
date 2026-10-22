@@ -1,4 +1,5 @@
 import TierAvatarBorder from '../profile/TierAvatarBorder';
+import { getContentGutter } from '../../utils/layout';
 import { resolveTier, TIERS } from '@alternun/ui';
 import { useAirsDashboardSnapshot } from './AirsDashboardProvider';
 import { useAuth } from '../auth/AppAuthProvider';
@@ -313,7 +314,12 @@ export default function TopNav({
 
       {/* ── Glass nav bar ────────────────────────────────────────────────── */}
       <View
-        style={[styles.navBar, isMobile && styles.navBarMobile, { borderBottomColor: p.navBorder }]}
+        style={[
+          styles.navBar,
+          isMobile && styles.navBarMobile,
+          { borderBottomColor: p.navBorder },
+          !isMobile && { paddingHorizontal: getContentGutter(width, 24) },
+        ]}
       >
         {/* Glass background — clipped separately so dropdown can overflow */}
         <View
