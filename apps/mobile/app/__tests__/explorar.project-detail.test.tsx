@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 import React from 'react';
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import {
+  canvaEmbedUrl,
   MarketplaceProjectDetailView,
   MarketplaceProjectRequestError,
 } from '../../components/marketplace/MarketplaceProjectDetail';
@@ -211,5 +212,101 @@ describe('Marketplace project detail', () => {
     expect(renderer.root.findAllByProps({ testID: 'project-detail-video-external' })).toHaveLength(
       0
     );
+  });
+});
+
+describe('Marketplace project detail Canva presentation', () => {
+  const originalOs = Platform.OS;
+  const embedUrl = 'https://www.canva.com/design/example/view?embed';
+
+  function setPlatform(os: string): void {
+    Object.defineProperty(Platform, 'OS', { configurable: true, get: () => os });
+  }
+
+  function withCanva(url: string, embed: string | null = null): MarketplacePublicProject {
+    return {
+      ...project,
+      media: project.media.map((item) =>
+        item.kind === 'canva' ? { ...item, url, embedUrl: embed } : item
+      ),
+    };
+  }
+
+  afterEach(() => setPlatform(originalOs));
+
+  it('embeds an allowed Canva link on web in a sandboxed, lazy iframe', async () => {
+    setPlatform('web');
+    const renderer = await render(() =>
+      Promise.resolve(withCanva('https://www.canva.com/design/example/view', embedUrl))
+    );
+
+    const frame = renderer.root.findByType('iframe' as never);
+    expect(frame.props.src).toBe(embedUrl);
+    expect(frame.props.title).toBe('explorer.detail.presentationTitle');
+    expect(frame.props.loading).toBe('lazy');
+    expect(frame.props.sandbox).toBe(
+      'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox'
+    );
+    expect(frame.props.sandbox).not.toMatch(/allow-top-navigation|allow-forms|allow-modals/);
+    expect(renderer.root.findByProps({ testID: 'project-detail-canva-embed' })).toBeTruthy();
+    expect(renderer.root.findAllByProps({ testID: 'project-detail-canva' })).toHaveLength(0);
+  });
+
+  it('falls back to the button on web when the host is not allowed', async () => {
+    setPlatform('web');
+    const renderer = await render(() =>
+      Promise.resolve(withCanva('https://canva.example.com/design/example/view?embed'))
+    );
+
+    expect(renderer.root.findAllByType('iframe' as never)).toHaveLength(0);
+    expect(renderer.root.findByProps({ testID: 'project-detail-canva' })).toBeTruthy();
+  });
+
+  it('falls back to the button on web when the link is not an embed link', async () => {
+    setPlatform('web');
+    const renderer = await render(() => Promise.resolve(project));
+
+    expect(renderer.root.findAllByType('iframe' as never)).toHaveLength(0);
+    expect(renderer.root.findByProps({ testID: 'project-detail-canva' })).toBeTruthy();
+  });
+
+  it('renders neither embed nor button on web without Canva media', async () => {
+    setPlatform('web');
+    const renderer = await render(() =>
+      Promise.resolve({
+        ...project,
+        media: project.media.filter((item) => item.kind !== 'canva'),
+      })
+    );
+
+    expect(renderer.root.findAllByType('iframe' as never)).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: 'project-detail-canva' })).toHaveLength(0);
+  });
+
+  it('keeps the button on native even for an allowed embed link', async () => {
+    setPlatform('ios');
+    const renderer = await render(() =>
+      Promise.resolve(withCanva('https://www.canva.com/design/example/view', embedUrl))
+    );
+
+    expect(renderer.root.findAllByType('iframe' as never)).toHaveLength(0);
+    expect(renderer.root.findByProps({ testID: 'project-detail-canva' })).toBeTruthy();
+  });
+
+  it('accepts only HTTPS embed links on the allowed Canva hosts', () => {
+    const media = project.media.find((item) => item.kind === 'canva')!;
+    const check = (url: string, embed: string | null = null): string | null =>
+      canvaEmbedUrl({ ...media, url, embedUrl: embed });
+
+    expect(check('https://canva.com/design/x/view?embed')).toBe(
+      'https://canva.com/design/x/view?embed'
+    );
+    expect(check('https://www.canva.com/design/x/view', embedUrl)).toBe(embedUrl);
+    expect(check('http://www.canva.com/design/x/view?embed')).toBeNull();
+    expect(check('https://www.canva.com.evil.example/design/x/view?embed')).toBeNull();
+    expect(check('https://user:pass@www.canva.com/design/x/view?embed')).toBeNull();
+    expect(check('https://www.canva.com:8443/design/x/view?embed')).toBeNull();
+    expect(check('ftp://www.canva.com/design/x/view?embed')).toBeNull();
+    expect(canvaEmbedUrl(undefined)).toBeNull();
   });
 });
