@@ -283,10 +283,10 @@
           "closeLabel": "Close",
           "atnBalanceTitle": "ATN balance",
           "atnBalance": "Your available ATN balance, reported by your rewards account.",
-          "participationFactor": "The participation factor applied to your AIRS under the Terms and Conditions.",
+          "participationFactor": "FP is the participation factor applied to your AIRS. It starts at 50% and can range from 0% to 100%, under the Terms and Conditions.",
           "eligibleAirs": "Equivalent AIRS = AIRS × FP.",
           "eligibleUsers": "The total eligible users reported by the system for the RBI projection.",
-          "aliquot": "Allocation share = my eligible AIRS / total eligible AIRS × 100%."
+          "aliquot": "Allocation share = my Equivalent AIRS / community total of Equivalent AIRS × 100%."
         },
         "position": {
           "title": "Your Position",
@@ -305,6 +305,7 @@
           "eligibleUsers": "Eligible users",
           "aliquot": "Allocation share",
           "notAvailable": "Not available yet",
+          "estimated": "estimated",
           "participationNote": "To understand how FP works, read the",
           "termsAndConditions": "Terms and Conditions",
           "whatIsRbi": "What is RBI?",

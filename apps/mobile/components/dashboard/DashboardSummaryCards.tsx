@@ -248,6 +248,7 @@ function RBICard({
   airsScore,
   airsScoreLoading = false,
   participationFactor,
+  participationFactorEstimated = false,
   communityEligibleAirs,
   minHeight,
 }: {
@@ -261,6 +262,7 @@ function RBICard({
   airsScore?: number | null;
   airsScoreLoading?: boolean;
   participationFactor?: number | null;
+  participationFactorEstimated?: boolean;
   communityEligibleAirs?: number | null;
   minHeight?: number;
 }): React.JSX.Element {
@@ -276,7 +278,9 @@ function RBICard({
   const factorPercent = metrics.participationFactorPercent;
   const factorAvailable = factorPercent !== null;
   const factorValueText = factorAvailable
-    ? `FP ${formatFactorPercent(factorPercent)} %`
+    ? `FP ${formatFactorPercent(factorPercent)} %${
+        participationFactorEstimated ? ` · ${t.t('dashboard.summaryCards.rbi.estimated')}` : ''
+      }`
     : t.t('dashboard.summaryCards.rbi.notAvailable');
   const markerOffset = factorPercent === 0 ? 0 : factorPercent === 100 ? -12 : -6;
   const metricRows = [
@@ -780,6 +784,7 @@ export default function DashboardSummaryCards({
   signedIn,
   airsBalance,
   participationFactor,
+  participationFactorEstimated,
   communityEligibleAirs,
   rewardAssets,
 }: DashboardSummaryCardsProps): React.JSX.Element {
@@ -888,6 +893,7 @@ export default function DashboardSummaryCards({
             airsScore={airsBalance}
             airsScoreLoading={airsScoreLoading}
             participationFactor={participationFactor}
+            participationFactorEstimated={participationFactorEstimated}
             communityEligibleAirs={communityEligibleAirs}
             minHeight={desktopMinHeight}
           />
