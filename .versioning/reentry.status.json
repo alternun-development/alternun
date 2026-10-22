@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-19T22:16:39.448Z",
+  "lastUpdated": "2026-10-22T10:42:19.699Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Review fix/rbi-formula-check (provisional FP 50% estimated, progress >= 0 %); pending: approve RBI explanation text, community equivalent AIRS via new balance-sum RPC + migration (needs Edward's approval)",
+      "description": "Ship release v1.1.101 (8 PRs integrated): merge the develop→master release PR, then sync master back into develop; pending: approve community equivalent AIRS balance-sum RPC + migration",
       "id": "next",
       "priority": 1
     }
