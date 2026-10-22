@@ -42,6 +42,7 @@ export interface ExpoLocalConfig {
     authentikProviderFlowSlugs?: string;
     authentikAllowCustomProviderFlowSlugs?: boolean;
     releaseUpdateMode?: string;
+    marketplaceContactEmail?: string;
   };
 }
 

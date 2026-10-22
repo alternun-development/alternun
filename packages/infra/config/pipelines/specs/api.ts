@@ -27,6 +27,7 @@ export function buildBackendPipelineSpecs({
           env.EXPO_PUBLIC_SUPABASE_KEY ?? env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
         INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY:
           env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+        MARKETPLACE_CONTACT_EMAIL: env.MARKETPLACE_CONTACT_EMAIL ?? '',
       }),
     },
     'api-prod': {
@@ -49,6 +50,7 @@ export function buildBackendPipelineSpecs({
           env.EXPO_PUBLIC_SUPABASE_KEY ?? env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
         INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY:
           env.INFRA_BACKEND_API_SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+        MARKETPLACE_CONTACT_EMAIL: env.MARKETPLACE_CONTACT_EMAIL ?? '',
       }),
     },
   };
