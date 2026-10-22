@@ -6,9 +6,7 @@
 
 Without this endpoint, `packages/auth` can only simulate the issuer session locally. That is good enough for package tests and adapter wiring, but not good enough for real testnet rollout.
 
-The package now calls `AUTH_EXCHANGE_URL` when it is configured, which means the backend exchange path is already part of the runtime graph. The current backend implementation can mint issuer-owned JWTs when `AUTHENTIK_JWT_SIGNING_KEY` is configured, and it can now fail closed when `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` and the signing key is not available.
-
-The current implementation now exists in `apps/api/src/modules/auth-exchange/*`, and it supports an issuer-owned mode plus a fallback compatibility mode. The compatibility mode is still the default safety net, but the strict rollout flag lets testnet or production fail closed instead of silently accepting compatibility fallback.
+The package calls `AUTH_EXCHANGE_URL` when it is configured, which means the backend exchange path is already part of the runtime graph. The backend verifies the execution session before reconciliation and only returns issuer-owned JWTs. If `AUTHENTIK_JWT_SIGNING_KEY` is unavailable, the exchange fails closed with `503`; an execution-layer token is never returned as the final Alternun session.
 
 ## Required Endpoint
 
@@ -16,12 +14,20 @@ The current implementation now exists in `apps/api/src/modules/auth-exchange/*`,
 
 This endpoint must:
 
-1. accept a normalized execution identity
-2. reconcile that identity against Alternun principals and linked accounts
-3. create or refresh the canonical issuer session
-4. return the issuer session payload used by apps, including `exchangeMode`
+1. verify the request credential with the execution provider
+2. compare the normalized body identity with the verified identity
+3. reconcile that verified identity against Alternun principals and linked accounts
+4. create the canonical issuer session
+5. return the issuer session payload used by apps, including `exchangeMode`
 
 ## Request Contract
+
+The request must carry its execution credential outside the JSON body:
+
+- `Authorization: Bearer <token>` for Better Auth bearer sessions or Supabase access tokens
+- the Better Auth session cookie may also be forwarded with `credentials: 'include'`
+
+Tokens embedded in `executionSession` or `context` do not authenticate the request. The server verifies Supabase bearers with `/auth/v1/user` and Better Auth sessions with `/auth/get-session`, using bounded requests that fail closed.
 
 ### Supported fields
 
@@ -103,6 +109,8 @@ fields remain rejected.
 ## Non-Negotiable Backend Rules
 
 - Do not expose raw Better Auth execution tokens as the final Alternun application session.
+- Do not accept issuer-owned access or ID tokens as proof for another exchange.
+- Do not trust body claims, audience, email verification state, or embedded session tokens.
 - Do not keep authorization state in mutable Supabase user metadata.
 - Do not make `auth.users.id` the long-term principal id.
 - Do not require UI/runtime code to call `upsert_oidc_user` directly.
@@ -120,8 +128,8 @@ The issuer session returned to apps must include or derive:
 - `nbf`
 - `exp`
 - `roles` or `alternun_roles`
-- `exchangeMode` should distinguish `issuer-owned` from `compatibility`
-- `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` should force the backend to reject compatibility fallback when issuer-owned minting is not available
+- `exchangeMode` is `issuer-owned`; compatibility fallback is not a valid final exchange result
+- a missing issuer signing key always returns `503`, regardless of the rollout flag
 
 ## Required Persistence Outcomes
 
@@ -184,8 +192,12 @@ Log these events with stable fields:
 - linked account upsert result
 - provisioning event write result
 
-## Current Gap
+## Compatibility Gaps And Deployment Gate
 
-Today the package-side `AuthentikIssuerProvider` prefers the backend exchange URL when configured. The `dashboard-dev` deployment already mints issuer-owned JWTs through `POST /auth/exchange`; the local compatibility synthesis path remains only as a fallback when the backend runtime cannot mint issuer-owned tokens, and `AUTH_EXCHANGE_REQUIRE_ISSUER_OWNED=true` is the switch that retires the fallback for a given deployment.
+Better Auth currently exposes its internal `user.id` as the package-side `providerUserId`. The server therefore compares that value with the verified session user id to prevent one user from claiming another user's identity. Correct provider semantics would use the linked account's `providerId/accountId`, but changing that value would change existing principal ids because the principal is derived from issuer, provider, and provider user id. Moving to the linked-account id is separate work and requires an identity migration plan.
 
-That fallback behavior must be retired before Better Auth becomes the main execution path on testnet.
+The package also normalizes Better Auth sessions with `google` as the default provider. A Discord session can therefore be labelled as Google when the session response has no explicit provider. Until the client supplies reliable linked-account provider data, the server accepts only the known labels `google`, `discord`, `email`, and `github`, but cannot verify which one belongs to the session. A user with a valid session can therefore obtain one identity per allowed provider. It still requires a valid session, exact `providerUserId === session.user.id`, and a normalized email match, and it uses `emailVerified` from the verified session.
+
+Wallet-only labels such as `wallet:metamask` and `wallet:walletconnect` are not accepted by the exchange while the server requires a Better Auth or Supabase session, so wallet-only users do not receive an issuer token from this endpoint. Wallet-only mode is disabled by default with `EXPO_PUBLIC_ENABLE_WALLET_ONLY_AUTH=false`.
+
+The client sends the Better Auth cookie with `credentials: 'include'` or an explicit bearer from `exchangeBearerToken`: either a Supabase access token or a native Better Auth session token. It no longer sends the legacy `claims`, `redirectTo`, or `context.authExchangeUrl` fields. The server accepts a cookie or bearer that Better Auth can verify, or a Supabase access-token bearer. **The server and client must be deployed together. Already-published app versions do not send these credentials, so their exchange requests will receive `401` responses until those apps are updated; the client compatibility fallback still maintains a local session.**
