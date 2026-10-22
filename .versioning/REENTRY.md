@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Open PR feat/fp-liquid-progress -> develop (liquid RBI participation factor bar, theme tokens, progressbar a11y, reduced motion); follow-up: honor the in-app motion level setting in the bar; still pending from before: approve community equivalent AIRS balance-sum RPC + migration
+Next micro-step: Merge release PR v1.1.105 after checks; diagnose pipeline Authentik bootstrap warning on identity-dev
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
