@@ -259,7 +259,12 @@ test('proxyBetterAuthRequest rewrites auth error redirects to the app callback r
   };
 
   const reply = createReply();
-  const handled = await proxyBetterAuthRequest(request, reply, 'https://testnet.api.alternun.co', fetchFn);
+  const handled = await proxyBetterAuthRequest(
+    request,
+    reply,
+    'https://testnet.api.alternun.co',
+    fetchFn
+  );
 
   assert.equal(handled, true);
   assert.equal(
@@ -280,7 +285,7 @@ test('proxyBetterAuthRequest answers OPTIONS preflight locally', async () => {
       origin: 'http://localhost:8081',
       host: 'localhost:8082',
       'access-control-request-method': 'POST',
-      'access-control-request-headers': 'content-type',
+      'access-control-request-headers': 'content-type, x-untrusted-header',
     },
     body: undefined,
   };
@@ -305,6 +310,9 @@ test('proxyBetterAuthRequest answers OPTIONS preflight locally', async () => {
     reply.headers['access-control-allow-methods'],
     'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS'
   );
-  assert.equal(reply.headers['access-control-allow-headers'], 'content-type');
+  assert.equal(
+    reply.headers['access-control-allow-headers'],
+    'content-type, authorization, x-requested-with, accept, origin'
+  );
   assert.equal(reply.payload, undefined);
 });
