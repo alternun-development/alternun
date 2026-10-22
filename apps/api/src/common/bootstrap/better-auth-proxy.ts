@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { resolveBetterAuthDevConfig } from '../../modules/better-auth-dev/better-auth-dev.config';
 import { normalizeBetterAuthRequestBody } from './better-auth-request-body';
 import { applyBetterAuthCorsHeaders } from './better-auth-cors';
 import { rewriteBetterAuthErrorRedirect } from './better-auth-error-redirect';
@@ -71,7 +72,7 @@ function serializeRequestBody(body: unknown): string | undefined {
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   if (Buffer.isBuffer(body)) {
-    return (body as Buffer).toString('utf8');
+    return body.toString('utf8');
   }
 
   return JSON.stringify(body as Record<string, unknown>);
@@ -110,7 +111,8 @@ async function copyProxyResponse(
   response: Response,
   requestHeaders: BetterAuthRequestHeaders,
   requestPath: string,
-  fallbackBaseUrl: string
+  fallbackBaseUrl: string,
+  trustedOrigins: readonly string[]
 ): Promise<void> {
   void reply.code(response.status);
 
@@ -122,12 +124,15 @@ async function copyProxyResponse(
     void reply.header('set-cookie', setCookies);
   }
 
-  const rewrittenLocation = rewriteBetterAuthErrorRedirect(
-    response.headers.get?.('location') ?? null,
-    requestPath,
-    requestHeaders,
-    fallbackBaseUrl
-  );
+  const isTrustedOrigin = applyBetterAuthCorsHeaders(reply, requestHeaders, trustedOrigins);
+  const rewrittenLocation = isTrustedOrigin
+    ? rewriteBetterAuthErrorRedirect(
+        response.headers.get?.('location') ?? null,
+        requestPath,
+        requestHeaders,
+        fallbackBaseUrl
+      )
+    : null;
 
   const responseHeaderEntries = Array.from(response.headers.entries());
   for (const [name, value] of responseHeaderEntries) {
@@ -144,8 +149,6 @@ async function copyProxyResponse(
     void reply.header(name, value);
   }
 
-  applyBetterAuthCorsHeaders(reply, requestHeaders);
-
   const payload = await response.arrayBuffer();
   void reply.send(Buffer.from(payload));
 }
@@ -154,7 +157,8 @@ export async function proxyBetterAuthRequest(
   request: FastifyRequest,
   reply: FastifyReply,
   targetBaseUrl: string,
-  fetchFn: typeof fetch = fetch
+  fetchFn: typeof fetch = fetch,
+  trustedOrigins: readonly string[] = resolveBetterAuthDevConfig(process.env).trustedOrigins
 ): Promise<boolean> {
   const requestUrl = request.raw.url;
   if (!requestUrl) {
@@ -167,7 +171,7 @@ export async function proxyBetterAuthRequest(
   }
 
   if (request.method.toUpperCase() === 'OPTIONS') {
-    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders, {
+    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders, trustedOrigins, {
       preflight: true,
     });
     void reply.code(204).send();
@@ -206,7 +210,7 @@ export async function proxyBetterAuthRequest(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
-    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders);
+    applyBetterAuthCorsHeaders(reply, request.headers as BetterAuthRequestHeaders, trustedOrigins);
     void reply.code(502).send({
       statusCode: 502,
       error: 'Bad Gateway',
@@ -220,14 +224,15 @@ export async function proxyBetterAuthRequest(
     upstream,
     request.headers as BetterAuthRequestHeaders,
     incomingUrl.pathname,
-    targetBaseUrl
+    targetBaseUrl,
+    trustedOrigins
   );
   return true;
 }
 
 export function registerBetterAuthProxy(
   app: FastifyInstance,
-  options: { targetBaseUrl: string; fetchFn?: typeof fetch }
+  options: { targetBaseUrl: string; trustedOrigins: readonly string[]; fetchFn?: typeof fetch }
 ): void {
   const targetBaseUrl = normalizeTargetUrl(options.targetBaseUrl);
   const fetchFn = options.fetchFn ?? fetch;
@@ -236,7 +241,9 @@ export function registerBetterAuthProxy(
     method: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     url: '/auth/*',
     handler: async (request, reply) => {
-      if (await proxyBetterAuthRequest(request, reply, targetBaseUrl, fetchFn)) {
+      if (
+        await proxyBetterAuthRequest(request, reply, targetBaseUrl, fetchFn, options.trustedOrigins)
+      ) {
         return reply;
       }
 

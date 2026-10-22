@@ -174,3 +174,46 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
     process.env = originalEnv;
   }
 });
+
+test('processAirsDashboardSnapshot returns the provisional FP flagged as estimated', async () => {
+  const {
+    processAirsDashboardSnapshot,
+    PROVISIONAL_PARTICIPATION_FACTOR,
+  } = require('../src/modules/airs/airs.service.ts');
+
+  const snapshot = await processAirsDashboardSnapshot(
+    { token: 'Bearer session-token' },
+    {
+      verifySessionToken: async () => ({
+        appUserId: 'user-123',
+        principalId: 'principal-123',
+        email: null,
+        displayName: null,
+        issuer: 'https://auth.example',
+        tokenUse: 'access',
+        emailVerified: true,
+      }),
+      getDashboardSnapshot: async () => ({
+        userId: 'user-123',
+        email: null,
+        displayName: 'Ada',
+        locale: 'es',
+        profileComplete: true,
+        firstDashboardRecorded: true,
+        registrationBonusClaimed: true,
+        welcomeEmailSentAt: null,
+        profileBonusAwardedAt: null,
+        profileCompletedAt: null,
+        airsBalance: 200,
+        airsLifetimeEarned: 200,
+        recentLedgerEntries: [],
+      }),
+      env: {},
+    }
+  );
+
+  assert.equal(PROVISIONAL_PARTICIPATION_FACTOR, 0.5);
+  assert.equal(snapshot.participationFactor, 0.5);
+  assert.equal(snapshot.participationFactorEstimated, true);
+  assert.equal(snapshot.airsBalance, 200);
+});
