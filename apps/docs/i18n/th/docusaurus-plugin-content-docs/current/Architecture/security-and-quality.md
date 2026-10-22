@@ -96,7 +96,7 @@ NestJS API เปิดใช้ค่า validation ที่สำคัญไ
 
 ตัวอย่าง:
 
-- CORS ใน Nest bootstrap ยังเปิดกว้างเกินไป
+- CORS ที่ใช้ข้อมูลรับรองถูกจำกัดไว้ที่รายการ `trustedOrigins` ของ Better Auth ใน Nest bootstrap
 - พื้นผิวของ API แบบกำหนดเองยังอยู่ช่วงต้นและต้องการ policy hardening เพิ่ม
 - เมื่อ API โตขึ้น จะต้องมี auth และ authorization ระดับ endpoint ที่ครอบคลุมกว่านี้
 

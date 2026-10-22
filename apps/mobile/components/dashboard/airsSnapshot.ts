@@ -138,6 +138,8 @@ export function normalizeAirsDashboardSnapshot(value: unknown): AirsDashboardSna
     participationFactor: asRequiredNumber(
       record.participationFactor ?? record.participation_factor
     ),
+    participationFactorEstimated:
+      (record.participationFactorEstimated ?? record.participation_factor_estimated) === true,
     communityEligibleAirs: asRequiredNumber(
       record.communityEligibleAirs ?? record.community_eligible_airs
     ),
