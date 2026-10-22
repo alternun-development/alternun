@@ -37,6 +37,7 @@ const palette = {
   muted: '#666',
   primary: '#087f63',
   primaryDeep: '#075440',
+  fill: '#0f766e',
   mist: '#eee',
   hero: '#eee',
 };
@@ -52,6 +53,8 @@ const productiveProject = {
   description: 'Productive description',
   waysToContribute: ['Visit'],
   imageUrl: null,
+  videoUrl: null,
+  canvaUrl: null,
 };
 
 const conservationProject = {
@@ -75,6 +78,25 @@ const publishedProject = {
   media: [
     { kind: 'cover', url: 'http://unsafe.example/cover.png', isActive: true },
     { kind: 'gallery_image', url: 'https://cdn.example/gallery.png', isActive: true },
+  ],
+};
+
+const publishedProjectWithPresentations = {
+  ...publishedProject,
+  media: [
+    ...publishedProject.media,
+    {
+      kind: 'canva',
+      url: 'https://www.canva.com/design/abc/view?embed',
+      embedUrl: null,
+      isActive: true,
+    },
+    {
+      kind: 'video',
+      url: 'https://cdn.example/promo.mp4',
+      embedUrl: null,
+      isActive: true,
+    },
   ],
 };
 
@@ -150,6 +172,22 @@ describe('Explorer marketplace projects', () => {
       { ...productiveProject, imageUrl: 'https://cdn.example/gallery.png' },
     ]);
     expect(fetchMock.mock.calls[0]?.[0]).toContain('/v1/projects?locale=en');
+  });
+
+  it('resolves canva and direct-video media for the featured banner', async () => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [publishedProjectWithPresentations] }),
+    } as Response);
+
+    await expect(loadMarketplaceProjects('en')).resolves.toEqual([
+      {
+        ...productiveProject,
+        imageUrl: 'https://cdn.example/gallery.png',
+        canvaUrl: 'https://www.canva.com/design/abc/view?embed',
+        videoUrl: 'https://cdn.example/promo.mp4',
+      },
+    ]);
   });
 
   it('rejects malformed marketplace responses', async () => {

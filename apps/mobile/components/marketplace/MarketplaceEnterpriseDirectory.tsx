@@ -277,7 +277,7 @@ export function MarketplaceEnterpriseBrowser({
             testID='enterprise-directory-retry'
             accessibilityRole='button'
             onPress={() => setRequestVersion((value) => value + 1)}
-            style={[styles.retry, { backgroundColor: palette.primaryDeep }]}
+            style={[styles.retry, { backgroundColor: palette.fill }]}
           >
             <RotateCcw size={16} color='#effff7' />
             <Text style={styles.retryText}>{t('explorer.enterprises.retry')}</Text>

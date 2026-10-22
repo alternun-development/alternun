@@ -613,7 +613,7 @@ export default function Dashboard({
                 setFooterHeight(event.nativeEvent.layout.height);
               }}
             >
-              <AppInfoFooter containerStyle={{ marginTop: 0, marginHorizontal: contentGutter }} />
+              <AppInfoFooter containerStyle={{ marginTop: 0 }} />
             </View>
           )}
 

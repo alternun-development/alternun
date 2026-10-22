@@ -594,6 +594,8 @@
         "loadingIntro": "Cargando video introductorio de Airs",
         "muted": "Silenciado",
         "openIntro": "Abrir video introductorio de Airs",
+
+        "pip": "Imagen sobre imagen",
         "restart": "Reiniciar",
         "soundOn": "Sonido activado"
       }
