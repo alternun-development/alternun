@@ -284,6 +284,13 @@ describe('Explorer marketplace projects', () => {
       renderer.root.findByProps({ testID: 'explorer-directory-enterprises' }).props.onPress()
     );
     const enterpriseBrowser = renderer.root.findByType('MockEnterpriseBrowser' as never);
+    await act(async () => {
+      renderer.root.findByProps({ testID: 'explorer-enterprise-list' }).props.onLayout({
+        nativeEvent: { layout: { y: 640 } },
+      });
+      await Promise.resolve();
+    });
+    expect(() => enterpriseBrowser.props.onListNavigate()).not.toThrow();
     await act(() => enterpriseBrowser.props.onOpenEnterprise('forest-enterprise'));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/explorar/empresa/[slug]',
