@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@alternun/email-templates": "workspace:*",
+    "@alternun/i18n": "workspace:*",
     "@aws-sdk/client-secrets-manager": "^3.940.0",
     "@better-auth/drizzle-adapter": "1.6.11",
     "@fastify/aws-lambda": "^5.1.4",

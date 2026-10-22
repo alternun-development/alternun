@@ -21,6 +21,21 @@
     },
     "templates": {
       "welcome": "Bienvenido, {{name}}"
+    },
+    "projectProposalEmail": {
+      "subject": "Nueva propuesta de proyecto del marketplace",
+      "intro": "Se envió una nueva propuesta de proyecto desde Explorer.",
+      "projectName": "Nombre del proyecto",
+      "location": "Ubicación",
+      "category": "Categoría",
+      "contactName": "Nombre de contacto",
+      "contactEmail": "Correo de contacto",
+      "language": "Idioma",
+      "message": "Mensaje",
+      "categories": {
+        "productive": "Productivo",
+        "conservation": "Conservación"
+      }
     }
   },
   "mobile": {
@@ -1178,8 +1193,15 @@
         "location": "País o territorio",
         "productive": "Productivo",
         "conservation": "Conservación",
-        "continueTelegram": "Continuar en Telegram",
-        "finePrint": "Comparte los detalles de tu propuesta con @alternun_io."
+        "contactName": "Nombre de contacto",
+        "contactEmail": "Correo de contacto",
+        "message": "Mensaje (opcional)",
+        "submit": "Enviar propuesta",
+        "submitting": "Enviando…",
+        "sent": "Tu propuesta fue enviada. Gracias por compartirla.",
+        "validationError": "Revisa los campos e inténtalo de nuevo.",
+        "submitError": "No pudimos enviar tu propuesta. Inténtalo de nuevo.",
+        "finePrint": "Guardaremos tu propuesta para que el equipo de Alternun pueda revisarla."
       }
     }
   },
