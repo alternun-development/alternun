@@ -281,7 +281,7 @@ describe('DashboardSummaryCards render', () => {
     ).toBe('100px');
   });
 
-  it('renders the participation factor marker, metrics, and terms link', () => {
+  it('renders the participation factor marker, metrics, and terms link', async () => {
     mockWindowDimensions(1024);
     const openUrlSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
 
@@ -294,11 +294,21 @@ describe('DashboardSummaryCards render', () => {
         communityEligibleAirs: 300,
       })
     );
+    await act(async () => {
+      await flushEffects();
+    });
 
-    const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-factor-progress');
     const factorMarker = getElementByTestId(renderState.container, 'dashboard-rbi-factor-marker');
-    expect(factorBar.getAttribute('role')).toBe('slider');
+    expect(factorBar.getAttribute('role')).toBe('progressbar');
+    expect(factorBar.getAttribute('aria-label')).toBe('Factor de participación (FP)');
+    expect(factorBar.getAttribute('aria-valuemin')).toBe('0');
+    expect(factorBar.getAttribute('aria-valuemax')).toBe('100');
+    expect(factorBar.getAttribute('aria-valuenow')).toBe('15');
     expect(factorBar.getAttribute('aria-valuetext')).toBe('FP 15 %');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-status').getAttribute('role')
+    ).toBeNull();
     expect(factorMarker.style.left).toBe('15%');
     expect(
       [0, 15, 50, 100].map(
@@ -363,10 +373,14 @@ describe('DashboardSummaryCards render', () => {
       })
     );
 
-    const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-factor-progress');
     const neutralTrack = getElementByTestId(renderState.container, 'dashboard-rbi-factor-track');
     expect(factorBar.getAttribute('aria-valuetext')).toBe('Aún no disponible');
     expect(factorBar.getAttribute('aria-disabled')).toBe('true');
+    expect(factorBar.getAttribute('aria-valuenow')).toBeNull();
+    expect(
+      renderState.container.querySelector('[data-testid="dashboard-rbi-factor-fill"]')
+    ).toBeNull();
     expect(getComputedStyle(neutralTrack).backgroundColor).toBe('rgb(113, 128, 158)');
     for (const mark of [0, 15, 50, 100]) {
       const label = getElementByTestId(
