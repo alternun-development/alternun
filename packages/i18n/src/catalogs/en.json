@@ -263,6 +263,16 @@
       },
       "summaryCards": {
         "comingSoon": "Coming soon",
+        "metricInfo": {
+          "openLabel": "More information about {{metric}}",
+          "closeLabel": "Close",
+          "atnBalanceTitle": "ATN balance",
+          "atnBalance": "Your available ATN balance, reported by your rewards account.",
+          "participationFactor": "FP is the participation factor applied to your AIRS. It starts at 50% and can range from 0% to 100%, under the Terms and Conditions.",
+          "eligibleAirs": "Equivalent AIRS = AIRS × FP.",
+          "eligibleUsers": "The total eligible users reported by the system for the RBI projection.",
+          "aliquot": "Allocation share = my Equivalent AIRS / community total of Equivalent AIRS × 100%."
+        },
         "position": {
           "title": "Your Position",
           "subtitle": "Among Airs By Alternun members",
@@ -275,24 +285,25 @@
         },
         "rbi": {
           "title": "RBI Projection",
-          "subtitle": "Estimated income for next cycle",
-          "estimatedPool": "Estimated RBI Pool:",
-          "eligibleUsers": "Eligible Users:",
-          "airsScore": "Your Airs Score:",
+          "subtitle": "Participation factor (FP)",
+          "eligibleAirs": "Equivalent AIRS",
+          "eligibleUsers": "Eligible users",
+          "aliquot": "Allocation share",
+          "notAvailable": "Not available yet",
+          "estimated": "estimated",
+          "participationNote": "To understand how FP works, read the",
+          "termsAndConditions": "Terms and Conditions",
           "whatIsRbi": "What is RBI?",
           "explanation": "Regenerative Basic Income is a periodic income distributed among Alternun users who contribute to the ecosystem.\n\nIt doesn't depend on how much money you have, but on your participation, commitment, and impact, measured through your AIRS score.\n\nEach time Alternun facilitates a compensation, a sale from the compensation pool, or an economic activity within the platform, part of that value goes directly to the RBI fund.",
           "fullDocumentation": "Full Documentation"
         },
         "atn": {
-          "title": "My ATN",
-          "subtitle": "Your regenerative tokens",
-          "availableLabel": "Available ATN",
-          "availableDesc": "Ready to use",
-          "stackingLabel": "ATN in stacking",
-          "stackingDesc": "Participating in projects",
-          "totalLabel": "Total ATN",
-          "primaryWalletLabel": "Primary wallet",
-          "primaryWalletMeta": "Internal"
+          "title": "My ATN and regenerative rewards",
+          "subtitle": "Your rewards balances",
+          "assetName": "ATN",
+          "primaryWalletLabel": "Primary rewards wallet",
+          "primaryWalletMeta": "Internal",
+          "redeemAction": "Redeem and transact"
         }
       }
     },
@@ -811,7 +822,7 @@
         "notConnected": "Not connected",
         "createTitle": "Create your Alternun wallet",
         "createSubtitle": "Your multichain key — Ethereum, Bitcoin and Solana in one place.",
-        "createButton": "Create Alternun wallet",
+        "createButton": "Create rewards wallet",
         "createFeature1": "Non-custodial: only you hold the keys",
         "createFeature2": "Multi-chain: EVM, Bitcoin and Solana",
         "createFeature3": "Encrypted with your PIN, backed up by you",
@@ -828,9 +839,9 @@
         "exportBackup": "Export backup",
         "changePin": "Change PIN",
         "exportWarning": "This is your only recovery option if you lose your device.",
-        "manageWallet": "Manage wallet",
+        "manageWallet": "Manage rewards wallet",
         "manageWallets": "Manage wallets",
-        "noWalletAccount": "No wallet data yet"
+        "noWalletAccount": "There is no data for your rewards wallet yet"
       },
       "accessMethods": {
         "current": "Current: {{method}}",
@@ -955,6 +966,13 @@
         "copied": "Copied",
         "shareTitle": "Share your referral link",
         "shareMessage": "Join me on Airs By Alternun with code {{code}}: {{link}}",
+        "share": "Share",
+        "qrTitle": "Your referral QR code",
+        "qrDescription": "Scan to open your referral link.",
+        "openQr": "Show referral QR code",
+        "closeQr": "Close referral QR code",
+        "qrAccessibilityLabel": "QR code for your referral link",
+        "linkUnavailable": "Referral link unavailable.",
         "referralCount": "Invited members",
         "wasReferred": "Referral on file",
         "referredBy": "Referred by {{name}}",
@@ -1033,9 +1051,8 @@
       "marketplace": "AIRS PROJECT MARKETPLACE",
       "heroTitle": "Explore where your energy becomes impact.",
       "live": "LIVE",
-      "presentation": "PROJECT PRESENTATION",
-      "presentationTitle": "Eco Tourism project presentation",
-      "launchProject": "LAUNCH PROJECT",
+      "featured": "FEATURED PROJECT",
+      "featuredProject": "FEATURED PROJECT",
       "heroDescription": "Discover the proposal and find a way to add your talent, network, or experience.",
       "collaborate": "I want to collaborate",
       "openMap": "OPENING THE MAP",
@@ -1050,11 +1067,80 @@
       "productive": "PRODUCTIVE",
       "waysToCollaborate": "Ways to collaborate",
       "participateAndEarn": "See how to participate and earn AIRS",
+      "directory": {
+        "label": "Choose what to explore",
+        "projects": "Projects",
+        "enterprises": "Enterprises"
+      },
+      "enterprises": {
+        "eyebrow": "ENTERPRISES",
+        "heading": "Enterprises creating impact",
+        "intro": "Meet the organizations behind published projects.",
+        "projectCount": "{{count}} published projects",
+        "loading": "Loading enterprises…",
+        "empty": "No enterprises are available yet.",
+        "error": "Enterprises could not be loaded.",
+        "retry": "Try again",
+        "detail": {
+          "back": "Back to enterprises",
+          "loading": "Loading enterprise…",
+          "unavailable": "Enterprise unavailable",
+          "error": "The enterprise could not be loaded.",
+          "website": "Visit website",
+          "projects": "Published projects"
+        }
+      },
       "filters": {
         "all": "All",
-        "active": "Active",
-        "productive": "Productive",
-        "conservation": "Conservation"
+        "active": "Active"
+      },
+      "categories": {
+        "hospitality_ecotourism": "Hospitality and ecotourism",
+        "conservation": "Conservation",
+        "productive_enterprise": "Productive enterprise",
+        "regenerative_agriculture": "Regenerative agriculture",
+        "community": "Community",
+        "education": "Education"
+      },
+      "marketplaceState": {
+        "loading": "Loading projects…",
+        "empty": "No published projects yet.",
+        "error": "Projects could not be loaded.",
+        "retry": "Try again"
+      },
+      "detail": {
+        "back": "Back to projects",
+        "loading": "Loading project…",
+        "unavailable": "Project unavailable",
+        "error": "The project could not be loaded.",
+        "retry": "Try again",
+        "waysToContribute": "Ways to contribute",
+        "gallery": "Gallery",
+        "video": "Video",
+        "openVideo": "View video",
+        "openPresentation": "View presentation",
+        "comments": {
+          "title": "Comments",
+          "loading": "Loading comments…",
+          "loadError": "Comments could not be loaded.",
+          "retry": "Try again",
+          "emptyList": "No comments yet",
+          "emptyInvite": "Be the first to share a thoughtful comment.",
+          "loadMore": "Load more",
+          "loadingMore": "Loading…",
+          "loadMoreError": "More comments could not be loaded.",
+          "placeholder": "Write a comment",
+          "publish": "Publish",
+          "publishing": "Publishing…",
+          "signInPrompt": "Sign in to leave a comment.",
+          "signIn": "Sign in",
+          "submitted": "Your comment will be published after it is reviewed.",
+          "rateLimited": "You have commented too often. Please try again later.",
+          "emptyBody": "Write a comment before publishing.",
+          "signInRequired": "Sign in to publish your comment.",
+          "projectUnavailable": "This project is no longer available.",
+          "submitError": "Your comment could not be sent. Please try again."
+        }
       },
       "intents": {
         "question": "What do you want to do today?",
@@ -1075,17 +1161,6 @@
       "submitBanner": {
         "title": "Your project can move AIRS too.",
         "description": "Present a productive or conservation initiative to Alternun's global community."
-      },
-      "project": {
-        "title": "Eco Tourism",
-        "place": "Colombia",
-        "theme": "Living economy and territory",
-        "description": "A conscious tourism project that activates collaboration, local experiences, and regenerative value.",
-        "contribute": {
-          "participate": "Participate",
-          "share": "Share",
-          "connectAllies": "Connect allies"
-        }
       },
       "empty": {
         "title": "No matches yet",

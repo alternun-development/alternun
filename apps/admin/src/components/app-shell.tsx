@@ -4,8 +4,7 @@ import { authProvider } from '../auth/authProvider';
 import { extractAdminIdentity, getActiveAdminSession } from '../auth/oidc-client';
 import { adminEnv } from '../config/env';
 import { adminResources } from '../resources/catalog';
-
-type AdminIdentity = NonNullable<Awaited<ReturnType<typeof extractIdentity>>>;
+import type { AdminIdentity } from './app-shell.types';
 
 async function extractIdentity(): Promise<Awaited<ReturnType<typeof extractAdminIdentity>>> {
   const session = await getActiveAdminSession();
@@ -64,7 +63,9 @@ export function AppShell(): React.ReactElement {
     };
   }, [isProfileMenuOpen]);
 
-  const primaryResources = adminResources.filter((resource) => resource.name !== 'dashboard');
+  const primaryResources = adminResources.filter(
+    (resource) => resource.name !== 'dashboard' && resource.showInNavigation !== false
+  );
   const surfaceLabel = identity?.surface === 'partner' ? 'Allies Panel' : 'Internal Admin';
   const shellTitle = identity?.surface === 'partner' ? 'Allies Console' : 'Admin Control';
   const shellDescription =
@@ -74,9 +75,7 @@ export function AppShell(): React.ReactElement {
   const footerCopy =
     identity?.surface === 'partner' ? 'Partner operations console' : 'Internal operations console';
   const accessibleResources = primaryResources.filter((resource) =>
-    identity
-      ? identity.allowedResources.includes(resource.name)
-      : resource.surfaces.includes('partner')
+    identity ? identity.allowedResources.includes(resource.name) : false
   );
   const displayName = identity?.name ?? 'Operator';
   const email = identity?.email ?? 'No email claim';
@@ -126,14 +125,16 @@ export function AppShell(): React.ReactElement {
         </div>
 
         <nav className='admin-nav'>
-          <NavLink
-            to='/dashboard'
-            className='admin-nav-link'
-            onClick={() => setNavigationOpen(false)}
-          >
-            <span className='admin-nav-title'>Command Center</span>
-            <span className='admin-nav-meta'>Health and operator shortcuts</span>
-          </NavLink>
+          {identity?.allowedResources.includes('dashboard') ? (
+            <NavLink
+              to='/dashboard'
+              className='admin-nav-link'
+              onClick={() => setNavigationOpen(false)}
+            >
+              <span className='admin-nav-title'>Command Center</span>
+              <span className='admin-nav-meta'>Health and operator shortcuts</span>
+            </NavLink>
+          ) : null}
 
           {accessibleResources.map((resource) => (
             <NavLink

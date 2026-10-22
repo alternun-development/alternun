@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { __activity } = require('../src/modules/activity/activity.service.ts');
+const { __activity, ActivityService } = require('../src/modules/activity/activity.service.ts');
 
 test('toLastSeenLabel returns now for recent activity', () => {
   const now = new Date('2026-04-17T12:00:00.000Z');
@@ -41,4 +41,53 @@ test('toActivityItem maps emoji and actor attribution', () => {
   assert.equal(mapped.actor.username, 'ada');
   assert.equal(mapped.actor.displayName, 'Ada');
   assert.equal(mapped.likesCount, 5);
+});
+
+test('activity writes fail closed when the internal API key is not configured', async () => {
+  const originalKey = process.env.ACTIVITY_INTERNAL_API_KEY;
+  delete process.env.ACTIVITY_INTERNAL_API_KEY;
+
+  try {
+    await assert.rejects(
+      () =>
+        new ActivityService().createActivity(
+          { userId: 'user-1', type: 'impact', message: 'test' },
+          undefined
+        ),
+      /internal API key is configured/
+    );
+  } finally {
+    if (originalKey === undefined) delete process.env.ACTIVITY_INTERNAL_API_KEY;
+    else process.env.ACTIVITY_INTERNAL_API_KEY = originalKey;
+  }
+});
+
+test('activity writes fail closed when only the public Supabase key is configured', async () => {
+  const originalEnv = {
+    ACTIVITY_INTERNAL_API_KEY: process.env.ACTIVITY_INTERNAL_API_KEY,
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+  };
+
+  process.env.ACTIVITY_INTERNAL_API_KEY = 'internal-key';
+  process.env.SUPABASE_URL = 'https://supabase.example';
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_ANON_KEY = 'anon-key';
+
+  try {
+    await assert.rejects(
+      () =>
+        new ActivityService().createActivity(
+          { userId: 'user-1', type: 'impact', message: 'test' },
+          'internal-key'
+        ),
+      /Supabase service-role key is configured/
+    );
+  } finally {
+    for (const [key, value] of Object.entries(originalEnv)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 });

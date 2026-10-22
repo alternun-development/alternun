@@ -33,6 +33,7 @@ import { RotateCcw, Info, type LucideProps } from 'lucide-react-native';
 import { palette } from '../tokens/colors';
 import { fontSize, radius, spacing } from '../tokens/spacing';
 import { ProgressBar } from './ProgressBar';
+import { calculateTierProgress } from './heroPanelProgress';
 import {
   ScoreNumberSkeleton,
   StatusBadgeSkeleton,
@@ -210,7 +211,7 @@ export function HeroPanel({
 
   const progressPct = useMemo(() => {
     if (tierSpec.max == null || previewMode || score == null) return 0;
-    return Math.min((safeScore - tierSpec.min) / (tierSpec.max - tierSpec.min), 1);
+    return calculateTierProgress(safeScore, tierSpec.min, tierSpec.max);
   }, [safeScore, tier, tierSpec, previewMode, score]);
   const showProgressSection =
     tierSpec.max != null && tierSpec.next != null && !previewMode && (isLoading || score != null);
@@ -228,7 +229,7 @@ export function HeroPanel({
   const reloadIconColor = '#ffffff';
   const infoIconColor = '#ffffff';
   const tooltipTitleColor = '#ffffff';
-  const tooltipBackgroundColor = isDark ? 'rgba(5,15,12,0.95)' : 'rgba(5,15,12,0.92)';
+  const tooltipBackgroundColor = '#050F0C';
   const tooltipBorderColor = `${tierSpec.color}80`;
   const { width: viewportWidth } = useWindowDimensions();
   const tooltipWidth = Math.min(280, Math.max(0, viewportWidth - 32));
@@ -895,7 +896,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 0.5,
     borderColor: 'rgba(30,230,181,0.16)',
-    backgroundColor: 'rgba(5,15,12,0.95)',
+    backgroundColor: '#050F0C',
     shadowOpacity: 0.2,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },

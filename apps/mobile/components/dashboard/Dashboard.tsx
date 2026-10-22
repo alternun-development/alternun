@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-redundant-type-constituents */
 import React, { useCallback, useMemo, useState } from 'react';
 import type { User } from '../auth/AppAuthProvider';
 import {
@@ -280,7 +280,7 @@ function getAuthMethodLabel(user: User | null): string {
     return `auth: ${user.provider}`;
   }
 
-  if (user.provider && user.provider.startsWith('wallet:')) {
+  if (user.provider?.startsWith('wallet:')) {
     return 'auth: wallet';
   }
 
@@ -597,6 +597,9 @@ export default function Dashboard({
                 client={client}
                 signedIn={Boolean(user)}
                 airsBalance={airsSnapshot?.balanceAIRS}
+                participationFactor={airsSnapshot?.participationFactor}
+                participationFactorEstimated={airsSnapshot?.participationFactorEstimated}
+                communityEligibleAirs={airsSnapshot?.communityEligibleAirs}
               />
             </View>
           </ScrollView>
