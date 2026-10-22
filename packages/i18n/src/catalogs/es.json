@@ -268,10 +268,10 @@
           "closeLabel": "Cerrar",
           "atnBalanceTitle": "Saldo ATN",
           "atnBalance": "Es tu saldo ATN disponible, informado por tu cuenta de recompensas.",
-          "participationFactor": "Es el factor de participación aplicado a tus AIRS según los Términos y Condiciones.",
+          "participationFactor": "El FP es el factor de participación aplicado a tus AIRS. Empieza en 50 % y puede ir de 0 % a 100 %, según los Términos y Condiciones.",
           "eligibleAirs": "AIRS equivalentes = AIRS × FP.",
           "eligibleUsers": "Es el total de usuarios elegibles informado por el sistema para la proyección RBI.",
-          "aliquot": "Alícuota = mis AIRS elegibles / suma de AIRS elegibles × 100 %."
+          "aliquot": "Alícuota = mis AIRS equivalentes / suma de AIRS equivalentes de la comunidad × 100 %."
         },
         "position": {
           "title": "Tu posición",
@@ -290,6 +290,7 @@
           "eligibleUsers": "Usuarios elegibles",
           "aliquot": "Alícuota",
           "notAvailable": "Aún no disponible",
+          "estimated": "estimado",
           "participationNote": "Para entender cómo funciona el FP, lee los",
           "termsAndConditions": "Términos y Condiciones",
           "whatIsRbi": "¿Qué es el RBI?",

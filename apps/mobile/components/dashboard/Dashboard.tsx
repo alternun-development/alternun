@@ -598,6 +598,7 @@ export default function Dashboard({
                 signedIn={Boolean(user)}
                 airsBalance={airsSnapshot?.balanceAIRS}
                 participationFactor={airsSnapshot?.participationFactor}
+                participationFactorEstimated={airsSnapshot?.participationFactorEstimated}
                 communityEligibleAirs={airsSnapshot?.communityEligibleAirs}
               />
             </View>
