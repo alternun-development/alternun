@@ -195,7 +195,6 @@ function Divider({
 
 const RBI_DOCUMENTATION_URL =
   'https://docs.alternun.io/docs/tutorial-basics/airs-tu-huella-regenerativa';
-const TERMS_URL = 'https://docs.alternun.io/terms';
 const PARTICIPATION_FACTOR_MARKS = [0, 15, 50, 100] as const;
 
 function formatMetricValue(value: number | null): string | null {
@@ -569,14 +568,14 @@ function RBICard({
         </Text>
         <TouchableOpacity
           onPress={() => {
-            void Linking.openURL(TERMS_URL);
+            void Linking.openURL(RBI_DOCUMENTATION_URL);
           }}
           accessibilityRole='link'
-          accessibilityLabel={t.t('dashboard.summaryCards.rbi.termsAndConditions')}
+          accessibilityLabel={t.t('dashboard.summaryCards.rbi.fullDocumentation')}
           activeOpacity={0.7}
         >
           <Text style={[styles.factorTermsLink, { color: p.accent }]}>
-            {t.t('dashboard.summaryCards.rbi.termsAndConditions')}
+            {t.t('dashboard.summaryCards.rbi.fullDocumentation')}
           </Text>
         </TouchableOpacity>
       </View>

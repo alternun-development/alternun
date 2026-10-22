@@ -27,8 +27,7 @@ jest.mock('../../i18n/useAppTranslation', () => {
     'dashboard.summaryCards.rbi.aliquot': 'Alícuota',
     'dashboard.summaryCards.rbi.notAvailable': 'Aún no disponible',
     'dashboard.summaryCards.rbi.estimated': 'estimado',
-    'dashboard.summaryCards.rbi.participationNote': 'Para entender cómo funciona el FP, lee los',
-    'dashboard.summaryCards.rbi.termsAndConditions': 'Términos y Condiciones',
+    'dashboard.summaryCards.rbi.participationNote': 'Para entender cómo funciona el FP, lee la',
     'dashboard.summaryCards.rbi.whatIsRbi': '¿Qué es el RBI?',
     'dashboard.summaryCards.rbi.explanation': 'RBI explanation',
     'dashboard.summaryCards.rbi.fullDocumentation': 'Full documentation',
@@ -320,8 +319,10 @@ describe('DashboardSummaryCards render', () => {
       getElementByTestId(renderState.container, 'dashboard-rbi-aliquot').textContent
     ).toContain('10.00 %');
 
-    clickElementByText(renderState.container, 'Términos y Condiciones');
-    expect(openUrlSpy).toHaveBeenCalledWith('https://docs.alternun.io/terms');
+    clickElementByText(renderState.container, 'Full documentation');
+    expect(openUrlSpy).toHaveBeenCalledWith(
+      'https://docs.alternun.io/docs/tutorial-basics/airs-tu-huella-regenerativa'
+    );
   });
 
   it('labels a provisional participation factor as estimated', () => {
