@@ -86,7 +86,7 @@ export class AirsController {
   async me(
     @Headers('authorization') authorization: string | undefined,
     @Query() query: AirsSnapshotQuery
-  ): Promise<import('./airs.repository').AirsDashboardSnapshot> {
+  ): Promise<import('./airs.service').AirsDashboardSnapshotResponse> {
     if (!authorization?.trim()) {
       throw new UnauthorizedException('Missing AIRS bearer token.');
     }
