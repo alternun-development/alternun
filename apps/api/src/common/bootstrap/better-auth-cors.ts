@@ -4,8 +4,13 @@ type BetterAuthRequestHeaderValue = string | string[] | number | undefined;
 type BetterAuthRequestHeaders = Record<string, BetterAuthRequestHeaderValue>;
 
 const BETTER_AUTH_ALLOWED_METHODS = 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS';
-const BETTER_AUTH_DEFAULT_ALLOWED_HEADERS =
-  'content-type, authorization, x-requested-with, accept, origin';
+export const BETTER_AUTH_ALLOWED_HEADERS = [
+  'content-type',
+  'authorization',
+  'x-requested-with',
+  'accept',
+  'origin',
+] as const;
 
 function normalizeHeaderValue(value: BetterAuthRequestHeaderValue): string | null {
   if (value == null) {
@@ -44,26 +49,57 @@ function appendVaryHeader(existingValue: unknown, varyValue: string): string {
   return existing.join(', ');
 }
 
+function normalizeOrigin(value: string): string | null {
+  try {
+    const origin = new URL(value).origin;
+    return origin === 'null' ? null : origin;
+  } catch {
+    return null;
+  }
+}
+
+export function resolveBetterAuthTrustedOrigin(
+  originValue: BetterAuthRequestHeaderValue,
+  trustedOrigins: readonly string[]
+): string | null {
+  const requestOrigin = normalizeHeaderValue(originValue);
+  if (!requestOrigin) {
+    return null;
+  }
+
+  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
+  if (!normalizedRequestOrigin) {
+    return null;
+  }
+
+  return trustedOrigins.some(
+    (trustedOrigin) => normalizeOrigin(trustedOrigin) === normalizedRequestOrigin
+  )
+    ? normalizedRequestOrigin
+    : null;
+}
+
 export function applyBetterAuthCorsHeaders(
   reply: FastifyReply,
   requestHeaders: BetterAuthRequestHeaders,
+  trustedOrigins: readonly string[],
   options: { preflight?: boolean } = {}
-): void {
-  const origin = normalizeHeaderValue(requestHeaders.origin) ?? '*';
+): boolean {
+  const origin = resolveBetterAuthTrustedOrigin(requestHeaders.origin, trustedOrigins);
+  if (!origin) {
+    return false;
+  }
 
   void reply.header('access-control-allow-origin', origin);
   void reply.header('access-control-allow-credentials', 'true');
   void reply.header('vary', appendVaryHeader(reply.getHeader('vary'), 'Origin'));
 
   if (!options.preflight) {
-    return;
+    return true;
   }
 
-  const requestedHeaders = normalizeHeaderValue(requestHeaders['access-control-request-headers']);
   void reply.header('access-control-allow-methods', BETTER_AUTH_ALLOWED_METHODS);
-  void reply.header(
-    'access-control-allow-headers',
-    requestedHeaders ?? BETTER_AUTH_DEFAULT_ALLOWED_HEADERS
-  );
+  void reply.header('access-control-allow-headers', BETTER_AUTH_ALLOWED_HEADERS.join(', '));
   void reply.header('access-control-max-age', '86400');
+  return true;
 }

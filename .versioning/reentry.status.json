@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-20T01:09:04.155Z",
+  "lastUpdated": "2026-10-19T22:16:39.448Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Review fix/share-link-preview (Airs title/description/logo in static web head); pending: design delivers a 1200x630 Airs share image to replace public/airs-logo-share.png",
+      "description": "Review fix/rbi-formula-check (provisional FP 50% estimated, progress >= 0 %); pending: approve RBI explanation text, community equivalent AIRS via new balance-sum RPC + migration (needs Edward's approval)",
       "id": "next",
       "priority": 1
     }

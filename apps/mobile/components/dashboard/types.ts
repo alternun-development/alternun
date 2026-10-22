@@ -21,6 +21,7 @@ export interface DashboardSummaryCardsProps {
   signedIn?: boolean;
   airsBalance?: number | null;
   participationFactor?: number | null;
+  participationFactorEstimated?: boolean;
   communityEligibleAirs?: number | null;
   rewardAssets?: readonly RewardAsset[];
 }
@@ -85,6 +86,7 @@ export interface AirsDashboardSnapshot {
   balanceAIRS: number;
   lifetimeEarnedAIRS: number;
   participationFactor?: number | null;
+  participationFactorEstimated?: boolean;
   communityEligibleAirs?: number | null;
   recentEntries: AIRSEntry[];
 }

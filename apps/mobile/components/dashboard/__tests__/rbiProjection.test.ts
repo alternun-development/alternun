@@ -81,4 +81,35 @@ describe('calculateRbiProjection', () => {
       aliquotPercent: null,
     });
   });
+
+  it.each([
+    ['absent', undefined],
+    ['0–100 scale (50)', 50],
+    ['negative', -0.5],
+    ['text "0.5" (strings are normalized earlier, in airsSnapshot)', '0.5'],
+  ])('treats a %s participation factor as unavailable', (_label, participationFactor) => {
+    expect(
+      calculateRbiProjection({
+        airs: 200,
+        participationFactor: participationFactor as unknown as number,
+        communityEligibleAirs: 400,
+      })
+    ).toEqual({
+      participationFactorPercent: null,
+      eligibleAirs: null,
+      aliquotPercent: null,
+    });
+  });
+
+  it('shows a real zero FP as zero, not as unavailable', () => {
+    expect(
+      calculateRbiProjection({ airs: 200, participationFactor: 0, communityEligibleAirs: 400 })
+    ).toEqual({ participationFactorPercent: 0, eligibleAirs: 0, aliquotPercent: 0 });
+  });
+
+  it('uses the provisional 0.5 FP for equivalent AIRS and aliquot', () => {
+    expect(
+      calculateRbiProjection({ airs: 200, participationFactor: 0.5, communityEligibleAirs: 400 })
+    ).toEqual({ participationFactorPercent: 50, eligibleAirs: 100, aliquotPercent: 25 });
+  });
 });
