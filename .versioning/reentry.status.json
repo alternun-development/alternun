@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-19T23:22:52.875Z",
+  "lastUpdated": "2026-10-19T22:16:39.448Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Review fix/project-detail-canva-embed (web project detail embeds allowed Canva ?embed links in a sandboxed iframe; native keeps the button); then verify on testnet",
+      "description": "Review fix/rbi-formula-check (provisional FP 50% estimated, progress >= 0 %); pending: approve RBI explanation text, community equivalent AIRS via new balance-sum RPC + migration (needs Edward's approval)",
       "id": "next",
       "priority": 1
     }
