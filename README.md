@@ -120,17 +120,21 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.104**
+Current version: **1.1.105**
 
-## 📋 Latest Changes (v1.1.104)
+## 📋 Latest Changes (v1.1.105)
 
-### Documentation
+### Changes
 
-- **identity:** document Authentik platform access and bootstrap state ([6195422](https://github.com/alternun-development/alternun/commit/6195422752a11adfb9c35b57481220caef28307a))
+- **reentry:** set next step after #279 release ([3275fa4](https://github.com/alternun-development/alternun/commit/3275fa4403d2dcb69c33bc9f8128dff216aa2bda))
+- **docs:** deploy GitHub Pages from master only, drop v* tag trigger ([3dfbcde](https://github.com/alternun-development/alternun/commit/3dfbcde41a7218e555bf6b3807fb540d703c802e))
+- **versioning:** update reentry next step for the FP liquid bar ([45e06dc](https://github.com/alternun-development/alternun/commit/45e06dc61f9803b9028843278cc33b510ca5f306))
 
-### Bug Fixes
+### Features
 
-- **web:** bump next to 15.5.28 for GHSA-2464-fhr4-w9xw ([6ac881b](https://github.com/alternun-development/alternun/commit/6ac881bc46eeb4d29f3c2ad0fd3d2e9020c500df))
+- **mobile:** use the liquid progress bar in the RBI projection card ([8edcfc1](https://github.com/alternun-development/alternun/commit/8edcfc18725239303a919fcd0b954866c5d3ac72))
+- **mobile:** add animated liquid ParticipationFactorBar ([d29769d](https://github.com/alternun-development/alternun/commit/d29769d2dc8f95fae899add7f1dc20cf357daf46))
+- **mobile:** add liquid progress palette tokens for dark and light themes ([42a89e8](https://github.com/alternun-development/alternun/commit/42a89e86504be83a86441eea052257ec5b402ebc))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

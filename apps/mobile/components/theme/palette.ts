@@ -60,6 +60,16 @@ export interface AppPalette {
   iconDefault: string;
   iconMuted: string;
 
+  // Liquid progress bar (RBI participation factor). The fill colours, the
+  // track and the ticks keep a 3:1 non-text contrast against each other.
+  liquidProgressTrack: string;
+  liquidProgressTrackBorder: string;
+  liquidProgressFillStart: string;
+  liquidProgressFillEnd: string;
+  liquidProgressWave: string;
+  liquidProgressShine: string;
+  liquidProgressTick: string;
+
   // Mode identifier
   isDark: boolean;
 }
@@ -111,6 +121,14 @@ export const DARK_PALETTE: AppPalette = {
   iconDefault: 'rgba(232,232,255,0.75)',
   iconMuted: 'rgba(232,232,255,0.45)',
 
+  liquidProgressTrack: '#1C273A',
+  liquidProgressTrackBorder: '#3A4A68',
+  liquidProgressFillStart: '#1A7FA0',
+  liquidProgressFillEnd: '#0F9A7C',
+  liquidProgressWave: 'rgba(98,226,182,0.42)',
+  liquidProgressShine: 'rgba(255,255,255,0.24)',
+  liquidProgressTick: '#F3F6FC',
+
   isDark: true,
 };
 
@@ -160,6 +178,14 @@ export const LIGHT_PALETTE: AppPalette = {
 
   iconDefault: '#475569',
   iconMuted: '#94a3b8',
+
+  liquidProgressTrack: '#D3DCE7',
+  liquidProgressTrackBorder: '#A7B4C6',
+  liquidProgressFillStart: '#1878A0',
+  liquidProgressFillEnd: '#0D8A6C',
+  liquidProgressWave: 'rgba(20,184,166,0.34)',
+  liquidProgressShine: 'rgba(255,255,255,0.38)',
+  liquidProgressTick: '#0B1220',
 
   isDark: false,
 };

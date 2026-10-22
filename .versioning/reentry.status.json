@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-22T10:42:19.699Z",
+  "lastUpdated": "2026-10-22T18:55:10.931Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Ship release v1.1.101 (8 PRs integrated): merge the develop→master release PR, then sync master back into develop; pending: approve community equivalent AIRS balance-sum RPC + migration",
+      "description": "Merge release PR v1.1.105 after checks; diagnose pipeline Authentik bootstrap warning on identity-dev",
       "id": "next",
       "priority": 1
     }

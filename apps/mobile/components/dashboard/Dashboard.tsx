@@ -602,6 +602,7 @@ export default function Dashboard({
                 participationFactor={airsSnapshot?.participationFactor}
                 participationFactorEstimated={airsSnapshot?.participationFactorEstimated}
                 communityEligibleAirs={airsSnapshot?.communityEligibleAirs}
+                motionLevel={motionLevel}
               />
             </View>
           </ScrollView>

@@ -24,6 +24,7 @@ export interface DashboardSummaryCardsProps {
   participationFactorEstimated?: boolean;
   communityEligibleAirs?: number | null;
   rewardAssets?: readonly RewardAsset[];
+  motionLevel?: import('../settings/AppPreferencesProvider').MotionLevel;
 }
 
 export interface RbiProjectionInput {
