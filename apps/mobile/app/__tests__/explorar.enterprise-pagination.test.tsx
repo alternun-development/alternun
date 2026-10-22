@@ -18,6 +18,7 @@ const palette = {
   muted: '#666',
   primary: '#087f63',
   primaryDeep: '#075440',
+  fill: '#0f766e',
   mist: '#eee',
 };
 const t = ((key: string, params?: Record<string, unknown>): string =>

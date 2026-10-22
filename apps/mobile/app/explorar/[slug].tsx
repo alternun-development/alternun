@@ -18,23 +18,25 @@ export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
   const palette: DetailPalette =
     themeMode === 'dark'
       ? {
-          background: '#06130f',
-          surface: '#0b211a',
-          border: 'rgba(194, 255, 222, 0.13)',
-          text: '#ecfff4',
-          muted: 'rgba(221, 247, 230, 0.62)',
+          background: '#050f0c',
+          surface: 'rgba(255, 255, 255, 0.04)',
+          border: 'rgba(255, 255, 255, 0.08)',
+          text: '#e8fff6',
+          muted: 'rgba(232, 255, 246, 0.6)',
           primary: '#1ee6b5',
-          primaryDeep: '#0a4c40',
+          primaryDeep: '#7ff3d6',
+          fill: 'rgba(30, 230, 181, 0.14)',
           mist: 'rgba(30, 230, 181, 0.13)',
         }
       : {
-          background: '#f5f2e9',
-          surface: '#fffdf7',
-          border: 'rgba(20, 75, 55, 0.14)',
-          text: '#153d32',
-          muted: 'rgba(21, 61, 50, 0.62)',
-          primary: '#087f63',
-          primaryDeep: '#075440',
+          background: '#f0fdf9',
+          surface: 'rgba(255, 255, 255, 0.85)',
+          border: 'rgba(11, 90, 95, 0.12)',
+          text: '#0b2d31',
+          muted: 'rgba(11, 45, 49, 0.6)',
+          primary: '#0d9488',
+          primaryDeep: '#0b5a5f',
+          fill: '#0f766e',
           mist: 'rgba(8, 127, 99, 0.11)',
         };
 

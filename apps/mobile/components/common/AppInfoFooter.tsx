@@ -49,6 +49,7 @@ import {
 } from './Footer.shared';
 import { getChangelogContent, GITHUB_REPO_URL } from '../../utils/getChangelog';
 import { useRouter } from 'expo-router';
+import { getContentGutter } from '../../utils/layout';
 
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronUpIcon = ChevronUp as React.FC<LucideProps>;
@@ -174,7 +175,9 @@ export default function AppInfoFooter({ containerStyle }: AppInfoFooterProps): R
 
   return (
     <>
-      <View style={[styles.outer, containerStyle]}>
+      <View
+        style={[styles.outer, { marginHorizontal: getContentGutter(width, 0) }, containerStyle]}
+      >
         <View
           style={[
             styles.shell,

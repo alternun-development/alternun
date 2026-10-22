@@ -1,3 +1,13 @@
+## [1.1.102](https://github.com/alternun-development/alternun/compare/v1.1.101...v1.1.102) (2026-10-22)
+
+### Bug Fixes
+
+- **repo:** artifact, graph.db ([a6dc886](https://github.com/alternun-development/alternun/commit/a6dc886142a1b2efefe4a1e5a30119b209b78251))
+
+### Features
+
+- **mobile:** center content column with max width and gutters on large screens ([89ddf7a](https://github.com/alternun-development/alternun/commit/89ddf7ae251d821c090a11e0e964fc26de948484))
+
 ## [1.1.101](https://github.com/alternun-development/alternun/compare/v1.1.100...v1.1.101) (2026-10-22)
 
 ### Bug Fixes

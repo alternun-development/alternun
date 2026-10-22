@@ -12,6 +12,7 @@ import { useNotifications } from '../notifications/NotificationsContext';
 import { useBackToTop } from '../../hooks/useBackToTop';
 import { BackToTopButton } from './BackToTopButton';
 import { USE_V2_NAV } from '../navigation/featureFlags';
+import { getContentGutter } from '../../utils/layout';
 
 // ── ScrollView Context for back-to-top button ──────────────────────────────────
 
@@ -108,6 +109,7 @@ export default function ScreenShell({
   const router = useRouter();
   const isDark = themeMode === 'dark';
   const isMobile = width < 720;
+  const contentGutter = getContentGutter(width);
   const [footerHeight, setFooterHeight] = useState(0);
   const [topNavHeight, setTopNavHeight] = useState(0);
 
@@ -157,6 +159,7 @@ export default function ScreenShell({
               styles.body,
               {
                 paddingTop: Math.max(topNavHeight > 0 ? topNavHeight + 16 : 0, isMobile ? 88 : 104),
+                paddingHorizontal: contentGutter,
               },
             ]}
           >
