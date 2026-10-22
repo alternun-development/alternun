@@ -9,6 +9,7 @@ export interface EnterprisePalette {
   muted: string;
   primary: string;
   primaryDeep: string;
+  fill: string;
   mist: string;
 }
 
@@ -57,6 +58,7 @@ export interface DetailPalette {
   muted: string;
   primary: string;
   primaryDeep: string;
+  fill: string;
   mist: string;
 }
 
@@ -84,3 +86,6 @@ export interface MarketplaceCommentsPage {
   perPage: number;
   total: number;
 }
+
+/** Structural minimum for Canva embed validation so list media can be checked too. */
+export type CanvaEmbedSource = { url: string; embedUrl?: string | null } | undefined;

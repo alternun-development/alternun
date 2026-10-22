@@ -13,6 +13,7 @@ import { ArrowLeft, Building2, ExternalLink, Leaf, MapPin, RotateCcw } from 'luc
 import AirsIntroVideoCard from '../onboarding/AirsIntroVideoCard';
 import MarketplaceProjectComments from './MarketplaceProjectComments';
 import type {
+  CanvaEmbedSource,
   DetailPalette,
   MarketplaceProjectMedia,
   MarketplacePublicProject,
@@ -42,7 +43,7 @@ export function safeHttpsUrl(value: string | null | undefined): string | null {
 const CANVA_EMBED_HOSTS = ['canva.com', 'www.canva.com'];
 
 /** Returns the Canva URL to embed, or null when it is not an allowed HTTPS embed link. */
-export function canvaEmbedUrl(item: MarketplaceProjectMedia | undefined): string | null {
+export function canvaEmbedUrl(item: CanvaEmbedSource): string | null {
   if (!item) return null;
   for (const candidate of [item.embedUrl, item.url]) {
     const safeUrl = safeHttpsUrl(candidate);
@@ -247,7 +248,7 @@ export function MarketplaceProjectDetailView({
             testID='project-detail-retry'
             accessibilityRole='button'
             onPress={() => setRequestVersion((value) => value + 1)}
-            style={[styles.primaryButton, { backgroundColor: palette.primaryDeep }]}
+            style={[styles.primaryButton, { backgroundColor: palette.fill }]}
           >
             <RotateCcw size={16} color='#effff7' />
             <Text style={styles.primaryButtonText}>{t('explorer.detail.retry')}</Text>
@@ -369,7 +370,7 @@ export function MarketplaceProjectDetailView({
               testID='project-detail-video-external'
               accessibilityRole='link'
               onPress={() => void openUrl(resolvedVideo.externalUrl!)}
-              style={[styles.primaryButton, { backgroundColor: palette.primaryDeep }]}
+              style={[styles.primaryButton, { backgroundColor: palette.fill }]}
             >
               <Text style={styles.primaryButtonText}>{t('explorer.detail.openVideo')}</Text>
               <ExternalLink size={16} color='#effff7' />
@@ -386,7 +387,7 @@ export function MarketplaceProjectDetailView({
               testID='project-detail-canva'
               accessibilityRole='link'
               onPress={() => void openUrl(safeHttpsUrl(canva.url)!)}
-              style={[styles.primaryButton, { backgroundColor: palette.primaryDeep }]}
+              style={[styles.primaryButton, { backgroundColor: palette.fill }]}
             >
               <Text style={styles.primaryButtonText}>{t('explorer.detail.openPresentation')}</Text>
               <ExternalLink size={16} color='#effff7' />

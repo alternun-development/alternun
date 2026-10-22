@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-misused-promises */
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Linking,
@@ -9,7 +9,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { PlayCircle, RotateCcw, Volume2, VolumeX } from 'lucide-react-native';
+import {
+  PictureInPicture,
+  PictureInPicture2,
+  PlayCircle,
+  RotateCcw,
+  Volume2,
+  VolumeX,
+} from 'lucide-react-native';
 
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
@@ -187,6 +194,36 @@ export default function AirsIntroVideoCard({
   const { t } = useAppTranslation('mobile');
   const webVideoRef = useRef<HTMLVideoElement | null>(null);
   const webViewRef = useRef<NativeWebViewHandle | null>(null);
+  const [isPipActive, setIsPipActive] = useState(false);
+
+  // Picture-in-picture only applies to the real <video> element on web.
+  const isPipSupported =
+    Platform.OS === 'web' && typeof document !== 'undefined' && document.pictureInPictureEnabled;
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const video = webVideoRef.current;
+    if (!video) return;
+    const handleEnter = (): void => setIsPipActive(true);
+    const handleLeave = (): void => setIsPipActive(false);
+    video.addEventListener('enterpictureinpicture', handleEnter);
+    video.addEventListener('leavepictureinpicture', handleLeave);
+    return () => {
+      video.removeEventListener('enterpictureinpicture', handleEnter);
+      video.removeEventListener('leavepictureinpicture', handleLeave);
+    };
+  }, [videoUri]);
+
+  const togglePictureInPicture = useCallback((): void => {
+    if (Platform.OS !== 'web') return;
+    if (document.pictureInPictureElement) {
+      void document.exitPictureInPicture();
+      return;
+    }
+    void webVideoRef.current?.requestPictureInPicture().catch(() => {
+      // The browser can refuse the request (e.g. no user gesture); keep inline playback.
+    });
+  }, []);
 
   const WebView = useMemo<NativeWebViewComponent | null>(() => {
     if (Platform.OS === 'web') {
@@ -447,6 +484,24 @@ export default function AirsIntroVideoCard({
         </TouchableOpacity>
       ) : null}
 
+      {showControls && isPipSupported ? (
+        <TouchableOpacity
+          style={[styles.pipControl, controlsIconOnly && styles.videoControlIconOnly]}
+          onPress={togglePictureInPicture}
+          activeOpacity={0.85}
+          accessibilityLabel={t('landing.video.pip')}
+        >
+          {isPipActive ? (
+            <PictureInPicture size={14} color='#f8fbff' />
+          ) : (
+            <PictureInPicture2 size={14} color='#f8fbff' />
+          )}
+          {!controlsIconOnly && (
+            <Text style={styles.videoControlText}>{t('landing.video.pip')}</Text>
+          )}
+        </TouchableOpacity>
+      ) : null}
+
       {children ? (
         <View pointerEvents='none' style={styles.overlayFill}>
           {children}
@@ -497,6 +552,21 @@ const styles = StyleSheet.create({
   muteControl: {
     position: 'absolute',
     top: 12,
+    right: 12,
+    zIndex: 8,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(4,4,15,0.56)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.26)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  pipControl: {
+    position: 'absolute',
+    top: 48,
     right: 12,
     zIndex: 8,
     borderRadius: 999,

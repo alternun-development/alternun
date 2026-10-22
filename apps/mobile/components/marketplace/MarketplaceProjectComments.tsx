@@ -206,7 +206,7 @@ export default function MarketplaceProjectComments({
           <Pressable
             testID='project-comments-retry'
             onPress={() => setRequestVersion((value) => value + 1)}
-            style={[styles.smallButton, { backgroundColor: palette.primaryDeep }]}
+            style={[styles.smallButton, { backgroundColor: palette.fill }]}
           >
             <RotateCcw size={15} color='#effff7' />
             <Text style={styles.buttonText}>{t('explorer.detail.comments.retry')}</Text>
@@ -291,7 +291,7 @@ export default function MarketplaceProjectComments({
             onPress={() => void publish()}
             style={[
               styles.publishButton,
-              { backgroundColor: palette.primaryDeep },
+              { backgroundColor: palette.fill },
               (submitting || bodyIsInvalid) && styles.disabled,
             ]}
           >
@@ -316,7 +316,7 @@ export default function MarketplaceProjectComments({
           <Pressable
             testID='project-comments-sign-in-button'
             onPress={onSignIn}
-            style={[styles.smallButton, { backgroundColor: palette.primaryDeep }]}
+            style={[styles.smallButton, { backgroundColor: palette.fill }]}
           >
             <Text style={styles.buttonText}>{t('explorer.detail.comments.signIn')}</Text>
           </Pressable>

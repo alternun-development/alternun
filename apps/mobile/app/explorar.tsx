@@ -4,6 +4,7 @@ import {
   Animated,
   Image,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -35,6 +36,11 @@ import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
 import { MarketplaceEnterpriseBrowser } from '../components/marketplace/MarketplaceEnterpriseDirectory';
+import {
+  canvaEmbedUrl,
+  isDirectVideoUrl,
+  safeHttpsUrl,
+} from '../components/marketplace/MarketplaceProjectDetail';
 import type {
   LoadMarketplaceProjects,
   MarketProject,
@@ -84,6 +90,20 @@ function safeImageUrl(media: MarketplaceMedia[]): string | null {
   return null;
 }
 
+/** Resolves the project's active canva and direct-video media for the featured banner. */
+function presentationUrls(media: MarketplaceMedia[]): {
+  canvaUrl: string | null;
+  videoUrl: string | null;
+} {
+  const canvaUrl = canvaEmbedUrl(media.find((item) => item.isActive && item.kind === 'canva'));
+  const video = media.find((item) => item.isActive && item.kind === 'video');
+  const embedUrl = safeHttpsUrl(video?.embedUrl);
+  if (isDirectVideoUrl(embedUrl)) return { canvaUrl, videoUrl: embedUrl };
+  const url = safeHttpsUrl(video?.url);
+  if (isDirectVideoUrl(url)) return { canvaUrl, videoUrl: url };
+  return { canvaUrl, videoUrl: null };
+}
+
 function isMarketplaceProject(value: unknown): value is MarketplaceProjectResponse {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const project = value as Partial<MarketplaceProjectResponse>;
@@ -126,6 +146,7 @@ export const loadMarketplaceProjects: LoadMarketplaceProjects = async (locale, s
     description: project.description,
     waysToContribute: project.waysToContribute,
     imageUrl: safeImageUrl(project.media),
+    ...presentationUrls(project.media),
   }));
 };
 
@@ -243,7 +264,7 @@ function IntentRotator({
         }}
       >
         <Pressable
-          style={[styles.intentAction, { backgroundColor: palette.primaryDeep }]}
+          style={[styles.intentAction, { backgroundColor: palette.fill }]}
           onPress={intent.action === 'form' ? onProposeProject : openMarketplaceContact}
           accessibilityLabel={intent.label}
         >
@@ -328,7 +349,40 @@ function HeroCarousel({
           <View
             style={[styles.heroMediaFrame, { height: mediaHeight, borderColor: palette.border }]}
           >
-            {featuredProject?.imageUrl ? (
+            {Platform.OS === 'web' && featuredProject?.canvaUrl ? (
+              React.createElement('iframe', {
+                src: featuredProject.canvaUrl,
+                title: featuredProject.title,
+                loading: 'lazy',
+                sandbox:
+                  'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox',
+                allow: 'fullscreen',
+                allowFullScreen: true,
+                referrerPolicy: 'strict-origin-when-cross-origin',
+                style: {
+                  border: 0,
+                  display: 'block',
+                  width: '100%',
+                  height: '100%',
+                },
+              })
+            ) : Platform.OS === 'web' && featuredProject?.videoUrl ? (
+              React.createElement('video', {
+                src: featuredProject.videoUrl,
+                autoPlay: true,
+                muted: true,
+                loop: true,
+                playsInline: true,
+                'aria-label': featuredProject.title,
+                style: {
+                  display: 'block',
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  backgroundColor: '#000',
+                },
+              })
+            ) : featuredProject?.imageUrl ? (
               <Image
                 source={{ uri: featuredProject.imageUrl }}
                 style={styles.projectImage}
@@ -366,7 +420,7 @@ function HeroCarousel({
           style={[
             styles.heroSlide,
             styles.submitSlide,
-            { width: slideWidth, backgroundColor: palette.primaryDeep },
+            { width: slideWidth, backgroundColor: palette.fill },
           ]}
         >
           <View style={styles.submitOrbitOne} />
@@ -593,7 +647,7 @@ export function MarketplaceProjectBrowser({
               style={[
                 styles.filterChip,
                 { borderColor: selected ? palette.primary : palette.border },
-                selected && { backgroundColor: palette.primaryDeep },
+                selected && { backgroundColor: palette.fill },
               ]}
               onPress={() => setFilter(item.key)}
             >
@@ -629,7 +683,7 @@ export function MarketplaceProjectBrowser({
             </Text>
             <Pressable
               testID='explorer-retry'
-              style={[styles.retryButton, { backgroundColor: palette.primaryDeep }]}
+              style={[styles.retryButton, { backgroundColor: palette.fill }]}
               onPress={() => setRequestVersion((value) => value + 1)}
             >
               <Text style={styles.retryButtonText}>{t('explorer.marketplaceState.retry')}</Text>
@@ -874,28 +928,30 @@ export default function ExplorarScreen(): React.JSX.Element {
 
   const palette: Palette = isDark
     ? {
-        background: '#06130f',
-        surface: '#0b211a',
-        surfaceStrong: '#102c23',
-        border: 'rgba(194, 255, 222, 0.13)',
-        text: '#ecfff4',
-        muted: 'rgba(221, 247, 230, 0.62)',
+        background: '#050f0c',
+        surface: 'rgba(255, 255, 255, 0.04)',
+        surfaceStrong: 'rgba(255, 255, 255, 0.07)',
+        border: 'rgba(255, 255, 255, 0.08)',
+        text: '#e8fff6',
+        muted: 'rgba(232, 255, 246, 0.6)',
         primary: '#1ee6b5',
-        primaryDeep: '#0a4c40',
+        primaryDeep: '#7ff3d6',
+        fill: 'rgba(30, 230, 181, 0.14)',
         mist: 'rgba(30, 230, 181, 0.13)',
-        hero: '#0a2d25',
+        hero: '#0a1a16',
       }
     : {
-        background: '#f5f2e9',
-        surface: '#fffdf7',
-        surfaceStrong: '#f0f7ed',
-        border: 'rgba(20, 75, 55, 0.14)',
-        text: '#153d32',
-        muted: 'rgba(21, 61, 50, 0.62)',
-        primary: '#087f63',
-        primaryDeep: '#075440',
+        background: '#f0fdf9',
+        surface: 'rgba(255, 255, 255, 0.85)',
+        surfaceStrong: 'rgba(255, 255, 255, 0.95)',
+        border: 'rgba(11, 90, 95, 0.12)',
+        text: '#0b2d31',
+        muted: 'rgba(11, 45, 49, 0.6)',
+        primary: '#0d9488',
+        primaryDeep: '#0b5a5f',
+        fill: '#0f766e',
         mist: 'rgba(8, 127, 99, 0.11)',
-        hero: '#e2f3e7',
+        hero: '#dff5ef',
       };
 
   React.useEffect(() => {
@@ -938,7 +994,7 @@ export default function ExplorarScreen(): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.pageHeading}>
-            <View style={[styles.compassMark, { backgroundColor: palette.primaryDeep }]}>
+            <View style={[styles.compassMark, { backgroundColor: palette.fill }]}>
               <CompassIcon size={22} color='#dffff0' strokeWidth={1.7} />
             </View>
             <View>
@@ -974,10 +1030,7 @@ export default function ExplorarScreen(): React.JSX.Element {
                   accessibilityRole='tab'
                   accessibilityState={{ selected }}
                   onPress={() => setDirectory(item)}
-                  style={[
-                    styles.directoryTab,
-                    selected && { backgroundColor: palette.primaryDeep },
-                  ]}
+                  style={[styles.directoryTab, selected && { backgroundColor: palette.fill }]}
                 >
                   <Text
                     style={[
@@ -1025,7 +1078,7 @@ export default function ExplorarScreen(): React.JSX.Element {
             </View>
           )}
 
-          <View style={[styles.earnBanner, { backgroundColor: palette.primaryDeep }]}>
+          <View style={[styles.earnBanner, { backgroundColor: palette.fill }]}>
             <BadgeDollarSignIcon size={24} color='#1ee6b5' />
             <View style={styles.earnCopy}>
               <Text style={styles.earnTitle}>{t('explorer.earn.title')}</Text>

@@ -35,7 +35,7 @@ export function EnterpriseViewSwitcher({
             onPress={() => {
               if (!selected) onChange(item);
             }}
-            style={[styles.switcherOption, selected && { backgroundColor: palette.primaryDeep }]}
+            style={[styles.switcherOption, selected && { backgroundColor: palette.fill }]}
           >
             <Icon size={15} color={selected ? '#effff7' : palette.muted} />
             <Text style={[styles.switcherText, { color: selected ? '#effff7' : palette.muted }]}>
