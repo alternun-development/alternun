@@ -137,7 +137,7 @@ export function MarketplaceEnterpriseDetailView({
             testID='enterprise-detail-retry'
             accessibilityRole='button'
             onPress={() => setRequestVersion((value) => value + 1)}
-            style={[styles.primaryButton, { backgroundColor: palette.primaryDeep }]}
+            style={[styles.primaryButton, { backgroundColor: palette.fill }]}
           >
             <RotateCcw size={16} color='#effff7' />
             <Text style={styles.primaryButtonText}>{t('explorer.enterprises.retry')}</Text>

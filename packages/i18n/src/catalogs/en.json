@@ -594,6 +594,8 @@
         "loadingIntro": "Loading Airs Intro Video",
         "muted": "Muted",
         "openIntro": "Open Airs Intro Video",
+
+        "pip": "Picture in picture",
         "restart": "Restart",
         "soundOn": "Sound On"
       }
