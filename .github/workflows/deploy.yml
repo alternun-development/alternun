@@ -5,8 +5,8 @@ on:
     branches:
       - master
       - main
-    tags:
-      - 'v*'
+    # No tag trigger: the github-pages environment only accepts deployments from
+    # master, so release tags (v*-dev.N and v*) would fail at the deploy step.
     # Review gh actions docs if you want to further define triggers, paths, etc
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
 
