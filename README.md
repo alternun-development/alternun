@@ -120,17 +120,23 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.104**
+Current version: **1.1.105**
 
-## 📋 Latest Changes (v1.1.104)
-
-### Documentation
-
-- **identity:** document Authentik platform access and bootstrap state ([6195422](https://github.com/alternun-development/alternun/commit/6195422752a11adfb9c35b57481220caef28307a))
+## 📋 Latest Changes (v1.1.105)
 
 ### Bug Fixes
 
-- **web:** bump next to 15.5.28 for GHSA-2464-fhr4-w9xw ([6ac881b](https://github.com/alternun-development/alternun/commit/6ac881bc46eeb4d29f3c2ad0fd3d2e9020c500df))
+- **repo:** ci(docs): deploy GitHub Pages from master only, drop v\* tag trigger
+- **repo:** chore(versioning): update reentry next step for the FP liquid bar
+- **repo:** feat(mobile): use the liquid progress bar in the RBI projection card
+- **repo:** feat(mobile): add animated liquid ParticipationFactorBar
+- **repo:** feat(mobile): add liquid progress palette tokens for dark and light themes
+
+### Features
+
+- **mobile:** add animated liquid ParticipationFactorBar ([d29769d](https://github.com/alternun-development/alternun/commit/d29769d2dc8f95fae899add7f1dc20cf357daf46))
+- **mobile:** add liquid progress palette tokens for dark and light themes ([42a89e8](https://github.com/alternun-development/alternun/commit/42a89e86504be83a86441eea052257ec5b402ebc))
+- **mobile:** use the liquid progress bar in the RBI projection card ([8edcfc1](https://github.com/alternun-development/alternun/commit/8edcfc18725239303a919fcd0b954866c5d3ac72))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
