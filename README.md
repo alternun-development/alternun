@@ -124,10 +124,9 @@ Current version: **1.1.104**
 
 ## 📋 Latest Changes (v1.1.104)
 
-### Bug Fixes
+### Documentation
 
-- **repo:** docs(identity): document Authentik platform access and bootstrap state
-- **repo:** fix(web): bump next to 15.5.28 for GHSA-2464-fhr4-w9xw
+- **identity:** document Authentik platform access and bootstrap state ([6195422](https://github.com/alternun-development/alternun/commit/6195422752a11adfb9c35b57481220caef28307a))
 
 ### Bug Fixes
 
