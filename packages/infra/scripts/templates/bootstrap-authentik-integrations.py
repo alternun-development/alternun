@@ -610,6 +610,7 @@ results = {
     "mobile_oidc_provider": "skipped",
     "internal_domain_users": "skipped",
     "internal_domain_user_promotion": "skipped",
+    "platform_access_users": "skipped",
     "supabase_provider": "skipped",
 }
 
@@ -723,6 +724,59 @@ if admin_username and admin_email:
     results["admin_email"] = admin_email
 else:
     results["admin_user"] = "missing_inputs"
+
+# Authentik's user interface (/if/user/) and admin interface reject "external"
+# users, which is what social login creates. Promote the configured people.
+super_admin_emails = {e.lower() for e in read_list_env("ALTERNUN_BOOTSTRAP_SUPER_ADMIN_EMAILS")}
+dev_admin_emails = {e.lower() for e in read_list_env("ALTERNUN_BOOTSTRAP_DEV_ADMIN_EMAILS")}
+internal_email_domains = {d.lower().lstrip("@") for d in read_list_env("ALTERNUN_BOOTSTRAP_INTERNAL_EMAIL_DOMAINS")}
+platform_access_summary = {"promoted": [], "created": []}
+
+
+def promote_platform_user(user, group_names):
+    if getattr(user, "type", "") != "internal":
+        user.type = "internal"
+    if not user.is_active:
+        user.is_active = True
+    user.save()
+    for group_name in group_names:
+        group_obj, _ = Group.objects.get_or_create(name=group_name)
+        if not user.groups.filter(pk=group_obj.pk).exists():
+            user.groups.add(group_obj)
+
+
+for email in sorted(super_admin_emails | dev_admin_emails):
+    groups = [admin_group] if email in super_admin_emails else ["Alternun Internal Admin"]
+    matches = list(user_model.objects.filter(email__iexact=email))
+    if not matches:
+        # Pre-create so the first social login links to an already-privileged user.
+        matches = [user_model.objects.create(username=email, email=email, name=email, is_active=True, type="internal")]
+        platform_access_summary["created"].append(email)
+    for user in matches:
+        promote_platform_user(user, groups)
+        platform_access_summary["promoted"].append(email)
+
+for domain in sorted(internal_email_domains):
+    for user in user_model.objects.filter(email__iendswith="@" + domain, is_active=True):
+        if user.email.lower() in super_admin_emails:
+            continue
+        promote_platform_user(user, ["Alternun Internal Admin"])
+        platform_access_summary["promoted"].append(user.email)
+
+# Shared development account (set only for non-production stages).
+dev_shared_admin_email = read_env("ALTERNUN_BOOTSTRAP_DEV_SHARED_ADMIN_EMAIL")
+dev_shared_admin_password = read_env("ALTERNUN_BOOTSTRAP_DEV_SHARED_ADMIN_PASSWORD")
+if dev_shared_admin_email and dev_shared_admin_password:
+    shared_user, shared_created = user_model.objects.get_or_create(
+        username=dev_shared_admin_email,
+        defaults={"email": dev_shared_admin_email, "name": "Alternun Developers", "is_active": True, "type": "internal"},
+    )
+    shared_user.email = dev_shared_admin_email
+    shared_user.set_password(dev_shared_admin_password)
+    promote_platform_user(shared_user, [admin_group])
+    platform_access_summary["shared_dev_admin"] = "created" if shared_created else "updated"
+
+results["platform_access_users"] = platform_access_summary
 
 if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_url:
     admin_scope_mapping_ids = [
