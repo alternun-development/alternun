@@ -46,6 +46,7 @@ export interface ResolvedExpoConfig {
     authentikProviderFlowSlugs?: string;
     authentikAllowCustomProviderFlowSlugs?: string;
     releaseUpdateMode?: string;
+    marketplaceContactEmail?: string;
   };
   redirects: {
     enableAirsToDev: boolean;
@@ -548,6 +549,10 @@ export function resolveExpoConfig({
     releaseUpdateMode: deploymentStage
       ? 'on'
       : env.EXPO_PUBLIC_RELEASE_UPDATE_MODE ?? localConfig.expo?.publicEnv?.releaseUpdateMode,
+    marketplaceContactEmail:
+      env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL ??
+      env.MARKETPLACE_CONTACT_EMAIL ??
+      localConfig.expo?.publicEnv?.marketplaceContactEmail,
   };
 
   const devToTestnetSourceDomains = normalizeDomainList([

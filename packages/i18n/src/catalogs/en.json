@@ -1,5 +1,8 @@
 {
   "shared": {
+    "webMeta": {
+      "tabTitle": "Airs | What's your regenerative score?"
+    },
     "labels": {
       "backToTop": "Top",
       "by": "By",
@@ -21,6 +24,21 @@
     },
     "templates": {
       "welcome": "Welcome, {{name}}"
+    },
+    "projectProposalEmail": {
+      "subject": "New marketplace project proposal",
+      "intro": "A new project proposal was submitted from Explorer.",
+      "projectName": "Project name",
+      "location": "Location",
+      "category": "Category",
+      "contactName": "Contact name",
+      "contactEmail": "Contact email",
+      "language": "Language",
+      "message": "Message",
+      "categories": {
+        "productive": "Productive",
+        "conservation": "Conservation"
+      }
     }
   },
   "mobile": {
@@ -268,10 +286,10 @@
           "closeLabel": "Close",
           "atnBalanceTitle": "ATN balance",
           "atnBalance": "Your available ATN balance, reported by your rewards account.",
-          "participationFactor": "The participation factor applied to your AIRS under the Terms and Conditions.",
+          "participationFactor": "FP is the participation factor applied to your AIRS. It starts at 50% and can range from 0% to 100%, under the Terms and Conditions.",
           "eligibleAirs": "Equivalent AIRS = AIRS × FP.",
           "eligibleUsers": "The total eligible users reported by the system for the RBI projection.",
-          "aliquot": "Allocation share = my eligible AIRS / total eligible AIRS × 100%."
+          "aliquot": "Allocation share = my Equivalent AIRS / community total of Equivalent AIRS × 100%."
         },
         "position": {
           "title": "Your Position",
@@ -290,8 +308,8 @@
           "eligibleUsers": "Eligible users",
           "aliquot": "Allocation share",
           "notAvailable": "Not available yet",
+          "estimated": "estimated",
           "participationNote": "To understand how FP works, read the",
-          "termsAndConditions": "Terms and Conditions",
           "whatIsRbi": "What is RBI?",
           "explanation": "Regenerative Basic Income is a periodic income distributed among Alternun users who contribute to the ecosystem.\n\nIt doesn't depend on how much money you have, but on your participation, commitment, and impact, measured through your AIRS score.\n\nEach time Alternun facilitates a compensation, a sale from the compensation pool, or an economic activity within the platform, part of that value goes directly to the RBI fund.",
           "fullDocumentation": "Full Documentation"
@@ -1080,6 +1098,18 @@
         "empty": "No enterprises are available yet.",
         "error": "Enterprises could not be loaded.",
         "retry": "Try again",
+        "view": {
+          "label": "Directory view",
+          "list": "List",
+          "grid": "Grid",
+          "compact": "Compact"
+        },
+        "pagination": {
+          "label": "Enterprise pages",
+          "previous": "Previous",
+          "next": "Next",
+          "page": "Page {{page}} of {{total}}"
+        },
         "detail": {
           "back": "Back to enterprises",
           "loading": "Loading enterprise…",
@@ -1118,6 +1148,7 @@
         "video": "Video",
         "openVideo": "View video",
         "openPresentation": "View presentation",
+        "presentationTitle": "{{project}} presentation",
         "comments": {
           "title": "Comments",
           "loading": "Loading comments…",
@@ -1176,8 +1207,15 @@
         "location": "Country or territory",
         "productive": "Productive",
         "conservation": "Conservation",
-        "continueTelegram": "Continue in Telegram",
-        "finePrint": "Share your proposal details with @alternun_io."
+        "contactName": "Contact name",
+        "contactEmail": "Contact email",
+        "message": "Message (optional)",
+        "submit": "Send proposal",
+        "submitting": "Sending…",
+        "sent": "Your proposal was sent. Thank you for sharing it.",
+        "validationError": "Review the fields and try again.",
+        "submitError": "We couldn't send your proposal. Please try again.",
+        "finePrint": "We will store your proposal so the Alternun team can review it."
       }
     }
   },

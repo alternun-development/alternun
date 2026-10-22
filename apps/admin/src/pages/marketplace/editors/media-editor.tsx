@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react';
 import { requestMarketplace, type MediaKind, type ProjectMedia } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
-import { hasMarketplacePermission } from '../../../marketplace/permissions';
+import {
+  brandMediaKinds,
+  canChangeBrandMedia,
+  hasMarketplacePermission,
+} from '../../../marketplace/permissions';
 import { SectionMessage } from '../components';
 import type { MediaEditorProps } from './media-editor.types';
 
@@ -50,7 +54,10 @@ export function mediaUrlError(kind: MediaKind, value: string): string | null {
 }
 
 export function MediaEditor({ project, media, roles, onChanged }: MediaEditorProps): JSX.Element {
-  const [kind, setKind] = useState<MediaKind>('cover');
+  const canChangeBrand = canChangeBrandMedia(roles);
+  const writableKinds = canChangeBrand ? kinds : kinds.filter((item) => !brandMediaKinds.has(item));
+  const [selectedKind, setKind] = useState<MediaKind>(writableKinds[0]);
+  const kind = writableKinds.includes(selectedKind) ? selectedKind : writableKinds[0];
   const [url, setUrl] = useState('');
   const [altText, setAltText] = useState('');
   const [error, setError] = useState<unknown>();
@@ -188,7 +195,7 @@ export function MediaEditor({ project, media, roles, onChanged }: MediaEditorPro
                     </button>
                   </div>
                 ) : null}
-                {canModerate ? (
+                {canModerate && (canChangeBrand || !brandMediaKinds.has(item.kind)) ? (
                   <button
                     className='secondary-button'
                     onClick={() => setRemoving(item)}
@@ -203,13 +210,17 @@ export function MediaEditor({ project, media, roles, onChanged }: MediaEditorPro
         </div>
       )}
 
+      {(canWrite || canModerate) && !canChangeBrand ? (
+        <p>{marketplaceCopy.mediaEditor.brandRestricted}</p>
+      ) : null}
+
       {canWrite ? (
         <div className='marketplace-inline-form'>
           <h4>{marketplaceCopy.mediaEditor.addTitle}</h4>
           <label>
             <span>{marketplaceCopy.mediaEditor.type}</span>
             <select value={kind} onChange={(event) => setKind(event.target.value as MediaKind)}>
-              {kinds.map((item) => (
+              {writableKinds.map((item) => (
                 <option key={item} value={item}>
                   {marketplaceCopy.mediaEditor.kinds[item]}
                 </option>

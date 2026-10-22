@@ -17,7 +17,6 @@ Siguientes pasos de alto valor:
 - agregar más endpoints de dominio con DTOs documentados y auth guards
 - ampliar la cobertura de OpenAPI para que el contrato backend sea público y revisable
 - agregar pruebas de integración más fuertes para auth, salud y flujos operativos
-- restringir CORS a orígenes permitidos explícitos por entorno
 
 ## 2. Madurar El Contrato De Runtime De AIRS
 

@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Image,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { ArrowLeft, Building2, ExternalLink, Leaf, MapPin, RotateCcw } from 'lucide-react-native';
 import AirsIntroVideoCard from '../onboarding/AirsIntroVideoCard';
 import MarketplaceProjectComments from './MarketplaceProjectComments';
@@ -27,6 +36,44 @@ export function safeHttpsUrl(value: string | null | undefined): string | null {
   } catch {
     return null;
   }
+}
+
+// Same hosts the admin media editor and the database allow for `canva` media.
+const CANVA_EMBED_HOSTS = ['canva.com', 'www.canva.com'];
+
+/** Returns the Canva URL to embed, or null when it is not an allowed HTTPS embed link. */
+export function canvaEmbedUrl(item: MarketplaceProjectMedia | undefined): string | null {
+  if (!item) return null;
+  for (const candidate of [item.embedUrl, item.url]) {
+    const safeUrl = safeHttpsUrl(candidate);
+    if (!safeUrl) continue;
+    const parsed = new URL(safeUrl);
+    if (
+      !parsed.port &&
+      CANVA_EMBED_HOSTS.includes(parsed.hostname) &&
+      parsed.searchParams.has('embed')
+    ) {
+      return safeUrl;
+    }
+  }
+  return null;
+}
+
+function CanvaPresentationEmbed({ src, title }: { src: string; title: string }): React.JSX.Element {
+  return (
+    <View testID='project-detail-canva-embed' style={styles.presentation}>
+      {React.createElement('iframe', {
+        src,
+        title,
+        loading: 'lazy',
+        sandbox: 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox',
+        allow: 'fullscreen',
+        allowFullScreen: true,
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        style: { border: 0, display: 'block', width: '100%', height: '100%' },
+      })}
+    </View>
+  );
 }
 
 export function isDirectVideoUrl(value: string | null | undefined): boolean {
@@ -154,6 +201,7 @@ export function MarketplaceProjectDetailView({
   const video = media.find((item) => item.kind === 'video');
   const resolvedVideo = videoTarget(video);
   const canva = media.find((item) => item.kind === 'canva');
+  const canvaEmbed = Platform.OS === 'web' ? canvaEmbedUrl(canva) : null;
 
   return (
     <ScrollView
@@ -328,7 +376,12 @@ export function MarketplaceProjectDetailView({
             </Pressable>
           ) : null}
 
-          {canva ? (
+          {canvaEmbed ? (
+            <CanvaPresentationEmbed
+              src={canvaEmbed}
+              title={t('explorer.detail.presentationTitle', { project: project.title })}
+            />
+          ) : canva ? (
             <Pressable
               testID='project-detail-canva'
               accessibilityRole='link'
@@ -400,6 +453,7 @@ const styles = StyleSheet.create({
   galleryRow: { gap: 12 },
   galleryImage: { width: 260, height: 180, borderRadius: 18 },
   video: { width: '100%', height: 220, borderRadius: 18, overflow: 'hidden' },
+  presentation: { width: '100%', aspectRatio: 16 / 9, borderRadius: 18, overflow: 'hidden' },
   primaryButton: {
     minHeight: 48,
     borderRadius: 14,

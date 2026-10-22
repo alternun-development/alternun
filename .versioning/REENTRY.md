@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Merge the v1.1.97 develop→master promotion PR, then sync master back to develop
+Next micro-step: Ship release v1.1.101 (8 PRs integrated): merge the develop→master release PR, then sync master back into develop; pending: approve community equivalent AIRS balance-sum RPC + migration
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

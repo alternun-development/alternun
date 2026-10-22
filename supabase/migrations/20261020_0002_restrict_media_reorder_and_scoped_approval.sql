@@ -1,0 +1,508 @@
+-- Issue #249 follow-up: close two database-level gaps behind the API checks.
+--   * marketplace_reorder_project_media no longer treats moderator as a global
+--     media editor (the API already denies moderator project_media:write).
+--   * marketplace_approve_activity_completion no longer accepts a scoped
+--     sub_admin: only platform_owner, internal_admin, or a partner_operator with
+--     an active membership may award points.
+--
+-- Redefines both functions with CREATE OR REPLACE and the same signatures, so
+-- this migration is safe to run more than once. Every other line of both bodies
+-- is identical to 20261013_0004 and 20261020_0001.
+
+begin;
+
+create or replace function public.marketplace_reorder_project_media(
+  p_project_id uuid,
+  p_items jsonb,
+  p_actor_issuer text,
+  p_actor_subject text,
+  p_actor_roles text[],
+  p_request_id text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_project public.projects;
+  v_enterprise_id uuid;
+  v_reason text;
+  v_authorized boolean;
+  v_requested_count integer;
+  v_gallery_count integer;
+  v_before jsonb;
+  v_after jsonb;
+begin
+  select * into v_project
+  from public.projects project
+  where project.id = p_project_id
+  for update;
+
+  if not found then
+    insert into public.admin_audit_log (
+      actor_issuer, actor_subject, actor_roles, action, target_type, target_id,
+      request_id, result, reason_code
+    ) values (
+      p_actor_issuer, p_actor_subject, coalesce(p_actor_roles, '{}'::text[]),
+      'project_media.reorder_denied', 'project', p_project_id, p_request_id,
+      'denied', 'PROJECT_NOT_FOUND'
+    );
+    return jsonb_build_object('ok', false, 'reasonCode', 'PROJECT_NOT_FOUND');
+  end if;
+
+  select relation.enterprise_id into v_enterprise_id
+  from public.enterprise_projects relation
+  where relation.project_id = p_project_id
+    and relation.is_primary;
+
+  -- moderator is not a global media editor: it may retire media but not reorder.
+  v_authorized :=
+    coalesce(p_actor_roles, '{}'::text[]) && array['platform_owner', 'internal_admin']
+    or (
+      coalesce('partner_operator' = any(coalesce(p_actor_roles, '{}'::text[])), false)
+      and public.marketplace_actor_has_scope(
+        p_actor_issuer, p_actor_subject, p_actor_roles, v_enterprise_id,
+        p_project_id, array['partner_operator']
+      )
+    )
+    or (
+      coalesce('sub_admin' = any(coalesce(p_actor_roles, '{}'::text[])), false)
+      and public.marketplace_actor_has_scope(
+        p_actor_issuer, p_actor_subject, p_actor_roles, v_enterprise_id,
+        p_project_id, array['sub_admin']
+      )
+    );
+
+  if not coalesce(v_authorized, false) then
+    v_reason := 'PROJECT_SCOPE_DENIED';
+  elsif nullif(btrim(coalesce(p_actor_issuer, '')), '') is null
+    or nullif(btrim(coalesce(p_actor_subject, '')), '') is null
+    or p_items is null
+    or jsonb_typeof(p_items) is distinct from 'array'
+    or jsonb_array_length(
+      case
+        when jsonb_typeof(p_items) = 'array' then p_items
+        else '[]'::jsonb
+      end
+    ) = 0
+    or exists (
+      select 1
+      from jsonb_array_elements(
+        case
+          when jsonb_typeof(p_items) = 'array' then p_items
+          else '[]'::jsonb
+        end
+      ) item
+      where jsonb_typeof(item) is distinct from 'object'
+        or jsonb_typeof(item -> 'id') is distinct from 'string'
+        or (item ->> 'id') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+        or jsonb_typeof(item -> 'sortOrder') is distinct from 'number'
+        or (item ->> 'sortOrder') !~ '^[0-9]+$'
+        or case
+          when (item ->> 'sortOrder') ~ '^[0-9]+$'
+            then (item ->> 'sortOrder')::numeric > 2147483647
+          else false
+        end
+    )
+  then
+    v_reason := 'MEDIA_ORDER_INVALID';
+  end if;
+
+  if v_reason is null then
+    select count(*), count(distinct item ->> 'id')
+      into v_requested_count, v_gallery_count
+    from jsonb_array_elements(p_items) item;
+
+    if v_requested_count <> v_gallery_count then
+      v_reason := 'MEDIA_ORDER_INVALID';
+    end if;
+  end if;
+
+  if v_reason is null then
+    select count(*) into v_gallery_count
+    from public.project_media media
+    where media.project_id = p_project_id
+      and media.kind = 'gallery_image'
+      and media.is_active;
+
+    if v_requested_count <> v_gallery_count
+      or exists (
+        select 1
+        from jsonb_array_elements(p_items) item
+        left join public.project_media media
+          on media.id = (item ->> 'id')::uuid
+          and media.project_id = p_project_id
+          and media.kind = 'gallery_image'
+          and media.is_active
+        where media.id is null
+      )
+    then
+      v_reason := 'MEDIA_ORDER_INVALID';
+    end if;
+  end if;
+
+  if v_reason is not null then
+    insert into public.admin_audit_log (
+      actor_issuer, actor_subject, actor_roles, action, target_type,
+      enterprise_id, project_id, request_id, result, reason_code, metadata
+    ) values (
+      p_actor_issuer, p_actor_subject, coalesce(p_actor_roles, '{}'::text[]),
+      'project_media.reorder_denied', 'project_media', v_enterprise_id,
+      p_project_id, p_request_id, 'denied', v_reason,
+      jsonb_build_object('items', p_items)
+    );
+    return jsonb_build_object('ok', false, 'reasonCode', v_reason);
+  end if;
+
+  select coalesce(jsonb_agg(to_jsonb(media) order by media.sort_order, media.id), '[]'::jsonb)
+    into v_before
+  from public.project_media media
+  where media.project_id = p_project_id
+    and media.kind = 'gallery_image'
+    and media.is_active;
+
+  with requested as (
+    select (item ->> 'id')::uuid as id, (item ->> 'sortOrder')::integer as sort_order
+    from jsonb_array_elements(p_items) item
+  )
+  update public.project_media media
+  set sort_order = requested.sort_order,
+      updated_by_issuer = p_actor_issuer,
+      updated_by_subject = p_actor_subject
+  from requested
+  where media.id = requested.id
+    and media.project_id = p_project_id;
+
+  select coalesce(jsonb_agg(to_jsonb(media) order by media.sort_order, media.id), '[]'::jsonb)
+    into v_after
+  from public.project_media media
+  where media.project_id = p_project_id
+    and media.kind = 'gallery_image'
+    and media.is_active;
+
+  insert into public.admin_audit_log (
+    actor_issuer, actor_subject, actor_roles, action, target_type,
+    enterprise_id, project_id, request_id, result, before_state, after_state
+  ) values (
+    p_actor_issuer, p_actor_subject, coalesce(p_actor_roles, '{}'::text[]),
+    'project_media.reordered', 'project_media', v_enterprise_id, p_project_id,
+    p_request_id, 'allowed', jsonb_build_object('media', v_before),
+    jsonb_build_object('media', v_after)
+  );
+
+  return jsonb_build_object('ok', true, 'media', v_after);
+end;
+$$;
+
+create or replace function public.marketplace_approve_activity_completion(
+  p_completion_id uuid,
+  p_actor_issuer text,
+  p_actor_subject text,
+  p_actor_roles text[],
+  p_request_id text,
+  p_notes text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_completion public.project_activity_completions;
+  v_activity public.project_activities;
+  v_project public.projects;
+  v_enterprise_id uuid;
+  v_is_global boolean;
+  v_is_scoped boolean;
+  v_reason text;
+  v_period_count integer;
+  v_lifetime_count integer;
+  v_user_exists boolean;
+  v_ledger_user_type text;
+  v_ledger_entry_id uuid;
+  v_idempotency_key text;
+begin
+  select * into v_completion
+  from public.project_activity_completions completion
+  where completion.id = p_completion_id
+  for update;
+
+  if not found then
+    return jsonb_build_object('ok', false, 'reasonCode', 'COMPLETION_NOT_FOUND');
+  end if;
+
+  perform pg_advisory_xact_lock(
+    hashtext(v_completion.activity_id::text || ':' || v_completion.user_id)
+  );
+
+  select * into v_activity
+  from public.project_activities activity
+  where activity.id = v_completion.activity_id
+  for update;
+
+  select * into v_project
+  from public.projects project
+  where project.id = v_completion.project_id;
+
+  select relation.enterprise_id into v_enterprise_id
+  from public.enterprise_projects relation
+  where relation.project_id = v_completion.project_id
+    and relation.is_primary;
+
+  -- moderator is no longer a global approver: it may not write the AIRS ledger.
+  v_is_global := coalesce(p_actor_roles, '{}'::text[])
+    && array['platform_owner', 'internal_admin'];
+
+  select exists (
+    select 1
+    from public.project_memberships membership
+    where membership.member_issuer = p_actor_issuer
+      and membership.member_subject = p_actor_subject
+      and membership.status = 'active'
+      and membership.role = 'partner_operator'
+      and membership.enterprise_id = v_enterprise_id
+      and (
+        membership.scope_type = 'enterprise'
+        or (
+          membership.scope_type = 'project'
+          and membership.project_id = v_completion.project_id
+        )
+      )
+  ) into v_is_scoped;
+
+  if not v_is_global
+    and not (
+      -- sub_admin records and rejects completions but never awards points.
+      coalesce('partner_operator' = any(coalesce(p_actor_roles, '{}'::text[])), false)
+      and coalesce(v_is_scoped, false)
+    )
+  then
+    v_reason := 'PROJECT_SCOPE_DENIED';
+  elsif v_completion.status = 'awarded' then
+    return jsonb_build_object(
+      'ok', true,
+      'idempotent', true,
+      'completionId', v_completion.id,
+      'ledgerEntryId', v_completion.ledger_entry_id,
+      'airsDelta', v_completion.awarded_airs
+    );
+  elsif v_completion.status <> 'pending' then
+    v_reason := 'COMPLETION_STATUS_INVALID';
+  elsif v_project.status <> 'published' or v_activity.status <> 'published' then
+    v_reason := 'ACTIVITY_NOT_AWARDABLE';
+  elsif v_activity.starts_at is not null and timezone('utc', now()) < v_activity.starts_at then
+    v_reason := 'ACTIVITY_NOT_STARTED';
+  elsif v_activity.ends_at is not null and timezone('utc', now()) >= v_activity.ends_at then
+    v_reason := 'ACTIVITY_ENDED';
+  end if;
+
+  if v_reason is null then
+    select count(*) into v_period_count
+    from public.project_activity_completions completion
+    where completion.activity_id = v_completion.activity_id
+      and completion.user_id = v_completion.user_id
+      and completion.period_key = v_completion.period_key
+      and completion.status in ('awarded', 'reversed');
+
+    select count(*) into v_lifetime_count
+    from public.project_activity_completions completion
+    where completion.activity_id = v_completion.activity_id
+      and completion.user_id = v_completion.user_id
+      and completion.status in ('awarded', 'reversed');
+
+    if v_period_count >= v_activity.max_awards_per_period
+      or (
+        v_activity.max_awards_lifetime is not null
+        and v_lifetime_count >= v_activity.max_awards_lifetime
+      )
+    then
+      v_reason := 'ACTIVITY_AWARD_LIMIT_REACHED';
+    end if;
+  end if;
+
+  if v_reason is null then
+    execute 'select exists (select 1 from public.users app_user where app_user.id::text = $1)'
+      into v_user_exists
+      using v_completion.user_id;
+
+    if not v_user_exists then
+      v_reason := 'USER_NOT_ELIGIBLE';
+    end if;
+  end if;
+
+  if v_reason is not null then
+    insert into public.admin_audit_log (
+      actor_issuer,
+      actor_subject,
+      actor_roles,
+      action,
+      target_type,
+      target_id,
+      enterprise_id,
+      project_id,
+      request_id,
+      result,
+      reason_code,
+      before_state
+    ) values (
+      p_actor_issuer,
+      p_actor_subject,
+      coalesce(p_actor_roles, '{}'::text[]),
+      'airs_reward.issue_denied',
+      'project_activity_completion',
+      v_completion.id,
+      v_enterprise_id,
+      v_completion.project_id,
+      p_request_id,
+      'denied',
+      v_reason,
+      to_jsonb(v_completion)
+    );
+
+    return jsonb_build_object('ok', false, 'reasonCode', v_reason);
+  end if;
+
+  select format_type(attribute.atttypid, attribute.atttypmod)
+    into v_ledger_user_type
+  from pg_attribute attribute
+  where attribute.attrelid = 'public.airs_ledger_entries'::regclass
+    and attribute.attname = 'user_id'
+    and not attribute.attisdropped;
+
+  if v_ledger_user_type is null then
+    raise exception 'AIRS_LEDGER_USER_TYPE_NOT_FOUND' using errcode = 'P0001';
+  end if;
+
+  v_idempotency_key := 'project-activity:' || v_completion.id::text || ':award';
+
+  execute format(
+    'insert into public.airs_ledger_entries (
+       user_id,
+       source_kind,
+       source_ref,
+       idempotency_key,
+       source_currency,
+       source_amount,
+       airs_rate,
+       airs_delta,
+       notes,
+       metadata
+     ) values (
+       ($1)::%s,
+       $2,
+       $3,
+       $4,
+       $5,
+       $6,
+       $7,
+       $8,
+       $9,
+       $10
+     )
+     on conflict do nothing
+     returning id',
+    v_ledger_user_type
+  )
+  into v_ledger_entry_id
+  using
+    v_completion.user_id,
+    'validated_regenerative_action',
+    'project-activity:' || v_activity.id::text,
+    v_idempotency_key,
+    'AIRS',
+    v_activity.default_airs_amount,
+    1::numeric,
+    v_activity.default_airs_amount,
+    p_notes,
+    jsonb_build_object(
+      'projectId', v_completion.project_id,
+      'activityId', v_completion.activity_id,
+      'completionId', v_completion.id,
+      'occurrenceKey', v_completion.occurrence_key,
+      'periodKey', v_completion.period_key
+    );
+
+  if v_ledger_entry_id is null then
+    select entry.id into v_ledger_entry_id
+    from public.airs_ledger_entries entry
+    where entry.user_id::text = v_completion.user_id
+      and entry.idempotency_key = v_idempotency_key;
+  end if;
+
+  if v_ledger_entry_id is null then
+    raise exception 'AIRS_LEDGER_WRITE_FAILED' using errcode = 'P0001';
+  end if;
+
+  update public.project_activity_completions completion
+  set status = 'awarded',
+      awarded_airs = v_activity.default_airs_amount,
+      award_policy_snapshot = jsonb_build_object(
+        'defaultAirsAmount', v_activity.default_airs_amount,
+        'maxAirsPerAward', v_activity.max_airs_per_award,
+        'repeatPeriod', v_activity.repeat_period,
+        'maxAwardsPerPeriod', v_activity.max_awards_per_period,
+        'maxAwardsLifetime', v_activity.max_awards_lifetime
+      ),
+      ledger_entry_id = v_ledger_entry_id,
+      validated_by_issuer = p_actor_issuer,
+      validated_by_subject = p_actor_subject,
+      awarded_at = timezone('utc', now())
+  where completion.id = v_completion.id
+  returning * into v_completion;
+
+  insert into public.admin_audit_log (
+    actor_issuer,
+    actor_subject,
+    actor_roles,
+    action,
+    target_type,
+    target_id,
+    enterprise_id,
+    project_id,
+    request_id,
+    result,
+    after_state,
+    metadata
+  ) values (
+    p_actor_issuer,
+    p_actor_subject,
+    coalesce(p_actor_roles, '{}'::text[]),
+    'airs_reward.issued',
+    'project_activity_completion',
+    v_completion.id,
+    v_enterprise_id,
+    v_completion.project_id,
+    p_request_id,
+    'allowed',
+    to_jsonb(v_completion),
+    jsonb_build_object('ledgerEntryId', v_ledger_entry_id)
+  );
+
+  return jsonb_build_object(
+    'ok', true,
+    'idempotent', false,
+    'completionId', v_completion.id,
+    'ledgerEntryId', v_ledger_entry_id,
+    'airsDelta', v_completion.awarded_airs
+  );
+end;
+$$;
+
+revoke all on function public.marketplace_reorder_project_media(
+  uuid, jsonb, text, text, text[], text
+) from public, anon, authenticated;
+revoke all on function public.marketplace_approve_activity_completion(
+  uuid, text, text, text[], text, text
+) from public, anon, authenticated;
+
+grant execute on function public.marketplace_reorder_project_media(
+  uuid, jsonb, text, text, text[], text
+) to service_role;
+grant execute on function public.marketplace_approve_activity_completion(
+  uuid, text, text, text[], text, text
+) to service_role;
+
+notify pgrst, 'reload schema';
+
+commit;
