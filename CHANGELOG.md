@@ -1,3 +1,13 @@
+## [1.1.104](https://github.com/alternun-development/alternun/compare/v1.1.103...v1.1.104) (2026-10-22)
+
+### Documentation
+
+- **identity:** document Authentik platform access and bootstrap state ([6195422](https://github.com/alternun-development/alternun/commit/6195422752a11adfb9c35b57481220caef28307a))
+
+### Bug Fixes
+
+- **web:** bump next to 15.5.28 for GHSA-2464-fhr4-w9xw ([6ac881b](https://github.com/alternun-development/alternun/commit/6ac881bc46eeb4d29f3c2ad0fd3d2e9020c500df))
+
 ## [1.1.103](https://github.com/alternun-development/alternun/compare/v1.1.102...v1.1.103) (2026-10-22)
 
 ### Bug Fixes
