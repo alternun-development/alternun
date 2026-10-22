@@ -199,7 +199,20 @@ export default function AIRSLeaderboard({
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: bg }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: bg,
+          borderRadius: 24,
+          borderWidth: 1,
+          borderColor: isDark ? 'rgba(30,230,181,0.14)' : 'rgba(13,148,136,0.16)',
+          boxShadow: isDark
+            ? '0px 12px 36px rgba(30,230,181,0.08), inset 0px 0px 24px rgba(30,230,181,0.04)'
+            : '0px 10px 28px rgba(13,148,136,0.10)',
+        },
+      ]}
+    >
       <View style={styles.sectionHeader}>
         <View style={styles.titleBlock}>
           <Text style={[styles.sectionTitle, { color: textColor }]}>Top AIRS</Text>
