@@ -33,7 +33,10 @@ test('BetterAuthExecutionProvider normalizes social sign-in results', async () =
   const result = await provider.signIn({ provider: 'google', flow: 'redirect' });
   assert.equal(result.externalIdentity?.provider, 'google');
   assert.equal(result.externalIdentity?.providerUserId, 'google-123');
-  assert.equal((await provider.getExecutionSession())?.accessToken, 'exec-token');
+  assert.equal(result.session?.exchangeBearerToken, null);
+  const session = await provider.getExecutionSession();
+  assert.equal(session?.accessToken, 'exec-token');
+  assert.equal(session?.exchangeBearerToken, null);
 });
 
 test('BetterAuthExecutionProvider normalizes nested Better Auth session payloads', async () => {
@@ -68,9 +71,56 @@ test('BetterAuthExecutionProvider normalizes nested Better Auth session payloads
 
   assert.equal(session?.provider, 'better-auth');
   assert.equal(session?.accessToken, 'session-token-123');
+  assert.equal(session?.exchangeBearerToken, null);
   assert.equal(session?.refreshToken, 'refresh-token-123');
   assert.equal(session?.externalIdentity?.providerUserId, 'better-auth-user-123');
   assert.equal(session?.externalIdentity?.avatarUrl, 'https://example.com/avatar.png');
+});
+
+test('BetterAuthExecutionProvider does not promote a session row id to exchange bearer', async () => {
+  const provider = new BetterAuthExecutionProvider({
+    client: {
+      runtime: 'web',
+      getSession: async () => ({
+        data: {
+          user: {
+            id: 'better-auth-user-123',
+            email: 'ada@example.com',
+          },
+          session: {
+            id: 'session-row-id',
+            userId: 'better-auth-user-123',
+          },
+        },
+      }),
+    },
+  });
+
+  const session = await provider.getExecutionSession();
+
+  assert.equal(session?.accessToken, 'session-row-id');
+  assert.equal(session?.exchangeBearerToken, null);
+});
+
+test('BetterAuthExecutionProvider marks only the native getSessionToken value for exchange', async () => {
+  const provider = new BetterAuthExecutionProvider({
+    client: {
+      runtime: 'native',
+      getUser: async () => ({
+        id: 'better-auth-user-123',
+        email: 'ada@example.com',
+        provider: 'discord',
+        providerUserId: 'discord-123',
+        metadata: {},
+      }),
+      getSessionToken: async () => 'signed-session-token',
+    },
+  });
+
+  const session = await provider.getExecutionSession();
+
+  assert.equal(session?.accessToken, 'signed-session-token');
+  assert.equal(session?.exchangeBearerToken, 'signed-session-token');
 });
 
 test('BetterAuthExecutionProvider forwards email fallback auth-state updates', async () => {
@@ -1130,7 +1180,9 @@ test('SupabaseExecutionProvider adapts legacy auth client behavior', async () =>
   const provider = new SupabaseExecutionProvider(client);
   const user = await provider.signInWithEmail('ada@example.com', 'password123');
   assert.equal(user.email, 'ada@example.com');
-  assert.equal((await provider.getExecutionSession())?.accessToken, 'session-token');
+  const session = await provider.getExecutionSession();
+  assert.equal(session?.accessToken, 'session-token');
+  assert.equal(session?.exchangeBearerToken, 'session-token');
 
   await provider.signOut();
   assert.equal(signOutCalled, true);
