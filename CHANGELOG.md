@@ -1,3 +1,39 @@
+## [1.1.101](https://github.com/alternun-development/alternun/compare/v1.1.100...v1.1.101) (2026-10-22)
+
+### Bug Fixes
+
+- **repo:** chore(versioning): refresh reentry status after PR integration batch
+- **repo:** docs(marketplace): document admin roles, Authentik groups, and assignment
+- **repo:** fix(db): close moderator media reorder and sub_admin approval in SQL
+- **repo:** fix(marketplace): stop global moderator from pausing activities
+- **repo:** feat(infra): map one Authentik group to each admin role
+
+### Bug Fixes
+
+- **admin:** align marketplace permissions with the API role limits ([1c7ac55](https://github.com/alternun-development/alternun/commit/1c7ac557053546aafb1ce880322414d96b029b08)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **api:** require a verified session for /auth/exchange (refs [#100](https://github.com/alternun-development/alternun/issues/100)) ([ff0d43c](https://github.com/alternun-development/alternun/commit/ff0d43c1cd9ec479381094af140a2712bd8c286a))
+- **api:** restrict CORS to trusted origins (refs [#100](https://github.com/alternun-development/alternun/issues/100)) ([c6ba118](https://github.com/alternun-development/alternun/commit/c6ba118982baf54322dd6291e2d641ae09877e86))
+- **auth:** send credentials and drop legacy exchange fields (refs [#100](https://github.com/alternun-development/alternun/issues/100)) ([2b90bd5](https://github.com/alternun-development/alternun/commit/2b90bd534b24089402a24a86cfe09be6d899db94))
+- **db:** close moderator media reorder and sub_admin approval in SQL ([55b7ece](https://github.com/alternun-development/alternun/commit/55b7ece56b61bdea187e541573e59ca21aca57cf)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **marketplace:** stop global moderator from approving activities and protect brand media ([6826a07](https://github.com/alternun-development/alternun/commit/6826a0784ffac307d2b9650a1969bfa25000165a)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **marketplace:** stop global moderator from pausing activities ([62c1f13](https://github.com/alternun-development/alternun/commit/62c1f1381ea5c857f8aefd3fa9f69d7242cec30d)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **mobile:** embed the Canva presentation on the web project detail ([36c1321](https://github.com/alternun-development/alternun/commit/36c132146c2739b8f28cb618816c292f69242dbd))
+- **mobile:** show the Airs title, description and logo in link previews ([610133a](https://github.com/alternun-development/alternun/commit/610133a51ac682ba06946f0abdb31c1bd8ddc580))
+- **ui:** never show a negative progress to the next tier ([fa06554](https://github.com/alternun-development/alternun/commit/fa0655498c73985bc967ccfcfba4d5dca775c251))
+
+### Features
+
+- **api:** accept marketplace project proposals and notify by email ([192cb4e](https://github.com/alternun-development/alternun/commit/192cb4eb5ea3f875b0dceb1d63b0696ab81788ad))
+- **api:** return provisional participation factor from /v1/airs/me ([6eec5b3](https://github.com/alternun-development/alternun/commit/6eec5b30cbce48b02bf3d7fb9f01f4658ef0cfed))
+- **db:** store marketplace project proposals ([924972d](https://github.com/alternun-development/alternun/commit/924972d7bd51c978b4be016f710ac293e12425dd))
+- **i18n:** add accessible title for the project presentation embed ([04ec26a](https://github.com/alternun-development/alternun/commit/04ec26a56f9ccc391853b8dfa2899f9b1c2cd654))
+- **i18n:** add enterprise directory view and pagination labels ([d118c5f](https://github.com/alternun-development/alternun/commit/d118c5f42584f4b807f0a18d3cd6d6a2a9774961))
+- **infra:** map one Authentik group to each admin role ([863818f](https://github.com/alternun-development/alternun/commit/863818f4f842d14064f1d4c66ab378de9d6424f9)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **mobile:** label provisional FP as estimated and clarify RBI help texts ([d922c46](https://github.com/alternun-development/alternun/commit/d922c467484012d6b53cbf1f8859376e8956eabc))
+- **mobile:** paginate the Explorer enterprise directory with three views ([d34d1e0](https://github.com/alternun-development/alternun/commit/d34d1e07e1834b5036fdd119739ee2f6fc6aa1f1))
+- **mobile:** scroll back to the enterprise list on page or view change ([5c54535](https://github.com/alternun-development/alternun/commit/5c54535845b01ed250ce73b861bc721d9b893899))
+- **mobile:** send Explorer project proposals to the API ([f98d194](https://github.com/alternun-development/alternun/commit/f98d1942b42132fd6aa9deb76736156bf8824dd0))
+
 ## [1.1.100](https://github.com/alternun-development/alternun/compare/v1.1.99...v1.1.100) (2026-10-18)
 
 ### Bug Fixes
