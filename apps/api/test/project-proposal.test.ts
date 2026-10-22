@@ -143,7 +143,7 @@ test('project proposal email escapes submitted HTML', () => {
     projectName: '<script>alert(1)</script>',
     message: '<img src=x onerror=alert(1)>',
   });
-  assert.doesNotMatch(email.html, /<script>|<img/);
+  assert.doesNotMatch(email.html, /<(?:script|img)\b/i);
   assert.match(email.html, /&lt;script&gt;/);
   assert.match(email.text, /<script>alert\(1\)<\/script>/);
 });
