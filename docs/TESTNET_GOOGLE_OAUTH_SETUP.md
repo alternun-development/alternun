@@ -373,7 +373,7 @@ pnpm infra:deploy:dashboard-dev
    curl -i -H "Origin: https://testnet.airs.alternun.co" \
      https://testnet.api.alternun.co/auth/session
    ```
-   Should return `Access-Control-Allow-Origin: https://testnet.airs.alternun.co` or `*`
+   Should return `Access-Control-Allow-Origin: https://testnet.airs.alternun.co`; untrusted origins and requests without `Origin` receive no CORS headers.
 3. **Check client config**:
    - Frontend should have `EXPO_PUBLIC_BETTER_AUTH_URL=https://testnet.api.alternun.co`
    - It should call the auth handler with `credentials: 'include'`
