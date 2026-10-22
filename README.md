@@ -120,60 +120,22 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.101**
+Current version: **1.1.102**
 
-## 📋 Latest Changes (v1.1.101)
+## 📋 Latest Changes (v1.1.102)
 
 ### Bug Fixes
 
-- **mobile:** localize the web tab title and link the FP note to the docs ([19b600e](https://github.com/alternun-development/alternun/commit/19b600e2250d99402a2cd92d42b89483c413093d))
-- **api:** address CodeQL alerts from release v1.1.101 ([6a1c956](https://github.com/alternun-development/alternun/commit/6a1c9563ee9c3d7d36e4d4a019e7378f099df306))
-- **db:** close moderator media reorder and sub_admin approval in SQL ([55b7ece](https://github.com/alternun-development/alternun/commit/55b7ece56b61bdea187e541573e59ca21aca57cf))
-- **marketplace:** stop global moderator from pausing activities ([62c1f13](https://github.com/alternun-development/alternun/commit/62c1f1381ea5c857f8aefd3fa9f69d7242cec30d))
-- **admin:** align marketplace permissions with the API role limits ([1c7ac55](https://github.com/alternun-development/alternun/commit/1c7ac557053546aafb1ce880322414d96b029b08))
-- **marketplace:** stop global moderator from approving activities and protect brand media ([6826a07](https://github.com/alternun-development/alternun/commit/6826a0784ffac307d2b9650a1969bfa25000165a))
-- **mobile:** show the Airs title, description and logo in link previews ([610133a](https://github.com/alternun-development/alternun/commit/610133a51ac682ba06946f0abdb31c1bd8ddc580))
-- **mobile:** embed the Canva presentation on the web project detail ([36c1321](https://github.com/alternun-development/alternun/commit/36c132146c2739b8f28cb618816c292f69242dbd))
-- **ui:** never show a negative progress to the next tier ([fa06554](https://github.com/alternun-development/alternun/commit/fa0655498c73985bc967ccfcfba4d5dca775c251))
-- **api:** require a verified session for /auth/exchange (refs #100) ([ff0d43c](https://github.com/alternun-development/alternun/commit/ff0d43c1cd9ec479381094af140a2712bd8c286a))
-- **auth:** send credentials and drop legacy exchange fields (refs #100) ([2b90bd5](https://github.com/alternun-development/alternun/commit/2b90bd534b24089402a24a86cfe09be6d899db94))
-- **api:** restrict CORS to trusted origins (refs #100) ([c6ba118](https://github.com/alternun-development/alternun/commit/c6ba118982baf54322dd6291e2d641ae09877e86))
+- **repo:** fix(repo): artifact, graph.db
+- **repo:** feat(mobile): center content column with max width and gutters on large screens
 
-### Changes
+### Bug Fixes
 
-- **versioning:** refresh reentry status after PR integration batch ([53a08e0](https://github.com/alternun-development/alternun/commit/53a08e08bd773299d7f12e760d526b3da0832937))
-- **repo:** update reentry for the Airs share link preview ([4159be5](https://github.com/alternun-development/alternun/commit/4159be55d4e725571bdc78f1fcf0261311f094c5))
-- **mobile:** publish the official Airs logo for link previews ([30f63da](https://github.com/alternun-development/alternun/commit/30f63da709eb60bfe70f850a889d2755e4c89291))
-- **repo:** update reentry for the paginated Explorer enterprise directory ([f376e59](https://github.com/alternun-development/alternun/commit/f376e59aef8aa6178b52ddd6ff2ccc2608ee7dc5))
-- **repo:** update reentry for the project detail Canva embed ([3b11de4](https://github.com/alternun-development/alternun/commit/3b11de41e32582aa6d1dbc161d42c9f71e0f3ae7))
-- **repo:** update reentry for marketplace project proposals ([49d5939](https://github.com/alternun-development/alternun/commit/49d5939b7fe9133c1beb2653c4ae9aaec2f47b1f))
-- **infra:** wire MARKETPLACE_CONTACT_EMAIL through env and deploys ([f91e786](https://github.com/alternun-development/alternun/commit/f91e7861ed63c1cc451e0d6b0fe533c26cd7c6b9))
-- **db:** verify project proposal rate limits and authenticated denial ([e721e42](https://github.com/alternun-development/alternun/commit/e721e42680ba0eb91839b735b40660eda0dd9699))
-- **airs:** note pending community equivalent AIRS and update reentry ([402244b](https://github.com/alternun-development/alternun/commit/402244b5319a4f300f5dc468b70f79dd8f2a15e4))
-- **api:** add HTTP-level regression test for /auth/exchange (refs #100) ([a259ad0](https://github.com/alternun-development/alternun/commit/a259ad03b8c6a40700388826e5fabeca48968cc6))
-
-### Documentation
-
-- **marketplace:** document admin roles, Authentik groups, and assignment ([b287d33](https://github.com/alternun-development/alternun/commit/b287d33be1184ec449617b3782c15f44ce66c757))
-- **auth:** drop branch-specific wording from the backend handoff (refs #100) ([6bd25f1](https://github.com/alternun-development/alternun/commit/6bd25f148cce6695cc3e5d0b62c0653ae1883837))
-- **auth:** update backend handoff now that the client sends credentials (refs #100) ([cb18da6](https://github.com/alternun-development/alternun/commit/cb18da68e08102714e77b97ad6ca804a17ff8ab0))
+- **repo:** artifact, graph.db ([a6dc886](https://github.com/alternun-development/alternun/commit/a6dc886142a1b2efefe4a1e5a30119b209b78251))
 
 ### Features
 
-- **infra:** map one Authentik group to each admin role ([863818f](https://github.com/alternun-development/alternun/commit/863818f4f842d14064f1d4c66ab378de9d6424f9))
-- **mobile:** scroll back to the enterprise list on page or view change ([5c54535](https://github.com/alternun-development/alternun/commit/5c54535845b01ed250ce73b861bc721d9b893899))
-- **mobile:** paginate the Explorer enterprise directory with three views ([d34d1e0](https://github.com/alternun-development/alternun/commit/d34d1e07e1834b5036fdd119739ee2f6fc6aa1f1))
-- **i18n:** add enterprise directory view and pagination labels ([d118c5f](https://github.com/alternun-development/alternun/commit/d118c5f42584f4b807f0a18d3cd6d6a2a9774961))
-- **i18n:** add accessible title for the project presentation embed ([04ec26a](https://github.com/alternun-development/alternun/commit/04ec26a56f9ccc391853b8dfa2899f9b1c2cd654))
-- **mobile:** send Explorer project proposals to the API ([f98d194](https://github.com/alternun-development/alternun/commit/f98d1942b42132fd6aa9deb76736156bf8824dd0))
-- **api:** accept marketplace project proposals and notify by email ([192cb4e](https://github.com/alternun-development/alternun/commit/192cb4eb5ea3f875b0dceb1d63b0696ab81788ad))
-- **mobile:** label provisional FP as estimated and clarify RBI help texts ([d922c46](https://github.com/alternun-development/alternun/commit/d922c467484012d6b53cbf1f8859376e8956eabc))
-- **api:** return provisional participation factor from /v1/airs/me ([6eec5b3](https://github.com/alternun-development/alternun/commit/6eec5b30cbce48b02bf3d7fb9f01f4658ef0cfed))
-- **db:** store marketplace project proposals ([924972d](https://github.com/alternun-development/alternun/commit/924972d7bd51c978b4be016f710ac293e12425dd))
-
-### Refactoring
-
-- **auth:** use an explicit bearer token field for the exchange (refs #100) ([f3a7171](https://github.com/alternun-development/alternun/commit/f3a7171228eadc9049f9468acac8f78ebb977d2a))
+- **mobile:** center content column with max width and gutters on large screens ([89ddf7a](https://github.com/alternun-development/alternun/commit/89ddf7ae251d821c090a11e0e964fc26de948484))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
