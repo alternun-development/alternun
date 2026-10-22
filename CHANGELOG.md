@@ -1,3 +1,19 @@
+## [1.1.105](https://github.com/alternun-development/alternun/compare/v1.1.104...v1.1.105) (2026-10-22)
+
+### Bug Fixes
+
+- **repo:** ci(docs): deploy GitHub Pages from master only, drop v\* tag trigger
+- **repo:** chore(versioning): update reentry next step for the FP liquid bar
+- **repo:** feat(mobile): use the liquid progress bar in the RBI projection card
+- **repo:** feat(mobile): add animated liquid ParticipationFactorBar
+- **repo:** feat(mobile): add liquid progress palette tokens for dark and light themes
+
+### Features
+
+- **mobile:** add animated liquid ParticipationFactorBar ([d29769d](https://github.com/alternun-development/alternun/commit/d29769d2dc8f95fae899add7f1dc20cf357daf46))
+- **mobile:** add liquid progress palette tokens for dark and light themes ([42a89e8](https://github.com/alternun-development/alternun/commit/42a89e86504be83a86441eea052257ec5b402ebc))
+- **mobile:** use the liquid progress bar in the RBI projection card ([8edcfc1](https://github.com/alternun-development/alternun/commit/8edcfc18725239303a919fcd0b954866c5d3ac72))
+
 ## [1.1.104](https://github.com/alternun-development/alternun/compare/v1.1.103...v1.1.104) (2026-10-22)
 
 ### Documentation
