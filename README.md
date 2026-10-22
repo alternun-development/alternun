@@ -124,6 +124,20 @@ Current version: **1.1.101**
 
 ## 📋 Latest Changes (v1.1.101)
 
+### Bug Fixes
+
+- **api:** address CodeQL alerts from release v1.1.101 ([6a1c956](https://github.com/alternun-development/alternun/commit/6a1c9563ee9c3d7d36e4d4a019e7378f099df306))
+- **db:** close moderator media reorder and sub_admin approval in SQL ([55b7ece](https://github.com/alternun-development/alternun/commit/55b7ece56b61bdea187e541573e59ca21aca57cf))
+- **marketplace:** stop global moderator from pausing activities ([62c1f13](https://github.com/alternun-development/alternun/commit/62c1f1381ea5c857f8aefd3fa9f69d7242cec30d))
+- **admin:** align marketplace permissions with the API role limits ([1c7ac55](https://github.com/alternun-development/alternun/commit/1c7ac557053546aafb1ce880322414d96b029b08))
+- **marketplace:** stop global moderator from approving activities and protect brand media ([6826a07](https://github.com/alternun-development/alternun/commit/6826a0784ffac307d2b9650a1969bfa25000165a))
+- **mobile:** show the Airs title, description and logo in link previews ([610133a](https://github.com/alternun-development/alternun/commit/610133a51ac682ba06946f0abdb31c1bd8ddc580))
+- **mobile:** embed the Canva presentation on the web project detail ([36c1321](https://github.com/alternun-development/alternun/commit/36c132146c2739b8f28cb618816c292f69242dbd))
+- **ui:** never show a negative progress to the next tier ([fa06554](https://github.com/alternun-development/alternun/commit/fa0655498c73985bc967ccfcfba4d5dca775c251))
+- **api:** require a verified session for /auth/exchange (refs #100) ([ff0d43c](https://github.com/alternun-development/alternun/commit/ff0d43c1cd9ec479381094af140a2712bd8c286a))
+- **auth:** send credentials and drop legacy exchange fields (refs #100) ([2b90bd5](https://github.com/alternun-development/alternun/commit/2b90bd534b24089402a24a86cfe09be6d899db94))
+- **api:** restrict CORS to trusted origins (refs #100) ([c6ba118](https://github.com/alternun-development/alternun/commit/c6ba118982baf54322dd6291e2d641ae09877e86))
+
 ### Changes
 
 - **versioning:** refresh reentry status after PR integration batch ([53a08e0](https://github.com/alternun-development/alternun/commit/53a08e08bd773299d7f12e760d526b3da0832937))
@@ -142,19 +156,6 @@ Current version: **1.1.101**
 - **marketplace:** document admin roles, Authentik groups, and assignment ([b287d33](https://github.com/alternun-development/alternun/commit/b287d33be1184ec449617b3782c15f44ce66c757))
 - **auth:** drop branch-specific wording from the backend handoff (refs #100) ([6bd25f1](https://github.com/alternun-development/alternun/commit/6bd25f148cce6695cc3e5d0b62c0653ae1883837))
 - **auth:** update backend handoff now that the client sends credentials (refs #100) ([cb18da6](https://github.com/alternun-development/alternun/commit/cb18da68e08102714e77b97ad6ca804a17ff8ab0))
-
-### Bug Fixes
-
-- **db:** close moderator media reorder and sub_admin approval in SQL ([55b7ece](https://github.com/alternun-development/alternun/commit/55b7ece56b61bdea187e541573e59ca21aca57cf))
-- **marketplace:** stop global moderator from pausing activities ([62c1f13](https://github.com/alternun-development/alternun/commit/62c1f1381ea5c857f8aefd3fa9f69d7242cec30d))
-- **admin:** align marketplace permissions with the API role limits ([1c7ac55](https://github.com/alternun-development/alternun/commit/1c7ac557053546aafb1ce880322414d96b029b08))
-- **marketplace:** stop global moderator from approving activities and protect brand media ([6826a07](https://github.com/alternun-development/alternun/commit/6826a0784ffac307d2b9650a1969bfa25000165a))
-- **mobile:** show the Airs title, description and logo in link previews ([610133a](https://github.com/alternun-development/alternun/commit/610133a51ac682ba06946f0abdb31c1bd8ddc580))
-- **mobile:** embed the Canva presentation on the web project detail ([36c1321](https://github.com/alternun-development/alternun/commit/36c132146c2739b8f28cb618816c292f69242dbd))
-- **ui:** never show a negative progress to the next tier ([fa06554](https://github.com/alternun-development/alternun/commit/fa0655498c73985bc967ccfcfba4d5dca775c251))
-- **api:** require a verified session for /auth/exchange (refs #100) ([ff0d43c](https://github.com/alternun-development/alternun/commit/ff0d43c1cd9ec479381094af140a2712bd8c286a))
-- **auth:** send credentials and drop legacy exchange fields (refs #100) ([2b90bd5](https://github.com/alternun-development/alternun/commit/2b90bd534b24089402a24a86cfe09be6d899db94))
-- **api:** restrict CORS to trusted origins (refs #100) ([c6ba118](https://github.com/alternun-development/alternun/commit/c6ba118982baf54322dd6291e2d641ae09877e86))
 
 ### Features
 
