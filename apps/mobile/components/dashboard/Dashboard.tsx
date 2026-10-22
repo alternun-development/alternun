@@ -12,6 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 
 import AppInfoFooter from '../common/AppInfoFooter';
+import { getContentGutter } from '../../utils/layout';
 import { createTypographyStyles } from '../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemeProvider } from '@alternun/ui';
@@ -314,6 +315,7 @@ export default function Dashboard({
   const [topNavHeight, setTopNavHeight] = useState(0);
   const { width } = useWindowDimensions();
   const isMobile = width < 720;
+  const contentGutter = getContentGutter(width);
   const scrollTopInset = Math.max(topNavHeight > 0 ? topNavHeight + 16 : 0, isMobile ? 88 : 104);
   const mobileScrollBottomInset = Math.max(footerHeight + 24, 96);
   const scrollBottomInset = isMobile ? mobileScrollBottomInset : 8;
@@ -544,7 +546,7 @@ export default function Dashboard({
               />
             }
           >
-            <View style={styles.scrollInner}>
+            <View style={[styles.scrollInner, { paddingHorizontal: contentGutter }]}>
               <HeroStats
                 totalAIRS={airsScore}
                 activePositions={userStats ? userStats.activePositions : null}
@@ -611,7 +613,7 @@ export default function Dashboard({
                 setFooterHeight(event.nativeEvent.layout.height);
               }}
             >
-              <AppInfoFooter containerStyle={{ marginTop: 0 }} />
+              <AppInfoFooter containerStyle={{ marginTop: 0, marginHorizontal: contentGutter }} />
             </View>
           )}
 
