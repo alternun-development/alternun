@@ -2,11 +2,6 @@
 
 ### Bug Fixes
 
-- **repo:** fix(repo): artifact, graph.db
-- **repo:** feat(mobile): center content column with max width and gutters on large screens
-
-### Bug Fixes
-
 - **repo:** artifact, graph.db ([a6dc886](https://github.com/alternun-development/alternun/commit/a6dc886142a1b2efefe4a1e5a30119b209b78251))
 
 ### Features
