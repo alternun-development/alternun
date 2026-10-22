@@ -36,16 +36,12 @@ test('AirsService.leaderboard resolves the leaderboard page from RPC payload', a
 
   try {
     process.env.SUPABASE_URL = 'https://supabase.example';
-    process.env.SUPABASE_ANON_KEY = 'anon-key';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.AUTH_BETTER_AUTH_URL = 'https://auth.example';
 
     global.fetch = createFetchQueue(
       [
-        createJsonResponse({
-          user: {
-            id: 'user-123',
-          },
-        }),
+        createJsonResponse({ id: 'user-123' }),
         createJsonResponse([
           {
             rank: 1,
@@ -93,16 +89,12 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
 
   try {
     process.env.SUPABASE_URL = 'https://supabase.example';
-    process.env.SUPABASE_ANON_KEY = 'anon-key';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
     process.env.AUTH_BETTER_AUTH_URL = 'https://auth.example';
 
     global.fetch = createFetchQueue(
       [
-        createJsonResponse({
-          user: {
-            id: 'user-123',
-          },
-        }),
+        createJsonResponse({ id: 'user-123' }),
         createJsonResponse({
           total_count: 8,
           page: 1,
@@ -181,4 +173,47 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
     global.fetch = originalFetch;
     process.env = originalEnv;
   }
+});
+
+test('processAirsDashboardSnapshot returns the provisional FP flagged as estimated', async () => {
+  const {
+    processAirsDashboardSnapshot,
+    PROVISIONAL_PARTICIPATION_FACTOR,
+  } = require('../src/modules/airs/airs.service.ts');
+
+  const snapshot = await processAirsDashboardSnapshot(
+    { token: 'Bearer session-token' },
+    {
+      verifySessionToken: async () => ({
+        appUserId: 'user-123',
+        principalId: 'principal-123',
+        email: null,
+        displayName: null,
+        issuer: 'https://auth.example',
+        tokenUse: 'access',
+        emailVerified: true,
+      }),
+      getDashboardSnapshot: async () => ({
+        userId: 'user-123',
+        email: null,
+        displayName: 'Ada',
+        locale: 'es',
+        profileComplete: true,
+        firstDashboardRecorded: true,
+        registrationBonusClaimed: true,
+        welcomeEmailSentAt: null,
+        profileBonusAwardedAt: null,
+        profileCompletedAt: null,
+        airsBalance: 200,
+        airsLifetimeEarned: 200,
+        recentLedgerEntries: [],
+      }),
+      env: {},
+    }
+  );
+
+  assert.equal(PROVISIONAL_PARTICIPATION_FACTOR, 0.5);
+  assert.equal(snapshot.participationFactor, 0.5);
+  assert.equal(snapshot.participationFactorEstimated, true);
+  assert.equal(snapshot.airsBalance, 200);
 });

@@ -1,10 +1,9 @@
 import {
   createAlternunAuthentikPreset,
+  resolveAuthRuntimeConfig,
   resolveAuthentikClientId,
   resolveAuthentikIssuer,
   resolveAuthentikRedirectUri,
-  upsertOidcUser,
-  type OidcClaims,
 } from '@alternun/auth';
 export {
   clearPendingAuthentikOAuthProvider,
@@ -58,17 +57,57 @@ interface LegacyProvisioningAdapter {
   sync(payload: LegacyProvisioningPayload): Promise<LegacyProvisioningResult>;
 }
 
-function toOidcClaims(payload: LegacyProvisioningPayload,): OidcClaims {
-  const rawClaims = payload.rawClaims ?? {};
+interface BackendProvisioningResponse {
+  appUserId?: string | null;
+  syncStatus?: string | null;
+}
+
+async function provisionAuthentikUserThroughApi(
+  payload: LegacyProvisioningPayload
+): Promise<LegacyProvisioningResult> {
+  const authExchangeUrl = resolveAuthRuntimeConfig().authExchangeUrl;
+  if (!authExchangeUrl) {
+    throw new Error('Auth exchange URL is not configured for Authentik provisioning.');
+  }
+
+  const response = await fetch(authExchangeUrl, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      externalIdentity: {
+        provider: payload.provider ?? 'authentik',
+        providerUserId: payload.sub,
+        email: payload.email,
+        emailVerified: payload.emailVerified,
+        displayName: payload.name,
+        avatarUrl: payload.picture,
+        rawClaims: payload.rawClaims ?? {},
+      },
+      context: {
+        trigger: 'authentik-callback',
+        runtime: 'mobile',
+        app: 'alternun-mobile',
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Auth backend provisioning failed (${response.status} ${response.statusText}): ${text}`
+    );
+  }
+
+  const result = (await response.json()) as BackendProvisioningResponse;
+  if (result.syncStatus !== 'synced' || !result.appUserId) {
+    throw new Error('Auth backend did not confirm Authentik user provisioning.');
+  }
 
   return {
-    sub: payload.sub,
-    iss: payload.iss,
-    email: payload.email,
-    email_verified: payload.emailVerified,
-    name: payload.name ?? undefined,
-    picture: payload.picture ?? undefined,
-    ...rawClaims,
+    synced: true,
+    appUserId: result.appUserId,
   };
 }
 
@@ -76,20 +115,19 @@ export const authentikPreset = createAlternunAuthentikPreset({
   issuer:
     resolveAuthentikIssuer(
       process.env.EXPO_PUBLIC_AUTHENTIK_ISSUER,
-      typeof window !== 'undefined' ? window.location.origin : undefined,
-      resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID,),
+      typeof window !== 'undefined' ? window.location?.origin : undefined,
+      resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID)
     ) ?? '',
-  clientId: resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID,),
+  clientId: resolveAuthentikClientId(process.env.EXPO_PUBLIC_AUTHENTIK_CLIENT_ID),
   redirectUri:
     resolveAuthentikRedirectUri(
       process.env.EXPO_PUBLIC_AUTHENTIK_REDIRECT_URI,
-      typeof window !== 'undefined' ? window.location.origin : undefined,
+      typeof window !== 'undefined' ? window.location?.origin : undefined
     ) ?? '',
   provisioningAdapter: {
-    async sync(payload: LegacyProvisioningPayload,): Promise<LegacyProvisioningResult> {
+    async sync(payload: LegacyProvisioningPayload): Promise<LegacyProvisioningResult> {
       try {
-        const appUserId = await upsertOidcUser(toOidcClaims(payload,), payload.provider,);
-        return { synced: true, appUserId, };
+        return await provisionAuthentikUserThroughApi(payload);
       } catch (err) {
         return {
           synced: false,
@@ -98,4 +136,4 @@ export const authentikPreset = createAlternunAuthentikPreset({
       }
     },
   } as LegacyProvisioningAdapter,
-},);
+});

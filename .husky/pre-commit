@@ -15,3 +15,6 @@ if [ "${ALTERNUN_RELEASE_COMMIT:-false}" = "true" ]; then
 else
   npx lint-staged
 fi
+
+# Keep top-level types in dedicated type modules, not component files.
+pnpm -s check:component-types:staged

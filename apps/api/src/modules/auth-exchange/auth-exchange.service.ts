@@ -47,6 +47,21 @@ function firstNonEmptyTrimmed(values: Array<string | undefined | null>): string 
   return null;
 }
 
+// Preserves rows provisioned by the legacy client upsert path: a Supabase-verified OIDC
+// identity carries the provider's own user id, which is the legacy (sub, iss) key the
+// upsert_oidc_user_compat RPC adopts in place. Better Auth internal ids are not legacy
+// OIDC subjects, so they carry no legacy linkage.
+function legacyIdentityClaims(resolved: ResolvedExecutionIdentity): {
+  legacySub: string | null;
+  legacyIss: string | null;
+} {
+  if (resolved.source !== 'supabase' || resolved.provider === 'email') {
+    return { legacySub: null, legacyIss: null };
+  }
+
+  return { legacySub: resolved.providerUserId, legacyIss: canonicalIssuerFromEnv() };
+}
+
 function normalizeExternalIdentity(
   input: AuthExchangeRequestShape['externalIdentity'],
   resolved: ResolvedExecutionIdentity
@@ -113,6 +128,7 @@ export class AuthExchangeService {
     const issuer = canonicalIssuerFromEnv();
     const audience = defaultAudienceFromEnv();
     const signingKey = this.resolveSigningKey();
+    const { legacySub, legacyIss } = legacyIdentityClaims(resolvedIdentity);
 
     if (!signingKey) {
       throw new ServiceUnavailableException('AUTHENTIK_JWT_SIGNING_KEY is not configured.');
@@ -122,6 +138,8 @@ export class AuthExchangeService {
       {
         sub: `${externalIdentity.provider}:${externalIdentity.providerUserId}`,
         iss: issuer,
+        legacySub,
+        legacyIss,
         email: externalIdentity.email,
         emailVerified: externalIdentity.emailVerified,
         name: externalIdentity.displayName,

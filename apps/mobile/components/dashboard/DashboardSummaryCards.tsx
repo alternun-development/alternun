@@ -8,38 +8,22 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import {
-  ChevronDown,
-  ChevronRight,
-  Coins,
-  TrendingUp,
-  Wallet,
-  type LucideProps,
-} from 'lucide-react-native';
+import { ChevronDown, ChevronRight, Coins, Wallet, type LucideProps } from 'lucide-react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { listWalletAccounts, type WalletAccountRecord } from '../wallet/walletApiClient';
 import { resolveWalletSummaryState } from './walletSummary';
 import { getDashboardSummaryCardsLayout } from './dashboardSummaryCardsLayout';
+import { calculateRbiProjection } from './rbiProjection';
+import { MetricInfoTooltip } from './MetricInfoTooltip';
+import type { DashboardSummaryCardsProps, RewardAsset } from './types';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
-const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
 const WalletIcon = Wallet as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const ChevronRightIcon = ChevronRight as React.FC<LucideProps>;
-
-interface AuthClient {
-  getSessionToken(): Promise<string | null>;
-}
-
-interface DashboardSummaryCardsProps {
-  isDark: boolean;
-  onNavigate?: (key: string) => void;
-  client?: AuthClient;
-  signedIn?: boolean;
-  airsBalance?: number | null;
-}
 
 function getPalette(isDark: boolean): {
   cardBg: string;
@@ -59,7 +43,9 @@ function getPalette(isDark: boolean): {
   panelBorder: string;
   iconBg: string;
   iconColor: string;
-  heroBadgeBg: string;
+  factorTrack: string;
+  factorTick: string;
+  factorText: string;
 } {
   return isDark
     ? {
@@ -80,7 +66,9 @@ function getPalette(isDark: boolean): {
         panelBorder: 'rgba(128,146,184,0.18)',
         iconBg: 'rgba(58,78,124,0.28)',
         iconColor: '#9FB2FF',
-        heroBadgeBg: '#3140A8',
+        factorTrack: '#71809E',
+        factorTick: '#F3F6FC',
+        factorText: '#D0D8E8',
       }
     : {
         cardBg: '#FBFCFE',
@@ -100,7 +88,9 @@ function getPalette(isDark: boolean): {
         panelBorder: 'rgba(119,126,155,0.22)',
         iconBg: 'rgba(49,58,145,0.08)',
         iconColor: '#313A91',
-        heroBadgeBg: '#313A91',
+        factorTrack: '#64748B',
+        factorTick: '#FFFFFF',
+        factorText: '#475569',
       };
 }
 
@@ -203,21 +193,32 @@ function Divider({
   );
 }
 
-function StatValue({
+const RBI_DOCUMENTATION_URL =
+  'https://docs.alternun.io/docs/tutorial-basics/airs-tu-huella-regenerativa';
+const TERMS_URL = 'https://docs.alternun.io/terms';
+const PARTICIPATION_FACTOR_MARKS = [0, 15, 50, 100] as const;
+
+function formatMetricValue(value: number | null): string | null {
+  return value === null ? null : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function formatFactorPercent(value: number): string {
+  return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function RbiStatValue({
   value,
   loading,
   p,
   compact = false,
   dense = false,
 }: {
-  value?: number | null;
+  value: string | null;
   loading?: boolean;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   dense?: boolean;
 }): React.JSX.Element {
-  const t = useAppTranslation();
-
   if (loading) {
     return <ActivityIndicator size='small' color={p.accent} />;
   }
@@ -231,14 +232,13 @@ function StatValue({
         { color: p.title },
       ]}
     >
-      {typeof value === 'number'
-        ? value.toLocaleString()
-        : t.t('dashboard.summaryCards.comingSoon')}
+      {value ?? '—'}
     </Text>
   );
 }
 
 function RBICard({
+  isDark,
   p,
   compact = false,
   mobile = false,
@@ -247,8 +247,12 @@ function RBICard({
   eligibleUsersLoading = false,
   airsScore,
   airsScoreLoading = false,
+  participationFactor,
+  participationFactorEstimated = false,
+  communityEligibleAirs,
   minHeight,
 }: {
+  isDark: boolean;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   mobile?: boolean;
@@ -257,19 +261,51 @@ function RBICard({
   eligibleUsersLoading?: boolean;
   airsScore?: number | null;
   airsScoreLoading?: boolean;
+  participationFactor?: number | null;
+  participationFactorEstimated?: boolean;
+  communityEligibleAirs?: number | null;
   minHeight?: number;
 }): React.JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
   const useDenseLayout = dense;
   const t = useAppTranslation();
-  const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
-
-  const getDocumentationUrl = (): string => {
-    const baseUrl = 'https://docs.alternun.io';
-    const path = '/docs/tutorial-basics/airs-tu-huella-regenerativa';
-
-    return `${baseUrl}${path}`;
-  };
+  const metricInfoCloseLabel = t.t('dashboard.summaryCards.metricInfo.closeLabel');
+  const metrics = calculateRbiProjection({
+    airs: airsScore,
+    participationFactor,
+    communityEligibleAirs,
+  });
+  const factorPercent = metrics.participationFactorPercent;
+  const factorAvailable = factorPercent !== null;
+  const factorValueText = factorAvailable
+    ? `FP ${formatFactorPercent(factorPercent)} %${
+        participationFactorEstimated ? ` · ${t.t('dashboard.summaryCards.rbi.estimated')}` : ''
+      }`
+    : t.t('dashboard.summaryCards.rbi.notAvailable');
+  const markerOffset = factorPercent === 0 ? 0 : factorPercent === 100 ? -12 : -6;
+  const metricRows = [
+    {
+      testID: 'dashboard-rbi-eligible-airs',
+      label: t.t('dashboard.summaryCards.rbi.eligibleAirs'),
+      value: formatMetricValue(metrics.eligibleAirs),
+      loading: airsScoreLoading && participationFactor != null,
+      tooltipDescription: t.t('dashboard.summaryCards.metricInfo.eligibleAirs'),
+    },
+    {
+      testID: 'dashboard-rbi-eligible-users',
+      label: t.t('dashboard.summaryCards.rbi.eligibleUsers'),
+      value: typeof eligibleUsers === 'number' ? eligibleUsers.toLocaleString() : null,
+      loading: eligibleUsersLoading,
+      tooltipDescription: t.t('dashboard.summaryCards.metricInfo.eligibleUsers'),
+    },
+    {
+      testID: 'dashboard-rbi-aliquot',
+      label: t.t('dashboard.summaryCards.rbi.aliquot'),
+      value: metrics.aliquotPercent === null ? null : `${metrics.aliquotPercent.toFixed(2)} %`,
+      loading: false,
+      tooltipDescription: t.t('dashboard.summaryCards.metricInfo.aliquot'),
+    },
+  ];
 
   return (
     <SummaryCard
@@ -289,106 +325,171 @@ function RBICard({
 
       <View
         testID='dashboard-rbi-status'
+        accessibilityRole='adjustable'
+        accessibilityLabel={t.t('dashboard.summaryCards.rbi.subtitle')}
+        accessibilityState={{ disabled: !factorAvailable }}
+        aria-disabled={!factorAvailable}
+        aria-valuetext={factorValueText}
+        aria-valuenow={factorPercent ?? undefined}
+        accessibilityValue={
+          factorAvailable
+            ? { min: 0, max: 100, now: factorPercent, text: factorValueText }
+            : { text: factorValueText }
+        }
         style={[
-          styles.rbiHero,
-          compact && styles.rbiHeroCompact,
-          mobile && styles.rbiHeroMobile,
-          mobile && { backgroundColor: p.accentSoft, borderColor: p.accent },
+          styles.factorPanel,
+          compact && styles.factorPanelCompact,
+          mobile && styles.factorPanelMobile,
+          { backgroundColor: p.panelBg, borderColor: p.panelBorder },
         ]}
       >
-        <Text
-          style={[
-            styles.rbiValue,
-            compact && styles.rbiValueCompact,
-            mobile && styles.rbiValueMobile,
-            { color: p.accent },
-          ]}
-        >
-          {comingSoonLabel}
-        </Text>
-        <View
-          testID='dashboard-rbi-hero-icon'
-          style={[
-            styles.heroBadge,
-            compact && styles.heroBadgeCompact,
-            { backgroundColor: p.heroBadgeBg },
-          ]}
-        >
-          <CoinsIcon size={14} color='#F8FAFC' />
+        <View style={styles.factorHeader}>
+          <View style={styles.metricLabelGroup}>
+            <Text style={[styles.factorLabel, { color: p.factorText }]}>FP</Text>
+            <MetricInfoTooltip
+              testID='dashboard-metric-info-participation-factor'
+              title={t.t('dashboard.summaryCards.rbi.subtitle')}
+              accessibilityLabel={t.t('dashboard.summaryCards.metricInfo.openLabel', {
+                metric: 'FP',
+              })}
+              description={t.t('dashboard.summaryCards.metricInfo.participationFactor')}
+              closeLabel={metricInfoCloseLabel}
+              isDark={isDark}
+            />
+          </View>
+          <Text
+            testID='dashboard-rbi-factor-value'
+            style={[styles.factorValueText, { color: factorAvailable ? p.title : p.factorText }]}
+          >
+            {factorValueText}
+          </Text>
+        </View>
+        <View style={styles.factorTrackArea}>
+          <View
+            testID='dashboard-rbi-factor-track'
+            style={[
+              styles.factorGradientTrack,
+              !factorAvailable && { backgroundColor: p.factorTrack },
+            ]}
+          >
+            {factorAvailable && (
+              <Svg width='100%' height='100%' viewBox='0 0 100 12' preserveAspectRatio='none'>
+                <Defs>
+                  <LinearGradient id='rbi-factor-gradient' x1='0%' y1='0%' x2='100%' y2='0%'>
+                    <Stop offset='0%' stopColor='#D6534D' />
+                    <Stop offset='100%' stopColor='#219A70' />
+                  </LinearGradient>
+                </Defs>
+                <Rect width='100' height='12' rx='6' fill='url(#rbi-factor-gradient)' />
+              </Svg>
+            )}
+          </View>
+          {PARTICIPATION_FACTOR_MARKS.map((mark) => (
+            <View
+              key={mark}
+              style={[
+                styles.factorTick,
+                {
+                  left: `${mark}%`,
+                  backgroundColor: p.factorTick,
+                },
+              ]}
+            />
+          ))}
+          {factorAvailable && (
+            <View
+              testID='dashboard-rbi-factor-marker'
+              accessibilityLabel={factorValueText}
+              style={[
+                styles.factorMarker,
+                {
+                  left: `${factorPercent}%`,
+                  borderColor: p.cardBg,
+                  backgroundColor: p.title,
+                  transform: [{ translateX: markerOffset }],
+                },
+              ]}
+            />
+          )}
+        </View>
+        <View style={styles.factorMarks}>
+          {PARTICIPATION_FACTOR_MARKS.map((mark) => (
+            <View
+              key={mark}
+              testID={`dashboard-rbi-factor-mark-${mark}`}
+              style={[
+                styles.factorMarkLabelWrap,
+                mark === 0 && styles.factorMarkLabelStart,
+                mark === 100 && styles.factorMarkLabelEnd,
+                mark > 0 &&
+                  mark < 100 && {
+                    left: `${mark}%`,
+                    transform: [{ translateX: -18 }],
+                  },
+              ]}
+            >
+              <Text
+                testID={`dashboard-rbi-factor-mark-label-${mark}`}
+                style={[styles.factorMarkLabel, { color: p.factorText }]}
+              >
+                {mark} %
+              </Text>
+            </View>
+          ))}
         </View>
       </View>
 
       <Divider p={p} compact={compact} />
 
       <View style={[styles.statList, compact && styles.statListCompact]}>
-        <View
-          testID='dashboard-rbi-estimated-pool'
-          style={[
-            styles.statRow,
-            useDenseLayout && styles.statRowDense,
-            mobile && styles.statRowMobile,
-            mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-          ]}
-        >
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
-            {t.t('dashboard.summaryCards.rbi.estimatedPool')}
-          </Text>
-          <Text
+        {metricRows.map((row) => (
+          <View
+            key={row.testID}
+            testID={row.testID}
             style={[
-              styles.statValue,
-              compact && styles.statValueCompact,
-              useDenseLayout && styles.statValueDense,
-              { color: p.title },
+              styles.statRow,
+              useDenseLayout && styles.statRowDense,
+              mobile && styles.statRowMobile,
+              mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
             ]}
           >
-            {comingSoonLabel}
-          </Text>
-        </View>
-        <View
-          testID='dashboard-rbi-eligible-users'
-          style={[
-            styles.statRow,
-            useDenseLayout && styles.statRowDense,
-            mobile && styles.statRowMobile,
-            mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-          ]}
-        >
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
-            {t.t('dashboard.summaryCards.rbi.eligibleUsers')}
-          </Text>
-          <StatValue
-            value={eligibleUsers}
-            loading={eligibleUsersLoading}
-            p={p}
-            compact={compact}
-            dense={useDenseLayout}
-          />
-        </View>
-        <View
-          testID='dashboard-rbi-airs-score'
-          style={[
-            styles.statRow,
-            useDenseLayout && styles.statRowDense,
-            mobile && styles.statRowMobile,
-            mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-          ]}
-        >
-          <Text style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}>
-            {t.t('dashboard.summaryCards.rbi.airsScore')}
-          </Text>
-          <StatValue
-            value={airsScore}
-            loading={airsScoreLoading}
-            p={p}
-            compact={compact}
-            dense={useDenseLayout}
-          />
-        </View>
+            <View style={styles.metricLabelGroup}>
+              <Text
+                style={[styles.statLabel, compact && styles.statLabelCompact, { color: p.copy }]}
+              >
+                {row.label}
+              </Text>
+              <MetricInfoTooltip
+                testID={`dashboard-metric-info-${row.testID.replace('dashboard-rbi-', '')}`}
+                title={row.label}
+                accessibilityLabel={t.t('dashboard.summaryCards.metricInfo.openLabel', {
+                  metric: row.label,
+                })}
+                description={row.tooltipDescription}
+                closeLabel={metricInfoCloseLabel}
+                isDark={isDark}
+              />
+            </View>
+            <RbiStatValue
+              value={row.value}
+              loading={row.loading}
+              p={p}
+              compact={compact}
+              dense={useDenseLayout}
+            />
+          </View>
+        ))}
       </View>
 
       <Divider p={p} compact={compact} />
 
-      <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} activeOpacity={0.7}>
+      <TouchableOpacity
+        onPress={() => setIsExpanded(!isExpanded)}
+        activeOpacity={0.7}
+        accessibilityRole='button'
+        accessibilityState={{ expanded: isExpanded }}
+        accessibilityLabel={t.t('dashboard.summaryCards.rbi.whatIsRbi')}
+      >
         <View
           style={[
             styles.rbiInfoBox,
@@ -432,9 +533,11 @@ function RBICard({
 
           <TouchableOpacity
             onPress={() => {
-              void Linking.openURL(getDocumentationUrl());
+              void Linking.openURL(RBI_DOCUMENTATION_URL);
             }}
             activeOpacity={0.7}
+            accessibilityRole='link'
+            accessibilityLabel={t.t('dashboard.summaryCards.rbi.fullDocumentation')}
           >
             <View
               style={[
@@ -459,34 +562,46 @@ function RBICard({
           </TouchableOpacity>
         </>
       )}
+
+      <View style={[styles.factorNote, compact && styles.factorNoteCompact]}>
+        <Text style={[styles.factorNoteText, { color: p.copy }]}>
+          {t.t('dashboard.summaryCards.rbi.participationNote')}{' '}
+        </Text>
+        <TouchableOpacity
+          onPress={() => {
+            void Linking.openURL(TERMS_URL);
+          }}
+          accessibilityRole='link'
+          accessibilityLabel={t.t('dashboard.summaryCards.rbi.termsAndConditions')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.factorTermsLink, { color: p.accent }]}>
+            {t.t('dashboard.summaryCards.rbi.termsAndConditions')}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SummaryCard>
   );
 }
 
-function truncateMiddle(value: string, start = 8, end = 6): string {
-  if (value.length <= start + end + 3) {
-    return value;
-  }
-
-  return `${value.slice(0, start)}...${value.slice(-end)}`;
-}
-
 function ATNCard({
+  isDark,
   p,
   compact = false,
   mobile = false,
   dense = false,
   onNavigate,
   walletAccount,
-  minHeight,
+  assets,
 }: {
+  isDark: boolean;
   p: ReturnType<typeof getPalette>;
   compact?: boolean;
   mobile?: boolean;
   dense?: boolean;
   onNavigate?: (key: string) => void;
   walletAccount?: WalletAccountRecord | null;
-  minHeight?: number;
+  assets?: readonly RewardAsset[];
 }): React.JSX.Element {
   const useDenseLayout = dense;
   const t = useAppTranslation();
@@ -494,126 +609,113 @@ function ATNCard({
   const primaryWalletLabel = t.t('dashboard.summaryCards.atn.primaryWalletLabel');
   const primaryWalletMeta = t.t('dashboard.summaryCards.atn.primaryWalletMeta');
   const walletSummaryState = resolveWalletSummaryState(walletAccount ?? null);
-  const walletAddress = walletSummaryState.address
-    ? truncateMiddle(walletSummaryState.address)
-    : null;
+  const defaultAtnAsset: RewardAsset = {
+    id: 'atn',
+    name: t.t('dashboard.summaryCards.atn.assetName'),
+    value: null,
+    icon: <CoinsIcon size={18} color={p.accent} />,
+  };
+  const suppliedAssets = assets ?? [];
+  const suppliedAtn = suppliedAssets.find((asset) => asset.id.toLowerCase() === 'atn');
+  const orderedAssets = [
+    suppliedAtn ?? defaultAtnAsset,
+    ...suppliedAssets.filter((asset) => asset.id.toLowerCase() !== 'atn'),
+  ];
+  const redeemActionLabel = t.t('dashboard.summaryCards.atn.redeemAction');
+  const metricInfoCloseLabel = t.t('dashboard.summaryCards.metricInfo.closeLabel');
 
   return (
-    <SummaryCard
-      p={p}
-      compact={compact}
-      mobile={mobile}
-      testID='dashboard-atn-card'
-      minHeight={minHeight}
-    >
-      <CardTitle
-        label={t.t('dashboard.summaryCards.atn.title')}
-        sub={t.t('dashboard.summaryCards.atn.subtitle')}
-        p={p}
-        compact={compact}
-        mobile={mobile}
-      />
-
-      <View
-        testID='dashboard-atn-available'
-        style={[
-          styles.tokenRow,
-          compact && styles.tokenRowCompact,
-          useDenseLayout && styles.tokenRowDense,
-          mobile && styles.tokenRowMobile,
-          mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-        ]}
-      >
-        <View style={styles.tokenLabelBlock}>
-          <Text
-            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
-          >
-            {t.t('dashboard.summaryCards.atn.availableLabel')}
-          </Text>
-          <Text
-            style={[
-              styles.tokenSubLabel,
-              compact && styles.tokenSubLabelCompact,
-              { color: p.muted },
-            ]}
-          >
-            {t.t('dashboard.summaryCards.atn.availableDesc')}
-          </Text>
+    <SummaryCard p={p} compact={compact} mobile={mobile} testID='dashboard-atn-card'>
+      <View testID='dashboard-atn-header' style={styles.atnHeader}>
+        <View style={styles.atnTitleWrap}>
+          <CardTitle
+            label={t.t('dashboard.summaryCards.atn.title')}
+            sub={t.t('dashboard.summaryCards.atn.subtitle')}
+            p={p}
+            compact={compact}
+            mobile={mobile}
+          />
         </View>
-        <Text
+        <TouchableOpacity
+          testID='dashboard-atn-redeem-action'
+          accessibilityRole='button'
+          accessibilityLabel={`${redeemActionLabel}. ${comingSoonLabel}`}
+          accessibilityState={{ disabled: true }}
+          disabled
           style={[
-            styles.tokenValue,
-            compact && styles.tokenValueCompact,
-            useDenseLayout && styles.tokenValueDense,
-            { color: p.title },
+            styles.redeemAction,
+            compact && styles.redeemActionCompact,
+            { backgroundColor: p.panelBg, borderColor: p.panelBorder },
           ]}
         >
-          {comingSoonLabel}
-        </Text>
-      </View>
-      <Divider p={p} compact={compact} />
-      <View
-        testID='dashboard-atn-stacking'
-        style={[
-          styles.tokenRow,
-          compact && styles.tokenRowCompact,
-          useDenseLayout && styles.tokenRowDense,
-          mobile && styles.tokenRowMobile,
-          mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-        ]}
-      >
-        <View style={styles.tokenLabelBlock}>
-          <Text
-            style={[styles.tokenLabel, compact && styles.tokenLabelCompact, { color: p.title }]}
-          >
-            {t.t('dashboard.summaryCards.atn.stackingLabel')}
-          </Text>
-          <Text
-            style={[
-              styles.tokenSubLabel,
-              compact && styles.tokenSubLabelCompact,
-              { color: p.muted },
-            ]}
-          >
-            {t.t('dashboard.summaryCards.atn.stackingDesc')}
-          </Text>
-        </View>
-        <Text
-          style={[
-            styles.tokenValue,
-            compact && styles.tokenValueCompact,
-            useDenseLayout && styles.tokenValueDense,
-            { color: p.title },
-          ]}
-        >
-          {comingSoonLabel}
-        </Text>
-      </View>
-
-      <View
-        style={[
-          styles.totalRow,
-          compact && styles.totalRowCompact,
-          useDenseLayout && styles.totalRowDense,
-          mobile && styles.totalRowMobile,
-        ]}
-      >
-        <Text style={[styles.totalLabel, compact && styles.totalLabelCompact, { color: p.title }]}>
-          {t.t('dashboard.summaryCards.atn.totalLabel')}
-        </Text>
-        <View style={[styles.totalValueWrap, useDenseLayout && styles.totalValueWrapDense]}>
-          <TrendingUpIcon size={16} color={p.accent} />
-          <Text
-            style={[
-              styles.totalValue,
-              compact && styles.totalValueCompact,
-              useDenseLayout && styles.totalValueDense,
-              { color: p.accentStrong },
-            ]}
-          >
+          <Text style={[styles.redeemActionText, { color: p.copy }]}>{redeemActionLabel}</Text>
+          <Text style={[styles.redeemActionStatus, { color: p.factorText }]}>
             {comingSoonLabel}
           </Text>
-        </View>
+        </TouchableOpacity>
+      </View>
+
+      <View style={[styles.assetList, compact && styles.assetListCompact]}>
+        {orderedAssets.map((asset, index) => (
+          <React.Fragment key={asset.id}>
+            <View
+              testID={`dashboard-atn-asset-${asset.id}`}
+              style={[
+                styles.tokenRow,
+                compact && styles.tokenRowCompact,
+                useDenseLayout && styles.tokenRowDense,
+                mobile && styles.tokenRowMobile,
+                mobile && { backgroundColor: p.panelBg, borderColor: p.panelBorder },
+              ]}
+            >
+              <View style={styles.tokenIdentity}>
+                <View
+                  accessibilityRole='image'
+                  accessibilityLabel={asset.name}
+                  style={[styles.tokenIcon, { backgroundColor: p.accentSoft }]}
+                >
+                  {asset.icon}
+                </View>
+                <View style={styles.metricLabelGroup}>
+                  <Text
+                    style={[
+                      styles.tokenLabel,
+                      compact && styles.tokenLabelCompact,
+                      { color: p.title },
+                    ]}
+                  >
+                    {asset.name}
+                  </Text>
+                  {asset.id.toLowerCase() === 'atn' && (
+                    <MetricInfoTooltip
+                      testID='dashboard-metric-info-atn-balance'
+                      title={t.t('dashboard.summaryCards.metricInfo.atnBalanceTitle')}
+                      accessibilityLabel={t.t('dashboard.summaryCards.metricInfo.openLabel', {
+                        metric: t.t('dashboard.summaryCards.metricInfo.atnBalanceTitle'),
+                      })}
+                      description={t.t('dashboard.summaryCards.metricInfo.atnBalance')}
+                      closeLabel={metricInfoCloseLabel}
+                      isDark={isDark}
+                    />
+                  )}
+                </View>
+              </View>
+              <Text
+                style={[
+                  styles.tokenValue,
+                  compact && styles.tokenValueCompact,
+                  useDenseLayout && styles.tokenValueDense,
+                  { color: p.title },
+                ]}
+              >
+                {typeof asset.value === 'number'
+                  ? asset.value.toLocaleString()
+                  : asset.value ?? comingSoonLabel}
+              </Text>
+            </View>
+            {index < orderedAssets.length - 1 && <Divider p={p} compact={compact} />}
+          </React.Fragment>
+        ))}
       </View>
 
       <View
@@ -646,20 +748,6 @@ function ATNCard({
             {primaryWalletMeta}
           </Text>
         </View>
-        <Text
-          numberOfLines={useDenseLayout ? 2 : 1}
-          style={[
-            styles.walletAddress,
-            useDenseLayout && styles.walletAddressDense,
-            compact && styles.walletAddressCompact,
-            { color: p.copy },
-          ]}
-        >
-          {walletSummaryState.mode === 'ready' && walletAddress
-            ? walletAddress
-            : t.t('wallet.noWalletAccount', undefined, 'No wallet data yet')}
-        </Text>
-
         <View style={[styles.walletLinkDivider, { backgroundColor: p.accent, opacity: 0.18 }]} />
 
         <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
@@ -677,8 +765,8 @@ function ATNCard({
                 ]}
               >
                 {walletSummaryState.mode === 'ready'
-                  ? t.t('wallet.manageWallet', undefined, 'Manage wallet')
-                  : t.t('wallet.createButton', undefined, 'Create Alternun wallet')}
+                  ? t.t('profile.wallet.manageWallet')
+                  : t.t('profile.wallet.createButton')}
               </Text>
             </View>
             <ChevronRightIcon size={14} color={p.accent} />
@@ -695,6 +783,10 @@ export default function DashboardSummaryCards({
   client,
   signedIn,
   airsBalance,
+  participationFactor,
+  participationFactorEstimated,
+  communityEligibleAirs,
+  rewardAssets,
 }: DashboardSummaryCardsProps): React.JSX.Element {
   const p = getPalette(isDark);
   const { width, fontScale = 1 } = useWindowDimensions();
@@ -733,7 +825,7 @@ export default function DashboardSummaryCards({
           setEligibleUsers(data.totalEligibleUsers);
         }
       } catch {
-        // Leave eligibleUsers as null; the card falls back to "Coming soon".
+        // Leave eligibleUsers as null; the card renders the unavailable state.
       } finally {
         if (!cancelled) {
           setEligibleUsersLoading(false);
@@ -791,6 +883,7 @@ export default function DashboardSummaryCards({
       >
         <View style={[styles.cardSlot, isMobile && styles.cardSlotMobile]}>
           <RBICard
+            isDark={isDark}
             p={p}
             compact={isCompactMobile}
             mobile={isMobile}
@@ -799,18 +892,22 @@ export default function DashboardSummaryCards({
             eligibleUsersLoading={eligibleUsersLoading}
             airsScore={airsBalance}
             airsScoreLoading={airsScoreLoading}
+            participationFactor={participationFactor}
+            participationFactorEstimated={participationFactorEstimated}
+            communityEligibleAirs={communityEligibleAirs}
             minHeight={desktopMinHeight}
           />
         </View>
         <View style={[styles.cardSlot, isMobile && styles.cardSlotMobile]}>
           <ATNCard
+            isDark={isDark}
             p={p}
             compact={isCompactMobile}
             mobile={isMobile}
             dense={isDenseAtnCard}
             onNavigate={onNavigate}
             walletAccount={walletAccount}
-            minHeight={desktopMinHeight}
+            assets={rewardAssets}
           />
         </View>
       </View>
@@ -931,52 +1028,93 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 
-  rbiHero: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 6,
-  },
-  rbiHeroCompact: {
-    gap: 8,
-    marginBottom: 4,
-  },
-  rbiHeroMobile: {
+  factorPanel: {
     borderWidth: 1,
     borderRadius: 18,
-    gap: 12,
-    marginBottom: 0,
     paddingHorizontal: 14,
     paddingVertical: 14,
+    gap: 10,
   },
-  rbiValue: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    flex: 1,
-    fontSize: 30,
-    fontWeight: '900',
-    letterSpacing: -1.1,
+  factorPanelCompact: {
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  factorPanelMobile: {
+    width: '100%',
+  },
+  factorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  metricLabelGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    flexShrink: 1,
     minWidth: 0,
   },
-  rbiValueCompact: {
+  factorLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 20,
-    letterSpacing: -0.5,
+    fontSize: 13,
+    fontWeight: '800',
   },
-  rbiValueMobile: {
-    fontSize: 23,
-    letterSpacing: -0.7,
+  factorValueText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 13,
+    fontWeight: '800',
+    textAlign: 'right',
   },
-  heroBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: 'center',
+  factorTrackArea: {
+    height: 20,
     justifyContent: 'center',
+    position: 'relative',
   },
-  heroBadgeCompact: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+  factorGradientTrack: {
+    height: 12,
+    width: '100%',
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  factorTick: {
+    position: 'absolute',
+    width: 2,
+    height: 12,
+    top: 4,
+    opacity: 0.78,
+  },
+  factorMarker: {
+    position: 'absolute',
+    top: 0,
+    width: 12,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 2,
+  },
+  factorMarks: {
+    height: 16,
+    position: 'relative',
+  },
+  factorMarkLabelWrap: {
+    position: 'absolute',
+    top: 0,
+    width: 36,
+  },
+  factorMarkLabelStart: {
+    left: 0,
+  },
+  factorMarkLabelEnd: {
+    right: 0,
+  },
+  factorMarkLabel: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   statList: {
     gap: 10,
@@ -1208,7 +1346,48 @@ const styles = StyleSheet.create({
   rbiDocLinkTextDense: {
     textAlign: 'left',
   },
+  factorNote: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    flexWrap: 'wrap',
+    marginTop: 14,
+  },
+  factorNoteCompact: {
+    marginTop: 12,
+  },
+  factorNoteText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  factorTermsLink: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '800',
+    textDecorationLine: 'underline',
+  },
 
+  assetList: {
+    gap: 10,
+    marginBottom: 16,
+  },
+  atnHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    minWidth: 0,
+  },
+  atnTitleWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
+  assetListCompact: {
+    gap: 8,
+    marginBottom: 12,
+  },
   tokenRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1222,7 +1401,7 @@ const styles = StyleSheet.create({
   tokenRowDense: {
     flexDirection: 'column',
     alignItems: 'flex-start',
-    gap: 4,
+    gap: 8,
   },
   tokenRowMobile: {
     borderWidth: 1,
@@ -1231,10 +1410,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 11,
   },
-  tokenLabelBlock: {
+  tokenIdentity: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    gap: 3,
+    gap: 10,
     minWidth: 0,
+  },
+  tokenIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    flexShrink: 0,
   },
   tokenLabel: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1246,17 +1435,6 @@ const styles = StyleSheet.create({
   tokenLabelCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 14,
-  },
-  tokenSubLabel: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '500',
-  },
-  tokenSubLabelCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 11,
-    lineHeight: 14,
   },
   tokenValue: {
     fontFamily: ANEK_EXPANDED_FAMILY,
@@ -1274,67 +1452,7 @@ const styles = StyleSheet.create({
   },
   tokenValueDense: {
     textAlign: 'left',
-  },
-  totalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  totalRowCompact: {
-    marginTop: 12,
-    marginBottom: 12,
-  },
-  totalRowDense: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 6,
-  },
-  totalRowMobile: {
-    borderRadius: 14,
-    marginTop: 12,
-    marginBottom: 12,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-  },
-  totalLabel: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 17,
-    fontWeight: '900',
-    letterSpacing: -0.3,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  totalLabelCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 14,
-  },
-  totalValueWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  totalValueWrapDense: {
-    justifyContent: 'flex-start',
-  },
-  totalValue: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 26,
-    fontWeight: '900',
-    letterSpacing: -0.9,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  totalValueCompact: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 18,
-    letterSpacing: -0.4,
-  },
-  totalValueDense: {
-    textAlign: 'left',
+    marginLeft: 46,
   },
   walletPanel: {
     borderWidth: 1,
@@ -1393,22 +1511,6 @@ const styles = StyleSheet.create({
   walletPanelMetaCompact: {
     fontSize: 12,
   },
-  walletAddress: {
-    fontSize: 15,
-    fontWeight: '500',
-    letterSpacing: -0.1,
-    minWidth: 0,
-    flexShrink: 1,
-    flexWrap: 'wrap',
-  },
-  walletAddressDense: {
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  walletAddressCompact: {
-    fontSize: 13,
-    lineHeight: 17,
-  },
   walletLinkDivider: {
     height: 1,
     width: '100%',
@@ -1447,5 +1549,35 @@ const styles = StyleSheet.create({
   walletLinkTextCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
+  },
+  redeemAction: {
+    maxWidth: 160,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+    alignItems: 'flex-end',
+    gap: 3,
+    opacity: 0.78,
+    flexShrink: 1,
+  },
+  redeemActionCompact: {
+    maxWidth: 132,
+    paddingHorizontal: 9,
+    paddingVertical: 8,
+  },
+  redeemActionText: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 14,
+    fontWeight: '800',
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  redeemActionStatus: {
+    fontFamily: ANEK_EXPANDED_FAMILY,
+    fontSize: 12,
+    fontWeight: '700',
+    flexShrink: 0,
+    textAlign: 'right',
   },
 });

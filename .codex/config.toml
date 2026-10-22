@@ -9,6 +9,12 @@ web_search = "live"
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-github"]
 
+[mcp_servers.github.tools.search_users]
+approval_mode = "approve"
+
+[mcp_servers.github.tools.list_issues]
+approval_mode = "approve"
+
 [mcp_servers.context7]
 command = "npx"
 args = ["-y", "@upstash/context7-mcp@latest"]

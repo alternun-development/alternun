@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-09-01T00:17:44.552Z",
+  "lastUpdated": "2026-10-19T22:16:39.448Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Get explicit go-ahead to merge develop->master PR and run pnpm release patch (deploys new AWS Backup plan + admin SSO fix to production identity), then discuss Authentik-to-Supabase user integration approach",
+      "description": "Review fix/rbi-formula-check (provisional FP 50% estimated, progress >= 0 %); pending: approve RBI explanation text, community equivalent AIRS via new balance-sum RPC + migration (needs Edward's approval)",
       "id": "next",
       "priority": 1
     }

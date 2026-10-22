@@ -1,18 +1,41 @@
 import { Authenticated, CanAccess } from '@refinedev/core';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import {
+  getActiveAdminSession,
+  getAdminRolesFromSession,
+  resolveAdminLandingPath,
+} from './auth/oidc-client';
 import { AppShell } from './components/app-shell';
 import { ForbiddenPage } from './components/forbidden-page';
 import { AuthCallbackPage } from './pages/auth/callback-page';
 import { AuthRelayPage } from './pages/auth/relay-page';
 import { DashboardPage } from './pages/dashboard/page';
 import { LoginPage } from './pages/login/page';
+import { MarketplaceEnterpriseDetailPage } from './pages/marketplace/enterprise-detail-page';
+import { MarketplaceProjectDetailPage } from './pages/marketplace/project-detail-page';
+import { MarketplaceProjectsPage } from './pages/marketplace/projects-page';
 import { ResourceListPage } from './pages/resources/resource-list-page';
 import { ResourceShowPage } from './pages/resources/resource-show-page';
 import { adminResources } from './resources/catalog';
 
+function AdminLandingRedirect(): React.ReactElement | null {
+  const [path, setPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    void getActiveAdminSession().then((session) => {
+      setPath(resolveAdminLandingPath(getAdminRolesFromSession(session)));
+    });
+  }, []);
+
+  return path ? <Navigate to={path} replace /> : null;
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function AdminRouter() {
-  const dataResources = adminResources.filter((resource) => resource.name !== 'dashboard');
+  const dataResources = adminResources.filter(
+    (resource) => resource.name !== 'dashboard' && !resource.name.startsWith('marketplace-')
+  );
 
   return (
     <BrowserRouter>
@@ -21,7 +44,7 @@ export function AdminRouter() {
           path='/login'
           element={
             <Authenticated key='login-route' fallback={<LoginPage />}>
-              <Navigate to='/dashboard' replace />
+              <AdminLandingRedirect />
             </Authenticated>
           }
         />
@@ -35,12 +58,41 @@ export function AdminRouter() {
             </Authenticated>
           }
         >
-          <Route index element={<Navigate to='/dashboard' replace />} />
+          <Route index element={<AdminLandingRedirect />} />
           <Route
             path='/dashboard'
             element={
               <CanAccess resource='dashboard' action='list' fallback={<ForbiddenPage />}>
                 <DashboardPage />
+              </CanAccess>
+            }
+          />
+
+          <Route
+            path='/marketplace'
+            element={
+              <CanAccess resource='marketplace-projects' action='list' fallback={<ForbiddenPage />}>
+                <MarketplaceProjectsPage />
+              </CanAccess>
+            }
+          />
+          <Route
+            path='/marketplace/projects/:id'
+            element={
+              <CanAccess resource='marketplace-projects' action='show' fallback={<ForbiddenPage />}>
+                <MarketplaceProjectDetailPage />
+              </CanAccess>
+            }
+          />
+          <Route
+            path='/marketplace/enterprises/:id'
+            element={
+              <CanAccess
+                resource='marketplace-enterprises'
+                action='show'
+                fallback={<ForbiddenPage />}
+              >
+                <MarketplaceEnterpriseDetailPage />
               </CanAccess>
             }
           />
@@ -72,7 +124,7 @@ export function AdminRouter() {
             ))}
         </Route>
 
-        <Route path='*' element={<Navigate to='/dashboard' replace />} />
+        <Route path='*' element={<AdminLandingRedirect />} />
       </Routes>
     </BrowserRouter>
   );

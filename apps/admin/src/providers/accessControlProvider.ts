@@ -6,7 +6,12 @@ import {
   resolveAdminAccessProfile,
 } from '../auth/oidc-client';
 
+const partnerWritableResources = new Set(['marketplace-enterprises', 'marketplace-projects']);
 const readOnlyActions = new Set(['list', 'show']);
+
+export function partnerCanUseAdminAction(resource: string, action: string): boolean {
+  return readOnlyActions.has(action) || partnerWritableResources.has(resource);
+}
 
 export const accessControlProvider: AccessControlProvider = {
   can: async ({ resource, action }) => {
@@ -23,7 +28,7 @@ export const accessControlProvider: AccessControlProvider = {
       };
     }
 
-    if (resource === 'dashboard' || !resource) {
+    if (!resource) {
       return { can: true };
     }
 
@@ -37,11 +42,7 @@ export const accessControlProvider: AccessControlProvider = {
       };
     }
 
-    if (readOnlyActions.has(action)) {
-      return { can: true };
-    }
-
-    if (accessProfile.surface === 'partner') {
+    if (accessProfile.surface === 'partner' && !partnerCanUseAdminAction(resource, action)) {
       return {
         can: false,
         reason: 'Partner access is currently limited to read-only workflows in this panel.',

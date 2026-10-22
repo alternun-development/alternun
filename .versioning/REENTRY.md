@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Get explicit go-ahead to merge develop->master PR and run pnpm release patch (deploys new AWS Backup plan + admin SSO fix to production identity), then discuss Authentik-to-Supabase user integration approach
+Next micro-step: Review fix/rbi-formula-check (provisional FP 50% estimated, progress >= 0 %); pending: approve RBI explanation text, community equivalent AIRS via new balance-sum RPC + migration (needs Edward's approval)
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

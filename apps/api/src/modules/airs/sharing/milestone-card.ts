@@ -3,6 +3,12 @@ import { resolve } from 'node:path';
 import { PassThrough } from 'node:stream';
 import * as PImage from 'pureimage';
 
+type FontPathCommand =
+  | { type: 'M' | 'L'; x: number; y: number }
+  | { type: 'Q'; x1: number; y1: number; x: number; y: number }
+  | { type: 'C'; x1: number; y1: number; x2: number; y2: number; x: number; y: number }
+  | { type: 'Z' };
+
 export const MILESTONES: Record<string, number> = {
   first_10_airs: 10,
   fifty_airs: 50,
@@ -33,7 +39,8 @@ export async function renderMilestoneCard(amount: number, displayName: string): 
     resolve(directory, '../../fonts/Sculpin-Bold.ttf'),
   ].find(existsSync);
   if (!fontPath) throw new Error('Milestone font is missing');
-  await PImage.registerFont(fontPath, 'AirsShare').load();
+  const font = PImage.registerFont(fontPath, 'AirsShare');
+  await font.load();
   const card = await PImage.decodePNGFromStream(
     createReadStream(resolve(directory, `${amount}.png`))
   );
@@ -50,7 +57,35 @@ export async function renderMilestoneCard(amount: number, displayName: string): 
     name = `${Array.from(name.replace(/…$/, '')).slice(0, -1).join('')}…`;
   }
   const textWidth = context.measureText(name).width;
-  context.fillText(name, (1080 - textWidth) / 2, 895);
+  // Fill all contours together because pureimage's fillText fills glyph holes separately.
+  const outlineFont = font.font as unknown as {
+    getPath(
+      text: string,
+      x: number,
+      y: number,
+      fontSize: number
+    ): {
+      commands: FontPathCommand[];
+    };
+  };
+  const textPath = outlineFont.getPath(name, (1080 - textWidth) / 2, 895, size);
+  let contourStart: { x: number; y: number } | undefined;
+  context.beginPath();
+  for (const command of textPath.commands) {
+    if (command.type === 'M') {
+      contourStart = { x: command.x, y: command.y };
+      context.moveTo(command.x, command.y);
+    } else if (command.type === 'L') {
+      context.lineTo(command.x, command.y);
+    } else if (command.type === 'Q') {
+      context.quadraticCurveTo(command.x1, command.y1, command.x, command.y);
+    } else if (command.type === 'C') {
+      context.bezierCurveTo(command.x1, command.y1, command.x2, command.y2, command.x, command.y);
+    } else if (command.type === 'Z' && contourStart) {
+      context.lineTo(contourStart.x, contourStart.y);
+    }
+  }
+  context.fill();
   const stream = new PassThrough();
   const chunks: Buffer[] = [];
   stream.on('data', (chunk: Buffer) => chunks.push(chunk));

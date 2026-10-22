@@ -21,26 +21,38 @@ jest.mock('../../wallet/walletApiClient', () => ({
 jest.mock('../../i18n/useAppTranslation', () => {
   const translationMap: Record<string, string> = {
     'dashboard.summaryCards.rbi.title': 'Proyección RBI',
-    'dashboard.summaryCards.rbi.subtitle': 'Tu proyección estimada',
-    'dashboard.summaryCards.rbi.estimatedPool': 'Pool RBI estimado:',
-    'dashboard.summaryCards.rbi.eligibleUsers': 'Usuarios elegibles:',
-    'dashboard.summaryCards.rbi.airsScore': 'Tu puntaje Airs:',
+    'dashboard.summaryCards.rbi.subtitle': 'Factor de participación (FP)',
+    'dashboard.summaryCards.rbi.eligibleAirs': 'AIRS equivalentes',
+    'dashboard.summaryCards.rbi.eligibleUsers': 'Usuarios elegibles',
+    'dashboard.summaryCards.rbi.aliquot': 'Alícuota',
+    'dashboard.summaryCards.rbi.notAvailable': 'Aún no disponible',
+    'dashboard.summaryCards.rbi.estimated': 'estimado',
+    'dashboard.summaryCards.rbi.participationNote': 'Para entender cómo funciona el FP, lee los',
+    'dashboard.summaryCards.rbi.termsAndConditions': 'Términos y Condiciones',
     'dashboard.summaryCards.rbi.whatIsRbi': '¿Qué es el RBI?',
     'dashboard.summaryCards.rbi.explanation': 'RBI explanation',
     'dashboard.summaryCards.rbi.fullDocumentation': 'Full documentation',
-    'dashboard.summaryCards.atn.title': 'Mis ATN',
-    'dashboard.summaryCards.atn.subtitle': 'Tus tokens regenerativos',
-    'dashboard.summaryCards.atn.availableLabel': 'ATN disponibles',
-    'dashboard.summaryCards.atn.availableDesc': 'Listos para usar',
-    'dashboard.summaryCards.atn.stackingLabel': 'ATN en stacking',
-    'dashboard.summaryCards.atn.stackingDesc': 'Participando en proyectos',
-    'dashboard.summaryCards.atn.totalLabel': 'ATN total',
-    'dashboard.summaryCards.atn.primaryWalletLabel': 'Wallet principal',
+    'dashboard.summaryCards.metricInfo.openLabel': 'Más información sobre {{metric}}',
+    'dashboard.summaryCards.metricInfo.closeLabel': 'Cerrar',
+    'dashboard.summaryCards.metricInfo.atnBalanceTitle': 'Saldo ATN',
+    'dashboard.summaryCards.metricInfo.atnBalance':
+      'Es tu saldo ATN disponible, informado por tu cuenta de recompensas.',
+    'dashboard.summaryCards.metricInfo.participationFactor':
+      'Es el factor de participación aplicado a tus AIRS según los Términos y Condiciones.',
+    'dashboard.summaryCards.metricInfo.eligibleAirs': 'AIRS equivalentes = AIRS × FP.',
+    'dashboard.summaryCards.metricInfo.eligibleUsers':
+      'Es el total de usuarios elegibles informado por el sistema para la proyección RBI.',
+    'dashboard.summaryCards.metricInfo.aliquot':
+      'Alícuota = mis AIRS elegibles / suma de AIRS elegibles × 100 %.',
+    'dashboard.summaryCards.atn.title': 'Mis ATN y recompensas regenerativas',
+    'dashboard.summaryCards.atn.subtitle': 'Tus saldos de recompensas',
+    'dashboard.summaryCards.atn.assetName': 'ATN',
+    'dashboard.summaryCards.atn.primaryWalletLabel': 'Billetera de recompensas principal',
     'dashboard.summaryCards.atn.primaryWalletMeta': 'Interna',
+    'dashboard.summaryCards.atn.redeemAction': 'Redimir y operar',
     'dashboard.summaryCards.comingSoon': 'Próximamente',
-    'wallet.createButton': 'Create Alternun wallet',
-    'wallet.manageWallet': 'Manage wallet',
-    'wallet.noWalletAccount': 'No wallet data yet',
+    'profile.wallet.createButton': 'Crear billetera de recompensas',
+    'profile.wallet.manageWallet': 'Gestionar billetera de recompensas',
   };
 
   return {
@@ -189,8 +201,8 @@ describe('DashboardSummaryCards render', () => {
     );
 
     const narrowStatus = getElementByTestId(renderState.container, 'dashboard-rbi-status');
-    const narrowMetric = getElementByTestId(renderState.container, 'dashboard-rbi-estimated-pool');
-    const narrowAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-available');
+    const narrowMetric = getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs');
+    const narrowAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-asset-atn');
 
     expect(narrowStatus.className).not.toBe('');
     expect(narrowMetric.className).not.toBe('');
@@ -211,8 +223,8 @@ describe('DashboardSummaryCards render', () => {
     );
 
     const wideStatus = getElementByTestId(renderState.container, 'dashboard-rbi-status');
-    const wideMetric = getElementByTestId(renderState.container, 'dashboard-rbi-estimated-pool');
-    const wideAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-available');
+    const wideMetric = getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs');
+    const wideAtnMetric = getElementByTestId(renderState.container, 'dashboard-atn-asset-atn');
 
     expect(wideStatus.className).toBe(narrowStatus.className);
     expect(wideMetric.className).not.toBe(narrowMetric.className);
@@ -262,6 +274,195 @@ describe('DashboardSummaryCards render', () => {
 
     expect(renderState.container.textContent).toContain('Mis ATN');
     expect(renderState.container.textContent).toContain('Proyección RBI');
+    expect(
+      getComputedStyle(getElementByTestId(renderState.container, 'dashboard-rbi-card')).minHeight
+    ).toBe('480px');
+    expect(
+      getComputedStyle(getElementByTestId(renderState.container, 'dashboard-atn-card')).minHeight
+    ).toBe('100px');
+  });
+
+  it('renders the participation factor marker, metrics, and terms link', () => {
+    mockWindowDimensions(1024);
+    const openUrlSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: 200,
+        participationFactor: 0.15,
+        communityEligibleAirs: 300,
+      })
+    );
+
+    const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    const factorMarker = getElementByTestId(renderState.container, 'dashboard-rbi-factor-marker');
+    expect(factorBar.getAttribute('role')).toBe('slider');
+    expect(factorBar.getAttribute('aria-valuetext')).toBe('FP 15 %');
+    expect(factorMarker.style.left).toBe('15%');
+    expect(
+      [0, 15, 50, 100].map(
+        (mark) =>
+          getElementByTestId(
+            renderState?.container ?? document.body,
+            `dashboard-rbi-factor-mark-${mark}`
+          ).textContent
+      )
+    ).toEqual(['0 %', '15 %', '50 %', '100 %']);
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs').textContent
+    ).toContain('30');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-eligible-users').textContent
+    ).toContain('—');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-aliquot').textContent
+    ).toContain('10.00 %');
+
+    clickElementByText(renderState.container, 'Términos y Condiciones');
+    expect(openUrlSpy).toHaveBeenCalledWith('https://docs.alternun.io/terms');
+  });
+
+  it('labels a provisional participation factor as estimated', () => {
+    mockWindowDimensions(1024);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: 200,
+        participationFactor: 0.5,
+        participationFactorEstimated: true,
+        communityEligibleAirs: 400,
+      })
+    );
+
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-factor-value').textContent
+    ).toBe('FP 50 % · estimado');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs').textContent
+    ).toContain('100');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-aliquot').textContent
+    ).toContain('25.00 %');
+  });
+
+  it('renders an unavailable neutral factor state without false values', () => {
+    mockWindowDimensions(375);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: true,
+        signedIn: false,
+        airsBalance: 200,
+        participationFactor: null,
+        communityEligibleAirs: null,
+      })
+    );
+
+    const factorBar = getElementByTestId(renderState.container, 'dashboard-rbi-status');
+    const neutralTrack = getElementByTestId(renderState.container, 'dashboard-rbi-factor-track');
+    expect(factorBar.getAttribute('aria-valuetext')).toBe('Aún no disponible');
+    expect(factorBar.getAttribute('aria-disabled')).toBe('true');
+    expect(getComputedStyle(neutralTrack).backgroundColor).toBe('rgb(113, 128, 158)');
+    for (const mark of [0, 15, 50, 100]) {
+      const label = getElementByTestId(
+        renderState.container,
+        `dashboard-rbi-factor-mark-label-${mark}`
+      );
+      expect(getComputedStyle(label).color).toBe('rgb(208, 216, 232)');
+    }
+    expect(
+      renderState.container.querySelector('[data-testid="dashboard-rbi-factor-marker"]')
+    ).toBeNull();
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-eligible-airs').textContent
+    ).toContain('—');
+    expect(
+      getElementByTestId(renderState.container, 'dashboard-rbi-aliquot').textContent
+    ).toContain('—');
+    expect(renderState.container.textContent).not.toContain('Pool RBI estimado');
+    expect(renderState.container.textContent).not.toContain('Tu puntaje Airs');
+  });
+
+  it('uses the high-contrast neutral factor colors in the light theme', () => {
+    mockWindowDimensions(1024);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: null,
+        participationFactor: null,
+      })
+    );
+
+    const neutralTrack = getElementByTestId(renderState.container, 'dashboard-rbi-factor-track');
+    expect(getComputedStyle(neutralTrack).backgroundColor).toBe('rgb(100, 116, 139)');
+    for (const mark of [0, 15, 50, 100]) {
+      const label = getElementByTestId(
+        renderState.container,
+        `dashboard-rbi-factor-mark-label-${mark}`
+      );
+      expect(getComputedStyle(label).color).toBe('rgb(71, 85, 105)');
+    }
+  });
+
+  it('renders ATN first, appends reward assets, and keeps future actions disabled', () => {
+    mockWindowDimensions(1024);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: null,
+        rewardAssets: [
+          {
+            id: 'future-reward',
+            name: 'Recompensa futura',
+            value: '—',
+            icon: React.createElement(ReactNative.View),
+          },
+          {
+            id: 'atn',
+            name: 'ATN',
+            value: null,
+            icon: React.createElement(ReactNative.View),
+          },
+        ],
+      })
+    );
+
+    const assetRows = Array.from(
+      renderState.container.querySelectorAll<HTMLElement>('[data-testid^="dashboard-atn-asset-"]')
+    );
+    expect(assetRows.map((row) => row.dataset.testid)).toEqual([
+      'dashboard-atn-asset-atn',
+      'dashboard-atn-asset-future-reward',
+    ]);
+    expect(assetRows[0]?.textContent).toContain('Próximamente');
+    expect(renderState.container.textContent).toContain('Recompensa futura');
+    expect(renderState.container.textContent).toContain('Mis ATN y recompensas regenerativas');
+    expect(
+      renderState.container.querySelector('[data-testid="dashboard-atn-stacking"]')
+    ).toBeNull();
+    expect(renderState.container.textContent).not.toContain('dashboard.summaryCards.atn.stacking');
+    expect(renderState.container.textContent).not.toContain(
+      'dashboard.summaryCards.atn.totalLabel'
+    );
+    expect(assetRows[0]?.querySelector('[role="img"][aria-label="ATN"]')).not.toBeNull();
+
+    const redeemAction = getElementByTestId(renderState.container, 'dashboard-atn-redeem-action');
+    const atnHeader = getElementByTestId(renderState.container, 'dashboard-atn-header');
+    expect(redeemAction.getAttribute('aria-disabled')).toBe('true');
+    expect(atnHeader.contains(redeemAction)).toBe(true);
+    expect(redeemAction.textContent).toContain('Redimir y operar');
+    expect(redeemAction.textContent).toContain('Próximamente');
+    expect(renderState.container.textContent).toContain('Billetera de recompensas principal');
+    expect(renderState.container.textContent).toContain('Crear billetera de recompensas');
+    expect(renderState.container.textContent?.toLowerCase()).not.toContain('wallet');
   });
 
   it('loads wallet and leaderboard state when signed in and expands the RBI help panel', async () => {
@@ -298,10 +499,16 @@ describe('DashboardSummaryCards render', () => {
       await flushEffects();
     });
 
-    expect(renderState.container.textContent).toContain('Manage wallet');
-    expect(renderState.container.textContent).toContain('0x123456...345678');
+    expect(renderState.container.textContent).toContain('Gestionar billetera de recompensas');
+    expect(renderState.container.textContent).not.toContain('Manage rewards wallet');
+    expect(renderState.container.textContent).not.toContain(
+      '0x1234567890abcdef1234567890abcdef12345678'
+    );
+    expect(renderState.container.textContent).not.toContain('0x123456...345678');
     expect(renderState.container.textContent).toContain('27');
-    expect(renderState.container.textContent).not.toContain('No wallet data yet');
+    expect(renderState.container.textContent).not.toContain(
+      'Aún no hay datos de tu billetera de recompensas'
+    );
 
     clickElementByText(renderState.container, '¿Qué es el RBI?');
     expect(renderState.container.textContent).toContain('RBI explanation');
@@ -311,7 +518,68 @@ describe('DashboardSummaryCards render', () => {
       'https://docs.alternun.io/docs/tutorial-basics/airs-tu-huella-regenerativa'
     );
 
-    clickElementByText(renderState.container, 'Manage wallet');
+    clickElementByText(renderState.container, 'Gestionar billetera de recompensas');
     expect(navigationCalls).toContain('mi-perfil:wallet');
+  });
+
+  it('shows accessible help for every ATN and RBI metric', () => {
+    mockWindowDimensions(1024);
+
+    renderState = renderDashboardSummaryCards(
+      React.createElement(DashboardSummaryCards, {
+        isDark: false,
+        signedIn: false,
+        airsBalance: 200,
+        participationFactor: 0.15,
+        communityEligibleAirs: 300,
+      })
+    );
+
+    const metrics = [
+      ['atn-balance', 'Es tu saldo ATN disponible'],
+      ['participation-factor', 'factor de participación aplicado'],
+      ['eligible-airs', 'AIRS equivalentes = AIRS × FP'],
+      ['eligible-users', 'total de usuarios elegibles'],
+      ['aliquot', 'mis AIRS elegibles / suma de AIRS elegibles × 100 %'],
+    ] as const;
+
+    for (const [metric, explanation] of metrics) {
+      const baseTestID = `dashboard-metric-info-${metric}`;
+      const trigger = getElementByTestId(renderState.container, `${baseTestID}-trigger`);
+      expect(trigger.textContent).toBe('');
+      expect(trigger.querySelector('rnsvgsvgview')).not.toBeNull();
+      expect(trigger.getAttribute('aria-label')).toContain('Más información');
+
+      act(() => {
+        trigger.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      });
+
+      const popover = getElementByTestId(document.body, `${baseTestID}-popover`);
+      expect(popover.textContent).toContain(explanation);
+
+      const closeButton = getElementByTestId(document.body, `${baseTestID}-close`);
+      act(() => {
+        closeButton.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      });
+      expect(document.body.querySelector(`[data-testid="${baseTestID}-popover"]`)).toBeNull();
+    }
+
+    const trigger = getElementByTestId(
+      renderState.container,
+      'dashboard-metric-info-atn-balance-trigger'
+    );
+    act(() => {
+      trigger.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    const backdrop = getElementByTestId(
+      document.body,
+      'dashboard-metric-info-atn-balance-backdrop'
+    );
+    act(() => {
+      backdrop.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    expect(
+      document.body.querySelector('[data-testid="dashboard-metric-info-atn-balance-popover"]')
+    ).toBeNull();
   });
 });

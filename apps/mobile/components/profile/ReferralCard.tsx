@@ -4,6 +4,7 @@ import {
   ChevronUp,
   Copy,
   Link2,
+  QrCode,
   Share2,
   UserRoundCheck,
   Users,
@@ -24,6 +25,7 @@ import type { User } from '../auth/AppAuthProvider';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import type { ColorPalette } from './AchievementBadge';
+import { ReferralQrModal } from './ReferralQrModal';
 
 interface ReferralSummary {
   user_id: string;
@@ -58,6 +60,19 @@ function truncateMiddle(value: string, start = 12, end = 10): string {
   }
 
   return `${value.slice(0, start)}...${value.slice(-end)}`;
+}
+
+function isValidReferralLink(value: string): boolean {
+  if (!/^https?:\/\//i.test(value)) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value);
+    return (url.protocol === 'http:' || url.protocol === 'https:') && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
 }
 
 function getProfileDisplayName(user: User | null): string | null {
@@ -109,6 +124,7 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
   const [error, setError] = useState<string | null>(null);
   const [inviteesOpen, setInviteesOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INVITEES_PAGE_SIZE);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
   const profileDisplayName = useMemo(() => getProfileDisplayName(user), [user]);
 
   useEffect(() => {
@@ -183,6 +199,10 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
     };
   }, [profileDisplayName, user?.id]);
 
+  const referralCode = summary?.referral_code ?? '';
+  const referralLink = summary?.referral_link ?? '';
+  const hasValidReferralLink = isValidReferralLink(referralLink);
+
   const shareMessage = useMemo(() => {
     if (!summary) {
       return '';
@@ -196,7 +216,7 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
   }, [summary, t]);
 
   const handleCopy = (): void => {
-    if (!summary) {
+    if (!summary || !hasValidReferralLink) {
       return;
     }
 
@@ -210,7 +230,7 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
   };
 
   const handleShare = async (): Promise<void> => {
-    if (!summary) {
+    if (!summary || !hasValidReferralLink) {
       return;
     }
 
@@ -254,8 +274,6 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
     }
   };
 
-  const referralCode = summary?.referral_code ?? '';
-  const referralLink = summary?.referral_link ?? '';
   const referrerLabel =
     summary?.referred_by_name ??
     summary?.referred_by_email ??
@@ -307,14 +325,21 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
           onPress={() => {
             void handleShare();
           }}
-          disabled={!summary}
+          disabled={!hasValidReferralLink}
+          accessibilityRole='button'
+          accessibilityLabel={t(
+            'profile.referral.shareTitle',
+            undefined,
+            'Share your referral link'
+          )}
+          accessibilityState={{ disabled: !hasValidReferralLink }}
           activeOpacity={0.75}
           style={[
             styles.shareButton,
             {
               borderColor: `${c.accent}30`,
               backgroundColor: `${c.accent}14`,
-              opacity: summary ? 1 : 0.5,
+              opacity: hasValidReferralLink ? 1 : 0.5,
             },
           ]}
         >
@@ -331,33 +356,47 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
           },
         ]}
       >
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.codeLabel, { color: c.muted }]}>
-            {t('profile.referral.codeLabel', undefined, 'Your referral code')}
-          </Text>
-          {loading ? (
-            <View style={styles.loadingRow}>
-              <ActivityIndicator size='small' color={c.accent} />
-              <Text style={[styles.loadingText, { color: c.text }]}>
-                {t('profile.referral.loading', undefined, 'Loading referral details...')}
-              </Text>
-            </View>
-          ) : (
-            <Text style={[styles.codeValue, { color: c.text }]}>{referralCodeValue}</Text>
-          )}
-        </View>
+        <TouchableOpacity
+          onPress={() => setQrModalOpen(true)}
+          disabled={!summary}
+          activeOpacity={0.75}
+          accessibilityRole='button'
+          accessibilityLabel={t('profile.referral.openQr', undefined, 'Show referral QR code')}
+          accessibilityState={{ disabled: !summary }}
+          style={styles.codeTrigger}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.codeLabel, { color: c.muted }]}>
+              {t('profile.referral.codeLabel', undefined, 'Your referral code')}
+            </Text>
+            {loading ? (
+              <View style={styles.loadingRow}>
+                <ActivityIndicator size='small' color={c.accent} />
+                <Text style={[styles.loadingText, { color: c.text }]}>
+                  {t('profile.referral.loading', undefined, 'Loading referral details...')}
+                </Text>
+              </View>
+            ) : (
+              <Text style={[styles.codeValue, { color: c.text }]}>{referralCodeValue}</Text>
+            )}
+          </View>
+          <QrCode size={18} color={summary ? c.accent : c.muted} strokeWidth={2.1} />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
             void handleCopy();
           }}
-          disabled={!summary}
+          disabled={!hasValidReferralLink}
+          accessibilityRole='button'
+          accessibilityLabel={t('profile.referral.copy', undefined, 'Copy')}
+          accessibilityState={{ disabled: !hasValidReferralLink }}
           activeOpacity={0.8}
           style={[
             styles.copyButton,
             {
               borderColor: `${c.accent}28`,
               backgroundColor: `${c.accent}12`,
-              opacity: summary ? 1 : 0.5,
+              opacity: hasValidReferralLink ? 1 : 0.5,
             },
           ]}
         >
@@ -464,11 +503,16 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
             void handleCopy();
           }}
           activeOpacity={0.8}
+          disabled={!hasValidReferralLink}
+          accessibilityRole='button'
+          accessibilityLabel={t('profile.referral.copy', undefined, 'Copy')}
+          accessibilityState={{ disabled: !hasValidReferralLink }}
           style={[
             styles.linkRow,
             {
               borderColor: c.cardBorder,
               backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(11,45,49,0.02)',
+              opacity: hasValidReferralLink ? 1 : 0.5,
             },
           ]}
         >
@@ -601,6 +645,21 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
           {t('profile.referral.error', undefined, 'Unable to load referral details right now.')}
         </Text>
       ) : null}
+      <ReferralQrModal
+        visible={qrModalOpen}
+        referralCode={referralCode}
+        referralLink={referralLink}
+        displayLink={truncateMiddle(referralLink)}
+        hasValidLink={hasValidReferralLink}
+        copied={copied}
+        isDark={isDark}
+        c={c}
+        onCopy={handleCopy}
+        onShare={() => {
+          void handleShare();
+        }}
+        onClose={() => setQrModalOpen(false)}
+      />
     </GlassCard>
   );
 }
@@ -655,6 +714,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
+  },
+  codeTrigger: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   codeLabel: {
     fontSize: 11,

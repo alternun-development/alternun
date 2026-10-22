@@ -263,6 +263,16 @@
       },
       "summaryCards": {
         "comingSoon": "เร็วๆ นี้",
+        "metricInfo": {
+          "openLabel": "ข้อมูลเพิ่มเติมเกี่ยวกับ {{metric}}",
+          "closeLabel": "ปิด",
+          "atnBalanceTitle": "ยอดคงเหลือ ATN",
+          "atnBalance": "ยอดคงเหลือ ATN ที่ใช้ได้ ซึ่งรายงานจากบัญชีรางวัลของคุณ",
+          "participationFactor": "FP คือปัจจัยการมีส่วนร่วมที่ใช้กับ AIRS ของคุณ เริ่มต้นที่ 50 % และอยู่ในช่วง 0 % ถึง 100 % ตามข้อกำหนดและเงื่อนไข",
+          "eligibleAirs": "AIRS เทียบเท่า = AIRS × FP",
+          "eligibleUsers": "จำนวนผู้ใช้ที่มีสิทธิ์ทั้งหมดซึ่งระบบรายงานสำหรับการคาดการณ์ RBI",
+          "aliquot": "สัดส่วนการจัดสรร = AIRS เทียบเท่าของฉัน / ผลรวม AIRS เทียบเท่าของชุมชน × 100 %"
+        },
         "position": {
           "title": "อันดับของคุณ",
           "subtitle": "ในกลุ่มสมาชิก Airs By Alternun",
@@ -274,25 +284,26 @@
           "city": "เมือง"
         },
         "rbi": {
-          "title": "ประมาณการ RBI",
-          "subtitle": "รายได้โดยประมาณสำหรับรอบถัดไป",
-          "estimatedPool": "กองทุน RBI โดยประมาณ:",
-          "eligibleUsers": "ผู้ใช้ที่มีสิทธิ์:",
-          "airsScore": "คะแนน Airs ของคุณ:",
+          "title": "การคาดการณ์ RBI",
+          "subtitle": "ปัจจัยการมีส่วนร่วม (FP)",
+          "eligibleAirs": "AIRS เทียบเท่า",
+          "eligibleUsers": "ผู้ใช้ที่มีสิทธิ์",
+          "aliquot": "สัดส่วนการจัดสรร",
+          "notAvailable": "ยังไม่มีข้อมูล",
+          "estimated": "ประมาณการ",
+          "participationNote": "หากต้องการเข้าใจการทำงานของ FP โปรดอ่าน",
+          "termsAndConditions": "ข้อกำหนดและเงื่อนไข",
           "whatIsRbi": "RBI คืออะไร?",
           "explanation": "รายได้พื้นฐานเชิงฟื้นฟู (Regenerative Basic Income) คือรายได้ตามรอบที่แจกจ่ายให้กับผู้ใช้ Alternun ที่มีส่วนร่วมในระบบนิเวศ.\n\nมันไม่ได้ขึ้นอยู่กับว่าคุณมีเงินเท่าไร แต่ขึ้นอยู่กับการมีส่วนร่วม ความมุ่งมั่น และผลกระทบของคุณ ซึ่งวัดผ่านคะแนน AIRS ของคุณ.\n\nทุกครั้งที่ Alternun อำนวยความสะดวกในการชดเชย การขายจากพูลการชดเชย หรือกิจกรรมทางเศรษฐกิจภายในแพลตฟอร์ม มูลค่าบางส่วนจะถูกส่งตรงไปยังกองทุน RBI",
           "fullDocumentation": "เอกสารฉบับเต็ม"
         },
         "atn": {
-          "title": "ATN ของฉัน",
-          "subtitle": "โทเค็นเชิงฟื้นฟูของคุณ",
-          "availableLabel": "ATN ที่มีอยู่",
-          "availableDesc": "พร้อมใช้งาน",
-          "stackingLabel": "ATN ที่กำลังสเตก",
-          "stackingDesc": "กำลังมีส่วนร่วมในโครงการ",
-          "totalLabel": "ATN รวม",
-          "primaryWalletLabel": "วอลเล็ตหลัก",
-          "primaryWalletMeta": "ภายใน"
+          "title": "ATN และรางวัลเชิงฟื้นฟูของฉัน",
+          "subtitle": "ยอดคงเหลือรางวัลของคุณ",
+          "assetName": "ATN",
+          "primaryWalletLabel": "กระเป๋ารางวัลหลัก",
+          "primaryWalletMeta": "ภายใน",
+          "redeemAction": "แลกและใช้งาน"
         }
       }
     },
@@ -811,7 +822,7 @@
         "notConnected": "ยังไม่ได้เชื่อมต่อ",
         "createTitle": "สร้างวอลเล็ต Alternun ของคุณ",
         "createSubtitle": "กุญแจ multichain ของคุณ — Ethereum, Bitcoin และ Solana ในที่เดียว",
-        "createButton": "สร้างวอลเล็ต Alternun",
+        "createButton": "สร้างกระเป๋ารางวัล",
         "createFeature1": "ไม่มีผู้ดูแล: มีเพียงคุณที่ถือกุญแจ",
         "createFeature2": "Multichain: EVM, Bitcoin และ Solana",
         "createFeature3": "เข้ารหัสด้วย PIN ของคุณ สำรองข้อมูลโดยคุณ",
@@ -827,9 +838,9 @@
         "addressCopied": "คัดลอกที่อยู่แล้ว",
         "exportBackup": "ส่งออกข้อมูลสำรอง",
         "exportWarning": "นี่คือตัวเลือกการกู้คืนเดียวหากคุณสูญเสียอุปกรณ์",
-        "manageWallet": "จัดการวอลเล็ต",
+        "manageWallet": "จัดการกระเป๋ารางวัล",
         "manageWallets": "จัดการวอลเล็ตทั้งหมด",
-        "noWalletAccount": "ยังไม่มีข้อมูลวอลเล็ต",
+        "noWalletAccount": "ยังไม่มีข้อมูลกระเป๋ารางวัลของคุณ",
         "changePin": "เปลี่ยน PIN"
       },
       "accessMethods": {
@@ -955,6 +966,13 @@
         "copied": "คัดลอกแล้ว",
         "shareTitle": "แชร์ลิงก์แนะนำของคุณ",
         "shareMessage": "เข้าร่วม Airs By Alternun ด้วยรหัส {{code}}: {{link}}",
+        "share": "แชร์",
+        "qrTitle": "คิวอาร์โค้ดแนะนำของคุณ",
+        "qrDescription": "สแกนเพื่อเปิดลิงก์แนะนำของคุณ",
+        "openQr": "แสดงคิวอาร์โค้ดแนะนำ",
+        "closeQr": "ปิดคิวอาร์โค้ดแนะนำ",
+        "qrAccessibilityLabel": "คิวอาร์โค้ดสำหรับลิงก์แนะนำของคุณ",
+        "linkUnavailable": "ไม่มีลิงก์แนะนำ",
         "referralCount": "สมาชิกที่เชิญ",
         "wasReferred": "มีการแนะนำในระบบ",
         "referredBy": "ถูกแนะนำโดย {{name}}",
@@ -1033,9 +1051,8 @@
       "marketplace": "ตลาดโครงการ AIRS",
       "heroTitle": "สำรวจพื้นที่ที่พลังของคุณกลายเป็นผลกระทบ",
       "live": "สด",
-      "presentation": "การนำเสนอโครงการ",
-      "presentationTitle": "การนำเสนอโครงการอีโคทัวริซึม",
-      "launchProject": "โครงการเปิดตัว",
+      "featured": "โครงการแนะนำ",
+      "featuredProject": "โครงการแนะนำ",
       "heroDescription": "ค้นพบข้อเสนอและวิธีนำความสามารถ เครือข่าย หรือประสบการณ์ของคุณมาร่วมสร้างผลกระทบ",
       "collaborate": "ฉันต้องการร่วมมือ",
       "openMap": "เปิดแผนที่",
@@ -1050,11 +1067,80 @@
       "productive": "สร้างสรรค์",
       "waysToCollaborate": "วิธีร่วมมือ",
       "participateAndEarn": "ดูวิธีเข้าร่วมและรับ AIRS",
+      "directory": {
+        "label": "เลือกสิ่งที่ต้องการสำรวจ",
+        "projects": "โครงการ",
+        "enterprises": "องค์กร"
+      },
+      "enterprises": {
+        "eyebrow": "องค์กร",
+        "heading": "องค์กรที่สร้างผลกระทบ",
+        "intro": "ทำความรู้จักองค์กรเบื้องหลังโครงการที่เผยแพร่",
+        "projectCount": "โครงการที่เผยแพร่ {{count}} โครงการ",
+        "loading": "กำลังโหลดองค์กร…",
+        "empty": "ยังไม่มีองค์กรที่พร้อมให้สำรวจ",
+        "error": "โหลดข้อมูลองค์กรไม่ได้",
+        "retry": "ลองอีกครั้ง",
+        "detail": {
+          "back": "กลับไปที่องค์กร",
+          "loading": "กำลังโหลดองค์กร…",
+          "unavailable": "องค์กรนี้ไม่พร้อมใช้งาน",
+          "error": "โหลดข้อมูลองค์กรไม่ได้",
+          "website": "เยี่ยมชมเว็บไซต์",
+          "projects": "โครงการที่เผยแพร่"
+        }
+      },
       "filters": {
         "all": "ทั้งหมด",
-        "active": "กำลังดำเนินการ",
-        "productive": "สร้างสรรค์",
-        "conservation": "การอนุรักษ์"
+        "active": "กำลังดำเนินการ"
+      },
+      "categories": {
+        "hospitality_ecotourism": "การต้อนรับและการท่องเที่ยวเชิงนิเวศ",
+        "conservation": "การอนุรักษ์",
+        "productive_enterprise": "วิสาหกิจการผลิต",
+        "regenerative_agriculture": "เกษตรฟื้นฟู",
+        "community": "ชุมชน",
+        "education": "การศึกษา"
+      },
+      "marketplaceState": {
+        "loading": "กำลังโหลดโครงการ…",
+        "empty": "ยังไม่มีโครงการที่เผยแพร่",
+        "error": "โหลดโครงการไม่ได้",
+        "retry": "ลองอีกครั้ง"
+      },
+      "detail": {
+        "back": "กลับไปที่โครงการ",
+        "loading": "กำลังโหลดโครงการ…",
+        "unavailable": "ไม่พบโครงการนี้",
+        "error": "โหลดโครงการไม่ได้",
+        "retry": "ลองอีกครั้ง",
+        "waysToContribute": "วิธีมีส่วนร่วม",
+        "gallery": "แกลเลอรี",
+        "video": "วิดีโอ",
+        "openVideo": "ดูวิดีโอ",
+        "openPresentation": "ดูงานนำเสนอ",
+        "comments": {
+          "title": "ความคิดเห็น",
+          "loading": "กำลังโหลดความคิดเห็น…",
+          "loadError": "โหลดความคิดเห็นไม่ได้",
+          "retry": "ลองอีกครั้ง",
+          "emptyList": "ยังไม่มีความคิดเห็น",
+          "emptyInvite": "เป็นคนแรกที่แสดงความคิดเห็น",
+          "loadMore": "โหลดเพิ่มเติม",
+          "loadingMore": "กำลังโหลด…",
+          "loadMoreError": "โหลดความคิดเห็นเพิ่มเติมไม่ได้",
+          "placeholder": "เขียนความคิดเห็น",
+          "publish": "เผยแพร่",
+          "publishing": "กำลังเผยแพร่…",
+          "signInPrompt": "เข้าสู่ระบบเพื่อแสดงความคิดเห็น",
+          "signIn": "เข้าสู่ระบบ",
+          "submitted": "ความคิดเห็นของคุณจะเผยแพร่หลังจากได้รับการตรวจสอบ",
+          "rateLimited": "คุณแสดงความคิดเห็นบ่อยเกินไป โปรดลองอีกครั้งภายหลัง",
+          "emptyBody": "กรุณาเขียนความคิดเห็นก่อนเผยแพร่",
+          "signInRequired": "เข้าสู่ระบบเพื่อเผยแพร่ความคิดเห็น",
+          "projectUnavailable": "โครงการนี้ไม่พร้อมใช้งานแล้ว",
+          "submitError": "ส่งความคิดเห็นไม่ได้ โปรดลองอีกครั้ง"
+        }
       },
       "intents": {
         "question": "วันนี้คุณต้องการทำอะไร?",
@@ -1075,17 +1161,6 @@
       "submitBanner": {
         "title": "โครงการของคุณก็ขับเคลื่อน AIRS ได้",
         "description": "นำเสนอแนวคิดสร้างสรรค์หรือการอนุรักษ์แก่ชุมชน Alternun ระดับโลก"
-      },
-      "project": {
-        "title": "อีโคทัวริซึม",
-        "place": "โคลอมเบีย",
-        "theme": "เศรษฐกิจมีชีวิตและพื้นที่",
-        "description": "โครงการท่องเที่ยวอย่างมีสติเพื่อขับเคลื่อนความร่วมมือ ประสบการณ์ท้องถิ่น และคุณค่าเชิงฟื้นฟู",
-        "contribute": {
-          "participate": "เข้าร่วม",
-          "share": "เผยแพร่",
-          "connectAllies": "เชื่อมต่อพันธมิตร"
-        }
       },
       "empty": {
         "title": "ยังไม่พบรายการที่ตรงกัน",
