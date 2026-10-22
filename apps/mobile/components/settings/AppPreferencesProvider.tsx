@@ -2,6 +2,7 @@ import {
   DEFAULT_LOCALE,
   SUPPORTED_LOCALES,
   isSupportedLocale,
+  resolveBrowserLocale,
   type AlternunLocale,
 } from '@alternun/i18n';
 import React, { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
@@ -82,14 +83,28 @@ function writeStoredPreferences(preferences: StoredPreferences): void {
   }
 }
 
+// Stored preference wins; otherwise follow the browser locale (web) and fall back to the default.
+export function detectInitialLanguage(stored?: StoredPreferences | null): AppLanguage {
+  if (isSupportedLocale(stored?.language)) {
+    return stored.language ?? DEFAULT_LOCALE;
+  }
+
+  if (typeof navigator !== 'undefined') {
+    return resolveBrowserLocale({
+      navigatorLanguage: navigator.language,
+      navigatorLanguages: navigator.languages,
+    });
+  }
+
+  return DEFAULT_LOCALE;
+}
+
 export function AppPreferencesProvider({ children }: PropsWithChildren) {
   const stored = readStoredPreferences();
   const [themeMode, setThemeMode] = useState<ThemeMode>(
     stored?.themeMode === 'light' || stored?.themeMode === 'dark' ? stored.themeMode : 'dark'
   );
-  const [language, setLanguage] = useState<AppLanguage>(
-    isSupportedLocale(stored?.language) ? stored.language ?? DEFAULT_LOCALE : DEFAULT_LOCALE
-  );
+  const [language, setLanguage] = useState<AppLanguage>(() => detectInitialLanguage(stored));
   const [showAirsIntro, setShowAirsIntro] = useState<boolean>(
     typeof stored?.showAirsIntro === 'boolean' ? stored.showAirsIntro : true
   );

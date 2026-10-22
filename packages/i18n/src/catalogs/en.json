@@ -1,5 +1,8 @@
 {
   "shared": {
+    "webMeta": {
+      "tabTitle": "Airs | What's your regenerative score?"
+    },
     "labels": {
       "backToTop": "Top",
       "by": "By",
@@ -307,7 +310,6 @@
           "notAvailable": "Not available yet",
           "estimated": "estimated",
           "participationNote": "To understand how FP works, read the",
-          "termsAndConditions": "Terms and Conditions",
           "whatIsRbi": "What is RBI?",
           "explanation": "Regenerative Basic Income is a periodic income distributed among Alternun users who contribute to the ecosystem.\n\nIt doesn't depend on how much money you have, but on your participation, commitment, and impact, measured through your AIRS score.\n\nEach time Alternun facilitates a compensation, a sale from the compensation pool, or an economic activity within the platform, part of that value goes directly to the RBI fund.",
           "fullDocumentation": "Full Documentation"

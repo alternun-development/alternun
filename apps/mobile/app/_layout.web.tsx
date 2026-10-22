@@ -11,6 +11,7 @@ import {
   useAppPreferences,
 } from '../components/settings/AppPreferencesProvider';
 import { NotificationsProvider } from '../components/notifications/NotificationsContext';
+import { applyWebTabTitle } from '../components/i18n/webTabTitle';
 import { useColorScheme } from 'nativewind';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -31,13 +32,17 @@ export default function RootLayout(): React.JSX.Element {
 }
 
 function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
-  const { themeMode } = useAppPreferences();
+  const { themeMode, language } = useAppPreferences();
   const colorScheme = useColorScheme();
   const navigationTheme = themeMode === 'dark' ? DarkTheme : DefaultTheme;
 
   useEffect(() => {
     colorScheme.setColorScheme(themeMode);
   }, [colorScheme, themeMode]);
+
+  useEffect(() => {
+    applyWebTabTitle(language);
+  }, [language]);
   const pathname = usePathname();
   const showLayoutFooter =
     pathname !== '/auth' &&
