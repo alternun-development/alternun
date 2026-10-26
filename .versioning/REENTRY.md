@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Merge release PR for v1.1.107 (i18n build fix); confirm dash prod pipeline applies migrations and deploys API; then #249 P0 cut
+Next micro-step: Admin: require release-promotion-guard + Pipeline Build checks on master ruleset; add prod pipeline failure alert; then #249 P0 cut
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
