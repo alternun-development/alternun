@@ -132,6 +132,9 @@ export interface AirsReportRecipientLookupResponse {
   displayName: string | null;
 }
 
+// GET /v1/admin/airs-reports (Grant Approvers only): pending_approval reports, oldest first.
+export type AirsReportReviewQueueResponse = AirsReportRecord[];
+
 // GET /v1/admin/airs-reports/:id
 export interface AirsReportDetailResponse {
   report: AirsReportRecord;
