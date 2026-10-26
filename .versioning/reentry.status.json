@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-22T18:55:10.931Z",
+  "lastUpdated": "2026-10-26T22:07:37.298Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge release PR v1.1.105 after checks; diagnose pipeline Authentik bootstrap warning on identity-dev",
+      "description": "Epic #249 Part B: start B1 (alternun.co domain admins) and B2 (project accounts); confirm approver mailboxes; then A1 image hosts",
       "id": "next",
       "priority": 1
     }

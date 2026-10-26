@@ -120,21 +120,23 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.105**
+Current version: **1.1.106**
 
-## 📋 Latest Changes (v1.1.105)
+## 📋 Latest Changes (v1.1.106)
+
+### Documentation
+
+- **airs:** document User Airs Reports and claiming process (#249) ([48d5e35](https://github.com/alternun-development/alternun/commit/48d5e35da7ee4a8355c8fcaae88d5ac29b61fb4c))
 
 ### Changes
 
-- **reentry:** set next step after #279 release ([3275fa4](https://github.com/alternun-development/alternun/commit/3275fa4403d2dcb69c33bc9f8128dff216aa2bda))
-- **docs:** deploy GitHub Pages from master only, drop v* tag trigger ([3dfbcde](https://github.com/alternun-development/alternun/commit/3dfbcde41a7218e555bf6b3807fb540d703c802e))
-- **versioning:** update reentry next step for the FP liquid bar ([45e06dc](https://github.com/alternun-development/alternun/commit/45e06dc61f9803b9028843278cc33b510ca5f306))
+- **reentry:** sync after v1.1.106-dev.0 release ([58da31c](https://github.com/alternun-development/alternun/commit/58da31c673d9b00b673e199d4ca10542e775bcd5))
+- **reentry:** note testnet admin CORS follow-up ([bf48bbe](https://github.com/alternun-development/alternun/commit/bf48bbe5963d2726a975ccd143ee6c7412675930))
 
-### Features
+### Bug Fixes
 
-- **mobile:** use the liquid progress bar in the RBI projection card ([8edcfc1](https://github.com/alternun-development/alternun/commit/8edcfc18725239303a919fcd0b954866c5d3ac72))
-- **mobile:** add animated liquid ParticipationFactorBar ([d29769d](https://github.com/alternun-development/alternun/commit/d29769d2dc8f95fae899add7f1dc20cf357daf46))
-- **mobile:** add liquid progress palette tokens for dark and light themes ([42a89e8](https://github.com/alternun-development/alternun/commit/42a89e86504be83a86441eea052257ec5b402ebc))
+- **api:** trust the testnet admin origin for CORS ([63bb70b](https://github.com/alternun-development/alternun/commit/63bb70bc32ffe329fd905b8c3b65ecde825f1553))
+- **mobile:** honor the app motion level in the participation factor bar ([dc2227a](https://github.com/alternun-development/alternun/commit/dc2227a49bb9a392aa177f6e18cdbf00d3e2f498))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
