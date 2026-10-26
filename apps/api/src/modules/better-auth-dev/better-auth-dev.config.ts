@@ -245,6 +245,7 @@ export function resolveBetterAuthDevConfig(
       'http://localhost:3000',
       'https://testnet.airs.alternun.co',
       'https://airs.alternun.co',
+      'https://testnet.admin.alternun.co',
       'https://admin.alternun.co',
       deriveTrustedAppOrigin(env.AUTH_BETTER_AUTH_URL?.trim()),
       deriveTrustedAppOrigin(env.EXPO_PUBLIC_BETTER_AUTH_URL?.trim()),
