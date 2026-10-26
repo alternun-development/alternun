@@ -124,16 +124,15 @@ Current version: **1.1.106**
 
 ## 📋 Latest Changes (v1.1.106)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore(reentry): note testnet admin CORS follow-up
-- **repo:** fix(api): trust the testnet admin origin for CORS
-- **repo:** fix(mobile): honor the app motion level in the participation factor bar
+- **reentry:** sync after v1.1.106-dev.0 release ([58da31c](https://github.com/alternun-development/alternun/commit/58da31c673d9b00b673e199d4ca10542e775bcd5))
+- **reentry:** note testnet admin CORS follow-up ([bf48bbe](https://github.com/alternun-development/alternun/commit/bf48bbe5963d2726a975ccd143ee6c7412675930))
 
 ### Bug Fixes
 
 - **api:** trust the testnet admin origin for CORS ([63bb70b](https://github.com/alternun-development/alternun/commit/63bb70bc32ffe329fd905b8c3b65ecde825f1553))
-- **mobile:** honor the app motion level in the participation factor bar ([dc2227a](https://github.com/alternun-development/alternun/commit/dc2227a49bb9a392aa177f6e18cdbf00d3e2f498)), closes [#279](https://github.com/alternun-development/alternun/issues/279)
+- **mobile:** honor the app motion level in the participation factor bar ([dc2227a](https://github.com/alternun-development/alternun/commit/dc2227a49bb9a392aa177f6e18cdbf00d3e2f498))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
