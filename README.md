@@ -124,6 +124,10 @@ Current version: **1.1.106**
 
 ## 📋 Latest Changes (v1.1.106)
 
+### Documentation
+
+- **airs:** document User Airs Reports and claiming process (#249) ([48d5e35](https://github.com/alternun-development/alternun/commit/48d5e35da7ee4a8355c8fcaae88d5ac29b61fb4c))
+
 ### Changes
 
 - **reentry:** sync after v1.1.106-dev.0 release ([58da31c](https://github.com/alternun-development/alternun/commit/58da31c673d9b00b673e199d4ca10542e775bcd5))
