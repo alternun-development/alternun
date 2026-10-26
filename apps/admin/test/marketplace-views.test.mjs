@@ -26,6 +26,8 @@ let auditFilterResult;
 let auditQueryPath;
 let auditEventMessage;
 let toSafeMediaUrl;
+let mediaUrlError;
+let mediaHostNotAllowedMessage;
 
 const project = {
   id: 'project-1',
@@ -156,7 +158,7 @@ before(async () => {
   ({ auditFilterResult, auditQueryPath, auditEventMessage } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/editors/audit-history.tsx'
   ));
-  ({ toSafeMediaUrl } = await viteServer.ssrLoadModule(
+  ({ toSafeMediaUrl, mediaUrlError, mediaHostNotAllowedMessage } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/editors/media-editor.tsx'
   ));
 });
@@ -214,6 +216,28 @@ void test('media URLs are constrained before reaching DOM URL sinks', () => {
   assert.equal(
     toSafeMediaUrl('https://images.example/logo.png'),
     'https://images.example/logo.png'
+  );
+});
+
+void test('rejected media hosts tell admins which hosts are valid', () => {
+  for (const kind of ['logo', 'cover', 'gallery_image']) {
+    assert.equal(
+      mediaHostNotAllowedMessage(kind),
+      'This image host is not allowed. Use an image from images.unsplash.com or from the Alternun image storage.'
+    );
+  }
+  assert.match(
+    mediaHostNotAllowedMessage('canva'),
+    /Use a link from canva\.com, www\.canva\.com\./
+  );
+  assert.match(
+    mediaUrlError('video', 'https://video.example.com/watch'),
+    /Use a link from youtube\.com, .*player\.vimeo\.com\./
+  );
+  assert.equal(mediaUrlError('gallery_image', 'https://storage.example.com/a.png'), null);
+  assert.equal(
+    mediaUrlError('logo', 'http://images.unsplash.com/a.png'),
+    'Enter a valid https link.'
   );
 });
 
