@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-22T18:55:10.931Z",
+  "lastUpdated": "2026-10-26T20:46:22.397Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge release PR v1.1.105 after checks; diagnose pipeline Authentik bootstrap warning on identity-dev",
+      "description": "Confirm BETTER_AUTH_TRUSTED_ORIGINS on the testnet API deploy includes https://testnet.admin.alternun.co, then redeploy and recheck the admin preflight",
       "id": "next",
       "priority": 1
     }

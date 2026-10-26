@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Merge release PR v1.1.105 after checks; diagnose pipeline Authentik bootstrap warning on identity-dev
+Next micro-step: Confirm BETTER_AUTH_TRUSTED_ORIGINS on the testnet API deploy includes https://testnet.admin.alternun.co, then redeploy and recheck the admin preflight
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
