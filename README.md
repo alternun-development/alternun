@@ -126,6 +126,7 @@ Current version: **1.1.107**
 
 ### Changes
 
+- **repo:** run the deploy pipeline build commands on every PR ([3943c55](https://github.com/alternun-development/alternun/commit/3943c5584412f30d47b690a6692fbcc0c12945df))
 - **reentry:** next step after pipeline build fix ([76908af](https://github.com/alternun-development/alternun/commit/76908afcf1587fd51064cd1f31e4949a0f1eeacd))
 
 ### Bug Fixes
