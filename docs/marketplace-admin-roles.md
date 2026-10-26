@@ -60,6 +60,10 @@ To remove a scoped role, revoke the membership in **Team**. Also remove the grou
 2. Signed in as the hotel `partner_operator`, open the hotel project. Go to **Team** and add the sub-admin's Authentik user ID with the role `sub_admin`.
 3. The sub-admin signs in. They can edit copy and gallery media, moderate comments, and support participants in that project only. They cannot change the logo or cover image, and they cannot approve completions or award points.
 
+## Planned: User Airs Reports
+
+Epic #249 adds a User Airs Report that `partner_operator` and `sub_admin` can submit for their project. A report is not an award: nothing is credited until the report is auto-approved within the per-recipient limits or approved by an allowlisted Grant Approver. The rules above for completions and points do not change. The same work plans to assign scoped roles by email instead of the Authentik user ID, and to treat verified `@alternun.co` accounts like `@alternun.io` ones. See [airs-user-reports-and-claiming.md](airs-user-reports-and-claiming.md).
+
 ## After merging changes to the group map
 
 The groups, the Alternun Admin access policy, and the `alternun_roles` claim are created or updated by `packages/infra/scripts/templates/bootstrap-authentik-integrations.py`. After any change to its group map is merged, whoever administers Authentik must run the bootstrap script again in **each** environment. Until then, the new groups do not exist there, and their members cannot sign in to Alternun Admin. The script creates missing groups and leaves existing groups and their members unchanged.

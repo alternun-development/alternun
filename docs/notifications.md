@@ -23,6 +23,8 @@ The API resolves the bearer token to an application user ID before using the Sup
 | `wallet_connected`       | A wallet with an application-user link is connected | Wallet owner   |
 | `profile_completed`      | The profile-completion lifecycle event is recorded  | Profile owner  |
 
+User Airs Reports (epic #249, not built yet) will add event types for report submitted, approved, rejected, released and rewards unlocked, sent to approvers, submitters and support as well as recipients. See [airs-user-reports-and-claiming.md](airs-user-reports-and-claiming.md#notifications).
+
 Negative ledger corrections do not produce a success notification. Navigation, settings changes, and other reversible UI interactions do not produce feed entries; notifications are reserved for durable account or value changes.
 
 ## API
