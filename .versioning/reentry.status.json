@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-26T22:07:37.298Z",
+  "lastUpdated": "2026-10-26T23:15:04.240Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Epic #249 Part B: start B1 (alternun.co domain admins) and B2 (project accounts); confirm approver mailboxes; then A1 image hosts",
+      "description": "#249 Part B: build claim (B7) on marketplace_claim_airs_reports, then notifications (B10/B11) and the admin report screens (B12-B14)",
       "id": "next",
       "priority": 1
     }
