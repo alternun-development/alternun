@@ -1,3 +1,14 @@
+## [1.1.107](https://github.com/alternun-development/alternun/compare/v1.1.106...v1.1.107) (2026-10-26)
+
+### Bug Fixes
+
+- **repo:** chore(reentry): next step after pipeline build fix
+- **repo:** fix(api): build @alternun/i18n before compiling the API
+
+### Bug Fixes
+
+- **api:** build @alternun/i18n before compiling the API ([aee3bc5](https://github.com/alternun-development/alternun/commit/aee3bc543683ba3b716036d81b36bdb2be491219))
+
 ## [1.1.106](https://github.com/alternun-development/alternun/compare/v1.1.105...v1.1.106) (2026-10-26)
 
 ### Documentation
