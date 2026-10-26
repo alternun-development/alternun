@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react';
-import { requestMarketplace, type MediaKind, type ProjectMedia } from '../../../marketplace/api';
+import {
+  MarketplaceRequestError,
+  requestMarketplace,
+  type MediaKind,
+  type ProjectMedia,
+} from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import {
   brandMediaKinds,
@@ -24,6 +29,14 @@ const supportedHosts: Partial<Record<MediaKind, readonly string[]>> = {
   ],
   canva: ['canva.com', 'www.canva.com'],
 };
+// Image hosts seeded in every environment; each environment may add its own storage host.
+const sharedImageHosts = ['images.unsplash.com'];
+
+export function mediaHostNotAllowedMessage(kind: MediaKind): string {
+  return imageKinds.has(kind)
+    ? marketplaceCopy.mediaEditor.imageHostNotAllowed(sharedImageHosts.join(', '))
+    : marketplaceCopy.mediaEditor.hostNotAllowed((supportedHosts[kind] ?? []).join(', '));
+}
 
 export function toSafeMediaUrl(value: string): string {
   try {
@@ -45,7 +58,7 @@ export function mediaUrlError(kind: MediaKind, value: string): string | null {
     }
     const allowlist = supportedHosts[kind];
     if (allowlist && !allowlist.includes(url.hostname.toLowerCase())) {
-      return marketplaceCopy.mediaEditor.hostNotAllowed;
+      return mediaHostNotAllowedMessage(kind);
     }
     return null;
   } catch {
@@ -96,7 +109,14 @@ export function MediaEditor({ project, media, roles, onChanged }: MediaEditorPro
       setAltText('');
       onChanged(marketplaceCopy.mediaEditor.added);
     } catch (requestError) {
-      setError(requestError);
+      if (
+        requestError instanceof MarketplaceRequestError &&
+        requestError.code === 'MEDIA_HOST_NOT_ALLOWED'
+      ) {
+        setFieldError(mediaHostNotAllowedMessage(kind));
+      } else {
+        setError(requestError);
+      }
     } finally {
       setSaving(false);
     }
