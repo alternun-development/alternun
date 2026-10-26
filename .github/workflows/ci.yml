@@ -190,3 +190,42 @@ jobs:
             apps/${{ matrix.app }}/dist
             apps/${{ matrix.app }}/build
             apps/${{ matrix.app }}/.next
+
+  # Runs the exact build commands the AWS deploy pipelines use (see
+  # packages/infra/config/infrastructure-specs.ts), on a clean checkout and
+  # without turbo, so a missing workspace dependency fails here instead of
+  # in CodeBuild.
+  pipeline-build:
+    name: Pipeline Build (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, test]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: api
+            command: pnpm --filter @alternun/api run build
+          - target: admin
+            command: pnpm --filter @alternun/admin run build
+          - target: expo
+            command: pnpm --filter @alternun/mobile run build:web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run pipeline build command
+        run: ${{ matrix.command }}
