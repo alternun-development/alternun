@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Confirm BETTER_AUTH_TRUSTED_ORIGINS on the testnet API deploy includes https://testnet.admin.alternun.co, then redeploy and recheck the admin preflight
+Next micro-step: Seed logo/cover/gallery image hosts for project media (#249 A1); recheck testnet admin preflight after v1.1.106-dev.0
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
