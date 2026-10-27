@@ -187,7 +187,7 @@ function stubService(response, notify) {
     submit: async () => response,
     approve: async () => response,
   };
-  return new AirsReportService(repository, {}, notify);
+  return new AirsReportService(repository, {}, notify, async () => {});
 }
 
 const principal = { sub: 'admin-1', iss: 'https://sso.example.test/', roles: ['platform_owner'] };
