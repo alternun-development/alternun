@@ -158,6 +158,20 @@ it('shows the menu chevron as a chip that reflects the open state', () => {
   act(() => tree.unmount());
 });
 
+it('opens the profile from the avatar and name without opening the menu', () => {
+  mockBalance = 30;
+  const onOpenProfile = jest.fn();
+  let tree;
+  act(() => {
+    tree = renderer.create(<TopNav {...props} onOpenProfile={onOpenProfile} />);
+  });
+  const link = tree.root.findAllByProps({ testID: 'account-badge-profile' })[0];
+  act(() => link.props.onPress({ stopPropagation: () => {} }));
+  expect(onOpenProfile).toHaveBeenCalledTimes(1);
+  expect(tree.root.findAllByProps({ testID: 'dropdown-tier-badge' })).toHaveLength(0);
+  act(() => tree.unmount());
+});
+
 it('ends the skeleton with a neutral account badge if the initial balance fails', () => {
   mockBalanceError = new Error('Balance unavailable');
   let tree;
