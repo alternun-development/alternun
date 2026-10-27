@@ -59,7 +59,10 @@ export class SubmitAirsReportDto {
   @MaxLength(AIRS_REPORT_CONCEPT_MAX_LENGTH)
   concept!: string;
 
-  @ApiPropertyOptional({ format: 'uuid', description: 'Reserved for the project medal catalog.' })
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: "A medal from this project's catalog (an active one).",
+  })
   @IsOptional()
   @IsUUID()
   medalId?: string;

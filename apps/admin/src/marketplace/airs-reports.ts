@@ -115,7 +115,8 @@ export function validateAirsReportForm(
 export function buildSubmitAirsReportBody(
   values: AirsReportFormValues,
   lookup: AirsReportRecipientLookup | null,
-  requestKey: string
+  requestKey: string,
+  medalId = ''
 ): Record<string, unknown> {
   const name = values.recipientName.trim();
   return {
@@ -126,6 +127,7 @@ export function buildSubmitAirsReportBody(
     concept: values.concept.trim(),
     // Left out when empty: the API only asks for it when the project type needs it.
     ...(values.documentNumber.trim() ? { documentNumber: values.documentNumber.trim() } : {}),
+    ...(medalId ? { medalId } : {}),
     requestKey,
   };
 }
