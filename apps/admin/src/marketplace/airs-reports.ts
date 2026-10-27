@@ -2,6 +2,8 @@ import type { AdminRole } from '../auth/oidc-client';
 import { marketplaceCopy } from './copy';
 import { hasMarketplacePermission } from './permissions';
 import type {
+  AirsReportRecord,
+  AirsReportSummary,
   AirsReportFormErrors,
   AirsReportFormValues,
   AirsReportOutcomeKind,
@@ -155,6 +157,37 @@ export function airsReportRejectReasonError(reason: string): string | null {
 
 export function isAirsReportSnapshotHash(value: string): boolean {
   return SHA256_PATTERN.test(value);
+}
+
+/** Counts shown above the recent reports: what is done, what waits, and how many Airs are involved. */
+export function summarizeAirsReports(
+  records: ReadonlyArray<Pick<AirsReportRecord, 'status' | 'amount'>>
+): AirsReportSummary {
+  const summary: AirsReportSummary = {
+    credited: 0,
+    creditedAirs: 0,
+    waitingApproval: 0,
+    waitingClaim: 0,
+    totalAirs: 0,
+  };
+  for (const record of records) {
+    if (
+      record.status === 'rejected' ||
+      record.status === 'cancelled' ||
+      record.status === 'reversed'
+    )
+      continue;
+    summary.totalAirs += record.amount;
+    if (record.status === 'released') {
+      summary.credited += 1;
+      summary.creditedAirs += record.amount;
+    } else if (record.status === 'pending_approval') {
+      summary.waitingApproval += 1;
+    } else if (record.status === 'awaiting_claim') {
+      summary.waitingClaim += 1;
+    }
+  }
+  return summary;
 }
 
 export function formatAirs(amount: number): string {

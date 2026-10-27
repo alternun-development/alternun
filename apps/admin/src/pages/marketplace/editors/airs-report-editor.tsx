@@ -12,6 +12,7 @@ import {
   formatAirs,
   isValidAirsReportEmail,
   newAirsReportRequestKey,
+  summarizeAirsReports,
   validateAirsReportForm,
 } from '../../../marketplace/airs-reports';
 import type {
@@ -362,21 +363,55 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
         <SectionMessage>{copy.list.empty}</SectionMessage>
       ) : null}
       {recent.kind === 'success' && recent.data.length > 0 ? (
-        <div className='marketplace-card-grid'>
-          {recent.data.map((report) => (
-            <article className='metric-card' key={report.id}>
-              <AirsReportStatusPill status={report.status} />
-              <h4>{formatAirs(report.amount)}</h4>
-              <p>{report.recipientName ?? report.recipientEmail}</p>
-              <small>
-                {copy.list.document}: {report.documentNumber ?? marketplaceCopy.common.notAvailable}{' '}
-                · {formatDate(report.submittedAt)}
-              </small>
-            </article>
-          ))}
-        </div>
+        <>
+          <AirsReportSummaryStrip records={recent.data} />
+          <div className='marketplace-card-grid'>
+            {recent.data.map((report) => (
+              <article
+                className={`metric-card airs-report-card airs-report-card-${
+                  statusStyle[report.status]
+                }`}
+                key={report.id}
+              >
+                <AirsReportStatusPill status={report.status} />
+                <h4>{formatAirs(report.amount)}</h4>
+                <p>{report.recipientName ?? report.recipientEmail}</p>
+                <small>
+                  {copy.list.document}:{' '}
+                  {report.documentNumber ?? marketplaceCopy.common.notAvailable} ·{' '}
+                  {formatDate(report.submittedAt)}
+                </small>
+              </article>
+            ))}
+          </div>
+        </>
       ) : null}
     </section>
+  );
+}
+
+function AirsReportSummaryStrip({
+  records,
+}: {
+  records: readonly AirsReportRecord[];
+}): JSX.Element {
+  const summary = summarizeAirsReports(records);
+  const items: Array<[string, string, string]> = [
+    [copy.summary.credited, String(summary.credited), formatAirs(summary.creditedAirs)],
+    [copy.summary.waitingApproval, String(summary.waitingApproval), ''],
+    [copy.summary.waitingClaim, String(summary.waitingClaim), ''],
+    [copy.summary.airs, formatAirs(summary.totalAirs), ''],
+  ];
+  return (
+    <div className='airs-report-summary' role='group' aria-label={copy.list.heading}>
+      {items.map(([label, value, hint]) => (
+        <div className='airs-report-summary-item' key={label}>
+          <span>{label}</span>
+          <strong>{value}</strong>
+          {hint ? <small>{hint}</small> : null}
+        </div>
+      ))}
+    </div>
   );
 }
 
