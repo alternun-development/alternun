@@ -120,28 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.109**
+Current version: **1.1.110**
 
-## 📋 Latest Changes (v1.1.109)
+## 📋 Latest Changes (v1.1.110)
 
 ### Bug Fixes
 
-- **airs-reports:** require a document number on every report ([ac0029c](https://github.com/alternun-development/alternun/commit/ac0029cc6dfc7ac8f4e34d084c1f3031096a3a60))
-- **airs-reports:** never auto-approve a report to the submitter ([be8d215](https://github.com/alternun-development/alternun/commit/be8d2153e8bdd81f928b5cdabe397c5622c87abc))
-- **marketplace:** allow image hosts for project logo, cover and gallery ([20594cc](https://github.com/alternun-development/alternun/commit/20594cce5b49e25179bb16bfa062feb24f422457))
+- **repo:** fix(api): key each Airs report submission by a client key, not the request counter
 
-### Changes
+### Bug Fixes
 
-- **reentry:** note the User Airs Report next steps ([7d1be85](https://github.com/alternun-development/alternun/commit/7d1be85f8e912dc006ec0549bb9c6cf65f985c53))
-- **airs-reports:** cover the User Airs Report cut (B15) ([8ffbb44](https://github.com/alternun-development/alternun/commit/8ffbb4462b4cb747d1403f4fcd94f51bda4cdf63))
-- **reentry:** note marketplace media hosts follow-up ([d765fff](https://github.com/alternun-development/alternun/commit/d765fffc10ef98dcf43a62d302e84a29df845c51))
-
-### Features
-
-- **api:** add the User Airs Report admin endpoints ([8c07a96](https://github.com/alternun-development/alternun/commit/8c07a9685e668f90fbca5780613accac96579190))
-- **db:** add the User Airs Report transition functions ([1973689](https://github.com/alternun-development/alternun/commit/1973689bc6963a3fd1adeb5f81cc7b63cdc1d7b9))
-- **db:** add the airs_reports schema ([ad2cb5b](https://github.com/alternun-development/alternun/commit/ad2cb5b5e9920cb28b4acfce4de2fd1c580bd18d))
-- **api:** add the User Airs Report API contract ([0cd5600](https://github.com/alternun-development/alternun/commit/0cd5600ba5f85133a75d5fdba52d1d31aecd22f9))
+- **api:** key each Airs report submission by a client key, not the request counter ([aaf0789](https://github.com/alternun-development/alternun/commit/aaf0789a1f17284adc755b99fadc2882483a1a8b))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
