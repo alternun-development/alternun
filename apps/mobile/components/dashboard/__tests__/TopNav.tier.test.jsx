@@ -139,6 +139,25 @@ it('shows a skeleton until auth and the initial balance settle, then retains the
   act(() => tree.unmount());
 });
 
+it('shows the menu chevron as a chip that reflects the open state', () => {
+  mockBalance = 30;
+  let tree;
+  act(() => {
+    tree = renderer.create(<TopNav {...props} />);
+  });
+  const chip = () => tree.root.findAllByProps({ testID: 'account-badge-chevron' })[0];
+  const pill = () => tree.root.findAllByProps({ testID: 'account-badge-pill' })[0];
+  const closedBg = StyleSheet.flatten(chip().props.style).backgroundColor;
+  expect(closedBg).toMatch(/1A$/);
+  expect(pill().props.accessibilityState).toEqual({ expanded: false });
+  // The test window is 750 wide, so the pill keeps the desktop minimum.
+  expect(StyleSheet.flatten(pill().props.style).minWidth).toBe(240);
+  act(() => pill().props.onPress());
+  expect(StyleSheet.flatten(chip().props.style).backgroundColor).toMatch(/2E$/);
+  expect(pill().props.accessibilityState).toEqual({ expanded: true });
+  act(() => tree.unmount());
+});
+
 it('ends the skeleton with a neutral account badge if the initial balance fails', () => {
   mockBalanceError = new Error('Balance unavailable');
   let tree;
