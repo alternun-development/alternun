@@ -1,3 +1,13 @@
+## [1.1.116](https://github.com/alternun-development/alternun/compare/v1.1.115...v1.1.116) (2026-10-27)
+
+### Bug Fixes
+
+- **repo:** fix(mobile): open a full-screen menu from the hamburger on extra small screens
+
+### Bug Fixes
+
+- **mobile:** open a full-screen menu from the hamburger on extra small screens ([d6b70e2](https://github.com/alternun-development/alternun/commit/d6b70e2acddfafd0cdcbd7d781b4dd494d4d9096))
+
 ## [1.1.115](https://github.com/alternun-development/alternun/compare/v1.1.114...v1.1.115) (2026-10-27)
 
 ### Changes
