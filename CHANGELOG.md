@@ -1,8 +1,8 @@
 ## [1.1.117](https://github.com/alternun-development/alternun/compare/v1.1.116...v1.1.117) (2026-10-27)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(mobile): cover every top-nav menu action through the full-screen menu
+- **mobile:** cover every top-nav menu action through the full-screen menu ([704421c](https://github.com/alternun-development/alternun/commit/704421c866ccaeafe27ea8cffb03793b774b6d69))
 
 ## [1.1.116](https://github.com/alternun-development/alternun/compare/v1.1.115...v1.1.116) (2026-10-27)
 
