@@ -57,6 +57,13 @@ export const marketplaceCopy = {
     intro: 'See important changes and access attempts for this enterprise.',
     filtersLabel: 'Filter enterprise history',
   },
+  ordering: {
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    hint: 'This order is used in Explorer.',
+    searchActive: 'Clear the search to change the order.',
+    saved: 'Order updated.',
+  },
   projectsResource: {
     title: 'Projects',
     description: 'Review the projects your team manages.',
@@ -449,6 +456,8 @@ export const marketplaceCopy = {
       'enterprise.created': 'created the enterprise',
       'enterprise.updated': 'updated the enterprise',
       'enterprise.status_changed': 'changed the enterprise status',
+      'enterprise.reordered': 'changed the enterprise order',
+      'project.reordered': 'changed the project order',
       'project.created': 'created the project',
       'project.updated': 'updated the project',
       'project.published': 'published the project',
@@ -696,6 +705,8 @@ export const marketplaceCopy = {
     PARTICIPANT_NOT_FOUND: 'This participant could not be found.',
     USER_NOT_FOUND: 'No verified account exists with that email.',
     ENTERPRISE_SLUG_CONFLICT: 'An enterprise already uses that address.',
+    SORT_ORDER_INVALID:
+      'The list changed while you were ordering it. Reload the page and try again.',
     ENTERPRISE_NOT_ACTIVE: 'The enterprise must be active before continuing.',
     PROJECT_SLUG_CONFLICT: 'A project already uses that address.',
     PROJECT_SLUG_IMMUTABLE: 'The project address cannot change after publication.',

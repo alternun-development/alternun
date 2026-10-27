@@ -141,6 +141,7 @@ export interface EnterpriseRecord {
   status: 'active' | 'paused' | 'archived';
   countryCode: string | null;
   websiteUrl: string | null;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -157,6 +158,7 @@ export interface ProjectRecord {
   content: ProjectContent;
   firstPublishedAt: string | null;
   publishedAt: string | null;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
   enterprises?: Array<{

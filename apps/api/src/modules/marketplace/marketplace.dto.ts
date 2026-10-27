@@ -134,6 +134,14 @@ export class ReorderProjectMediaDto {
   items!: MediaOrderItemDto[];
 }
 
+export class ReorderMarketplaceDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(500)
+  @IsUUID('4', { each: true })
+  ids!: string[];
+}
+
 export class ActivityContentBlockDto {
   @IsString() @MinLength(1) @MaxLength(160) title!: string;
   @IsString() @MinLength(1) @MaxLength(4000) description!: string;
