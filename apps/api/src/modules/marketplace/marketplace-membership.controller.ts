@@ -29,6 +29,7 @@ import type { FastifyAdminRequest } from '../../common/admin-auth/admin-auth.gua
 import {
   ApiErrorDto,
   ChangeProjectMembershipDto,
+  CreateProjectMembershipByEmailDto,
   CreateProjectMembershipDto,
   ListProjectMembershipsQueryDto,
   RevokeProjectMembershipDto,
@@ -68,6 +69,19 @@ export class MarketplaceMembershipAdminController {
   @ApiCreatedResponse({ description: 'Granted project membership.' })
   grant(@Req() request: FastifyAdminRequest, @Body() body: CreateProjectMembershipDto) {
     return this.service.grant(request.adminPrincipal!, requestId(request), body);
+  }
+
+  @Post('by-email')
+  @RequireMarketplacePermission('project_memberships:assign')
+  @ApiCreatedResponse({
+    description:
+      'Granted project membership for the person with this verified email, and whether the Authentik group was kept in step.',
+  })
+  grantByEmail(
+    @Req() request: FastifyAdminRequest,
+    @Body() body: CreateProjectMembershipByEmailDto
+  ) {
+    return this.service.grantByEmail(request.adminPrincipal!, requestId(request), body);
   }
 
   @Get(':id')

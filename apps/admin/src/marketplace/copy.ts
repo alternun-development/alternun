@@ -455,8 +455,9 @@ export const marketplaceCopy = {
   },
   teamEditor: {
     add: 'Add team member',
-    person: 'Person identifier',
-    personHint: 'Use the identifier provided by your Alternun administrator.',
+    person: 'Email',
+    personHint: 'The person must have signed in to Airs once with this email.',
+    invalidEmail: 'Enter a valid email address.',
     role: 'Role',
     save: 'Add team member',
     changeRole: 'Change role',
@@ -466,6 +467,8 @@ export const marketplaceCopy = {
     reason: 'Reason',
     reasonRequired: 'Add a reason before removing access.',
     added: 'Team member added.',
+    addedGroupNotSynced:
+      'Team member added. Their sign-in group could not be updated automatically; ask an Alternun administrator to check it.',
     updated: 'Team role updated.',
     removed: 'Team access removed.',
   },
@@ -645,6 +648,8 @@ export const marketplaceCopy = {
     USER_NOT_ELIGIBLE: 'This person is not eligible for these points.',
     REVOCATION_REASON_REQUIRED: 'Add a short reason for removing this access.',
     MEMBERSHIP_INPUT_INVALID: 'Check the team role and scope, then try again.',
+    MEMBERSHIP_USER_NOT_FOUND:
+      'No verified account has that email. Ask the person to sign in to Airs once and try again.',
     COMMENT_INPUT_INVALID: 'Check the comment and try again.',
     COMMENT_REASON_REQUIRED: 'Add a reason before continuing.',
     PARTICIPANT_INPUT_INVALID: 'Check the participant information and try again.',
