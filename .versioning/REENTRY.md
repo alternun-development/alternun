@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Review the unlock-rewards and approval-email PR for issue 249 (B8, B11), then membership by email (B3)
+Next micro-step: A7 walkthrough on testnet for #249 (Branner); pending B10, B14, B17, B18, B4
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

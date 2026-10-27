@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-27T19:49:26.114Z",
+  "lastUpdated": "2026-10-27T21:51:57.703Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Review the unlock-rewards and approval-email PR for issue 249 (B8, B11), then membership by email (B3)",
+      "description": "A7 walkthrough on testnet for #249 (Branner); pending B10, B14, B17, B18, B4",
       "id": "next",
       "priority": 1
     }
