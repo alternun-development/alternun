@@ -124,9 +124,9 @@ Current version: **1.1.115**
 
 ## 📋 Latest Changes (v1.1.115)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(mobile): cover the settings top-nav route to the profile
+- **mobile:** cover the settings top-nav route to the profile ([ff2d139](https://github.com/alternun-development/alternun/commit/ff2d13993cf4f61ac26010274d02af7d32f4b7d3))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
