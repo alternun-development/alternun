@@ -757,6 +757,9 @@ begin
       end;
     elsif p_medal_id is not null then
       v_reason := 'AIRS_REPORT_MEDAL_UNAVAILABLE';
+    elsif v_document_number is null then
+      -- Agreed for now: every report carries a document number; the file is optional.
+      v_reason := 'AIRS_REPORT_DOCUMENT_NUMBER_REQUIRED';
     end if;
   end if;
 

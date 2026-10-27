@@ -104,7 +104,8 @@ export interface SubmitAirsReportRequest {
   concept: string;
   /** Reserved for the per-project medal catalog; rejected until that catalog exists. */
   medalId?: string;
-  documentNumber?: string;
+  /** Required for every report for now, for example the invoice number. */
+  documentNumber: string;
   /** SHA-256 (hex) of the supporting file, once uploads exist. */
   documentSha256?: string;
 }
@@ -197,6 +198,7 @@ export const AIRS_REPORT_ERROR_CODES = [
   'AIRS_REPORT_RECIPIENT_NAME_REQUIRED',
   'AIRS_REPORT_REASON_REQUIRED',
   'AIRS_REPORT_MEDAL_UNAVAILABLE',
+  'AIRS_REPORT_DOCUMENT_NUMBER_REQUIRED',
   'AIRS_REPORT_LOOKUP_RATE_LIMITED',
   'AIRS_REPORT_CLAIM_NOT_IMPLEMENTED',
   'PROJECT_NOT_FOUND',

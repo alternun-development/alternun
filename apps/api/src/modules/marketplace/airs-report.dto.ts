@@ -63,12 +63,15 @@ export class SubmitAirsReportDto {
   @IsUUID()
   medalId?: string;
 
-  @ApiPropertyOptional({ maxLength: AIRS_REPORT_DOCUMENT_NUMBER_MAX_LENGTH })
-  @IsOptional()
+  @ApiProperty({
+    maxLength: AIRS_REPORT_DOCUMENT_NUMBER_MAX_LENGTH,
+    description: 'Supporting document number, for example the invoice number. Required for now.',
+  })
   @IsString()
   @MinLength(1)
   @MaxLength(AIRS_REPORT_DOCUMENT_NUMBER_MAX_LENGTH)
-  documentNumber?: string;
+  @Matches(/\S/)
+  documentNumber!: string;
 
   @ApiPropertyOptional({ pattern: SHA256_HEX_PATTERN.source })
   @IsOptional()
