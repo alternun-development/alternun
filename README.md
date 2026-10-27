@@ -124,21 +124,19 @@ Current version: **1.1.111**
 
 ## 📋 Latest Changes (v1.1.111)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore(security): ignore Airs report idempotency-key test fixtures in gitleaks
-- **repo:** chore(reentry): set the next step for the Airs report work
-- **repo:** chore(reentry): set the next step for the Airs report work
-- **repo:** feat(admin): report Airs to a guest and review reports over the limits
-- **repo:** feat(api): script to link each project with its Airs account
+- **security:** ignore Airs report idempotency-key test fixtures in gitleaks ([f05cfee](https://github.com/alternun-development/alternun/commit/f05cfeee138bb9ba9dbb146a313b79d8f0d8edad))
+- **reentry:** set the next step for the Airs report work ([0d5136b](https://github.com/alternun-development/alternun/commit/0d5136bdb985a9af798890021e3f7901fb0b9ba8))
+- **reentry:** set the next step for the Airs report work ([4f550f9](https://github.com/alternun-development/alternun/commit/4f550f96715f7ae1a5250639c6f2e9bf50ededd8))
 
 ### Features
 
-- **admin:** report Airs to a guest and review reports over the limits ([63c3a12](https://github.com/alternun-development/alternun/commit/63c3a1273d359d87a1c6d80454bbef431bda73cb)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
-- **api:** claim waiting Airs reports when a confirmed user signs in ([c9bd444](https://github.com/alternun-development/alternun/commit/c9bd444e704b7040c2cced0cb9c847bb6f501a7e)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
-- **api:** email the recipient and support when Airs are issued ([64a5cca](https://github.com/alternun-development/alternun/commit/64a5cca5723f65093b6ab1130a516b63b30a7699)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
-- **api:** script to link each project with its Airs account ([47fe172](https://github.com/alternun-development/alternun/commit/47fe1721cfdb17286e3a91bebcf60396880c510a)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
-- **db:** claim User Airs Reports and link a project account ([1855dc4](https://github.com/alternun-development/alternun/commit/1855dc4ef364687f2ac886163566d78734401906)), closes [#249](https://github.com/alternun-development/alternun/issues/249) [#249](https://github.com/alternun-development/alternun/issues/249)
+- **admin:** report Airs to a guest and review reports over the limits ([63c3a12](https://github.com/alternun-development/alternun/commit/63c3a1273d359d87a1c6d80454bbef431bda73cb))
+- **api:** script to link each project with its Airs account ([47fe172](https://github.com/alternun-development/alternun/commit/47fe1721cfdb17286e3a91bebcf60396880c510a))
+- **api:** email the recipient and support when Airs are issued ([64a5cca](https://github.com/alternun-development/alternun/commit/64a5cca5723f65093b6ab1130a516b63b30a7699))
+- **api:** claim waiting Airs reports when a confirmed user signs in ([c9bd444](https://github.com/alternun-development/alternun/commit/c9bd444e704b7040c2cced0cb9c847bb6f501a7e))
+- **db:** claim User Airs Reports and link a project account ([1855dc4](https://github.com/alternun-development/alternun/commit/1855dc4ef364687f2ac886163566d78734401906))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
