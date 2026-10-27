@@ -24,6 +24,7 @@ import type {
 } from '../../../marketplace/airs-reports.types';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import { SectionMessage } from '../components';
+import { AirsReportHistory } from './airs-report-history';
 import type {
   AirsReportEditorProps,
   FormStep,
@@ -74,6 +75,7 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
   const [error, setError] = useState<unknown>();
   const [result, setResult] = useState<SubmitAirsReportResponse>();
   const [recent, setRecent] = useState<RecentReportsState>({ kind: 'loading' });
+  const [openReportId, setOpenReportId] = useState<string>();
   // One key per form submission: pressing "Send" twice or retrying after a network error
   // replays the same report instead of creating a second one.
   const requestKey = useRef(newAirsReportRequestKey());
@@ -381,6 +383,16 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
                   {report.documentNumber ?? marketplaceCopy.common.notAvailable} ·{' '}
                   {formatDate(report.submittedAt)}
                 </small>
+                <button
+                  className='secondary-button airs-report-toggle'
+                  onClick={() =>
+                    setOpenReportId((current) => (current === report.id ? undefined : report.id))
+                  }
+                  type='button'
+                >
+                  {openReportId === report.id ? copy.history.hide : copy.history.show}
+                </button>
+                {openReportId === report.id ? <AirsReportHistory reportId={report.id} /> : null}
               </article>
             ))}
           </div>

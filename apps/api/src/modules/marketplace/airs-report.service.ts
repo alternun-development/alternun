@@ -72,6 +72,15 @@ export class AirsReportService {
     }
   }
 
+  // The history only informs the screen: if it cannot be read, the report still opens.
+  private async history<T>(read: () => Promise<T[]>): Promise<T[]> {
+    try {
+      return await read();
+    } catch {
+      return [];
+    }
+  }
+
   private async deny(
     principal: AdminPrincipal,
     requestId: string,
@@ -159,13 +168,12 @@ export class AirsReportService {
       (await this.canSubmitFor(principal, report.projectId));
     if (!allowed)
       await this.deny(principal, requestId, 'PROJECT_SCOPE_DENIED', reportId, report.projectId);
-    return {
-      report,
-      recipientTotals: await this.repository.recipientTotals(
-        report.recipientEmail,
-        report.submittedAt
-      ),
-    };
+    const [recipientTotals, timeline, rewards] = await Promise.all([
+      this.repository.recipientTotals(report.recipientEmail, report.submittedAt),
+      this.history(() => this.repository.listTimeline(report.id)),
+      this.history(() => this.repository.listRewards(report.id)),
+    ]);
+    return { report, recipientTotals, timeline, rewards };
   }
 
   async approve(
