@@ -372,7 +372,7 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
               <article
                 className={`metric-card airs-report-card airs-report-card-${
                   statusStyle[report.status]
-                }`}
+                }${openReportId === report.id ? ' is-open' : ''}`}
                 key={report.id}
               >
                 <AirsReportStatusPill status={report.status} />

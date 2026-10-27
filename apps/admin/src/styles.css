@@ -1248,7 +1248,16 @@ select {
 }
 
 .airs-report-card {
+  align-self: start;
   border-left: 4px solid rgba(255, 255, 255, 0.18);
+}
+
+.airs-report-card small {
+  display: block;
+}
+
+.airs-report-card.is-open {
+  grid-column: 1 / -1;
 }
 
 .airs-report-card h4 {
@@ -1303,9 +1312,8 @@ select {
 }
 
 .airs-report-timeline li {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
+  display: grid;
+  gap: 0.1rem;
   padding-left: 0.75rem;
   border-left: 2px solid var(--accent);
 }
