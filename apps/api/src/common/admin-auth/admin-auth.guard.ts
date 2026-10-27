@@ -43,6 +43,7 @@ export type AdminPermission =
   | 'notifications:read'
   | 'project_types:read'
   | 'project_types:manage'
+  | 'medals:manage'
   | 'airs_reports:submit'
   | 'audit:read';
 
@@ -208,6 +209,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'notifications:read',
     'project_types:read',
     'project_types:manage',
+    'medals:manage',
     'enterprises:create',
     'enterprises:update',
     'enterprises:status',
@@ -244,6 +246,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'notifications:read',
     'project_types:read',
     'project_types:manage',
+    'medals:manage',
     'enterprises:create',
     'enterprises:update',
     'enterprises:status',

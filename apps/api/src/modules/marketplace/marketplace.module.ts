@@ -55,6 +55,9 @@ import {
   ProjectTypeAdminController,
   ProjectTypeAssignmentController,
 } from './project-type.controller';
+import { MedalAdminController } from './medal.controller';
+import { MedalRepository } from './medal.repository';
+import { MedalService } from './medal.service';
 import { AdminNotificationController } from './admin-notification.controller';
 import { AdminNotificationRepository } from './admin-notification.repository';
 import { AdminNotificationService } from './admin-notification.service';
@@ -82,6 +85,7 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     ProjectTypeAdminController,
     ProjectTypeAssignmentController,
     AdminNotificationController,
+    MedalAdminController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
@@ -107,6 +111,8 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     ProjectTypeService,
     AdminNotificationRepository,
     AdminNotificationService,
+    MedalRepository,
+    MedalService,
     {
       provide: AUTHENTIK_GROUP_SYNC,
       useFactory: () =>

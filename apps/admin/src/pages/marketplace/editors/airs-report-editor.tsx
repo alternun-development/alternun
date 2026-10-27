@@ -23,6 +23,8 @@ import type {
   SubmitAirsReportResponse,
 } from '../../../marketplace/airs-reports.types';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
+import { medalName, medalsPath, pickableMedals } from '../../../marketplace/medals';
+import type { ProjectMedal } from '../../../marketplace/medals.types';
 import { SectionMessage } from '../components';
 import { AirsReportHistory } from './airs-report-history';
 import type {
@@ -76,6 +78,8 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
   const [result, setResult] = useState<SubmitAirsReportResponse>();
   const [recent, setRecent] = useState<RecentReportsState>({ kind: 'loading' });
   const [openReportId, setOpenReportId] = useState<string>();
+  const [medals, setMedals] = useState<ProjectMedal[]>([]);
+  const [medalId, setMedalId] = useState('');
   // The project type decides it; a project without a type keeps requiring the document number.
   const documentRequired = project.requiresDocumentNumber !== false;
   // One key per form submission: pressing "Send" twice or retrying after a network error
@@ -98,6 +102,14 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
   useEffect(() => {
     if (allowed) loadRecent();
   }, [allowed, loadRecent]);
+
+  // The medals this project offers; without any, the field stays disabled.
+  useEffect(() => {
+    if (!allowed) return;
+    requestMarketplace<ProjectMedal[]>(medalsPath(project.id))
+      .then((data) => setMedals(data))
+      .catch(() => setMedals([]));
+  }, [allowed, project.id]);
 
   const knownLookup: AirsReportRecipientLookup | null =
     lookup.kind === 'done' ? lookup.lookup : null;
@@ -144,7 +156,10 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
     try {
       const response = await requestMarketplace<SubmitAirsReportResponse>(
         airsReportsPath(project.id),
-        { method: 'POST', body: buildSubmitAirsReportBody(values, knownLookup, requestKey.current) }
+        {
+          method: 'POST',
+          body: buildSubmitAirsReportBody(values, knownLookup, requestKey.current, medalId),
+        }
       );
       setResult(response);
       setStep('done');
@@ -159,6 +174,7 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
 
   function reset(): void {
     setValues(emptyAirsReportForm);
+    setMedalId('');
     setErrors({});
     setLookup({ kind: 'idle' });
     setResult(undefined);
@@ -288,8 +304,19 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
 
           <label>
             <span>{copy.form.medal}</span>
-            <select disabled value=''>
-              <option value=''>{copy.form.medalSoon}</option>
+            <select
+              disabled={pickableMedals(medals).length === 0}
+              value={medalId}
+              onChange={(event) => setMedalId(event.target.value)}
+            >
+              <option value=''>
+                {pickableMedals(medals).length === 0 ? copy.form.medalEmpty : copy.form.medalNone}
+              </option>
+              {pickableMedals(medals).map((medal) => (
+                <option key={medal.id} value={medal.id}>
+                  {medal.name}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -327,6 +354,10 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
             <div>
               <dt>{copy.form.documentNumber}</dt>
               <dd>{values.documentNumber.trim() || marketplaceCopy.common.notAvailable}</dd>
+              {medalId ? <dt>{copy.form.medal}</dt> : null}
+              {medalId ? (
+                <dd>{medalName(medals, medalId) ?? marketplaceCopy.common.notAvailable}</dd>
+              ) : null}
             </div>
           </dl>
           <div className='marketplace-form-actions'>

@@ -329,9 +329,9 @@ test('the project report form renders for roles that can report and says why for
   assert.match(html, new RegExp(copy.form.email));
   assert.match(html, new RegExp(copy.form.documentNumber));
   assert.match(html, new RegExp(copy.form.review));
-  // The medal field is visible but cannot be used yet.
+  // The medal field is visible; it stays disabled until the project has medals to pick.
   assert.match(html, /<select[^>]*disabled/);
-  assert.match(html, new RegExp(copy.form.medalSoon));
+  assert.match(html, new RegExp(copy.form.medalEmpty));
 
   const denied = renderToString(
     createElement(AirsReportEditor, { project, roles: ['partner_readonly'] })

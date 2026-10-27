@@ -1382,3 +1382,15 @@ select {
 .notification-item small {
   color: var(--text-muted);
 }
+
+/* Project medals: the catalog cards. */
+.medal-card img {
+  display: block;
+  margin-bottom: 0.5rem;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.medal-card.is-retired {
+  opacity: 0.6;
+}
