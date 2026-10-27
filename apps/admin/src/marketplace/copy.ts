@@ -225,7 +225,10 @@ export const marketplaceCopy = {
     add: 'Add media',
     preview: 'Preview',
     httpsRequired: 'Enter a valid https link.',
-    hostNotAllowed: 'This website is not supported for this media type.',
+    hostNotAllowed: (hosts: string) =>
+      `This website is not supported for this media type. Use a link from ${hosts}.`,
+    imageHostNotAllowed: (hosts: string) =>
+      `This image host is not allowed. Use an image from ${hosts} or from the Alternun image storage.`,
     altRequired: 'Describe this image for guests who use a screen reader.',
     moveUp: 'Move up',
     moveDown: 'Move down',
