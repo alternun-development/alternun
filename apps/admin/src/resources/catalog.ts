@@ -43,7 +43,6 @@ export const adminResources: AdminResourceDefinition[] = [
     list: '/marketplace/enterprises',
     show: '/marketplace/enterprises/:id',
     surfaces: ['internal', 'partner'],
-    showInNavigation: false,
     meta: {
       title: marketplaceCopy.enterprisesResource.title,
       description: marketplaceCopy.enterprisesResource.description,

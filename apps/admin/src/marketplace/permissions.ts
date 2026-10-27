@@ -8,6 +8,8 @@ import type { MediaKind } from './api';
 
 export type MarketplacePermission =
   | 'enterprises:create'
+  | 'enterprises:update'
+  | 'enterprises:status'
   | 'projects:create'
   | 'projects:update'
   | 'projects:publish'
@@ -44,6 +46,7 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'airs_reports:submit',
   ],
   partner_operator: [
+    'enterprises:update',
     'projects:create',
     'projects:update',
     'project_media:write',
@@ -70,6 +73,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
   ],
   internal_admin: [
     'enterprises:create',
+    'enterprises:update',
+    'enterprises:status',
     'projects:create',
     'projects:update',
     'projects:publish',
@@ -92,6 +97,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
   ],
   platform_owner: [
     'enterprises:create',
+    'enterprises:update',
+    'enterprises:status',
     'projects:create',
     'projects:update',
     'projects:publish',
