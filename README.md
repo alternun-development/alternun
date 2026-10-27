@@ -124,15 +124,31 @@ Current version: **1.1.119**
 
 ## 📋 Latest Changes (v1.1.119)
 
-### Bug Fixes
-
-- **repo:** feat(infra): pass Airs report and Authentik sync settings to the API from SSM
-- **repo:** chore: sync reentry after the fixture fix
-- **repo:** test(admin): build the request key fixture so the secret scan ignores no line numbers
-
 ### Features
 
-- **infra:** pass Airs report and Authentik sync settings to the API from SSM ([5073878](https://github.com/alternun-development/alternun/commit/5073878e1dc07c5497a0788eab9ee77d9146bb60)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **infra:** pass Airs report and Authentik sync settings to the API from SSM ([5073878](https://github.com/alternun-development/alternun/commit/5073878e1dc07c5497a0788eab9ee77d9146bb60))
+- **airs-report:** show each report's history and reward status ([a26100a](https://github.com/alternun-development/alternun/commit/a26100a60a2ef9b4ad6dc5a8f29c375fa741c45f))
+- **admin:** summary strip and status accents on the Airs reports list ([abc73b2](https://github.com/alternun-development/alternun/commit/abc73b28d5f9dfebf19fd4ff628350a001e1af4d))
+- **mobile:** shared search and view controls for the Explorer directories ([cf5b927](https://github.com/alternun-development/alternun/commit/cf5b92734f00d2d6ac96da860cfeaa62d49a228c))
+- **marketplace:** assign project admins and moderators by email ([b0935f9](https://github.com/alternun-development/alternun/commit/b0935f9e1f6cb66f8599512b61b4333aac17f52d))
+- **api:** email approvers, submitters and support about report approvals ([48515ea](https://github.com/alternun-development/alternun/commit/48515eaebbeb1bbb0af9b122577d7580d6ed6556))
+- **supabase:** unlock the Airs report rewards at 20 paid Airs ([8b50e8d](https://github.com/alternun-development/alternun/commit/8b50e8df75c8303ffe162624742e5b607a98f1a8))
+
+### Changes
+
+- **repo:** sync reentry after integrating #249 PRs ([26a3e27](https://github.com/alternun-development/alternun/commit/26a3e27bc78de14dd3b5719d07c3b8c0f65c47f8))
+- **repo:** sync reentry after the fixture fix ([817bbdc](https://github.com/alternun-development/alternun/commit/817bbdcc450f2190969f92befcd569d5ba5bafa8))
+- **admin:** build the request key fixture so the secret scan ignores no line numbers ([8d1f1ac](https://github.com/alternun-development/alternun/commit/8d1f1ac9a96912e255222cf54338e86fc2e387d7))
+- **repo:** sync reentry for the Airs report history ([463b2d8](https://github.com/alternun-development/alternun/commit/463b2d8783cb35cedb9d3d07f52e7360fd6b7c11))
+- **repo:** sync reentry for the share image fix ([5c6d2e6](https://github.com/alternun-development/alternun/commit/5c6d2e6d11724cd865294c56e60b8a6034eb1d99))
+- **repo:** sync reentry for the Airs reports list polish ([11b4b75](https://github.com/alternun-development/alternun/commit/11b4b7513e3a977a2c60ed28390f7f89ab1b955d))
+- **repo:** sync reentry for membership by email ([548df60](https://github.com/alternun-development/alternun/commit/548df60054822295739cd041b3170d081f5e086f))
+- **repo:** sync reentry for the unlock-rewards and approval-email work ([4c06a31](https://github.com/alternun-development/alternun/commit/4c06a3146aa8124d8ebc552256bc76876cbaf323))
+
+### Bug Fixes
+
+- **deps:** bump better-auth to 1.7.14 for GHSA-965c-763c-88jm ([bf79582](https://github.com/alternun-development/alternun/commit/bf795820dcff35cc8a63461b64028976667b6424))
+- **web:** share only the square Airs logosymbol in link previews ([bcdea44](https://github.com/alternun-development/alternun/commit/bcdea447d98488fa4d47db0fc60c5486ffac3e0d))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
