@@ -119,7 +119,7 @@ export default function TopNav({
   onToggleTheme,
   onCycleLanguage,
   onCycleMotionLevel,
-  onOpenProfile: _onOpenProfile,
+  onOpenProfile,
   onOpenSettings,
   onSignOut,
   onNavigate,
@@ -463,57 +463,71 @@ export default function TopNav({
                 accessibilityRole='button'
                 accessibilityState={{ expanded: menuVisible }}
               >
-                {/* Avatar */}
-                <View
-                  style={[
-                    styles.avatar,
-                    isMobile && styles.avatarMobile,
-                    isExtraSmall && styles.avatarExtraSmall,
-                    { backgroundColor: p.avatarBg },
-                  ]}
+                {/* Avatar + name open the profile directly; the chevron opens the menu */}
+                <TouchableOpacity
+                  testID='account-badge-profile'
+                  style={[styles.profileLink, isMobile && styles.profileLinkMobile]}
+                  disabled={!signedIn}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    dismissAll();
+                    onOpenProfile();
+                  }}
+                  activeOpacity={0.7}
+                  accessibilityRole='link'
+                  accessibilityLabel={t('labels.profile', undefined, 'Profile')}
                 >
-                  {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
-                  {signedIn ? (
-                    <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
-                  ) : (
-                    <AirsBrandMark
-                      size={13}
-                      fillColor={brandMarkFill}
-                      cutoutColor={brandMarkCutout}
-                    />
-                  )}
-                </View>
+                  <View
+                    style={[
+                      styles.avatar,
+                      isMobile && styles.avatarMobile,
+                      isExtraSmall && styles.avatarExtraSmall,
+                      { backgroundColor: p.avatarBg },
+                    ]}
+                  >
+                    {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
+                    {signedIn ? (
+                      <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
+                    ) : (
+                      <AirsBrandMark
+                        size={13}
+                        fillColor={brandMarkFill}
+                        cutoutColor={brandMarkCutout}
+                      />
+                    )}
+                  </View>
 
-                {/* Name + score (hidden on extra small screens) */}
-                {signedIn && !isExtraSmall && (
-                  <View style={[styles.nameBlock, isMobile && styles.nameBlockMobile]}>
-                    <Text
-                      style={[
-                        styles.pillName,
-                        isMobile && styles.pillNameMobile,
-                        { color: p.pillText },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {profileFirstName}
-                    </Text>
-                    {airsScore != null && (
+                  {/* Name + score (hidden on extra small screens) */}
+                  {signedIn && !isExtraSmall && (
+                    <View style={[styles.nameBlock, isMobile && styles.nameBlockMobile]}>
                       <Text
                         style={[
-                          styles.pillScore,
-                          isMobile && styles.pillScoreMobile,
-                          { color: p.scoreText },
+                          styles.pillName,
+                          isMobile && styles.pillNameMobile,
+                          { color: p.pillText },
                         ]}
                         numberOfLines={1}
                       >
-                        {airsScore.toLocaleString()} Airs
-                        {tier
-                          ? ` · ${t(`profile.tierLabels.${tier}`, undefined, TIERS[tier].label)}`
-                          : ''}
+                        {profileFirstName}
                       </Text>
-                    )}
-                  </View>
-                )}
+                      {airsScore != null && (
+                        <Text
+                          style={[
+                            styles.pillScore,
+                            isMobile && styles.pillScoreMobile,
+                            { color: p.scoreText },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {airsScore.toLocaleString()} Airs
+                          {tier
+                            ? ` · ${t(`profile.tierLabels.${tier}`, undefined, TIERS[tier].label)}`
+                            : ''}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </TouchableOpacity>
 
                 {/* Notification badge */}
                 <TouchableOpacity
@@ -1119,6 +1133,16 @@ const styles = StyleSheet.create({
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 12,
     fontWeight: '800',
+  },
+  profileLink: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+  profileLinkMobile: {
+    gap: 6,
   },
   nameBlock: {
     flex: 1,
