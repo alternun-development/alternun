@@ -472,6 +472,28 @@ export const marketplaceCopy = {
     updated: 'Team role updated.',
     removed: 'Team access removed.',
   },
+  medals: {
+    heading: 'Medals',
+    intro:
+      'The medals of this project. People who report Airs can give one of the active medals to the guest.',
+    empty: 'This project has no medals yet.',
+    addHeading: 'Add a medal',
+    name: 'Name',
+    description: 'Description (optional)',
+    imageUrl: 'Image address',
+    imageHint: 'An https address on a host allowed for project images.',
+    add: 'Add medal',
+    added: 'Medal added.',
+    retire: 'Retire',
+    restore: 'Make available again',
+    retired: 'Medal retired. It can no longer be picked.',
+    restored: 'Medal available again.',
+    errors: {
+      name: 'Enter a name (up to 80 characters).',
+      description: 'The description can have up to 300 characters.',
+      imageUrl: 'Enter a valid https image address.',
+    },
+  },
   notifications: {
     navigation: {
       title: 'Notifications',
@@ -551,6 +573,8 @@ export const marketplaceCopy = {
       documentHint: 'For example the invoice or receipt number.',
       medal: 'Medal',
       medalSoon: 'Coming soon',
+      medalNone: 'No medal',
+      medalEmpty: 'This project has no medals yet',
       review: 'Review report',
       back: 'Edit report',
       confirmHeading: 'Confirm this report',
@@ -755,7 +779,9 @@ export const marketplaceCopy = {
       'This report changed after you opened it. Refresh and review it again.',
     AIRS_REPORT_RECIPIENT_NAME_REQUIRED: 'Add the name of this person: they have no account yet.',
     AIRS_REPORT_REASON_REQUIRED: 'Add a reason before continuing.',
-    AIRS_REPORT_MEDAL_UNAVAILABLE: 'Medals are not available yet.',
+    AIRS_REPORT_MEDAL_UNAVAILABLE: 'That medal is not available for this project.',
+    MEDAL_NOT_FOUND: 'This medal could not be found.',
+    MEDAL_INPUT_INVALID: 'Check the medal name and description, then try again.',
     AIRS_REPORT_DOCUMENT_NUMBER_REQUIRED:
       'Add the document number, for example the invoice number.',
     AIRS_REPORT_LOOKUP_RATE_LIMITED: 'Too many email checks. Please wait a few minutes.',
