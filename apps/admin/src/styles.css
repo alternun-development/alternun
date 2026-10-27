@@ -1323,3 +1323,10 @@ select {
   display: grid;
   gap: 0.1rem;
 }
+
+/* Marketplace ordering (issue #249 A3) */
+.marketplace-order-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

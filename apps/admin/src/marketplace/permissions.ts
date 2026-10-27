@@ -10,11 +10,13 @@ export type MarketplacePermission =
   | 'enterprises:create'
   | 'enterprises:update'
   | 'enterprises:status'
+  | 'enterprises:reorder'
   | 'projects:create'
   | 'projects:update'
   | 'projects:publish'
   | 'projects:pause'
   | 'projects:archive'
+  | 'projects:reorder'
   | 'project_media:write'
   | 'project_media:moderate'
   | 'activities:write'
@@ -75,11 +77,13 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'enterprises:create',
     'enterprises:update',
     'enterprises:status',
+    'enterprises:reorder',
     'projects:create',
     'projects:update',
     'projects:publish',
     'projects:pause',
     'projects:archive',
+    'projects:reorder',
     'project_media:write',
     'project_media:moderate',
     'activities:write',
@@ -99,11 +103,13 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'enterprises:create',
     'enterprises:update',
     'enterprises:status',
+    'enterprises:reorder',
     'projects:create',
     'projects:update',
     'projects:publish',
     'projects:pause',
     'projects:archive',
+    'projects:reorder',
     'project_media:write',
     'project_media:moderate',
     'activities:write',

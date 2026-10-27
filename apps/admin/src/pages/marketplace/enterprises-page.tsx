@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { requestMarketplace, type Enterprise, type Project } from '../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../marketplace/copy';
+import { moveId, saveMarketplaceOrder } from '../../marketplace/ordering';
 import { hasMarketplacePermission, useMarketplaceRoles } from '../../marketplace/permissions';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
 import {
@@ -9,6 +10,7 @@ import {
   enterpriseDraft,
   validateEnterpriseDraft,
 } from './editors/enterprise-editor';
+import { OrderControls } from './order-controls';
 import { slugFromName } from './project-create-wizard';
 import type { EnterpriseDraft } from './editors/enterprise-editor.types';
 import type { EnterpriseCreateFormProps, EnterpriseListData } from './enterprises-page.types';
@@ -129,13 +131,38 @@ export function MarketplaceEnterprisesPage(): JSX.Element {
   const [error, setError] = useState<unknown>();
   const [showCreate, setShowCreate] = useState(false);
   const [success, setSuccess] = useState<string>();
+  const [ordering, setOrdering] = useState(false);
+  const [orderError, setOrderError] = useState<unknown>();
   const roles = useMarketplaceRoles();
+  const canReorder = Boolean(roles && hasMarketplacePermission(roles, 'enterprises:reorder'));
 
   const load = useCallback(() => {
     setError(undefined);
     setData(null);
     void loadEnterpriseList().then(setData).catch(setError);
   }, []);
+
+  async function move(index: number, delta: -1 | 1): Promise<void> {
+    if (!data) return;
+    setOrdering(true);
+    setOrderError(undefined);
+    try {
+      const enterprises = await saveMarketplaceOrder<Enterprise>(
+        'enterprises',
+        moveId(
+          data.enterprises.map(({ id }) => id),
+          index,
+          delta
+        )
+      );
+      setData((current) => (current ? { ...current, enterprises } : current));
+      setSuccess(marketplaceCopy.ordering.saved);
+    } catch (requestError) {
+      setOrderError(requestError);
+    } finally {
+      setOrdering(false);
+    }
+  }
 
   useEffect(load, [load]);
 
@@ -162,6 +189,8 @@ export function MarketplaceEnterprisesPage(): JSX.Element {
             {success}
           </p>
         ) : null}
+        {canReorder ? <p>{marketplaceCopy.ordering.hint}</p> : null}
+        {orderError ? <p className='error-text'>{marketplaceErrorMessage(orderError)}</p> : null}
       </section>
 
       {showCreate ? (
@@ -186,7 +215,7 @@ export function MarketplaceEnterprisesPage(): JSX.Element {
           className='marketplace-card-grid'
           aria-label={marketplaceCopy.enterpriseList.title}
         >
-          {data.enterprises.map((enterprise) => (
+          {data.enterprises.map((enterprise, index) => (
             <article className='metric-card' key={enterprise.id}>
               <StatusPill status={enterprise.status} />
               <h4>{enterprise.displayName}</h4>
@@ -198,6 +227,14 @@ export function MarketplaceEnterprisesPage(): JSX.Element {
               <Link className='inline-link' to={`/marketplace/enterprises/${enterprise.id}`}>
                 {marketplaceCopy.enterpriseList.openEnterprise}
               </Link>
+              {canReorder ? (
+                <OrderControls
+                  count={data.enterprises.length}
+                  disabled={ordering}
+                  index={index}
+                  onMove={(delta) => void move(index, delta)}
+                />
+              ) : null}
             </article>
           ))}
         </section>
