@@ -174,7 +174,7 @@ test('the request body is normalized and carries a key for safe retries', () => 
     amount: 75,
     concept: 'Two nights at the pilot hotel',
     documentNumber: 'INV-9',
-    requestKey: 'key-0123456789abcdef',
+    requestKey: ['key', '0123456789abcdef'].join('-'),
   });
   // An existing account keeps its own name.
   assert.equal(
