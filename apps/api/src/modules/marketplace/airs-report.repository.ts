@@ -324,4 +324,28 @@ export class AirsReportRepository {
     if (error) failDatabase();
     return !!data;
   }
+
+  async listApproverEmails(): Promise<string[]> {
+    const { data, error } = await this.client
+      .from('airs_report_approvers')
+      .select('email')
+      .eq('is_active', true);
+    if (error) failDatabase();
+    return ((data ?? []) as Array<{ email: string }>).map((row) => row.email);
+  }
+
+  /** Verified email of an admin identity, so a decision can be reported back to them. */
+  async findSubmitterEmail(issuer: string, subject: string): Promise<string | null> {
+    const { data, error } = await this.client
+      .from('users')
+      .select('email')
+      .eq('iss', issuer)
+      .eq('sub', subject)
+      .eq('email_verified', true)
+      .limit(1)
+      .maybeSingle();
+    if (error) failDatabase();
+    const email = (data as { email?: string | null } | null)?.email;
+    return typeof email === 'string' && email.trim() ? email.trim() : null;
+  }
 }
