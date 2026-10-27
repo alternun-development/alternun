@@ -78,7 +78,11 @@ export type LoadMarketplaceEnterprises = (
 ) => Promise<MarketplaceEnterprise[]>;
 
 /** Explorer enterprise directory layouts: list (3/page), 2x2 grid (4/page), compact (6/page). */
-export type EnterpriseDirectoryView = 'list' | 'grid' | 'compact';
+/** Layout of a paginated Explorer directory (projects or enterprises). */
+export type DirectoryView = 'list' | 'grid' | 'compact';
+
+/** Which Explorer directory a remembered view belongs to. */
+export type DirectoryScope = 'projects' | 'enterprises';
 
 export interface MarketplaceCommentsPage {
   data: PublicProjectComment[];

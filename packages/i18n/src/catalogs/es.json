@@ -1091,6 +1091,28 @@
         "projects": "Proyectos",
         "enterprises": "Empresas"
       },
+      "controls": {
+        "searchLabel": {
+          "projects": "Buscar proyectos",
+          "enterprises": "Buscar empresas"
+        },
+        "clearSearch": "Borrar búsqueda",
+        "view": {
+          "label": "Tipo de vista",
+          "list": "Lista",
+          "grid": "Cuadrícula",
+          "compact": "Compacta"
+        },
+        "pagination": {
+          "label": {
+            "projects": "Páginas de proyectos",
+            "enterprises": "Páginas de empresas"
+          },
+          "previous": "Anterior",
+          "next": "Siguiente",
+          "page": "Página {{page}} de {{total}}"
+        }
+      },
       "enterprises": {
         "eyebrow": "EMPRESAS",
         "heading": "Empresas que generan impacto",
@@ -1098,20 +1120,10 @@
         "projectCount": "{{count}} proyectos publicados",
         "loading": "Cargando empresas…",
         "empty": "Aún no hay empresas disponibles.",
+        "searchPlaceholder": "Buscar empresa por nombre",
+        "noMatches": "Ninguna empresa coincide con tu búsqueda.",
         "error": "No se pudieron cargar las empresas.",
         "retry": "Reintentar",
-        "view": {
-          "label": "Vista del directorio",
-          "list": "Lista",
-          "grid": "Cuadrícula",
-          "compact": "Compacta"
-        },
-        "pagination": {
-          "label": "Páginas de empresas",
-          "previous": "Anterior",
-          "next": "Siguiente",
-          "page": "Página {{page}} de {{total}}"
-        },
         "detail": {
           "back": "Volver a empresas",
           "loading": "Cargando empresa…",
