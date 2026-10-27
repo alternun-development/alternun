@@ -120,13 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.113**
+Current version: **1.1.114**
 
-## 📋 Latest Changes (v1.1.113)
+## 📋 Latest Changes (v1.1.114)
+
+### Bug Fixes
+
+- **repo:** feat(mobile): open the profile from the account badge avatar and name
 
 ### Features
 
-- **mobile:** make the account badge chevron a visible chip and let the pill fill the nav ([b911d43](https://github.com/alternun-development/alternun/commit/b911d4380749efbfab5e6a1999bc58436674d3a7))
+- **mobile:** open the profile from the account badge avatar and name ([6600d20](https://github.com/alternun-development/alternun/commit/6600d20d17a03d0bdc4d3d75007f1ff233cb81ed))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
