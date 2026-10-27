@@ -53,3 +53,23 @@ void test('dashboard pipeline deploys apply pending AIRS migrations before SST d
     'expected migrations to run before SST deployment'
   );
 });
+
+void test('dashboard pipelines seed environment image hosts after pending migrations', () => {
+  const source = fs.readFileSync(syncScriptPath, 'utf8');
+  const dashboardPipelineSource = fs.readFileSync(dashboardPipelineSpecPath, 'utf8');
+
+  assert.match(
+    dashboardPipelineSource,
+    /INFRA_PROJECT_MEDIA_IMAGE_HOSTS: env\.INFRA_PROJECT_MEDIA_IMAGE_HOSTS_DEV \?\? ''/
+  );
+  assert.match(
+    dashboardPipelineSource,
+    /INFRA_PROJECT_MEDIA_IMAGE_HOSTS: env\.INFRA_PROJECT_MEDIA_IMAGE_HOSTS_PRODUCTION \?\? ''/
+  );
+  assert.ok(
+    source.indexOf('bash "$SCRIPT_DIR/db-migrate.sh" ${FORCE_PROD:+--force-prod}') <
+      source.indexOf('apps/api/scripts/seed-project-media-hosts.mjs'),
+    'expected image hosts to be seeded after the pending migrations'
+  );
+  assert.match(source, /if \[ -n "\$\{INFRA_PROJECT_MEDIA_IMAGE_HOSTS:-\}" \]; then/);
+});

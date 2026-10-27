@@ -145,3 +145,10 @@ fi
 echo "🚀 Applying the full pending queue against the backend database"
 echo "   This is a legacy opt-in path. Prefer --file for one-by-one promotion."
 bash "$SCRIPT_DIR/db-migrate.sh" ${FORCE_PROD:+--force-prod}
+
+# Environment-specific image hosts (for example this stage's storage host) come
+# from the pipeline env so their values never live in the repo.
+if [ -n "${INFRA_PROJECT_MEDIA_IMAGE_HOSTS:-}" ]; then
+  echo "🖼️  Seeding project media image hosts for ${TARGET_STAGE}"
+  node "$REPO_ROOT/apps/api/scripts/seed-project-media-hosts.mjs"
+fi
