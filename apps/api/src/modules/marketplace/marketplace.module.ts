@@ -55,6 +55,9 @@ import {
   ProjectTypeAdminController,
   ProjectTypeAssignmentController,
 } from './project-type.controller';
+import { AdminNotificationController } from './admin-notification.controller';
+import { AdminNotificationRepository } from './admin-notification.repository';
+import { AdminNotificationService } from './admin-notification.service';
 import { ProjectTypeRepository } from './project-type.repository';
 import { ProjectTypeService } from './project-type.service';
 import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-group-sync';
@@ -78,6 +81,7 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     AirsReportAdminController,
     ProjectTypeAdminController,
     ProjectTypeAssignmentController,
+    AdminNotificationController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
@@ -101,6 +105,8 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     AirsReportService,
     ProjectTypeRepository,
     ProjectTypeService,
+    AdminNotificationRepository,
+    AdminNotificationService,
     {
       provide: AUTHENTIK_GROUP_SYNC,
       useFactory: () =>
