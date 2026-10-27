@@ -67,7 +67,7 @@ test('email content escapes anything the issuer typed', () => {
   );
 
   for (const html of [recipient.html, support.html]) {
-    assert.doesNotMatch(html, /<script>/);
+    assert.doesNotMatch(html, /<script>/i);
     assert.doesNotMatch(html, /<i>P<\/i>/);
     assert.match(html, /&lt;script&gt;/);
   }

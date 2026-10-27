@@ -10,6 +10,9 @@ import { Pool } from 'pg';
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+// Messages from this class never echo environment values, so they are safe to print.
+class ConfigError extends Error {}
+
 export function parseProjectAccounts(value) {
   const entries = (value ?? '')
     .split(',')
@@ -17,17 +20,18 @@ export function parseProjectAccounts(value) {
     .filter((entry) => entry.length > 0);
 
   const accounts = new Map();
-  for (const entry of entries) {
+  for (const [index, entry] of entries.entries()) {
+    const position = index + 1;
     const separator = entry.indexOf('=');
     const slug = separator > 0 ? entry.slice(0, separator).trim() : '';
     const email = separator > 0 ? entry.slice(separator + 1).trim().toLowerCase() : '';
     if (!SLUG_PATTERN.test(slug) || !EMAIL_PATTERN.test(email) || email.length > 320) {
-      throw new Error(
-        `Invalid project account entry "${entry}". Use project-slug=account@email, comma separated.`
+      throw new ConfigError(
+        `Invalid project account entry #${position}. Use project-slug=account@email, comma separated.`
       );
     }
     if (accounts.has(slug) && accounts.get(slug) !== email) {
-      throw new Error(`Project "${slug}" is listed with two different accounts.`);
+      throw new ConfigError(`Project account entry #${position} is listed with two different accounts.`);
     }
     accounts.set(slug, email);
   }
@@ -87,7 +91,7 @@ async function main() {
     process.env.INFRA_BACKEND_API_DATABASE_URL ||
     process.env.DATABASE_URL;
   if (!databaseUrl) {
-    throw new Error(
+    throw new ConfigError(
       'MIGRATION_DATABASE_URL, INFRA_BACKEND_API_DATABASE_URL, or DATABASE_URL is required'
     );
   }
@@ -108,7 +112,12 @@ async function main() {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
-    console.error(`❌ ${error instanceof Error ? error.message : String(error)}`);
+    // Database and driver errors can carry connection details, so only our own messages are printed.
+    console.error(
+      error instanceof ConfigError
+        ? `❌ ${error.message}`
+        : '❌ Failed to link project accounts. Check the database configuration and connectivity.'
+    );
     process.exit(1);
   });
 }
