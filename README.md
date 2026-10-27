@@ -120,23 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.111**
+Current version: **1.1.112**
 
-## 📋 Latest Changes (v1.1.111)
+## 📋 Latest Changes (v1.1.112)
 
-### Changes
+### Bug Fixes
 
-- **security:** ignore Airs report idempotency-key test fixtures in gitleaks ([f05cfee](https://github.com/alternun-development/alternun/commit/f05cfeee138bb9ba9dbb146a313b79d8f0d8edad))
-- **reentry:** set the next step for the Airs report work ([0d5136b](https://github.com/alternun-development/alternun/commit/0d5136bdb985a9af798890021e3f7901fb0b9ba8))
-- **reentry:** set the next step for the Airs report work ([4f550f9](https://github.com/alternun-development/alternun/commit/4f550f96715f7ae1a5250639c6f2e9bf50ededd8))
+- **repo:** fix(security): resolve CodeQL clear-text logging and bad tag filter alerts
 
-### Features
+### Bug Fixes
 
-- **admin:** report Airs to a guest and review reports over the limits ([63c3a12](https://github.com/alternun-development/alternun/commit/63c3a1273d359d87a1c6d80454bbef431bda73cb))
-- **api:** script to link each project with its Airs account ([47fe172](https://github.com/alternun-development/alternun/commit/47fe1721cfdb17286e3a91bebcf60396880c510a))
-- **api:** email the recipient and support when Airs are issued ([64a5cca](https://github.com/alternun-development/alternun/commit/64a5cca5723f65093b6ab1130a516b63b30a7699))
-- **api:** claim waiting Airs reports when a confirmed user signs in ([c9bd444](https://github.com/alternun-development/alternun/commit/c9bd444e704b7040c2cced0cb9c847bb6f501a7e))
-- **db:** claim User Airs Reports and link a project account ([1855dc4](https://github.com/alternun-development/alternun/commit/1855dc4ef364687f2ac886163566d78734401906))
+- **security:** resolve CodeQL clear-text logging and bad tag filter alerts ([63291cf](https://github.com/alternun-development/alternun/commit/63291cf9f4f42ec8e0dd52291642a757d0261f9d))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
