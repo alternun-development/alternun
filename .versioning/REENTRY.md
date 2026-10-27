@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Review the Airs reports card layout fix, then the domain admin bootstrap (B1)
+Next micro-step: Review the Airs reports card layout fix, then verified domain admins and the A7 walkthrough
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
