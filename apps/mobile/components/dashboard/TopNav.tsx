@@ -8,7 +8,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Animated,
   Alert,
+  Modal,
   Pressable,
+  ScrollView,
   View,
   Text,
   TouchableOpacity,
@@ -18,6 +20,7 @@ import {
 import { createShadowStyle } from '../theme/deprecatedStylesHelper';
 import { BlurView as BlurViewRaw } from 'expo-blur';
 import { Image as ExpoImageRaw } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const BlurView = BlurViewRaw as unknown as React.FC<React.ComponentProps<typeof BlurViewRaw>>;
 import {
@@ -119,7 +122,7 @@ export default function TopNav({
   onToggleTheme,
   onCycleLanguage,
   onCycleMotionLevel,
-  onOpenProfile: _onOpenProfile,
+  onOpenProfile,
   onOpenSettings,
   onSignOut,
   onNavigate,
@@ -306,6 +309,242 @@ export default function TopNav({
     onNavigate?.(section.key);
   };
 
+  // Shared by the dropdown and the full-screen menu on extra small screens.
+  const menuItems = (
+    <>
+      {signedIn && (
+        <View
+          style={[
+            styles.dropHeader,
+            isExtraSmall && styles.dropHeaderExtraSmall,
+            { borderBottomColor: p.dropDivider },
+          ]}
+        >
+          <View
+            style={[
+              styles.dropAvatar,
+              { backgroundColor: p.avatarBg },
+              tierColor && { borderWidth: 1, borderColor: `${tierColor}80` },
+            ]}
+          >
+            {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
+            <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>{initials}</Text>
+          </View>
+          <View style={styles.dropHeaderInfo}>
+            <Text style={[styles.dropHeaderName, { color: p.dropText }]} numberOfLines={1}>
+              {profileName}
+            </Text>
+            {userEmail ? (
+              <Text style={[styles.dropHeaderEmail, { color: p.dropSub }]} numberOfLines={1}>
+                {userEmail}
+              </Text>
+            ) : null}
+            {airsScore != null && (
+              <View
+                testID='dropdown-tier-badge'
+                style={[
+                  styles.dropScorePill,
+                  {
+                    backgroundColor: tierColor ? `${tierColor}14` : p.navActive,
+                    borderWidth: 1,
+                    borderColor: tierColor ? `${tierColor}80` : 'transparent',
+                  },
+                ]}
+              >
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode='tail'
+                  style={[styles.dropScoreText, { color: tierTextColor, flexShrink: 1 }]}
+                >
+                  {airsScore.toLocaleString()} Airs
+                  {tier
+                    ? ` · ${t(`profile.tierLabels.${tier}`, undefined, TIERS[tier].label)}`
+                    : ''}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* Sign in */}
+      {!signedIn && (
+        <TouchableOpacity
+          style={[
+            styles.navItem,
+            isExtraSmall && styles.navItemExtraSmall,
+            { backgroundColor: 'transparent' },
+          ]}
+          onPress={() => {
+            setMenuVisible(false);
+            onSignIn();
+          }}
+          activeOpacity={0.8}
+        >
+          <LogInIcon size={15} color={p.accent} />
+          <Text style={[styles.navItemText, { color: p.dropText }]}>{t('labels.signIn')}</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Nav items - only show when signed in */}
+      {signedIn && (
+        <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
+          {NAV_SECTIONS.map((section) => {
+            const isActive = activeSection === section.key;
+            const isComingSoon = Boolean(section.comingSoon);
+            const IconComp = section.icon;
+            return (
+              <TouchableOpacity
+                key={section.key}
+                style={[
+                  styles.navItem,
+                  isExtraSmall && styles.navItemExtraSmall,
+                  {
+                    backgroundColor: isActive
+                      ? p.navActive
+                      : isComingSoon
+                      ? isDark
+                        ? 'rgba(255,255,255,0.03)'
+                        : 'rgba(15,23,42,0.03)'
+                      : 'transparent',
+                    borderWidth: isActive || isComingSoon ? 1 : 0,
+                    borderColor: isActive
+                      ? p.navActiveBorder
+                      : isComingSoon
+                      ? p.dropDivider
+                      : 'transparent',
+                    opacity: isComingSoon ? 0.74 : 1,
+                  },
+                ]}
+                onPress={() => handleNavSectionPress(section)}
+                activeOpacity={0.8}
+              >
+                <IconComp
+                  size={15}
+                  color={isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle}
+                />
+                <Text
+                  style={[
+                    styles.navItemText,
+                    {
+                      color: isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.dropText,
+                    },
+                    isActive && styles.navItemTextActive,
+                  ]}
+                >
+                  {section.label}
+                </Text>
+                {isComingSoon ? (
+                  <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
+                    <Text style={[styles.comingSoonText, { color: p.dropSub }]}>Coming soon</Text>
+                  </View>
+                ) : isActive ? (
+                  <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
+                ) : null}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+
+      {/* Settings expandable - only show when signed in */}
+      {signedIn && (
+        <TouchableOpacity
+          style={[
+            styles.navItem,
+            isExtraSmall && styles.navItemExtraSmall,
+            { backgroundColor: 'transparent' },
+          ]}
+          onPress={() => setSettingsExpanded((v) => !v)}
+          activeOpacity={0.8}
+        >
+          <SettingsIcon size={15} color={p.iconIdle} />
+          <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+            {t('labels.settings')}
+          </Text>
+          {settingsExpanded ? (
+            <ChevronDownIcon size={13} color={p.chevron} />
+          ) : (
+            <ChevronRightIcon size={13} color={p.chevron} />
+          )}
+        </TouchableOpacity>
+      )}
+
+      <AnimatedCollapsibleContent expanded={settingsExpanded}>
+        <TouchableOpacity
+          style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+          onPress={onCycleLanguage}
+          activeOpacity={0.8}
+        >
+          <LanguagesIcon size={14} color={p.iconIdle} />
+          <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+            {t('labels.language')}
+          </Text>
+          <Text style={[styles.navItemValue, { color: p.accent }]}>
+            {getLocaleLabel(language, language)}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+          onPress={onToggleTheme}
+          activeOpacity={0.8}
+        >
+          <ThemeIconComp size={14} color={p.iconIdle} />
+          <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+            {t('labels.theme')}
+          </Text>
+          <Text style={[styles.navItemValue, { color: p.accent }]}>{themeLabel}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+          onPress={() => onCycleMotionLevel?.()}
+          activeOpacity={0.8}
+        >
+          <ZapIcon size={14} color={p.iconIdle} />
+          <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>Animación</Text>
+          <Text style={[styles.navItemValue, { color: p.accent }]}>
+            {motionLevel === 'full' ? 'Full' : motionLevel === 'low' ? 'Low' : 'Off'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
+          onPress={() => {
+            setMenuVisible(false);
+            onOpenSettings();
+          }}
+          activeOpacity={0.8}
+        >
+          <SettingsIcon size={14} color={p.iconIdle} />
+          <Text style={[styles.navItemText, { color: p.dropText }]}>
+            {t('navigation.moreSettings')}
+          </Text>
+        </TouchableOpacity>
+      </AnimatedCollapsibleContent>
+
+      {/* Sign out */}
+      {signedIn && (
+        <TouchableOpacity
+          style={[
+            styles.navItem,
+            isExtraSmall && styles.navItemExtraSmall,
+            { backgroundColor: p.dangerBg },
+          ]}
+          onPress={() => {
+            setMenuVisible(false);
+            onSignOut();
+          }}
+          activeOpacity={0.8}
+        >
+          <LogOutIcon size={15} color={p.danger} />
+          <Text style={[styles.navItemText, { color: p.danger }]}>Sign Out</Text>
+        </TouchableOpacity>
+      )}
+    </>
+  );
+
   return (
     // Outer wrapper: fills the absolute slot in Dashboard
     <View style={styles.wrapper}>
@@ -427,6 +666,10 @@ export default function TopNav({
               ]}
               onPress={toggleMenu}
               activeOpacity={0.85}
+              testID='nav-hamburger'
+              accessibilityRole='button'
+              accessibilityLabel={t('common.menu', undefined, 'Menu')}
+              accessibilityState={{ expanded: menuVisible }}
             >
               {menuVisible ? (
                 <CloseIcon size={20} color={p.pillText} />
@@ -463,57 +706,71 @@ export default function TopNav({
                 accessibilityRole='button'
                 accessibilityState={{ expanded: menuVisible }}
               >
-                {/* Avatar */}
-                <View
-                  style={[
-                    styles.avatar,
-                    isMobile && styles.avatarMobile,
-                    isExtraSmall && styles.avatarExtraSmall,
-                    { backgroundColor: p.avatarBg },
-                  ]}
+                {/* Avatar + name open the profile directly; the chevron opens the menu */}
+                <TouchableOpacity
+                  testID='account-badge-profile'
+                  style={[styles.profileLink, isMobile && styles.profileLinkMobile]}
+                  disabled={!signedIn}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    dismissAll();
+                    onOpenProfile();
+                  }}
+                  activeOpacity={0.7}
+                  accessibilityRole='link'
+                  accessibilityLabel={t('labels.profile', undefined, 'Profile')}
                 >
-                  {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
-                  {signedIn ? (
-                    <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
-                  ) : (
-                    <AirsBrandMark
-                      size={13}
-                      fillColor={brandMarkFill}
-                      cutoutColor={brandMarkCutout}
-                    />
-                  )}
-                </View>
+                  <View
+                    style={[
+                      styles.avatar,
+                      isMobile && styles.avatarMobile,
+                      isExtraSmall && styles.avatarExtraSmall,
+                      { backgroundColor: p.avatarBg },
+                    ]}
+                  >
+                    {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
+                    {signedIn ? (
+                      <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
+                    ) : (
+                      <AirsBrandMark
+                        size={13}
+                        fillColor={brandMarkFill}
+                        cutoutColor={brandMarkCutout}
+                      />
+                    )}
+                  </View>
 
-                {/* Name + score (hidden on extra small screens) */}
-                {signedIn && !isExtraSmall && (
-                  <View style={[styles.nameBlock, isMobile && styles.nameBlockMobile]}>
-                    <Text
-                      style={[
-                        styles.pillName,
-                        isMobile && styles.pillNameMobile,
-                        { color: p.pillText },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {profileFirstName}
-                    </Text>
-                    {airsScore != null && (
+                  {/* Name + score (hidden on extra small screens) */}
+                  {signedIn && !isExtraSmall && (
+                    <View style={[styles.nameBlock, isMobile && styles.nameBlockMobile]}>
                       <Text
                         style={[
-                          styles.pillScore,
-                          isMobile && styles.pillScoreMobile,
-                          { color: p.scoreText },
+                          styles.pillName,
+                          isMobile && styles.pillNameMobile,
+                          { color: p.pillText },
                         ]}
                         numberOfLines={1}
                       >
-                        {airsScore.toLocaleString()} Airs
-                        {tier
-                          ? ` · ${t(`profile.tierLabels.${tier}`, undefined, TIERS[tier].label)}`
-                          : ''}
+                        {profileFirstName}
                       </Text>
-                    )}
-                  </View>
-                )}
+                      {airsScore != null && (
+                        <Text
+                          style={[
+                            styles.pillScore,
+                            isMobile && styles.pillScoreMobile,
+                            { color: p.scoreText },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {airsScore.toLocaleString()} Airs
+                          {tier
+                            ? ` · ${t(`profile.tierLabels.${tier}`, undefined, TIERS[tier].label)}`
+                            : ''}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </TouchableOpacity>
 
                 {/* Notification badge */}
                 <TouchableOpacity
@@ -577,7 +834,6 @@ export default function TopNav({
                 <Animated.View
                   style={[
                     styles.dropdown,
-                    isExtraSmall && styles.dropdownExtraSmall,
                     { backgroundColor: p.dropBg, borderColor: p.dropBorder },
                     {
                       opacity: dropdownAnimated,
@@ -629,273 +885,80 @@ export default function TopNav({
                     }}
                     pointerEvents='none'
                   />
-                  {signedIn && (
-                    <View
-                      style={[
-                        styles.dropHeader,
-                        isExtraSmall && styles.dropHeaderExtraSmall,
-                        { borderBottomColor: p.dropDivider },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.dropAvatar,
-                          { backgroundColor: p.avatarBg },
-                          tierColor && { borderWidth: 1, borderColor: `${tierColor}80` },
-                        ]}
-                      >
-                        {tierColor && (
-                          <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />
-                        )}
-                        <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>
-                          {initials}
-                        </Text>
-                      </View>
-                      <View style={styles.dropHeaderInfo}>
-                        <Text
-                          style={[styles.dropHeaderName, { color: p.dropText }]}
-                          numberOfLines={1}
-                        >
-                          {profileName}
-                        </Text>
-                        {userEmail ? (
-                          <Text
-                            style={[styles.dropHeaderEmail, { color: p.dropSub }]}
-                            numberOfLines={1}
-                          >
-                            {userEmail}
-                          </Text>
-                        ) : null}
-                        {airsScore != null && (
-                          <View
-                            testID='dropdown-tier-badge'
-                            style={[
-                              styles.dropScorePill,
-                              {
-                                backgroundColor: tierColor ? `${tierColor}14` : p.navActive,
-                                borderWidth: 1,
-                                borderColor: tierColor ? `${tierColor}80` : 'transparent',
-                              },
-                            ]}
-                          >
-                            <Text
-                              numberOfLines={1}
-                              ellipsizeMode='tail'
-                              style={[
-                                styles.dropScoreText,
-                                { color: tierTextColor, flexShrink: 1 },
-                              ]}
-                            >
-                              {airsScore.toLocaleString()} Airs
-                              {tier
-                                ? ` · ${t(
-                                    `profile.tierLabels.${tier}`,
-                                    undefined,
-                                    TIERS[tier].label
-                                  )}`
-                                : ''}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                  )}
-
-                  {/* Sign in */}
-                  {!signedIn && (
-                    <TouchableOpacity
-                      style={[
-                        styles.navItem,
-                        isExtraSmall && styles.navItemExtraSmall,
-                        { backgroundColor: 'transparent' },
-                      ]}
-                      onPress={() => {
-                        setMenuVisible(false);
-                        onSignIn();
-                      }}
-                      activeOpacity={0.8}
-                    >
-                      <LogInIcon size={15} color={p.accent} />
-                      <Text style={[styles.navItemText, { color: p.dropText }]}>
-                        {t('labels.signIn')}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Nav items - only show when signed in */}
-                  {signedIn && (
-                    <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
-                      {NAV_SECTIONS.map((section) => {
-                        const isActive = activeSection === section.key;
-                        const isComingSoon = Boolean(section.comingSoon);
-                        const IconComp = section.icon;
-                        return (
-                          <TouchableOpacity
-                            key={section.key}
-                            style={[
-                              styles.navItem,
-                              isExtraSmall && styles.navItemExtraSmall,
-                              {
-                                backgroundColor: isActive
-                                  ? p.navActive
-                                  : isComingSoon
-                                  ? isDark
-                                    ? 'rgba(255,255,255,0.03)'
-                                    : 'rgba(15,23,42,0.03)'
-                                  : 'transparent',
-                                borderWidth: isActive || isComingSoon ? 1 : 0,
-                                borderColor: isActive
-                                  ? p.navActiveBorder
-                                  : isComingSoon
-                                  ? p.dropDivider
-                                  : 'transparent',
-                                opacity: isComingSoon ? 0.74 : 1,
-                              },
-                            ]}
-                            onPress={() => handleNavSectionPress(section)}
-                            activeOpacity={0.8}
-                          >
-                            <IconComp
-                              size={15}
-                              color={
-                                isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle
-                              }
-                            />
-                            <Text
-                              style={[
-                                styles.navItemText,
-                                {
-                                  color: isActive
-                                    ? p.navActiveText
-                                    : isComingSoon
-                                    ? p.dropSub
-                                    : p.dropText,
-                                },
-                                isActive && styles.navItemTextActive,
-                              ]}
-                            >
-                              {section.label}
-                            </Text>
-                            {isComingSoon ? (
-                              <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
-                                <Text style={[styles.comingSoonText, { color: p.dropSub }]}>
-                                  Coming soon
-                                </Text>
-                              </View>
-                            ) : isActive ? (
-                              <View
-                                style={[styles.activeIndicator, { backgroundColor: p.accent }]}
-                              />
-                            ) : null}
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  )}
-
-                  {/* Settings expandable - only show when signed in */}
-                  {signedIn && (
-                    <TouchableOpacity
-                      style={[
-                        styles.navItem,
-                        isExtraSmall && styles.navItemExtraSmall,
-                        { backgroundColor: 'transparent' },
-                      ]}
-                      onPress={() => setSettingsExpanded((v) => !v)}
-                      activeOpacity={0.8}
-                    >
-                      <SettingsIcon size={15} color={p.iconIdle} />
-                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                        {t('labels.settings')}
-                      </Text>
-                      {settingsExpanded ? (
-                        <ChevronDownIcon size={13} color={p.chevron} />
-                      ) : (
-                        <ChevronRightIcon size={13} color={p.chevron} />
-                      )}
-                    </TouchableOpacity>
-                  )}
-
-                  <AnimatedCollapsibleContent expanded={settingsExpanded}>
-                    <TouchableOpacity
-                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                      onPress={onCycleLanguage}
-                      activeOpacity={0.8}
-                    >
-                      <LanguagesIcon size={14} color={p.iconIdle} />
-                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                        {t('labels.language')}
-                      </Text>
-                      <Text style={[styles.navItemValue, { color: p.accent }]}>
-                        {getLocaleLabel(language, language)}
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                      onPress={onToggleTheme}
-                      activeOpacity={0.8}
-                    >
-                      <ThemeIconComp size={14} color={p.iconIdle} />
-                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                        {t('labels.theme')}
-                      </Text>
-                      <Text style={[styles.navItemValue, { color: p.accent }]}>{themeLabel}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                      onPress={() => onCycleMotionLevel?.()}
-                      activeOpacity={0.8}
-                    >
-                      <ZapIcon size={14} color={p.iconIdle} />
-                      <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
-                        Animación
-                      </Text>
-                      <Text style={[styles.navItemValue, { color: p.accent }]}>
-                        {motionLevel === 'full' ? 'Full' : motionLevel === 'low' ? 'Low' : 'Off'}
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[styles.navSubItem, { backgroundColor: 'transparent' }]}
-                      onPress={() => {
-                        setMenuVisible(false);
-                        onOpenSettings();
-                      }}
-                      activeOpacity={0.8}
-                    >
-                      <SettingsIcon size={14} color={p.iconIdle} />
-                      <Text style={[styles.navItemText, { color: p.dropText }]}>
-                        {t('navigation.moreSettings')}
-                      </Text>
-                    </TouchableOpacity>
-                  </AnimatedCollapsibleContent>
-
-                  {/* Sign out */}
-                  {signedIn && (
-                    <TouchableOpacity
-                      style={[
-                        styles.navItem,
-                        isExtraSmall && styles.navItemExtraSmall,
-                        { backgroundColor: p.dangerBg },
-                      ]}
-                      onPress={() => {
-                        setMenuVisible(false);
-                        onSignOut();
-                      }}
-                      activeOpacity={0.8}
-                    >
-                      <LogOutIcon size={15} color={p.danger} />
-                      <Text style={[styles.navItemText, { color: p.danger }]}>Sign Out</Text>
-                    </TouchableOpacity>
-                  )}
+                  {menuItems}
                 </Animated.View>
               )}
             </View>
           )}
         </View>
       </View>
+
+      {/* ── Full-screen menu (extra small screens, opened by the hamburger) ── */}
+      {isExtraSmall && (
+        <Modal
+          visible={menuVisible}
+          animationType='fade'
+          transparent
+          statusBarTranslucent
+          onRequestClose={() => setMenuVisible(false)}
+        >
+          <SafeAreaView
+            testID='fullscreen-menu'
+            style={[styles.fullMenu, { backgroundColor: p.dropBg }]}
+          >
+            <View style={[styles.fullMenuHeader, { borderBottomColor: p.dropDivider }]}>
+              <ExpoImage
+                source={wordmarkSource}
+                style={styles.wordmarkMobile}
+                contentFit='contain'
+              />
+              <TouchableOpacity
+                testID='fullscreen-menu-close'
+                accessibilityRole='button'
+                accessibilityLabel={t('common.close', undefined, 'Close menu')}
+                style={[
+                  styles.hamburgerButton,
+                  { backgroundColor: p.pillBg, borderColor: p.pillBorder },
+                ]}
+                onPress={() => setMenuVisible(false)}
+                activeOpacity={0.85}
+              >
+                <CloseIcon size={20} color={p.pillText} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={styles.fullMenuBody}>
+              {signedIn && (
+                <TouchableOpacity
+                  testID='fullscreen-menu-notifications'
+                  style={[styles.navItem, styles.navItemExtraSmall]}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    if (onNavigateToNotifications) {
+                      onNavigateToNotifications();
+                    } else {
+                      setNotifVisible(true);
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <BellIcon size={15} color={p.iconIdle} />
+                  <Text style={[styles.navItemText, { color: p.dropText, flex: 1 }]}>
+                    {t('notifications.ui.title', undefined, 'Notifications')}
+                  </Text>
+                  {unreadCount > 0 && (
+                    <View style={[styles.fullMenuCount, { backgroundColor: p.badgeBg }]}>
+                      <Text style={[styles.badgeCount, { color: p.badgeText }]}>
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )}
+              {menuItems}
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
+      )}
 
       {/* ── Notification dropdown (portal-like, outside nav bar) ─────────── */}
       <Animated.View
@@ -1120,6 +1183,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
   },
+  profileLink: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+  profileLinkMobile: {
+    gap: 6,
+  },
   nameBlock: {
     flex: 1,
     minWidth: 0,
@@ -1204,20 +1277,29 @@ const styles = StyleSheet.create({
     boxShadow: '0px 18px 34px rgba(5, 16, 13, 0.28)',
     zIndex: 1200,
   },
-  dropdownExtraSmall: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-    borderRadius: 0,
-    borderWidth: 0,
-    paddingVertical: 60,
+  fullMenu: {
+    flex: 1,
+  },
+  fullMenuHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 12,
-    paddingTop: 70,
-    zIndex: 2000,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  fullMenuBody: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 4,
+  },
+  fullMenuCount: {
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 5,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dropHeader: {
     flexDirection: 'row',

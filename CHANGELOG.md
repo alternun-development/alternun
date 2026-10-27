@@ -1,3 +1,27 @@
+## [1.1.117](https://github.com/alternun-development/alternun/compare/v1.1.116...v1.1.117) (2026-10-27)
+
+### Changes
+
+- **mobile:** cover every top-nav menu action through the full-screen menu ([704421c](https://github.com/alternun-development/alternun/commit/704421c866ccaeafe27ea8cffb03793b774b6d69))
+
+## [1.1.116](https://github.com/alternun-development/alternun/compare/v1.1.115...v1.1.116) (2026-10-27)
+
+### Bug Fixes
+
+- **mobile:** open a full-screen menu from the hamburger on extra small screens ([d6b70e2](https://github.com/alternun-development/alternun/commit/d6b70e2acddfafd0cdcbd7d781b4dd494d4d9096))
+
+## [1.1.115](https://github.com/alternun-development/alternun/compare/v1.1.114...v1.1.115) (2026-10-27)
+
+### Changes
+
+- **mobile:** cover the settings top-nav route to the profile ([ff2d139](https://github.com/alternun-development/alternun/commit/ff2d13993cf4f61ac26010274d02af7d32f4b7d3))
+
+## [1.1.114](https://github.com/alternun-development/alternun/compare/v1.1.113...v1.1.114) (2026-10-27)
+
+### Features
+
+- **mobile:** open the profile from the account badge avatar and name ([6600d20](https://github.com/alternun-development/alternun/commit/6600d20d17a03d0bdc4d3d75007f1ff233cb81ed))
+
 ## [1.1.113](https://github.com/alternun-development/alternun/compare/v1.1.112...v1.1.113) (2026-10-26)
 
 ### Features
