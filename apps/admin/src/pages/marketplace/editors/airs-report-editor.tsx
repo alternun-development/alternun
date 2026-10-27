@@ -76,6 +76,8 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
   const [result, setResult] = useState<SubmitAirsReportResponse>();
   const [recent, setRecent] = useState<RecentReportsState>({ kind: 'loading' });
   const [openReportId, setOpenReportId] = useState<string>();
+  // The project type decides it; a project without a type keeps requiring the document number.
+  const documentRequired = project.requiresDocumentNumber !== false;
   // One key per form submission: pressing "Send" twice or retrying after a network error
   // replays the same report instead of creating a second one.
   const requestKey = useRef(newAirsReportRequestKey());
@@ -125,13 +127,13 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
   }
 
   function review(): void {
-    const found = validateAirsReportForm(values, knownLookup);
+    const found = validateAirsReportForm(values, knownLookup, { documentRequired });
     setErrors(found);
     if (Object.keys(found).length === 0) setStep('confirm');
   }
 
   async function send(): Promise<void> {
-    const found = validateAirsReportForm(values, knownLookup);
+    const found = validateAirsReportForm(values, knownLookup, { documentRequired });
     if (Object.keys(found).length > 0) {
       setErrors(found);
       setStep('edit');
@@ -269,7 +271,9 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
           {errors.concept ? <strong className='error-text'>{errors.concept}</strong> : null}
 
           <label>
-            <span>{copy.form.documentNumber}</span>
+            <span>
+              {documentRequired ? copy.form.documentNumber : copy.form.documentNumberOptional}
+            </span>
             <input
               autoComplete='off'
               type='text'
@@ -322,7 +326,7 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
             </div>
             <div>
               <dt>{copy.form.documentNumber}</dt>
-              <dd>{values.documentNumber.trim()}</dd>
+              <dd>{values.documentNumber.trim() || marketplaceCopy.common.notAvailable}</dd>
             </div>
           </dl>
           <div className='marketplace-form-actions'>
