@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@edcalderon/auth": "1.4.2",
-    "better-auth": "^1.6.11",
+    "better-auth": "^1.7.14",
     "@supabase/supabase-js": "^2.98.0",
     "zod": "^3.24.2"
   },

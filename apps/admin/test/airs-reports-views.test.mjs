@@ -169,7 +169,7 @@ test('the request body is normalized and carries a key for safe retries', () => 
       documentNumber: ' INV-9 ',
     },
     noAccount,
-    'key-0123456789abcdef'
+    'test-request-key'
   );
 
   assert.deepEqual(body, {
@@ -178,7 +178,7 @@ test('the request body is normalized and carries a key for safe retries', () => 
     amount: 75,
     concept: 'Two nights at the pilot hotel',
     documentNumber: 'INV-9',
-    requestKey: 'key-0123456789abcdef',
+    requestKey: 'test-request-key',
   });
   // An existing account keeps its own name.
   assert.equal(
@@ -186,7 +186,7 @@ test('the request body is normalized and carries a key for safe retries', () => 
       reports.buildSubmitAirsReportBody(
         { ...validForm, recipientName: 'Typed name' },
         hasAccount,
-        'key-0123456789abcdef'
+        'test-request-key'
       ),
     false
   );
