@@ -426,5 +426,5 @@ test('the history shows the timeline and what each reward is waiting for', () =>
     createElement(AirsReportHistoryView, { detail: { report: { id: 'r-2' }, recipientTotals: {} } })
   );
   assert.match(empty, new RegExp(history.empty));
-  assert.match(empty, new RegExp(history.rewardsEmpty.replace(/[:]/g, ':')));
+  assert.ok(empty.includes(history.rewardsEmpty));
 });
