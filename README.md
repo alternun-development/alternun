@@ -120,13 +120,31 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.117**
+Current version: **1.1.118**
 
-## 📋 Latest Changes (v1.1.117)
+## 📋 Latest Changes (v1.1.118)
 
-### Changes
+### Bug Fixes
 
-- **mobile:** cover every top-nav menu action through the full-screen menu ([704421c](https://github.com/alternun-development/alternun/commit/704421c866ccaeafe27ea8cffb03793b774b6d69))
+- **repo:** chore: sync reentry after integrating #249 PRs
+- **repo:** fix(deps): bump better-auth to 1.7.14 for GHSA-965c-763c-88jm
+- **repo:** chore: sync reentry for the Airs report history
+- **repo:** feat(airs-report): show each report's history and reward status
+- **repo:** chore: sync reentry for the share image fix
+
+### Bug Fixes
+
+- **deps:** bump better-auth to 1.7.14 for GHSA-965c-763c-88jm ([bf79582](https://github.com/alternun-development/alternun/commit/bf795820dcff35cc8a63461b64028976667b6424))
+- **web:** share only the square Airs logosymbol in link previews ([bcdea44](https://github.com/alternun-development/alternun/commit/bcdea447d98488fa4d47db0fc60c5486ffac3e0d))
+
+### Features
+
+- **admin:** summary strip and status accents on the Airs reports list ([abc73b2](https://github.com/alternun-development/alternun/commit/abc73b28d5f9dfebf19fd4ff628350a001e1af4d)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **airs-report:** show each report's history and reward status ([a26100a](https://github.com/alternun-development/alternun/commit/a26100a60a2ef9b4ad6dc5a8f29c375fa741c45f)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **api:** email approvers, submitters and support about report approvals ([48515ea](https://github.com/alternun-development/alternun/commit/48515eaebbeb1bbb0af9b122577d7580d6ed6556)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **marketplace:** assign project admins and moderators by email ([b0935f9](https://github.com/alternun-development/alternun/commit/b0935f9e1f6cb66f8599512b61b4333aac17f52d)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **mobile:** shared search and view controls for the Explorer directories ([cf5b927](https://github.com/alternun-development/alternun/commit/cf5b92734f00d2d6ac96da860cfeaa62d49a228c)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **supabase:** unlock the Airs report rewards at 20 paid Airs ([8b50e8d](https://github.com/alternun-development/alternun/commit/8b50e8df75c8303ffe162624742e5b607a98f1a8)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
