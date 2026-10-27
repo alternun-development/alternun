@@ -126,10 +126,6 @@ Current version: **1.1.116**
 
 ### Bug Fixes
 
-- **repo:** fix(mobile): open a full-screen menu from the hamburger on extra small screens
-
-### Bug Fixes
-
 - **mobile:** open a full-screen menu from the hamburger on extra small screens ([d6b70e2](https://github.com/alternun-development/alternun/commit/d6b70e2acddfafd0cdcbd7d781b4dd494d4d9096))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
