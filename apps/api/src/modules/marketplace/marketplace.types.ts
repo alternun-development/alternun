@@ -252,6 +252,8 @@ export interface ProjectMembershipRecord {
   scopeType: 'enterprise' | 'project';
   role: 'partner_operator' | 'sub_admin' | 'partner_readonly';
   status: 'active' | 'revoked';
+  /** Verified email of the member, when they have signed in. Filled on lists and grants. */
+  memberEmail?: string | null;
   grantedBy: ActorReference;
   createdAt: string;
   updatedAt: string;

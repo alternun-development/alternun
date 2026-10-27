@@ -51,6 +51,10 @@ function mapMembership(row: Row): ProjectMembershipRecord {
   };
 }
 
+export function memberKey(issuer: string, subject: string): string {
+  return JSON.stringify([issuer, subject]);
+}
+
 function failDatabase(error: { code?: string } | null): never {
   if (error?.code === '23505') marketplaceError('MEMBERSHIP_CONFLICT');
   throw new MarketplaceApiError('MARKETPLACE_UNAVAILABLE', 'Marketplace storage is unavailable.');
@@ -95,6 +99,71 @@ export class MarketplaceMembershipRepository {
       seen.add(membership.id);
       return true;
     });
+  }
+
+  /** The one verified account with this email; null when none, a conflict when it is ambiguous. */
+  async findVerifiedUserByEmail(
+    email: string
+  ): Promise<{ id: string; issuer: string; subject: string; email: string } | null> {
+    const { data, error } = await this.client
+      .from('users')
+      .select('id, iss, sub, email')
+      .eq('email_verified', true)
+      .ilike(
+        'email',
+        email.trim().replace(/[\\%_]/g, (match) => `\\${match}`)
+      )
+      .limit(2);
+    if (error) failDatabase(error);
+    const matches = rows(data);
+    if (matches.length > 1) marketplaceError('MEMBERSHIP_CONFLICT');
+    const row = matches[0];
+    if (!row) return null;
+    return {
+      id: text(row.id),
+      issuer: text(row.iss),
+      subject: text(row.sub),
+      email: text(row.email).trim().toLowerCase(),
+    };
+  }
+
+  /** Emails of known members, keyed by memberKey(issuer, subject). */
+  async emailsForMembers(
+    members: ReadonlyArray<{ issuer: string; subject: string }>
+  ): Promise<Map<string, string>> {
+    const found = new Map<string, string>();
+    const subjects = [...new Set(members.map((member) => member.subject))];
+    if (!subjects.length) return found;
+    const { data, error } = await this.client
+      .from('users')
+      .select('iss, sub, email, email_verified')
+      .in('sub', subjects);
+    if (error) failDatabase(error);
+    for (const row of rows(data)) {
+      if (row.email_verified === true && text(row.email)) {
+        found.set(memberKey(text(row.iss), text(row.sub)), text(row.email).trim().toLowerCase());
+      }
+    }
+    return found;
+  }
+
+  /** Active memberships a person still holds with this role, optionally ignoring one. */
+  async countActiveWithRole(
+    member: { issuer: string; subject: string },
+    role: ProjectMembershipRecord['role'],
+    exceptId?: string
+  ): Promise<number> {
+    let query = this.client
+      .from('project_memberships')
+      .select('id', { count: 'exact', head: true })
+      .eq('member_issuer', member.issuer)
+      .eq('member_subject', member.subject)
+      .eq('role', role)
+      .eq('status', 'active');
+    if (exceptId) query = query.neq('id', exceptId);
+    const { count, error } = await query;
+    if (error) failDatabase(error);
+    return count ?? 0;
   }
 
   async find(id: string): Promise<ProjectMembershipRecord | null> {
