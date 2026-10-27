@@ -186,9 +186,14 @@ begin
     raise exception 'a reward without a beneficiary was not kept locked: %', v_count;
   end if;
 
-  -- The submitter signs in later: the next paid entry credits the waiting reward.
-  insert into public.users (id, sub, iss, email, email_verified, name)
-  values (v_late_submitter, 'admin-late', 'verification', 'unlock.late@example.test', true, 'Late Submitter');
+  -- The submitter's account arrives later through the Authentik webhook: a hashed
+  -- principal in sub, another issuer, and the Authentik UUID the panel token carried in
+  -- raw_claims. The next paid entry still credits the waiting reward to that account.
+  insert into public.users (id, sub, iss, email, email_verified, name, raw_claims)
+  values (
+    v_late_submitter, 'hashed-principal-late', 'webhook-issuer', 'unlock.late@example.test',
+    true, 'Late Submitter', jsonb_build_object('uuid', 'admin-late', 'sub', 'admin-late')
+  );
   insert into public.airs_ledger_entries (user_id, source_kind, idempotency_key, airs_delta)
   values (v_three, 'allied_commerce', 'unlock-paid-three', 5);
   select count(*) into v_count from public.airs_report_rewards
