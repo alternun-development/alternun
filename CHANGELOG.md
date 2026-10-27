@@ -1,8 +1,4 @@
-## [1.1.112](https://github.com/alternun-development/alternun/compare/v1.1.111...v1.1.112) (2026-10-27)
-
-### Bug Fixes
-
-- **repo:** fix(security): resolve CodeQL clear-text logging and bad tag filter alerts
+## [1.1.112](https://github.com/alternun-development/alternun/compare/v1.1.111...v1.1.112) (2026-10-26)
 
 ### Bug Fixes
 
