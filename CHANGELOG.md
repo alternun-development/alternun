@@ -1,8 +1,4 @@
-## [1.1.110](https://github.com/alternun-development/alternun/compare/v1.1.109...v1.1.110) (2026-10-27)
-
-### Bug Fixes
-
-- **repo:** fix(api): key each Airs report submission by a client key, not the request counter
+## [1.1.110](https://github.com/alternun-development/alternun/compare/v1.1.109...v1.1.110) (2026-10-26)
 
 ### Bug Fixes
 
