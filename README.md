@@ -126,10 +126,6 @@ Current version: **1.1.110**
 
 ### Bug Fixes
 
-- **repo:** fix(api): key each Airs report submission by a client key, not the request counter
-
-### Bug Fixes
-
 - **api:** key each Airs report submission by a client key, not the request counter ([aaf0789](https://github.com/alternun-development/alternun/commit/aaf0789a1f17284adc755b99fadc2882483a1a8b))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
