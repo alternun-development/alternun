@@ -1,3 +1,52 @@
+## [1.1.112](https://github.com/alternun-development/alternun/compare/v1.1.111...v1.1.112) (2026-10-26)
+
+### Bug Fixes
+
+- **security:** resolve CodeQL clear-text logging and bad tag filter alerts ([63291cf](https://github.com/alternun-development/alternun/commit/63291cf9f4f42ec8e0dd52291642a757d0261f9d))
+
+## [1.1.111](https://github.com/alternun-development/alternun/compare/v1.1.110...v1.1.111) (2026-10-26)
+
+### Changes
+
+- **security:** ignore Airs report idempotency-key test fixtures in gitleaks ([f05cfee](https://github.com/alternun-development/alternun/commit/f05cfeee138bb9ba9dbb146a313b79d8f0d8edad))
+- **reentry:** set the next step for the Airs report work ([0d5136b](https://github.com/alternun-development/alternun/commit/0d5136bdb985a9af798890021e3f7901fb0b9ba8))
+- **reentry:** set the next step for the Airs report work ([4f550f9](https://github.com/alternun-development/alternun/commit/4f550f96715f7ae1a5250639c6f2e9bf50ededd8))
+
+### Features
+
+- **admin:** report Airs to a guest and review reports over the limits ([63c3a12](https://github.com/alternun-development/alternun/commit/63c3a1273d359d87a1c6d80454bbef431bda73cb))
+- **api:** script to link each project with its Airs account ([47fe172](https://github.com/alternun-development/alternun/commit/47fe1721cfdb17286e3a91bebcf60396880c510a))
+- **api:** email the recipient and support when Airs are issued ([64a5cca](https://github.com/alternun-development/alternun/commit/64a5cca5723f65093b6ab1130a516b63b30a7699))
+- **api:** claim waiting Airs reports when a confirmed user signs in ([c9bd444](https://github.com/alternun-development/alternun/commit/c9bd444e704b7040c2cced0cb9c847bb6f501a7e))
+- **db:** claim User Airs Reports and link a project account ([1855dc4](https://github.com/alternun-development/alternun/commit/1855dc4ef364687f2ac886163566d78734401906))
+
+## [1.1.110](https://github.com/alternun-development/alternun/compare/v1.1.109...v1.1.110) (2026-10-26)
+
+### Bug Fixes
+
+- **api:** key each Airs report submission by a client key, not the request counter ([aaf0789](https://github.com/alternun-development/alternun/commit/aaf0789a1f17284adc755b99fadc2882483a1a8b))
+
+## [1.1.109](https://github.com/alternun-development/alternun/compare/v1.1.108...v1.1.109) (2026-10-26)
+
+### Bug Fixes
+
+- **airs-reports:** require a document number on every report ([ac0029c](https://github.com/alternun-development/alternun/commit/ac0029cc6dfc7ac8f4e34d084c1f3031096a3a60))
+- **airs-reports:** never auto-approve a report to the submitter ([be8d215](https://github.com/alternun-development/alternun/commit/be8d2153e8bdd81f928b5cdabe397c5622c87abc))
+- **marketplace:** allow image hosts for project logo, cover and gallery ([20594cc](https://github.com/alternun-development/alternun/commit/20594cce5b49e25179bb16bfa062feb24f422457))
+
+### Changes
+
+- **reentry:** note the User Airs Report next steps ([7d1be85](https://github.com/alternun-development/alternun/commit/7d1be85f8e912dc006ec0549bb9c6cf65f985c53))
+- **airs-reports:** cover the User Airs Report cut (B15) ([8ffbb44](https://github.com/alternun-development/alternun/commit/8ffbb4462b4cb747d1403f4fcd94f51bda4cdf63))
+- **reentry:** note marketplace media hosts follow-up ([d765fff](https://github.com/alternun-development/alternun/commit/d765fffc10ef98dcf43a62d302e84a29df845c51))
+
+### Features
+
+- **api:** add the User Airs Report admin endpoints ([8c07a96](https://github.com/alternun-development/alternun/commit/8c07a9685e668f90fbca5780613accac96579190))
+- **db:** add the User Airs Report transition functions ([1973689](https://github.com/alternun-development/alternun/commit/1973689bc6963a3fd1adeb5f81cc7b63cdc1d7b9))
+- **db:** add the airs_reports schema ([ad2cb5b](https://github.com/alternun-development/alternun/commit/ad2cb5b5e9920cb28b4acfce4de2fd1c580bd18d))
+- **api:** add the User Airs Report API contract ([0cd5600](https://github.com/alternun-development/alternun/commit/0cd5600ba5f85133a75d5fdba52d1d31aecd22f9))
+
 ## [1.1.108](https://github.com/alternun-development/alternun/compare/v1.1.107...v1.1.108) (2026-10-26)
 
 ### Documentation
