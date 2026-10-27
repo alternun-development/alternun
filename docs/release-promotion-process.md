@@ -30,6 +30,18 @@ The release description is generated from the exact `previous production tag..re
 
 The `release-promotion-guard` check verifies these properties on every PR to `master`. It must remain required by branch protection.
 
+## After the merge: verify the deployment
+
+A merged release PR is not a deployed release. Merging to `master` starts the production pipelines, and a failed run does not block or revert the merge. In October 2026, the production API stayed on v1.1.100 for four days while v1.1.101–v1.1.106 were merged; see [dashboard-pipeline-build-incident-2026-10-22.md](dashboard-pipeline-build-incident-2026-10-22.md).
+
+After every merge into `master`:
+
+1. Confirm that `alternun-dash-prod-pipeline`, `alternun-prod-pipeline` and `alternun-auth-prod-pipeline` succeeded for the merge commit (run `bash scripts/validate-aws-account.sh enforce` first).
+2. Confirm that `https://api.alternun.co/health` reports the released version.
+3. If the release includes migrations, confirm that `bash scripts/sync-db-migrations.sh production --dry-run` reports no pending migrations.
+
+If a pipeline failed, fix it on `develop` and ship the fix through the same release flow.
+
 ## Explicit Exceptions
 
 An unrelated or direct PR to `master` is prohibited unless a maintainer has explicitly authorized that exact exception. After authorization, a maintainer may apply the `release:manual-exception` label. The label records the exception and allows the guard to pass; it is not a substitute for authorization, review, or production validation.

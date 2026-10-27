@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-26T23:00:43.004Z",
+  "lastUpdated": "2026-10-26T23:55:14.673Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge release PR for v1.1.107 (i18n build fix); confirm dash prod pipeline applies migrations and deploys API; then #249 P0 cut",
+      "description": "Admin: require release-promotion-guard + Pipeline Build checks on master ruleset; add prod pipeline failure alert; then #249 P0 cut",
       "id": "next",
       "priority": 1
     }
