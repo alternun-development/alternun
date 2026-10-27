@@ -11,7 +11,12 @@ import { actorFromPrincipal } from './marketplace.types';
 import { AirsReportRepository, type AirsReportApprover } from './airs-report.repository';
 import { sendAirsEmail } from '../airs/airs.email';
 import type { AirsReportNotifierDependencies } from './airs-report-emails.types';
-import { createAirsReportNotifier, createAirsReportWorkflowNotifier } from './airs-report-notifier';
+import {
+  createAirsReportNotifier,
+  createAirsReportWorkflowNotifier,
+  resolveAirsReportSupportEmails,
+} from './airs-report-notifier';
+import { AdminNotificationService, adminNotificationEventFor } from './admin-notification.service';
 import type {
   AirsReportDetailResponse,
   AirsReportRecipientLookupResponse,
@@ -42,7 +47,8 @@ export class AirsReportService {
     private readonly repository: AirsReportRepository,
     private readonly adminRepository: MarketplaceAdminRepository,
     @Optional() @Inject(AIRS_REPORT_NOTIFY_ISSUED) notifyIssued?: NotifyIssued,
-    @Optional() @Inject(AIRS_REPORT_NOTIFY_WORKFLOW) notifyWorkflow?: NotifyIssued
+    @Optional() @Inject(AIRS_REPORT_NOTIFY_WORKFLOW) notifyWorkflow?: NotifyIssued,
+    @Optional() @Inject(AdminNotificationService) private readonly inbox?: AdminNotificationService
   ) {
     const dependencies: AirsReportNotifierDependencies = {
       send: async ({
@@ -84,6 +90,31 @@ export class AirsReportService {
       } catch {
         // Intentionally ignored.
       }
+    }
+    await this.leaveInboxNotice(response.report);
+  }
+
+  // The console inbox: approvers for a report that needs review, the person who submitted it for a
+  // decision, and the support mailboxes for everything. Best effort like the emails.
+  private async leaveInboxNotice(report: AirsReportRecord): Promise<void> {
+    const event = adminNotificationEventFor(report);
+    if (!this.inbox || !event) return;
+    try {
+      const support = resolveAirsReportSupportEmails(process.env);
+      const approvers =
+        event === 'report_needs_review' ? await this.repository.listApproverEmails() : [];
+      const decided = event === 'report_approved' || event === 'report_rejected';
+      await this.inbox.recordReportEvent(
+        report,
+        event,
+        {
+          emails: [...support, ...approvers],
+          identities: decided ? [report.submittedBy] : [],
+        },
+        decided && report.decision?.reason ? { reason: report.decision.reason } : {}
+      );
+    } catch {
+      // Intentionally ignored.
     }
   }
 
