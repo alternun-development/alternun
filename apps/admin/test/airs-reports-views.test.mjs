@@ -10,6 +10,7 @@ let marketplaceCopy;
 let marketplaceErrorMessage;
 let reports;
 let AirsReportEditor;
+let AirsReportHistoryView;
 let AirsReportQueuePage;
 let resolveAdminAccessProfile;
 
@@ -75,6 +76,9 @@ before(async () => {
   reports = await viteServer.ssrLoadModule('/src/marketplace/airs-reports.ts');
   ({ AirsReportEditor } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/editors/airs-report-editor.tsx'
+  ));
+  ({ AirsReportHistoryView } = await viteServer.ssrLoadModule(
+    '/src/pages/marketplace/editors/airs-report-history.tsx'
   ));
   ({ AirsReportQueuePage } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/airs-report-queue-page.tsx'
@@ -368,4 +372,59 @@ test('the summary counts what is credited and what waits, and leaves out closed 
     waitingClaim: 0,
     totalAirs: 0,
   });
+});
+
+test('timeline actions read as sentences, with a fallback and a note when denied', () => {
+  const history = marketplaceCopy.airsReports.history;
+  assert.equal(
+    reports.describeTimelineAction({ action: 'airs_report.released', result: 'allowed' }),
+    history.actions['airs_report.released']
+  );
+  assert.equal(
+    reports.describeTimelineAction({ action: 'airs_report.approve_denied', result: 'denied' }),
+    `Approve denied (${history.denied})`
+  );
+  assert.equal(
+    reports.describeTimelineAction({ action: 'airs_report.submitted', result: 'denied' }),
+    `${history.actions['airs_report.submitted']} (${history.denied})`
+  );
+});
+
+test('the history shows the timeline and what each reward is waiting for', () => {
+  const history = marketplaceCopy.airsReports.history;
+  const detail = {
+    report: { id: 'r-1' },
+    recipientTotals: {},
+    timeline: [
+      {
+        action: 'airs_report.submitted',
+        result: 'allowed',
+        reasonCode: null,
+        occurredAt: '2026-10-27T12:00:00Z',
+      },
+      {
+        action: 'airs_report.claimed',
+        result: 'allowed',
+        reasonCode: null,
+        occurredAt: '2026-10-27T13:00:00Z',
+      },
+    ],
+    rewards: [
+      { kind: 'submitter', amount: 5, status: 'locked', creditedAt: null },
+      { kind: 'project', amount: 5, status: 'credited', creditedAt: '2026-10-27T13:30:00Z' },
+    ],
+  };
+  const html = renderToString(createElement(AirsReportHistoryView, { detail }));
+
+  assert.match(html, new RegExp(history.actions['airs_report.submitted']));
+  assert.match(html, new RegExp(history.actions['airs_report.claimed']));
+  assert.match(html, new RegExp(history.rewardKind.submitter));
+  assert.match(html, new RegExp(history.rewardStatus.locked));
+  assert.match(html, new RegExp(history.rewardStatus.credited));
+
+  const empty = renderToString(
+    createElement(AirsReportHistoryView, { detail: { report: { id: 'r-2' }, recipientTotals: {} } })
+  );
+  assert.match(empty, new RegExp(history.empty));
+  assert.match(empty, new RegExp(history.rewardsEmpty.replace(/[:]/g, ':')));
 });
