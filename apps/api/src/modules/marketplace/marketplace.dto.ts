@@ -6,6 +6,7 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsEmail,
   IsIn,
   IsInt,
   IsNotEmptyObject,
@@ -193,6 +194,19 @@ export class ListProjectMembershipsQueryDto {
 export class CreateProjectMembershipDto {
   @ValidateNested() @Type(() => ActorRefDto) member!: ActorRefDto;
   @IsOptional() @IsString() @MinLength(1) @MaxLength(255) memberUserId?: string;
+  @IsUUID('4') enterpriseId!: string;
+  @IsOptional() @IsUUID('4') projectId?: string;
+  @IsString() @IsIn(['enterprise', 'project']) scopeType!: 'enterprise' | 'project';
+  @IsString()
+  @IsIn(PROJECT_MEMBERSHIP_ROLES)
+  role!: (typeof PROJECT_MEMBERSHIP_ROLES)[number];
+}
+
+export class CreateProjectMembershipByEmailDto {
+  @ApiProperty({ format: 'email', maxLength: 320 })
+  @IsEmail()
+  @MaxLength(320)
+  email!: string;
   @IsUUID('4') enterpriseId!: string;
   @IsOptional() @IsUUID('4') projectId?: string;
   @IsString() @IsIn(['enterprise', 'project']) scopeType!: 'enterprise' | 'project';
