@@ -124,15 +124,14 @@ Current version: **1.1.120**
 
 ## 📋 Latest Changes (v1.1.120)
 
+### Changes
+
+- **repo:** sync reentry with follow-ups from #299 review ([de986ce](https://github.com/alternun-development/alternun/commit/de986ce95ee32fd673bde6892392984bdb517f24))
+- **docs:** remove unused npm lockfile ([7109163](https://github.com/alternun-development/alternun/commit/710916389807bd0fbb49cb0b78cf36aafd4ac78f))
+
 ### Bug Fixes
 
-- **repo:** chore: sync reentry with follow-ups from #299 review
-- **repo:** chore(docs): remove unused npm lockfile
-- **repo:** fix(marketplace): match panel identities to webhook-synced accounts
-
-### Bug Fixes
-
-- **marketplace:** match panel identities to webhook-synced accounts ([f0a93bd](https://github.com/alternun-development/alternun/commit/f0a93bd6e98f48e713422782edebb014b81f27e8)), closes [#299](https://github.com/alternun-development/alternun/issues/299) [#249](https://github.com/alternun-development/alternun/issues/249)
+- **marketplace:** match panel identities to webhook-synced accounts ([f0a93bd](https://github.com/alternun-development/alternun/commit/f0a93bd6e98f48e713422782edebb014b81f27e8))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
