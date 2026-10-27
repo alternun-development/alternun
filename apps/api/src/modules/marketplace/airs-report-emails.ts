@@ -147,3 +147,102 @@ export function renderAirsReportSupportEmail(
     ]),
   };
 }
+
+function staffEmail(
+  subject: string,
+  sections: Array<{ heading: string; intro: string; rows: Array<[string, string]> }>
+): AirsReportEmailContent {
+  const text = sections
+    .map((section) =>
+      [section.intro, ...section.rows.map(([label, value]) => `${label}: ${value}`)].join('\n')
+    )
+    .join('\n\n');
+  const html = wrapHtml(
+    sections.flatMap((section, index) => [
+      ...(index > 0
+        ? ['<hr style="border:none;border-top:1px solid #d5e3dc;margin:24px 0" />']
+        : []),
+      `<h2 style="margin:0 0 8px">${escapeHtml(section.heading)}</h2>`,
+      `<p>${escapeHtml(section.intro)}</p>`,
+      ...section.rows.map(
+        ([label, value]) =>
+          `<p style="margin:4px 0"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`
+      ),
+    ])
+  );
+  return { subject, text, html };
+}
+
+/** Email to the approvers and support: a report went over the automatic limits and waits. */
+export function renderAirsReportReviewRequestEmail(
+  context: AirsReportEmailContext
+): AirsReportEmailContent {
+  const { report, projectName, appUrl } = context;
+  const rows = (
+    labels: [string, string, string, string, string, string]
+  ): Array<[string, string]> => [
+    [labels[0], report.recipientEmail],
+    [labels[1], airsLabel(report.amount)],
+    [labels[2], report.concept],
+    [labels[3], report.documentNumber ?? '-'],
+    [labels[4], projectName ?? report.projectId],
+    [labels[5], `${appUrl}/airs-reports`],
+  ];
+  return staffEmail(
+    `Reporte de Airs por revisar: ${airsLabel(report.amount)} a ${
+      report.recipientEmail
+    } / Airs report to review`,
+    [
+      {
+        heading: 'Reporte de Airs por revisar',
+        intro: 'Un reporte superó los límites automáticos y espera a un aprobador.',
+        rows: rows(['Destinatario', 'Monto', 'Motivo', 'Documento', 'Proyecto', 'Revisar en']),
+      },
+      {
+        heading: 'Airs report to review',
+        intro: 'A report went over the automatic limits and is waiting for an approver.',
+        rows: rows(['Recipient', 'Amount', 'Reason', 'Document', 'Project', 'Review at']),
+      },
+    ]
+  );
+}
+
+/** Email to the person who submitted a report, and to support, once an approver decided it. */
+export function renderAirsReportDecisionEmail(
+  context: AirsReportEmailContext
+): AirsReportEmailContent {
+  const { report, projectName } = context;
+  const rejected = report.decision?.outcome === 'rejected';
+  const reason = report.decision?.reason ?? '';
+  const rows = (labels: [string, string, string, string]): Array<[string, string]> => [
+    [labels[0], report.recipientEmail],
+    [labels[1], airsLabel(report.amount)],
+    [labels[2], projectName ?? report.projectId],
+    ...(rejected && reason ? ([[labels[3], reason]] as Array<[string, string]>) : []),
+  ];
+  return staffEmail(
+    rejected
+      ? `Reporte de Airs rechazado: ${airsLabel(report.amount)} a ${
+          report.recipientEmail
+        } / Airs report rejected`
+      : `Reporte de Airs aprobado: ${airsLabel(report.amount)} a ${
+          report.recipientEmail
+        } / Airs report approved`,
+    [
+      {
+        heading: rejected ? 'Reporte de Airs rechazado' : 'Reporte de Airs aprobado',
+        intro: rejected
+          ? 'Un aprobador rechazó el reporte. No se acreditó ningún Air.'
+          : 'Un aprobador aprobó el reporte. Los Airs ya siguen su camino al destinatario.',
+        rows: rows(['Destinatario', 'Monto', 'Proyecto', 'Motivo del rechazo']),
+      },
+      {
+        heading: rejected ? 'Airs report rejected' : 'Airs report approved',
+        intro: rejected
+          ? 'An approver rejected the report. No Airs were credited.'
+          : 'An approver approved the report. The Airs are on their way to the recipient.',
+        rows: rows(['Recipient', 'Amount', 'Project', 'Rejection reason']),
+      },
+    ]
+  );
+}
