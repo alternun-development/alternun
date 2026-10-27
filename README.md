@@ -120,13 +120,25 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.110**
+Current version: **1.1.111**
 
-## 📋 Latest Changes (v1.1.110)
+## 📋 Latest Changes (v1.1.111)
 
 ### Bug Fixes
 
-- **api:** key each Airs report submission by a client key, not the request counter ([aaf0789](https://github.com/alternun-development/alternun/commit/aaf0789a1f17284adc755b99fadc2882483a1a8b))
+- **repo:** chore(security): ignore Airs report idempotency-key test fixtures in gitleaks
+- **repo:** chore(reentry): set the next step for the Airs report work
+- **repo:** chore(reentry): set the next step for the Airs report work
+- **repo:** feat(admin): report Airs to a guest and review reports over the limits
+- **repo:** feat(api): script to link each project with its Airs account
+
+### Features
+
+- **admin:** report Airs to a guest and review reports over the limits ([63c3a12](https://github.com/alternun-development/alternun/commit/63c3a1273d359d87a1c6d80454bbef431bda73cb)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **api:** claim waiting Airs reports when a confirmed user signs in ([c9bd444](https://github.com/alternun-development/alternun/commit/c9bd444e704b7040c2cced0cb9c847bb6f501a7e)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **api:** email the recipient and support when Airs are issued ([64a5cca](https://github.com/alternun-development/alternun/commit/64a5cca5723f65093b6ab1130a516b63b30a7699)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **api:** script to link each project with its Airs account ([47fe172](https://github.com/alternun-development/alternun/commit/47fe1721cfdb17286e3a91bebcf60396880c510a)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **db:** claim User Airs Reports and link a project account ([1855dc4](https://github.com/alternun-development/alternun/commit/1855dc4ef364687f2ac886163566d78734401906)), closes [#249](https://github.com/alternun-development/alternun/issues/249) [#249](https://github.com/alternun-development/alternun/issues/249)
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
