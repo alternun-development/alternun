@@ -73,3 +73,73 @@ it('opens a full-screen menu from the hamburger with the sections and notificati
   expect(byId(tree, 'fullscreen-menu')).toHaveLength(0);
   act(() => tree.unmount());
 });
+
+const pressLabel = (tree, label) => {
+  let node = tree.root
+    .findAllByType(Text)
+    .find((n) => JSON.stringify(n.props.children).includes(label));
+  while (node && !node.props.onPress) node = node.parent;
+  act(() => node.props.onPress());
+};
+const openMenu = (tree) => act(() => byId(tree, 'nav-hamburger')[0].props.onPress());
+
+it('runs every full-screen menu action and closes the menu where it navigates away', () => {
+  const handlers = {
+    onNavigate: jest.fn(),
+    onCycleLanguage: jest.fn(),
+    onToggleTheme: jest.fn(),
+    onCycleMotionLevel: jest.fn(),
+    onOpenSettings: jest.fn(),
+    onSignOut: jest.fn(),
+  };
+  let tree;
+  act(() => {
+    tree = renderer.create(<TopNav {...props} {...handlers} />);
+  });
+
+  openMenu(tree);
+  pressLabel(tree, 'Explorer');
+  expect(handlers.onNavigate).toHaveBeenCalledWith('explorar');
+  expect(byId(tree, 'fullscreen-menu')).toHaveLength(0);
+
+  openMenu(tree);
+  pressLabel(tree, 'labels.settings');
+  pressLabel(tree, 'labels.language');
+  pressLabel(tree, 'labels.theme');
+  pressLabel(tree, 'Animación');
+  expect(handlers.onCycleLanguage).toHaveBeenCalledTimes(1);
+  expect(handlers.onToggleTheme).toHaveBeenCalledTimes(1);
+  expect(handlers.onCycleMotionLevel).toHaveBeenCalledTimes(1);
+  pressLabel(tree, 'navigation.moreSettings');
+  expect(handlers.onOpenSettings).toHaveBeenCalledTimes(1);
+  expect(byId(tree, 'fullscreen-menu')).toHaveLength(0);
+
+  openMenu(tree);
+  pressLabel(tree, 'Sign Out');
+  expect(handlers.onSignOut).toHaveBeenCalledTimes(1);
+
+  openMenu(tree);
+  act(() => tree.root.findByProps({ statusBarTranslucent: true }).props.onRequestClose());
+  expect(byId(tree, 'fullscreen-menu')).toHaveLength(0);
+  act(() => tree.unmount());
+});
+
+it('falls back to the notification panel and offers sign in when signed out', () => {
+  const onSignIn = jest.fn();
+  let tree;
+  act(() => {
+    tree = renderer.create(<TopNav {...props} />);
+  });
+  openMenu(tree);
+  act(() => byId(tree, 'fullscreen-menu-notifications')[0].props.onPress());
+  expect(byId(tree, 'fullscreen-menu')).toHaveLength(0);
+
+  act(() => {
+    tree.update(<TopNav {...props} signedIn={false} onSignIn={onSignIn} />);
+  });
+  openMenu(tree);
+  expect(byId(tree, 'fullscreen-menu-notifications')).toHaveLength(0);
+  pressLabel(tree, 'labels.signIn');
+  expect(onSignIn).toHaveBeenCalledTimes(1);
+  act(() => tree.unmount());
+});
