@@ -10,7 +10,8 @@ import { MarketplaceAdminRepository } from './marketplace.repository';
 import { actorFromPrincipal } from './marketplace.types';
 import { AirsReportRepository, type AirsReportApprover } from './airs-report.repository';
 import { sendAirsEmail } from '../airs/airs.email';
-import { createAirsReportNotifier } from './airs-report-notifier';
+import type { AirsReportNotifierDependencies } from './airs-report-emails.types';
+import { createAirsReportNotifier, createAirsReportWorkflowNotifier } from './airs-report-notifier';
 import type {
   AirsReportDetailResponse,
   AirsReportRecipientLookupResponse,
@@ -29,33 +30,45 @@ type NotifyIssued = (report: AirsReportRecord) => Promise<unknown>;
 
 /** Optional override of the issuance emails; tests inject a recorder, the app uses the default. */
 export const AIRS_REPORT_NOTIFY_ISSUED = Symbol('AIRS_REPORT_NOTIFY_ISSUED');
+/** Same, for the approval workflow emails (review requested, approved, rejected). */
+export const AIRS_REPORT_NOTIFY_WORKFLOW = Symbol('AIRS_REPORT_NOTIFY_WORKFLOW');
 
 @Injectable()
 export class AirsReportService {
   private readonly notifyIssued: NotifyIssued;
+  private readonly notifyWorkflow: NotifyIssued;
 
   constructor(
     private readonly repository: AirsReportRepository,
     private readonly adminRepository: MarketplaceAdminRepository,
-    @Optional() @Inject(AIRS_REPORT_NOTIFY_ISSUED) notifyIssued?: NotifyIssued
+    @Optional() @Inject(AIRS_REPORT_NOTIFY_ISSUED) notifyIssued?: NotifyIssued,
+    @Optional() @Inject(AIRS_REPORT_NOTIFY_WORKFLOW) notifyWorkflow?: NotifyIssued
   ) {
-    this.notifyIssued =
-      notifyIssued ??
-      createAirsReportNotifier({
-        send: async ({ to, email }) => {
-          const result = await sendAirsEmail({ to, email });
-          return { sent: result.sent };
-        },
-        env: process.env,
-        projectName: async (projectId) => {
-          const project = await this.adminRepository.findProject(projectId);
-          const content = project?.content as unknown as
-            | Record<string, { title?: unknown } | undefined>
-            | undefined;
-          const title = project ? content?.[project.defaultLocale]?.title : undefined;
-          return typeof title === 'string' && title.trim() ? title.trim() : null;
-        },
-      });
+    const dependencies: AirsReportNotifierDependencies = {
+      send: async ({
+        to,
+        email,
+      }: {
+        to: string;
+        email: { subject: string; text: string; html: string };
+      }) => {
+        const result = await sendAirsEmail({ to, email });
+        return { sent: result.sent };
+      },
+      env: process.env,
+      projectName: async (projectId) => {
+        const project = await this.adminRepository.findProject(projectId);
+        const content = project?.content as unknown as
+          | Record<string, { title?: unknown } | undefined>
+          | undefined;
+        const title = project ? content?.[project.defaultLocale]?.title : undefined;
+        return typeof title === 'string' && title.trim() ? title.trim() : null;
+      },
+      approverEmails: () => this.repository.listApproverEmails(),
+      submitterEmail: (issuer, subject) => this.repository.findSubmitterEmail(issuer, subject),
+    };
+    this.notifyIssued = notifyIssued ?? createAirsReportNotifier(dependencies);
+    this.notifyWorkflow = notifyWorkflow ?? createAirsReportWorkflowNotifier(dependencies);
   }
 
   // Emails are best effort: a failed send never blocks or undoes the issuance, and a replay of
@@ -65,10 +78,12 @@ export class AirsReportService {
     idempotent: boolean;
   }): Promise<void> {
     if (response.idempotent) return;
-    try {
-      await this.notifyIssued(response.report);
-    } catch {
-      // Intentionally ignored.
+    for (const notify of [this.notifyIssued, this.notifyWorkflow]) {
+      try {
+        await notify(response.report);
+      } catch {
+        // Intentionally ignored.
+      }
     }
   }
 
@@ -185,19 +200,21 @@ export class AirsReportService {
     return response;
   }
 
-  reject(
+  async reject(
     principal: AdminPrincipal,
     requestId: string,
     reportId: string,
     reason: string
   ): Promise<AirsReportTransitionResponse> {
-    return this.repository.reject(
+    const response = await this.repository.reject(
       reportId,
       reason,
       actorFromPrincipal(principal),
       approverFrom(principal),
       requestId
     );
+    await this.announce(response);
+    return response;
   }
 
   cancel(
