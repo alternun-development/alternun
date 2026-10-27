@@ -108,7 +108,8 @@ test('every required field has its own friendly message', () => {
     'recipientEmail',
   ]);
   assert.equal(errors.documentNumber, marketplaceCopy.airsReports.errors.documentRequired);
-  for (const message of Object.values(errors)) assert.doesNotMatch(message, /AIRS_REPORT|undefined/);
+  for (const message of Object.values(errors))
+    assert.doesNotMatch(message, /AIRS_REPORT|undefined/);
 });
 
 test('the guest name is required only when the email has no account', () => {
@@ -196,10 +197,7 @@ test('each form submission gets its own key', () => {
 });
 
 test('paths are encoded so an email cannot change the request', () => {
-  assert.equal(
-    reports.airsReportsPath('project-1'),
-    '/v1/admin/projects/project-1/airs-reports'
-  );
+  assert.equal(reports.airsReportsPath('project-1'), '/v1/admin/projects/project-1/airs-reports');
   assert.equal(
     reports.airsReportRecipientPath('project-1', ' ada+test@example.com '),
     '/v1/admin/projects/project-1/airs-reports/recipient?email=ada%2Btest%40example.com'
@@ -209,7 +207,10 @@ test('paths are encoded so an email cannot change the request', () => {
     '/v1/admin/projects/project-1/airs-reports/recipient?email=a%40b.co%26x%3D1'
   );
   assert.equal(reports.airsReportDetailPath('r-1'), '/v1/admin/airs-reports/r-1');
-  assert.equal(reports.airsReportActionPath('r-1', 'approve'), '/v1/admin/airs-reports/r-1/approve');
+  assert.equal(
+    reports.airsReportActionPath('r-1', 'approve'),
+    '/v1/admin/airs-reports/r-1/approve'
+  );
   assert.equal(reports.airsReportActionPath('r-1', 'reject'), '/v1/admin/airs-reports/r-1/reject');
 });
 
@@ -237,7 +238,11 @@ test('the approvals section is in the menu of internal admins and nobody else', 
     assert.ok(resolveAdminAccessProfile([role]).allowedResources.includes(resource), role);
   }
   for (const role of ['partner_operator', 'sub_admin', 'moderator', 'partner_readonly']) {
-    assert.equal(resolveAdminAccessProfile([role]).allowedResources.includes(resource), false, role);
+    assert.equal(
+      resolveAdminAccessProfile([role]).allowedResources.includes(resource),
+      false,
+      role
+    );
   }
 });
 
@@ -269,9 +274,18 @@ test('a report that waits for review says why', () => {
 });
 
 test('rejecting needs a reason that is not too long', () => {
-  assert.equal(reports.airsReportRejectReasonError(''), marketplaceCopy.airsReports.queue.reasonRequired);
-  assert.equal(reports.airsReportRejectReasonError('   '), marketplaceCopy.airsReports.queue.reasonRequired);
-  assert.equal(reports.airsReportRejectReasonError('x'.repeat(501)), marketplaceCopy.airsReports.queue.reasonLong);
+  assert.equal(
+    reports.airsReportRejectReasonError(''),
+    marketplaceCopy.airsReports.queue.reasonRequired
+  );
+  assert.equal(
+    reports.airsReportRejectReasonError('   '),
+    marketplaceCopy.airsReports.queue.reasonRequired
+  );
+  assert.equal(
+    reports.airsReportRejectReasonError('x'.repeat(501)),
+    marketplaceCopy.airsReports.queue.reasonLong
+  );
   assert.equal(reports.airsReportRejectReasonError('Wrong amount'), null);
 });
 
@@ -297,7 +311,10 @@ test('every report error code from the API shows a sentence, never a raw code', 
     seen.add(message);
   }
   assert.equal(seen.size, codes.length);
-  assert.match(marketplaceErrorMessage({ code: 'AIRS_REPORT_SELF_APPROVAL_DENIED' }), /can't approve/);
+  assert.match(
+    marketplaceErrorMessage({ code: 'AIRS_REPORT_SELF_APPROVAL_DENIED' }),
+    /can't approve/
+  );
 });
 
 test('the project report form renders for roles that can report and says why for others', () => {
@@ -315,7 +332,7 @@ test('the project report form renders for roles that can report and says why for
   const denied = renderToString(
     createElement(AirsReportEditor, { project, roles: ['partner_readonly'] })
   );
-  assert.match(denied, new RegExp(copy.permission.replace(/'/g, '&#x27;|\'')));
+  assert.match(denied, new RegExp(copy.permission.replace(/'/g, "&#x27;|'")));
   assert.doesNotMatch(denied, new RegExp(copy.form.review));
 });
 
@@ -323,4 +340,32 @@ test('the approvals page renders its loading state without a session', () => {
   const html = renderToString(createElement(AirsReportQueuePage));
 
   assert.match(html, new RegExp(marketplaceCopy.common.loading));
+});
+
+test('the summary counts what is credited and what waits, and leaves out closed reports', () => {
+  const summary = reports.summarizeAirsReports([
+    { status: 'released', amount: 50 },
+    { status: 'released', amount: 25 },
+    { status: 'pending_approval', amount: 300 },
+    { status: 'awaiting_claim', amount: 40 },
+    { status: 'auto_approved', amount: 5 },
+    { status: 'rejected', amount: 999 },
+    { status: 'cancelled', amount: 999 },
+    { status: 'reversed', amount: 999 },
+  ]);
+
+  assert.deepEqual(summary, {
+    credited: 2,
+    creditedAirs: 75,
+    waitingApproval: 1,
+    waitingClaim: 1,
+    totalAirs: 420,
+  });
+  assert.deepEqual(reports.summarizeAirsReports([]), {
+    credited: 0,
+    creditedAirs: 0,
+    waitingApproval: 0,
+    waitingClaim: 0,
+    totalAirs: 0,
+  });
 });
