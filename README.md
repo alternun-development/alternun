@@ -124,10 +124,6 @@ Current version: **1.1.114**
 
 ## 📋 Latest Changes (v1.1.114)
 
-### Bug Fixes
-
-- **repo:** feat(mobile): open the profile from the account badge avatar and name
-
 ### Features
 
 - **mobile:** open the profile from the account badge avatar and name ([6600d20](https://github.com/alternun-development/alternun/commit/6600d20d17a03d0bdc4d3d75007f1ff233cb81ed))
