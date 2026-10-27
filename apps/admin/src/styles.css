@@ -1271,3 +1271,55 @@ select {
 .airs-report-card-archived {
   border-left-color: #8b94a7;
 }
+
+/* Airs report history: a short timeline and the reward status under each report card. */
+.airs-report-toggle {
+  margin-top: 0.75rem;
+}
+
+.airs-report-history {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.airs-report-history h5 {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.airs-report-timeline,
+.airs-report-rewards {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.airs-report-timeline li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--accent);
+}
+
+.airs-report-timeline li.is-denied {
+  border-left-color: #ffb27a;
+}
+
+.airs-report-timeline small,
+.airs-report-rewards span {
+  color: var(--text-muted);
+}
+
+.airs-report-rewards li {
+  display: grid;
+  gap: 0.1rem;
+}

@@ -149,10 +149,28 @@ export interface AirsReportRecipientLookupResponse {
 // GET /v1/admin/airs-reports (Grant Approvers only): pending_approval reports, oldest first.
 export type AirsReportReviewQueueResponse = AirsReportRecord[];
 
+/** One step of a report's history, from the audit log. No actor identity is returned. */
+export interface AirsReportTimelineEntry {
+  action: string;
+  result: 'allowed' | 'denied';
+  reasonCode: string | null;
+  occurredAt: string;
+}
+
+/** A +5 reward tied to a claimed report: locked until the new user holds 20 paid Airs. */
+export interface AirsReportRewardRecord {
+  kind: 'submitter' | 'project';
+  amount: number;
+  status: 'locked' | 'credited' | 'void';
+  creditedAt: string | null;
+}
+
 // GET /v1/admin/airs-reports/:id
 export interface AirsReportDetailResponse {
   report: AirsReportRecord;
   recipientTotals: AirsReportRecipientTotals;
+  timeline: AirsReportTimelineEntry[];
+  rewards: AirsReportRewardRecord[];
 }
 
 // POST /v1/admin/airs-reports/:id/approve

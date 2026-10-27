@@ -59,9 +59,26 @@ export type AirsReportRecipientLookup = {
   displayName: string | null;
 };
 
+export type AirsReportTimelineEntry = {
+  action: string;
+  result: 'allowed' | 'denied';
+  reasonCode: string | null;
+  occurredAt: string;
+};
+
+export type AirsReportReward = {
+  kind: 'submitter' | 'project';
+  amount: number;
+  status: 'locked' | 'credited' | 'void';
+  creditedAt: string | null;
+};
+
 export type AirsReportDetail = {
   report: AirsReportRecord;
   recipientTotals: AirsReportRecipientTotals;
+  // Older API versions do not send these two lists.
+  timeline?: AirsReportTimelineEntry[];
+  rewards?: AirsReportReward[];
 };
 
 export type AirsReportTransition = {

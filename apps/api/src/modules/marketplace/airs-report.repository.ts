@@ -9,6 +9,8 @@ import type {
   AirsReportDecision,
   AirsReportRecipientLookupResponse,
   AirsReportRecipientTotals,
+  AirsReportRewardRecord,
+  AirsReportTimelineEntry,
   AirsReportRecord,
   AirsReportStatus,
   SubmitAirsReportRequest,
@@ -302,6 +304,40 @@ export class AirsReportRepository {
       .maybeSingle();
     if (error) failDatabase();
     return data ? mapAirsReportRow(data as Row) : null;
+  }
+
+  /** History of one report, oldest first. Only what an operator needs: no actor identity. */
+  async listTimeline(reportId: string): Promise<AirsReportTimelineEntry[]> {
+    const { data, error } = await this.client
+      .from('admin_audit_log')
+      .select('action, result, reason_code, occurred_at')
+      .eq('target_type', 'airs_report')
+      .eq('target_id', reportId)
+      .like('action', 'airs_report.%')
+      .order('occurred_at', { ascending: true })
+      .limit(100);
+    if (error) failDatabase();
+    return rows(data).map((row) => ({
+      action: String(row.action ?? ''),
+      result: row.result === 'denied' ? 'denied' : 'allowed',
+      reasonCode: typeof row.reason_code === 'string' ? row.reason_code : null,
+      occurredAt: String(row.occurred_at ?? ''),
+    }));
+  }
+
+  async listRewards(reportId: string): Promise<AirsReportRewardRecord[]> {
+    const { data, error } = await this.client
+      .from('airs_report_rewards')
+      .select('kind, amount, status, credited_at')
+      .eq('report_id', reportId)
+      .order('kind', { ascending: true });
+    if (error) failDatabase();
+    return rows(data).map((row) => ({
+      kind: row.kind === 'project' ? 'project' : 'submitter',
+      amount: Number(row.amount ?? 0),
+      status: row.status === 'credited' || row.status === 'void' ? row.status : 'locked',
+      creditedAt: typeof row.credited_at === 'string' ? row.credited_at : null,
+    }));
   }
 
   async recipientTotals(recipientEmail: string, at: string): Promise<AirsReportRecipientTotals> {
