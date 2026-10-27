@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-27T22:58:14.315Z",
+  "lastUpdated": "2026-10-27T23:25:54.238Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Review the project types PR (issue 249 B18), then in-app notifications and medals",
+      "description": "Review the console notifications PR (issue 249 B10), then medals (B17) and the access screen (B4)",
       "id": "next",
       "priority": 1
     }
