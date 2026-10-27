@@ -147,6 +147,8 @@ export default function TopNav({
   const brandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
   const isDesktop = width >= 720;
+  // On phones the signed-in pill takes the room the wordmark leaves, within sane bounds.
+  const mobilePillWidth = Math.min(300, Math.max(200, width - 122));
   const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
@@ -378,7 +380,7 @@ export default function TopNav({
                 styles.profilePill,
                 isMobile && styles.profilePillMobile,
                 {
-                  width: isExtraSmall ? 40 : 220,
+                  width: isExtraSmall ? 40 : isMobile ? mobilePillWidth : 240,
                   maxWidth: '100%',
                   height: isExtraSmall ? 40 : isMobile ? 36 : 40,
                   backgroundColor: isDark ? '#202a32' : '#e4e9ec',
@@ -441,7 +443,10 @@ export default function TopNav({
                 testID='account-badge-pill'
                 style={[
                   styles.profilePill,
-                  signedIn && (isMobile ? styles.signedInPillMobile : { minWidth: 220 }),
+                  signedIn &&
+                    (isMobile
+                      ? [styles.signedInPillMobile, { width: mobilePillWidth }]
+                      : { minWidth: 240 }),
                   isMobile && styles.profilePillMobile,
                   isExtraSmall && styles.profilePillExtraSmall,
                   { backgroundColor: p.pillBg, borderColor: p.pillBorder },
@@ -455,6 +460,8 @@ export default function TopNav({
                 ]}
                 onPress={toggleMenu}
                 activeOpacity={0.85}
+                accessibilityRole='button'
+                accessibilityState={{ expanded: menuVisible }}
               >
                 {/* Avatar */}
                 <View
@@ -513,7 +520,7 @@ export default function TopNav({
                   style={[
                     styles.notifBadge,
                     isMobile && styles.notifBadgeMobile,
-                    { backgroundColor: 'rgba(255,255,255,0.18)' },
+                    { backgroundColor: `${p.pillText}1A`, borderColor: `${p.pillText}26` },
                   ]}
                   onPress={(e) => {
                     e.stopPropagation();
@@ -544,12 +551,25 @@ export default function TopNav({
                 </TouchableOpacity>
 
                 {/* Dropdown chevron (hidden on extra small screens) */}
-                {!isExtraSmall &&
-                  (menuVisible ? (
-                    <ChevronUpIcon size={14} color={p.chevron} />
-                  ) : (
-                    <ChevronDownIcon size={14} color={p.chevron} />
-                  ))}
+                {!isExtraSmall && (
+                  <View
+                    testID='account-badge-chevron'
+                    style={[
+                      styles.notifBadge,
+                      isMobile && styles.notifBadgeMobile,
+                      {
+                        backgroundColor: `${p.pillText}${menuVisible ? '2E' : '1A'}`,
+                        borderColor: `${p.pillText}26`,
+                      },
+                    ]}
+                  >
+                    {menuVisible ? (
+                      <ChevronUpIcon size={16} strokeWidth={2.5} color={p.pillText} />
+                    ) : (
+                      <ChevronDownIcon size={16} strokeWidth={2.5} color={p.pillText} />
+                    )}
+                  </View>
+                )}
               </TouchableOpacity>
 
               {/* ── Profile + Nav dropdown ─────────────────────────────────── */}
@@ -1101,13 +1121,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   nameBlock: {
-    gap: 1,
-    maxWidth: 110,
-  },
-  nameBlockMobile: {
     flex: 1,
     minWidth: 0,
-    maxWidth: 120,
+    gap: 1,
+    maxWidth: 180,
+  },
+  nameBlockMobile: {
+    maxWidth: undefined,
   },
   pillName: {
     fontSize: 12,
@@ -1136,6 +1156,8 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'transparent',
   },
   notifBadgeMobile: {
     width: 22,
