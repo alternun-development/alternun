@@ -120,18 +120,13 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.107**
+Current version: **1.1.108**
 
-## 📋 Latest Changes (v1.1.107)
-
-### Changes
-
-- **repo:** run the deploy pipeline build commands on every PR ([3943c55](https://github.com/alternun-development/alternun/commit/3943c5584412f30d47b690a6692fbcc0c12945df))
-- **reentry:** next step after pipeline build fix ([76908af](https://github.com/alternun-development/alternun/commit/76908afcf1587fd51064cd1f31e4949a0f1eeacd))
+## 📋 Latest Changes (v1.1.108)
 
 ### Bug Fixes
 
-- **api:** build @alternun/i18n before compiling the API ([aee3bc5](https://github.com/alternun-development/alternun/commit/aee3bc543683ba3b716036d81b36bdb2be491219))
+- **repo:** docs: record the Oct 22 dashboard pipeline build incident
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
