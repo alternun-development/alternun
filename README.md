@@ -126,10 +126,6 @@ Current version: **1.1.112**
 
 ### Bug Fixes
 
-- **repo:** fix(security): resolve CodeQL clear-text logging and bad tag filter alerts
-
-### Bug Fixes
-
 - **security:** resolve CodeQL clear-text logging and bad tag filter alerts ([63291cf](https://github.com/alternun-development/alternun/commit/63291cf9f4f42ec8e0dd52291642a757d0261f9d))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
