@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-26T23:55:14.673Z",
+  "lastUpdated": "2026-10-27T00:12:44.024Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Admin: require release-promotion-guard + Pipeline Build checks on master ruleset; add prod pipeline failure alert; then #249 P0 cut",
+      "description": "Apply media-host migration and seed environment image hosts; then wire project account and claim flow for #249",
       "id": "next",
       "priority": 1
     }
