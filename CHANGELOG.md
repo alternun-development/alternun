@@ -1,8 +1,4 @@
-## [1.1.113](https://github.com/alternun-development/alternun/compare/v1.1.112...v1.1.113) (2026-10-27)
-
-### Bug Fixes
-
-- **repo:** feat(mobile): make the account badge chevron a visible chip and let the pill fill the nav
+## [1.1.113](https://github.com/alternun-development/alternun/compare/v1.1.112...v1.1.113) (2026-10-26)
 
 ### Features
 
