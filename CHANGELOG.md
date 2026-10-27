@@ -1,3 +1,15 @@
+## [1.1.119](https://github.com/alternun-development/alternun/compare/v1.1.118-dev.0...v1.1.119) (2026-10-27)
+
+### Bug Fixes
+
+- **repo:** feat(infra): pass Airs report and Authentik sync settings to the API from SSM
+- **repo:** chore: sync reentry after the fixture fix
+- **repo:** test(admin): build the request key fixture so the secret scan ignores no line numbers
+
+### Features
+
+- **infra:** pass Airs report and Authentik sync settings to the API from SSM ([5073878](https://github.com/alternun-development/alternun/commit/5073878e1dc07c5497a0788eab9ee77d9146bb60)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+
 ## [1.1.118](https://github.com/alternun-development/alternun/compare/v1.1.117...v1.1.118) (2026-10-27)
 
 ### Bug Fixes
