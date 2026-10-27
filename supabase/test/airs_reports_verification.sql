@@ -477,8 +477,8 @@ begin
   v_result := public.marketplace_claim_airs_reports(
     gen_random_uuid()::text, 'new.person@example.test', true, 'claim'
   );
-  if v_result ->> 'reasonCode' is distinct from 'AIRS_REPORT_CLAIM_NOT_IMPLEMENTED' then
-    raise exception 'claim placeholder changed: %', v_result;
+  if v_result ->> 'reasonCode' is distinct from 'AIRS_REPORT_CLAIM_USER_NOT_FOUND' then
+    raise exception 'claim for an unknown account was not denied: %', v_result;
   end if;
 
   -- Cancel ----------------------------------------------------------------
