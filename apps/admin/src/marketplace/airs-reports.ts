@@ -84,7 +84,8 @@ export function parseAirsReportAmount(value: string): number | null {
  */
 export function validateAirsReportForm(
   values: AirsReportFormValues,
-  lookup: AirsReportRecipientLookup | null
+  lookup: AirsReportRecipientLookup | null,
+  options: { documentRequired?: boolean } = {}
 ): AirsReportFormErrors {
   const copy = marketplaceCopy.airsReports.errors;
   const errors: AirsReportFormErrors = {};
@@ -103,8 +104,9 @@ export function validateAirsReportForm(
   }
 
   const documentNumber = values.documentNumber.trim();
-  if (!documentNumber) errors.documentNumber = copy.documentRequired;
-  else if (documentNumber.length > AIRS_REPORT_DOCUMENT_MAX)
+  if (!documentNumber) {
+    if (options.documentRequired !== false) errors.documentNumber = copy.documentRequired;
+  } else if (documentNumber.length > AIRS_REPORT_DOCUMENT_MAX)
     errors.documentNumber = copy.documentLong;
 
   return errors;
@@ -122,7 +124,8 @@ export function buildSubmitAirsReportBody(
     ...(name && lookup?.hasAccount !== true ? { recipientName: name } : {}),
     amount: parseAirsReportAmount(values.amount),
     concept: values.concept.trim(),
-    documentNumber: values.documentNumber.trim(),
+    // Left out when empty: the API only asks for it when the project type needs it.
+    ...(values.documentNumber.trim() ? { documentNumber: values.documentNumber.trim() } : {}),
     requestKey,
   };
 }

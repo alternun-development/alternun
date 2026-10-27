@@ -503,7 +503,7 @@ test('submit is denied by role and by project scope before reaching the database
   assert.equal(httpClient.calls.length, before);
 });
 
-test('submit without a document number is rejected before reaching the database', async () => {
+test('submit without a document number reaches the database, which decides by project type', async () => {
   const before = httpClient.calls.length;
   const { documentNumber: _document, ...withoutDocument } = submitBody;
   const response = await inject(
@@ -511,6 +511,19 @@ test('submit without a document number is rejected before reaching the database'
     `/v1/admin/projects/${projectA.id}/airs-reports`,
     'sub_admin',
     withoutDocument
+  );
+  assert.equal(response.statusCode, 201);
+  assert.equal(httpClient.calls.length, before + 1);
+  assert.equal(httpClient.calls.at(-1)?.params.p_document_number, null);
+});
+
+test('a blank document number is still rejected before reaching the database', async () => {
+  const before = httpClient.calls.length;
+  const response = await inject(
+    'POST',
+    `/v1/admin/projects/${projectA.id}/airs-reports`,
+    'sub_admin',
+    { ...submitBody, documentNumber: '   ' }
   );
   assert.equal(response.statusCode, 400);
   assert.equal(response.json().code, 'VALIDATION_FAILED');

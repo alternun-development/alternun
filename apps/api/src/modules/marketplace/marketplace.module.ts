@@ -51,6 +51,12 @@ import {
 } from './airs-report.controller';
 import { AirsReportRepository } from './airs-report.repository';
 import { AirsReportService } from './airs-report.service';
+import {
+  ProjectTypeAdminController,
+  ProjectTypeAssignmentController,
+} from './project-type.controller';
+import { ProjectTypeRepository } from './project-type.repository';
+import { ProjectTypeService } from './project-type.service';
 import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-group-sync';
 
 @Module({
@@ -70,6 +76,8 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     ProjectProposalController,
     AirsReportProjectAdminController,
     AirsReportAdminController,
+    ProjectTypeAdminController,
+    ProjectTypeAssignmentController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
@@ -91,6 +99,8 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     ProjectProposalService,
     AirsReportRepository,
     AirsReportService,
+    ProjectTypeRepository,
+    ProjectTypeService,
     {
       provide: AUTHENTIK_GROUP_SYNC,
       useFactory: () =>
