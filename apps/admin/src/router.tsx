@@ -13,6 +13,7 @@ import { AuthRelayPage } from './pages/auth/relay-page';
 import { DashboardPage } from './pages/dashboard/page';
 import { LoginPage } from './pages/login/page';
 import { AirsReportQueuePage } from './pages/marketplace/airs-report-queue-page';
+import { ProjectTypesPage } from './pages/marketplace/project-types-page';
 import { MarketplaceEnterpriseDetailPage } from './pages/marketplace/enterprise-detail-page';
 import { MarketplaceProjectDetailPage } from './pages/marketplace/project-detail-page';
 import { MarketplaceProjectsPage } from './pages/marketplace/projects-page';
@@ -94,6 +95,19 @@ export function AdminRouter() {
                 fallback={<ForbiddenPage />}
               >
                 <MarketplaceEnterpriseDetailPage />
+              </CanAccess>
+            }
+          />
+
+          <Route
+            path='/project-types'
+            element={
+              <CanAccess
+                resource='marketplace-project-types'
+                action='list'
+                fallback={<ForbiddenPage />}
+              >
+                <ProjectTypesPage />
               </CanAccess>
             }
           />

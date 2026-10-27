@@ -1323,3 +1323,26 @@ select {
   display: grid;
   gap: 0.1rem;
 }
+
+/* Project types: the catalog page and the type selector in a project. */
+.project-type-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.project-type-card.is-retired {
+  opacity: 0.6;
+}
+
+.project-type-editor {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  max-width: 24rem;
+}
+
+.project-type-editor small {
+  color: var(--text-muted);
+}

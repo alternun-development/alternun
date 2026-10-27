@@ -15,6 +15,7 @@ import { ActivityEditor } from './editors/activity-editor';
 import { ApprovalInbox } from './editors/approval-inbox';
 import { MediaEditor } from './editors/media-editor';
 import { ProjectStatusActions } from './editors/project-status-actions';
+import { ProjectTypeEditor } from './editors/project-type-editor';
 import { TeamEditor } from './editors/team-editor';
 import { CommentModerationQueue } from './editors/comment-moderation-queue';
 import { AirsReportEditor } from './editors/airs-report-editor';
@@ -123,6 +124,7 @@ function OverviewTab({ snapshot, roles, onChanged }: OverviewTabProps): JSX.Elem
             </dd>
           </div>
         </dl>
+        <ProjectTypeEditor project={project} roles={roles} onChanged={onChanged} />
       </section>
 
       <section className='panel'>

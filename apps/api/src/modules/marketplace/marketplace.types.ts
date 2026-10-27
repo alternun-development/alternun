@@ -151,6 +151,10 @@ export interface ProjectRecord {
   slug: string;
   status: ProjectStatus;
   categoryCode: string;
+  /** Commerce type (hotel, restaurant, ...), or null while none is assigned. */
+  projectTypeCode?: string | null;
+  /** Whether reports for this project need a document number; true while it has no type. */
+  requiresDocumentNumber?: boolean;
   countryCode: string | null;
   timeZone: string;
   defaultLocale: string;

@@ -90,6 +90,8 @@ function mapProject(row: Row): ProjectRecord {
     slug: text(row.slug),
     status: text(row.status) as ProjectStatus,
     categoryCode: text(row.category_code),
+    projectTypeCode: nullableText(row.project_type_code),
+    requiresDocumentNumber: record(row.project_types).requires_document_number !== false,
     countryCode: nullableText(row.country_code),
     timeZone: text(row.time_zone),
     defaultLocale: text(row.default_locale),
@@ -396,7 +398,9 @@ export class MarketplaceAdminRepository {
   async findProject(id: string): Promise<ProjectRecord | null> {
     const { data, error } = await this.client
       .from('projects')
-      .select('*, enterprise_projects!inner(*), project_media(*)')
+      .select(
+        '*, enterprise_projects!inner(*), project_media(*), project_types(requires_document_number)'
+      )
       .eq('id', id)
       .eq('enterprise_projects.is_primary', true)
       .maybeSingle();
