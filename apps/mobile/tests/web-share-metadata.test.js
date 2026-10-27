@@ -34,7 +34,8 @@ describe('web share preview metadata', () => {
     expect(metaContent('og:type')).toBe('website');
     expect(metaContent('og:site_name')).toBe('Airs');
     expect(metaContent('og:url')).toBe('https://airs.alternun.co');
-    expect(metaContent('twitter:card')).toBe('summary_large_image');
+    // The preview image is the square logosymbol, so the small card keeps it uncropped.
+    expect(metaContent('twitter:card')).toBe('summary');
   });
 
   it('points og:image and twitter:image to an absolute HTTPS Airs image, not the Alternun logo', () => {
@@ -50,5 +51,14 @@ describe('web share preview metadata', () => {
     const header = fs.readFileSync(file).subarray(16, 24);
     expect(Number(metaContent('og:image:width'))).toBe(header.readUInt32BE(0));
     expect(Number(metaContent('og:image:height'))).toBe(header.readUInt32BE(4));
+  });
+
+  it('shares only the square Airs logosymbol, so previews do not crop the logo', () => {
+    const file = path.join(publicDir, new URL(metaContent('og:image')).pathname);
+    const header = fs.readFileSync(file).subarray(16, 24);
+    const width = header.readUInt32BE(0);
+    expect(width).toBe(header.readUInt32BE(4));
+    expect(width).toBeGreaterThanOrEqual(600);
+    expect(metaContent('og:image')).toMatch(/symbol/i);
   });
 });
