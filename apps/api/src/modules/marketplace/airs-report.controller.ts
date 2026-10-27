@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   Body,
   Controller,
@@ -42,6 +43,14 @@ function requestId(request: FastifyAdminRequest): string {
   return String(request.id ?? request.headers['x-request-id'] ?? 'unknown');
 }
 
+// Fastify numbers requests per process (req-1, req-2, ...), so two submissions handled by
+// different instances can share an id. Submit is idempotent per (actor, request id), which makes
+// that collision swallow a different report. The key sent by the client (or a random one) keeps
+// every submission distinct while a retry of the same submission stays idempotent.
+export function submitRequestId(body: { requestKey?: string }): string {
+  return body.requestKey ?? randomUUID();
+}
+
 @ApiTags('admin airs reports')
 @ApiBearerAuth()
 @ApiBadRequestResponse({ type: ApiErrorDto })
@@ -78,7 +87,7 @@ export class AirsReportProjectAdminController {
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
     @Body() body: SubmitAirsReportDto
   ) {
-    return this.service.submit(request.adminPrincipal!, requestId(request), projectId, body);
+    return this.service.submit(request.adminPrincipal!, submitRequestId(body), projectId, body);
   }
 
   @Get('recipient')
