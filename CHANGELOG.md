@@ -1,3 +1,9 @@
+## [1.1.108](https://github.com/alternun-development/alternun/compare/v1.1.107...v1.1.108) (2026-10-26)
+
+### Documentation
+
+- **repo:** record the Oct 22 dashboard pipeline build incident ([fccf46f](https://github.com/alternun-development/alternun/commit/fccf46f02e3013765560694bb1b929033e7eb885))
+
 ## [1.1.107](https://github.com/alternun-development/alternun/compare/v1.1.106...v1.1.107) (2026-10-26)
 
 ### Changes
