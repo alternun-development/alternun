@@ -19,6 +19,7 @@ import {
   AIRS_REPORT_EMAIL_MAX_LENGTH,
   AIRS_REPORT_NAME_MAX_LENGTH,
   AIRS_REPORT_REASON_MAX_LENGTH,
+  AIRS_REPORT_REQUEST_KEY_PATTERN,
   AIRS_REPORT_STATUSES,
   SHA256_HEX_PATTERN,
   type AirsReportStatus,
@@ -77,6 +78,15 @@ export class SubmitAirsReportDto {
   @IsOptional()
   @Matches(SHA256_HEX_PATTERN)
   documentSha256?: string;
+
+  @ApiPropertyOptional({
+    pattern: AIRS_REPORT_REQUEST_KEY_PATTERN.source,
+    description:
+      'Client-generated key (a UUID per form submission). The same key replays the same report; the server generates one when absent.',
+  })
+  @IsOptional()
+  @Matches(AIRS_REPORT_REQUEST_KEY_PATTERN)
+  requestKey?: string;
 }
 
 export class ListAirsReportsQueryDto {
