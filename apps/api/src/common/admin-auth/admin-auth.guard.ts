@@ -15,12 +15,14 @@ export type AdminPermission =
   | 'enterprises:create'
   | 'enterprises:update'
   | 'enterprises:status'
+  | 'enterprises:reorder'
   | 'projects:read'
   | 'projects:create'
   | 'projects:update'
   | 'projects:publish'
   | 'projects:pause'
   | 'projects:archive'
+  | 'projects:reorder'
   | 'projects:transfer'
   | 'project_media:read'
   | 'project_media:write'
@@ -197,12 +199,14 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'enterprises:create',
     'enterprises:update',
     'enterprises:status',
+    'enterprises:reorder',
     'projects:read',
     'projects:create',
     'projects:update',
     'projects:publish',
     'projects:pause',
     'projects:archive',
+    'projects:reorder',
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
@@ -230,12 +234,14 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'enterprises:create',
     'enterprises:update',
     'enterprises:status',
+    'enterprises:reorder',
     'projects:read',
     'projects:create',
     'projects:update',
     'projects:publish',
     'projects:pause',
     'projects:archive',
+    'projects:reorder',
     'projects:transfer',
     'project_media:read',
     'project_media:write',
