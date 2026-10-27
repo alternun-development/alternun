@@ -124,9 +124,9 @@ Current version: **1.1.117**
 
 ## 📋 Latest Changes (v1.1.117)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(mobile): cover every top-nav menu action through the full-screen menu
+- **mobile:** cover every top-nav menu action through the full-screen menu ([704421c](https://github.com/alternun-development/alternun/commit/704421c866ccaeafe27ea8cffb03793b774b6d69))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
