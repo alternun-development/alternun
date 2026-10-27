@@ -45,6 +45,12 @@ import { ProjectProposalController } from './project-proposal.controller';
 import { ProjectProposalRepository } from './project-proposal.repository';
 import { PROJECT_PROPOSAL_EMAIL_SENDER, ProjectProposalService } from './project-proposal.service';
 import { sendAirsEmail } from '../airs/airs.email';
+import {
+  AirsReportAdminController,
+  AirsReportProjectAdminController,
+} from './airs-report.controller';
+import { AirsReportRepository } from './airs-report.repository';
+import { AirsReportService } from './airs-report.service';
 
 @Module({
   controllers: [
@@ -61,6 +67,8 @@ import { sendAirsEmail } from '../airs/airs.email';
     MarketplaceProjectAuditAdminController,
     MarketplaceEnterpriseAuditAdminController,
     ProjectProposalController,
+    AirsReportProjectAdminController,
+    AirsReportAdminController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
@@ -80,6 +88,8 @@ import { sendAirsEmail } from '../airs/airs.email';
     MarketplaceParticipantService,
     MarketplaceAuditService,
     ProjectProposalService,
+    AirsReportRepository,
+    AirsReportService,
     { provide: PROJECT_PROPOSAL_EMAIL_SENDER, useValue: sendAirsEmail },
     {
       provide: MARKETPLACE_COMMENT_USER_RESOLVER,

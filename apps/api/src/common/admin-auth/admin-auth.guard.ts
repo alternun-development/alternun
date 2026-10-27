@@ -40,6 +40,7 @@ export type AdminPermission =
   | 'comments:moderate'
   | 'participants:read'
   | 'participants:manage'
+  | 'airs_reports:submit'
   | 'audit:read';
 
 export const ADMIN_ROLES = [
@@ -59,6 +60,9 @@ export type AdminPrincipal = {
   sub: string;
   roles: readonly string[];
   organizationIds: readonly string[];
+  /** Normalized email from the verified token, when the token carries one. */
+  email?: string;
+  emailVerified?: boolean;
 };
 
 export type VerifyAccessToken = (
@@ -143,6 +147,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'airs_reports:submit',
   ],
   partner_operator: [
     'allowances:read',
@@ -169,6 +174,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'airs_reports:submit',
     'audit:read',
   ],
   moderator: [
@@ -214,6 +220,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'airs_reports:submit',
     'audit:read',
   ],
   platform_owner: [
@@ -248,6 +255,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'airs_reports:submit',
     'audit:read',
   ],
 };
@@ -294,6 +302,17 @@ function readOrganizationClaims(claims: Record<string, unknown>): string[] {
       ...readClaimArray(claims.org_id),
     ])
   );
+}
+
+function readEmailClaims(
+  claims: Record<string, unknown>
+): Pick<AdminPrincipal, 'email' | 'emailVerified'> {
+  const email = typeof claims.email === 'string' ? claims.email.trim().toLowerCase() : '';
+  if (!email) {
+    return {};
+  }
+
+  return { email, emailVerified: claims.email_verified === true };
 }
 
 function isExpectedAudience(audience: AdminPrincipal['aud'], expectedAudience: string): boolean {
@@ -588,6 +607,7 @@ export function createIssuerJwtAdminVerifier(signingKey: string): VerifyAccessTo
       sub: claims.sub,
       roles: readRoleClaims(claims),
       organizationIds: readOrganizationClaims(claims),
+      ...readEmailClaims(claims),
     });
   };
 }
@@ -634,6 +654,7 @@ export function createRemoteJwksAdminVerifier(
       sub: parsed.claims.sub,
       roles: readRoleClaims(parsed.claims),
       organizationIds: readOrganizationClaims(parsed.claims),
+      ...readEmailClaims(parsed.claims),
     };
   };
 }
