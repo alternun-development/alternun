@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Edward: set INFRA_PROJECT_MEDIA_IMAGE_HOSTS_DEV/\_PRODUCTION, redeploy dashboard pipelines, recheck admin image upload
+Next micro-step: Apply media-host migration and seed environment image hosts; then wire project account and claim flow for #249
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-26T22:51:06.997Z",
+  "lastUpdated": "2026-10-27T00:12:44.024Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Edward: set INFRA_PROJECT_MEDIA_IMAGE_HOSTS_DEV/_PRODUCTION, redeploy dashboard pipelines, recheck admin image upload",
+      "description": "Apply media-host migration and seed environment image hosts; then wire project account and claim flow for #249",
       "id": "next",
       "priority": 1
     }

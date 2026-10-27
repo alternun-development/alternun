@@ -1,15 +1,35 @@
-## [1.1.106](https://github.com/alternun-development/alternun/compare/v1.1.105...v1.1.106) (2026-10-26)
+## [1.1.108](https://github.com/alternun-development/alternun/compare/v1.1.107...v1.1.108) (2026-10-26)
+
+### Documentation
+
+- **repo:** record the Oct 22 dashboard pipeline build incident ([fccf46f](https://github.com/alternun-development/alternun/commit/fccf46f02e3013765560694bb1b929033e7eb885))
+
+## [1.1.107](https://github.com/alternun-development/alternun/compare/v1.1.106...v1.1.107) (2026-10-26)
+
+### Changes
+
+- **repo:** run the deploy pipeline build commands on every PR ([3943c55](https://github.com/alternun-development/alternun/commit/3943c5584412f30d47b690a6692fbcc0c12945df))
+- **reentry:** next step after pipeline build fix ([76908af](https://github.com/alternun-development/alternun/commit/76908afcf1587fd51064cd1f31e4949a0f1eeacd))
 
 ### Bug Fixes
 
-- **repo:** chore(reentry): note testnet admin CORS follow-up
-- **repo:** fix(api): trust the testnet admin origin for CORS
-- **repo:** fix(mobile): honor the app motion level in the participation factor bar
+- **api:** build @alternun/i18n before compiling the API ([aee3bc5](https://github.com/alternun-development/alternun/commit/aee3bc543683ba3b716036d81b36bdb2be491219))
+
+## [1.1.106](https://github.com/alternun-development/alternun/compare/v1.1.105...v1.1.106) (2026-10-26)
+
+### Documentation
+
+- **airs:** document User Airs Reports and claiming process (#249) ([48d5e35](https://github.com/alternun-development/alternun/commit/48d5e35da7ee4a8355c8fcaae88d5ac29b61fb4c))
+
+### Changes
+
+- **reentry:** sync after v1.1.106-dev.0 release ([58da31c](https://github.com/alternun-development/alternun/commit/58da31c673d9b00b673e199d4ca10542e775bcd5))
+- **reentry:** note testnet admin CORS follow-up ([bf48bbe](https://github.com/alternun-development/alternun/commit/bf48bbe5963d2726a975ccd143ee6c7412675930))
 
 ### Bug Fixes
 
 - **api:** trust the testnet admin origin for CORS ([63bb70b](https://github.com/alternun-development/alternun/commit/63bb70bc32ffe329fd905b8c3b65ecde825f1553))
-- **mobile:** honor the app motion level in the participation factor bar ([dc2227a](https://github.com/alternun-development/alternun/commit/dc2227a49bb9a392aa177f6e18cdbf00d3e2f498)), closes [#279](https://github.com/alternun-development/alternun/issues/279)
+- **mobile:** honor the app motion level in the participation factor bar ([dc2227a](https://github.com/alternun-development/alternun/commit/dc2227a49bb9a392aa177f6e18cdbf00d3e2f498))
 
 ## [1.1.105](https://github.com/alternun-development/alternun/compare/v1.1.104...v1.1.105) (2026-10-22)
 

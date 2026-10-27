@@ -1,6 +1,6 @@
 # Production Database State
 
-Last updated: 2026-06-29
+Last updated: 2026-10-26
 
 ## Overview
 
@@ -82,6 +82,20 @@ All 52 migration files in `supabase/migrations/` are now recorded in `_migration
 | 20260627_0001 | mark_incompatible_migrations_as_applied   | ✅ applied                   | Marker migration recording the 6 skipped/partial migrations above                                                                                      |
 | 20260629_0001 | airs_eligible_users_count                 | ✅ applied                   | Added `airs_get_eligible_users_count()` RPC                                                                                                            |
 | 20260629_0002 | wallet_encrypted_seeds                    | ✅ applied                   | Added wallet seed/encryption tables + PIN lockout columns (device-only recovery task uses the wallet tables, the seed table remains deferred)          |
+
+---
+
+## Manual Applications After 2026-06-29
+
+Migrations after 2026-06-29 are normally applied by `alternun-dash-prod-pipeline`. These were applied by hand:
+
+| Date       | Version       | Name                                       | Reason                                                                                                    |
+| ---------- | ------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| 2026-10-26 | 20261019_0001 | create_project_proposals                   | Pipeline API build failing since 2026-10-22 ([incident](dashboard-pipeline-build-incident-2026-10-22.md)) |
+| 2026-10-26 | 20261020_0001 | restrict_moderator_completion_approval     | Same                                                                                                      |
+| 2026-10-26 | 20261020_0002 | restrict_media_reorder_and_scoped_approval | Same                                                                                                      |
+
+On 2026-10-26, after these, a production dry run reported no pending migrations, and the v1.1.107 pipeline run confirmed `Database is up to date`.
 
 ---
 
