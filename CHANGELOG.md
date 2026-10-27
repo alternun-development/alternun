@@ -1,3 +1,9 @@
+## [1.1.115](https://github.com/alternun-development/alternun/compare/v1.1.114...v1.1.115) (2026-10-27)
+
+### Bug Fixes
+
+- **repo:** test(mobile): cover the settings top-nav route to the profile
+
 ## [1.1.114](https://github.com/alternun-development/alternun/compare/v1.1.113...v1.1.114) (2026-10-27)
 
 ### Features
