@@ -410,3 +410,78 @@ test('lists show the verified email of each member', async () => {
 
   assert.equal(entry.memberEmail, 'ada@example.test');
 });
+
+test('an email grant uses the panel issuer, not the one stored with the account', async () => {
+  const { service, calls } = build({ user: { ...adaUser, issuer: 'mobile-app-issuer' } });
+
+  await service.grantByEmail(principal('platform_owner'), 'req-1', input());
+
+  assert.equal(calls.grants[0].memberIssuer, 'issuer');
+  assert.equal(calls.grants[0].memberSubject, 'ada-subject');
+});
+
+test('reactivating a revoked membership with the same role restores the group', async () => {
+  const { service, calls } = build({ current: membership({ status: 'revoked' }) });
+
+  await service.change(principal('platform_owner'), 'req-1', membership().id, {
+    status: 'active',
+  });
+
+  assert.deepEqual(calls.sync, [['add', 'ada@example.test', 'sub_admin']]);
+});
+
+// ─── Repository ─────────────────────────────────────────────────────────────
+
+const {
+  MarketplaceMembershipRepository,
+} = require('../src/modules/marketplace/marketplace-membership.repository.ts');
+
+function fakeUsersClient(data) {
+  const calls = [];
+  const query = {
+    select: (columns) => (calls.push(['select', columns]), query),
+    eq: (...args) => (calls.push(['eq', ...args]), query),
+    ilike: (...args) => (calls.push(['ilike', ...args]), query),
+    limit: async () => ({ data, error: null }),
+    or: async (filter) => (calls.push(['or', filter]), { data, error: null }),
+  };
+  return { calls, client: { from: () => query } };
+}
+
+const AUTHENTIK_UUID = 'c0ffee00-0000-4000-8000-000000000001';
+const webhookRow = {
+  id: 'user-ada',
+  iss: 'https://sso.example.test/application/o/alternun-mobile/',
+  sub: '9a8b7c6d-0000-5000-a000-000000000000',
+  email: 'Ada@Example.test',
+  email_verified: true,
+  raw_claims: { uuid: AUTHENTIK_UUID, sub: AUTHENTIK_UUID },
+};
+
+test('a webhook-synced account resolves to its Authentik UUID, not the hashed principal', async () => {
+  const { client } = fakeUsersClient([webhookRow]);
+  const repository = new MarketplaceMembershipRepository(client);
+
+  const user = await repository.findVerifiedUserByEmail('ada@example.test');
+
+  assert.equal(user.subject, AUTHENTIK_UUID);
+  assert.equal(user.email, 'ada@example.test');
+});
+
+test('member emails are found by Authentik UUID and keyed by the membership identity', async () => {
+  const { client, calls } = fakeUsersClient([webhookRow]);
+  const repository = new MarketplaceMembershipRepository(client);
+  const member = { issuer: 'panel-issuer', subject: AUTHENTIK_UUID };
+
+  const emails = await repository.emailsForMembers([
+    member,
+    { issuer: 'panel-issuer', subject: 'bad,subject)' },
+  ]);
+
+  assert.equal(emails.get(memberKey(member.issuer, member.subject)), 'ada@example.test');
+  assert.equal(emails.size, 1);
+  assert.deepEqual(
+    calls.find(([kind]) => kind === 'or'),
+    ['or', `sub.in.(${AUTHENTIK_UUID}),raw_claims->>uuid.in.(${AUTHENTIK_UUID})`]
+  );
+});

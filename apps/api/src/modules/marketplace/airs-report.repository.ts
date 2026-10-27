@@ -372,11 +372,14 @@ export class AirsReportRepository {
 
   /** Verified email of an admin identity, so a decision can be reported back to them. */
   async findSubmitterEmail(issuer: string, subject: string): Promise<string | null> {
+    // Accounts synced by the Authentik webhook keep the panel subject (the Authentik UUID) in
+    // raw_claims, not in sub. Only plain identifiers can be used as filter values.
+    const safe = /^[A-Za-z0-9._:@/-]+$/;
+    if (!safe.test(issuer) || !safe.test(subject)) return null;
     const { data, error } = await this.client
       .from('users')
       .select('email')
-      .eq('iss', issuer)
-      .eq('sub', subject)
+      .or(`and(iss.eq."${issuer}",sub.eq."${subject}"),raw_claims->>uuid.eq."${subject}"`)
       .eq('email_verified', true)
       .limit(1)
       .maybeSingle();
