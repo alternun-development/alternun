@@ -304,7 +304,8 @@ export class MarketplaceMembershipService {
     const user = await this.repository.findVerifiedUserByEmail(input.email);
     if (!user) marketplaceError('MEMBERSHIP_USER_NOT_FOUND');
     const membership = await this.grant(principal, requestId, {
-      member: { issuer: user.issuer, subject: user.subject },
+      // Panel tokens share the caller's issuer, not the one stored with the account.
+      member: { issuer: principal.iss, subject: user.subject },
       memberUserId: user.id,
       enterpriseId: input.enterpriseId,
       projectId: input.projectId,
@@ -367,8 +368,8 @@ export class MarketplaceMembershipService {
     return changed;
   }
 
-  // After a role change or a revoke: the new role's group is added, and the old one is removed
-  // only when the person holds no other active membership with that role.
+  // After a role change, a reactivation or a revoke: the active role's group is added, and the old
+  // one is removed only when the person holds no other active membership with that role.
   private async reconcileGroups(
     before: ProjectMembershipRecord,
     after: ProjectMembershipRecord
@@ -376,7 +377,7 @@ export class MarketplaceMembershipService {
     const emails = await this.emailsFor([after.member]);
     const email = emails.get(memberKey(after.member.issuer, after.member.subject));
     if (!email) return;
-    if (after.status === 'active' && after.role !== before.role) {
+    if (after.status === 'active' && (after.role !== before.role || before.status !== 'active')) {
       await this.syncGroup('add', email, after.role);
     }
     const oldRoleGone =

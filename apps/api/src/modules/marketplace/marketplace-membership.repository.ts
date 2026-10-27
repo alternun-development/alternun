@@ -107,7 +107,7 @@ export class MarketplaceMembershipRepository {
   ): Promise<{ id: string; issuer: string; subject: string; email: string } | null> {
     const { data, error } = await this.client
       .from('users')
-      .select('id, iss, sub, email')
+      .select('id, iss, sub, email, raw_claims')
       .eq('email_verified', true)
       .ilike(
         'email',
@@ -119,10 +119,13 @@ export class MarketplaceMembershipRepository {
     if (matches.length > 1) marketplaceError('MEMBERSHIP_CONFLICT');
     const row = matches[0];
     if (!row) return null;
+    // Accounts synced by the Authentik webhook store a hashed principal in `sub`; the panel token
+    // carries the Authentik user UUID, kept in the raw claims.
+    const claims = record(row.raw_claims);
     return {
       id: text(row.id),
       issuer: text(row.iss),
-      subject: text(row.sub),
+      subject: text(claims.uuid) || text(claims.sub) || text(row.sub),
       email: text(row.email).trim().toLowerCase(),
     };
   }
@@ -132,17 +135,31 @@ export class MarketplaceMembershipRepository {
     members: ReadonlyArray<{ issuer: string; subject: string }>
   ): Promise<Map<string, string>> {
     const found = new Map<string, string>();
-    const subjects = [...new Set(members.map((member) => member.subject))];
+    // Subjects are Authentik UUIDs or hashed principals; anything else cannot be a filter value.
+    const subjects: string[] = [];
+    for (const { subject } of members) {
+      if (/^[A-Za-z0-9._:@-]+$/.test(subject) && !subjects.includes(subject)) {
+        subjects.push(subject);
+      }
+    }
     if (!subjects.length) return found;
+    const list = subjects.join(',');
     const { data, error } = await this.client
       .from('users')
-      .select('iss, sub, email, email_verified')
-      .in('sub', subjects);
+      .select('sub, email, email_verified, raw_claims')
+      .or(`sub.in.(${list}),raw_claims->>uuid.in.(${list})`);
     if (error) failDatabase(error);
+    const emailBySubject = new Map<string, string>();
     for (const row of rows(data)) {
-      if (row.email_verified === true && text(row.email)) {
-        found.set(memberKey(text(row.iss), text(row.sub)), text(row.email).trim().toLowerCase());
-      }
+      if (row.email_verified !== true || !text(row.email)) continue;
+      const email = text(row.email).trim().toLowerCase();
+      emailBySubject.set(text(row.sub), email);
+      const uuid = text(record(row.raw_claims).uuid);
+      if (uuid) emailBySubject.set(uuid, email);
+    }
+    for (const member of members) {
+      const email = emailBySubject.get(member.subject);
+      if (email) found.set(memberKey(member.issuer, member.subject), email);
     }
     return found;
   }
