@@ -32,6 +32,9 @@ Public-facing technical documentation lives in `apps/docs/docs/`.
 15. `docs/notifications.md`
 16. `docs/airs-community-total.md`
 17. `docs/airs-tls-incident-2026-09-17.md`
+18. `docs/marketplace-admin-roles.md`
+19. `docs/airs-user-reports-and-claiming.md`
+20. `docs/dashboard-pipeline-build-incident-2026-10-22.md`
 
 ## How To Use This Directory
 
