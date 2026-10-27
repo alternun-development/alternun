@@ -172,7 +172,7 @@ test('submit sends the actor and the report to the database and maps the result'
         ok: true,
         idempotent: false,
         report: reportJson,
-        autoApproval: { approved: false, totals: totalsJson },
+        autoApproval: { approved: false, blockedReason: 'SELF_REPORT', totals: totalsJson },
       },
     },
   });
@@ -181,6 +181,7 @@ test('submit sends the actor and the report to the database and maps the result'
     projectA.id,
     { recipientEmail: 'guest@example.test', amount: 150, concept: 'Two nights at the pilot hotel' },
     { issuer: 'issuer', subject: 'sub_admin-subject', roles: ['sub_admin'] },
+    { email: 'moderator@example.test', emailVerified: true },
     'request-1'
   );
   assert.deepEqual(client.calls[0], {
@@ -197,11 +198,14 @@ test('submit sends the actor and the report to the database and maps the result'
       p_actor_issuer: 'issuer',
       p_actor_subject: 'sub_admin-subject',
       p_actor_roles: ['sub_admin'],
+      p_actor_email: 'moderator@example.test',
+      p_actor_email_verified: true,
       p_request_id: 'request-1',
     },
   });
   assert.equal(result.report.status, 'pending_approval');
   assert.equal(result.autoApproval.approved, false);
+  assert.equal(result.autoApproval.blockedReason, 'SELF_REPORT');
   assert.deepEqual(result.autoApproval.totals, totalsJson);
 });
 
@@ -432,6 +436,42 @@ test('POST submit returns the report for a scoped moderator', async () => {
   assert.equal(response.statusCode, 201);
   assert.equal(response.json().report.status, 'pending_approval');
   assert.equal(response.json().autoApproval.totals.dailyLimit, 100);
+});
+
+test('submit passes the submitter token email so a missing or unverified one cannot skip the self-report rule', async () => {
+  const before = httpClient.calls.length;
+  await inject(
+    'POST',
+    `/v1/admin/projects/${projectA.id}/airs-reports`,
+    'sub_admin',
+    submitBody,
+    'moderator@example.test'
+  );
+  await inject('POST', `/v1/admin/projects/${projectA.id}/airs-reports`, 'sub_admin', submitBody);
+  const [withEmail, withoutEmail] = httpClient.calls.slice(before);
+  assert.equal(withEmail?.params.p_actor_email, 'moderator@example.test');
+  assert.equal(withEmail?.params.p_actor_email_verified, true);
+  assert.equal(withoutEmail?.params.p_actor_email, null);
+  assert.equal(withoutEmail?.params.p_actor_email_verified, false);
+
+  const unverified = new AirsReportService(
+    new AirsReportRepository(httpClient as never),
+    adminRepository() as never
+  );
+  await unverified.submit(
+    principal('sub_admin', 'moderator@example.test', false),
+    'r',
+    projectA.id,
+    {
+      recipientEmail: 'guest@example.test',
+      amount: 10,
+      concept: 'Two nights at the pilot hotel',
+      documentNumber: 'INV-1',
+    }
+  );
+  const unverifiedCall = httpClient.calls[httpClient.calls.length - 1];
+  assert.equal(unverifiedCall?.params.p_actor_email, 'moderator@example.test');
+  assert.equal(unverifiedCall?.params.p_actor_email_verified, false);
 });
 
 test('submit is denied by role and by project scope before reaching the database', async () => {

@@ -17,6 +17,7 @@ import type {
 
 type Row = Record<string, unknown>;
 
+/** Verified email from the admin token, used for the approver allowlist and the self-report rule. */
 export interface AirsReportApprover {
   email?: string;
   emailVerified?: boolean;
@@ -157,6 +158,7 @@ export class AirsReportRepository {
     projectId: string,
     input: SubmitAirsReportRequest,
     actor: AdminActor,
+    actorEmail: AirsReportApprover,
     requestId: string
   ): Promise<SubmitAirsReportResponse> {
     const result = await this.call('marketplace_submit_airs_report', {
@@ -171,6 +173,8 @@ export class AirsReportRepository {
       p_actor_issuer: actor.issuer,
       p_actor_subject: actor.subject,
       p_actor_roles: [...actor.roles],
+      p_actor_email: actorEmail.email ?? null,
+      p_actor_email_verified: actorEmail.emailVerified === true,
       p_request_id: requestId,
     });
     const autoApproval = record(result.autoApproval);
@@ -179,6 +183,9 @@ export class AirsReportRepository {
       idempotent: result.idempotent === true,
       autoApproval: {
         approved: autoApproval.approved === true,
+        blockedReason: nullableText(
+          autoApproval.blockedReason
+        ) as SubmitAirsReportResponse['autoApproval']['blockedReason'],
         totals: mapTotals(autoApproval.totals),
       },
     };

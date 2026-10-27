@@ -14,6 +14,9 @@ declare
   v_user_multi uuid := gen_random_uuid();
   v_user_monthly uuid := gen_random_uuid();
   v_user_pending uuid := gen_random_uuid();
+  v_user_moderator uuid := gen_random_uuid();
+  v_user_moderator_alias uuid := gen_random_uuid();
+  v_user_other uuid := gen_random_uuid();
   v_super text[] := array['internal_admin'];
   v_owner text[] := array['platform_owner'];
   v_moderator text[] := array['sub_admin'];
@@ -58,7 +61,10 @@ begin
     (v_user_unverified, 'guest-unverified', 'verification', 'guest.unverified@example.test', false, 'Unverified Guest'),
     (v_user_multi, 'guest-multi', 'verification', 'multi.project@example.test', true, 'Multi Project Guest'),
     (v_user_monthly, 'guest-monthly', 'verification', 'monthly.guest@example.test', true, 'Monthly Guest'),
-    (v_user_pending, 'guest-pending', 'verification', 'pending.guest@example.test', true, 'Pending Guest');
+    (v_user_pending, 'guest-pending', 'verification', 'pending.guest@example.test', true, 'Pending Guest'),
+    (v_user_moderator, 'moderator-own-account', 'verification', 'moderator.a@example.test', true, 'Moderator A'),
+    (v_user_moderator_alias, 'moderator-a', 'verification', 'moderator.alias@example.test', true, 'Moderator A Alias'),
+    (v_user_other, 'guest-other', 'verification', 'other.guest@example.test', true, 'Other Guest');
   insert into public.airs_report_approvers (email) values
     ('approver.one@example.test'),
     ('approver.two@example.test');
@@ -68,7 +74,8 @@ begin
   -- Auto-approval at the daily edge, then one Air more goes to review --------
   v_result := public.marketplace_submit_airs_report(
     v_project_a, ' Guest.Verified@Example.test ', null, 60, 'Two nights at the pilot hotel',
-    null, 'INV-1', null, 'verification', 'moderator-a', v_moderator, 'daily-1'
+    null, 'INV-1', null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'daily-1'
   );
   v_report := v_result -> 'report';
   if v_report ->> 'status' <> 'released'
@@ -96,7 +103,8 @@ begin
   -- Same request id replays without a second report or credit.
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 60, 'Two nights at the pilot hotel',
-    null, 'INV-1', null, 'verification', 'moderator-a', v_moderator, 'daily-1'
+    null, 'INV-1', null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'daily-1'
   );
   if (v_result ->> 'idempotent')::boolean is not true
     or v_result -> 'report' ->> 'id' <> v_report ->> 'id'
@@ -106,7 +114,8 @@ begin
 
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 40, 'Dinner for the group at the hotel',
-    null, null, null, 'verification', 'moderator-a', v_moderator, 'daily-2'
+    null, null, null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'daily-2'
   );
   if v_result -> 'report' ->> 'status' <> 'released'
     or v_result -> 'autoApproval' -> 'totals' ->> 'dailyTotal' <> '100'
@@ -116,7 +125,8 @@ begin
 
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 1, 'Late checkout courtesy points',
-    null, null, null, 'verification', 'moderator-a', v_moderator, 'daily-3'
+    null, null, null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'daily-3'
   );
   v_pending := v_result -> 'report';
   if v_pending ->> 'status' <> 'pending_approval'
@@ -126,17 +136,83 @@ begin
     raise exception 'report over 100 per day did not wait for review: %', v_result;
   end if;
 
+  -- A report to the submitter's own account always waits for an approver -----
+  v_result := public.marketplace_submit_airs_report(
+    v_project_a, 'Moderator.A@Example.test', null, 10, 'Moderator reports Airs for itself',
+    null, 'INV-SELF-1', null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'self-email'
+  );
+  if v_result -> 'report' ->> 'status' <> 'pending_approval'
+    or v_result -> 'autoApproval' ->> 'blockedReason' <> 'SELF_REPORT'
+    or exists (select 1 from public.airs_ledger_entries where user_id::text = v_user_moderator::text)
+  then
+    raise exception 'report to the submitter email was auto-approved: %', v_result;
+  end if;
+  if not exists (
+    select 1 from public.admin_audit_log
+    where action = 'airs_report.submitted' and request_id = 'self-email'
+      and metadata ->> 'autoApprovalBlockedReason' = 'SELF_REPORT'
+  ) then
+    raise exception 'self-report block reason was not audited';
+  end if;
+
+  -- Same person by issuer and subject, even with another email on the token.
+  v_result := public.marketplace_submit_airs_report(
+    v_project_a, 'moderator.alias@example.test', null, 10, 'Moderator reports its other account',
+    null, 'INV-SELF-2', null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'self-account'
+  );
+  if v_result -> 'report' ->> 'status' <> 'pending_approval'
+    or v_result -> 'autoApproval' ->> 'blockedReason' <> 'SELF_REPORT'
+  then
+    raise exception 'report to the submitter account was auto-approved: %', v_result;
+  end if;
+
+  -- Without a verified submitter email the self rule cannot be ruled out.
+  v_result := public.marketplace_submit_airs_report(
+    v_project_a, 'other.guest@example.test', null, 10, 'Submitter token without an email',
+    null, 'INV-NO-EMAIL', null, 'verification', 'moderator-a', v_moderator,
+    null, false, 'no-submitter-email'
+  );
+  if v_result -> 'report' ->> 'status' <> 'pending_approval'
+    or v_result -> 'autoApproval' ->> 'blockedReason' <> 'SUBMITTER_EMAIL_UNVERIFIED'
+  then
+    raise exception 'report without a submitter email was auto-approved: %', v_result;
+  end if;
+  v_result := public.marketplace_submit_airs_report(
+    v_project_a, 'other.guest@example.test', null, 10, 'Submitter email is not verified',
+    null, 'INV-UNVERIFIED', null, 'verification', 'moderator-a', v_moderator,
+    'other.guest@example.test', false, 'unverified-submitter-email'
+  );
+  if v_result -> 'report' ->> 'status' <> 'pending_approval'
+    or v_result -> 'autoApproval' ->> 'blockedReason' <> 'SELF_REPORT'
+  then
+    raise exception 'unverified submitter email matching the recipient was auto-approved: %', v_result;
+  end if;
+  v_result := public.marketplace_submit_airs_report(
+    v_project_a, 'other.guest@example.test', null, 10, 'Submitter email is not verified',
+    null, 'INV-UNVERIFIED-2', null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', false, 'unverified-submitter-email-2'
+  );
+  if v_result -> 'report' ->> 'status' <> 'pending_approval'
+    or v_result -> 'autoApproval' ->> 'blockedReason' <> 'SUBMITTER_EMAIL_UNVERIFIED'
+  then
+    raise exception 'report with an unverified submitter email was auto-approved: %', v_result;
+  end if;
+
   -- Reports from several projects add up for the same recipient --------------
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'multi.project@example.test', null, 70, 'Tour booked through project A',
-    null, null, null, 'verification', 'super-admin', v_super, 'multi-1'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'multi-1'
   );
   if v_result -> 'report' ->> 'status' <> 'released' then
     raise exception 'first multi-project report failed: %', v_result;
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'multi.project@example.test', null, 30, 'Workshop booked through project B',
-    null, null, null, 'verification', 'super-admin', v_super, 'multi-2'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'multi-2'
   );
   if v_result -> 'report' ->> 'status' <> 'released'
     or v_result -> 'autoApproval' -> 'totals' ->> 'dailyTotal' <> '100'
@@ -145,7 +221,8 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'multi.project@example.test', null, 1, 'Extra point from project B',
-    null, null, null, 'verification', 'super-admin', v_super, 'multi-3'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'multi-3'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval' then
     raise exception 'cross-project total over the limit was auto-approved: %', v_result;
@@ -154,14 +231,16 @@ begin
   -- Reports waiting for review still count, so small follow-ups cannot slip through.
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'pending.guest@example.test', null, 150, 'Large stay waiting for review',
-    null, null, null, 'verification', 'super-admin', v_super, 'pending-1'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'pending-1'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval' then
     raise exception 'report over the daily limit was not pending: %', v_result;
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'pending.guest@example.test', null, 1, 'Small follow-up after a large one',
-    null, null, null, 'verification', 'super-admin', v_super, 'pending-2'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'pending-2'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval'
     or v_result -> 'autoApproval' -> 'totals' ->> 'dailyTotal' <> '151'
@@ -173,11 +252,13 @@ begin
   update public.airs_report_settings set daily_limit = 300 where id;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'monthly.guest@example.test', null, 200, 'Season pass for the nature trail',
-    null, null, null, 'verification', 'super-admin', v_super, 'monthly-1'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'monthly-1'
   );
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'monthly.guest@example.test', null, 100, 'Volunteer weekend in project B',
-    null, null, null, 'verification', 'super-admin', v_super, 'monthly-2'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'monthly-2'
   );
   if v_result -> 'report' ->> 'status' <> 'released'
     or v_result -> 'autoApproval' -> 'totals' ->> 'monthlyTotal' <> '300'
@@ -186,7 +267,8 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'monthly.guest@example.test', null, 1, 'One more point this month',
-    null, null, null, 'verification', 'super-admin', v_super, 'monthly-3'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'monthly-3'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval' then
     raise exception 'report over 300 per month was auto-approved: %', v_result;
@@ -196,28 +278,32 @@ begin
   -- Submit permissions ----------------------------------------------------
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'guest.verified@example.test', null, 5, 'Moderator outside its project',
-    null, null, null, 'verification', 'moderator-a', v_moderator, 'cross-project'
+    null, null, null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'cross-project'
   );
   if v_result ->> 'reasonCode' is distinct from 'PROJECT_SCOPE_DENIED' then
     raise exception 'cross-project submit was not denied: %', v_result;
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 5, 'Read-only role tries to submit',
-    null, null, null, 'verification', 'readonly', array['partner_readonly'], 'readonly'
+    null, null, null, 'verification', 'readonly', array['partner_readonly'],
+    'readonly@example.test', true, 'readonly'
   );
   if v_result ->> 'reasonCode' is distinct from 'PERMISSION_DENIED' then
     raise exception 'read-only submit was not denied: %', v_result;
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'new.person@example.test', null, 5, 'New person without a name',
-    null, null, null, 'verification', 'moderator-a', v_moderator, 'no-name'
+    null, null, null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'no-name'
   );
   if v_result ->> 'reasonCode' is distinct from 'AIRS_REPORT_RECIPIENT_NAME_REQUIRED' then
     raise exception 'missing name for a new person was accepted: %', v_result;
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 5, 'Medal before the catalog exists',
-    gen_random_uuid(), null, null, 'verification', 'moderator-a', v_moderator, 'medal'
+    gen_random_uuid(), null, null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'medal'
   );
   if v_result ->> 'reasonCode' is distinct from 'AIRS_REPORT_MEDAL_UNAVAILABLE' then
     raise exception 'medal was accepted before the catalog: %', v_result;
@@ -256,7 +342,8 @@ begin
   -- An approver cannot approve a report they submitted.
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 10, 'Approver submits a report',
-    null, null, null, 'verification', 'approver-one', v_super, 'self-submit'
+    null, null, null, 'verification', 'approver-one', v_super,
+    'approver.one@example.test', true, 'self-submit'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval' then
     raise exception 'self-approval fixture was not pending: %', v_result;
@@ -344,7 +431,8 @@ begin
   -- New person and unverified account wait for the claim ---------------------
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'new.person@example.test', 'New Person', 20, 'First visit to the pilot hotel',
-    null, null, null, 'verification', 'moderator-a', v_moderator, 'new-person'
+    null, null, null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'new-person'
   );
   v_new_user := v_result -> 'report';
   if v_new_user ->> 'status' <> 'awaiting_claim' or v_new_user ->> 'ledgerEntryId' is not null then
@@ -353,7 +441,8 @@ begin
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.unverified@example.test', 'Unverified Guest', 20,
     'Guest whose email is not confirmed', null, null, null,
-    'verification', 'moderator-a', v_moderator, 'unverified'
+    'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'unverified'
   );
   if v_result -> 'report' ->> 'status' <> 'awaiting_claim'
     or exists (select 1 from public.airs_ledger_entries where user_id::text = v_user_unverified::text)
@@ -391,7 +480,8 @@ begin
 
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 50, 'Report the submitter cancels',
-    null, null, null, 'verification', 'moderator-a', v_moderator, 'to-cancel'
+    null, null, null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'to-cancel'
   );
   v_result := public.marketplace_cancel_airs_report(
     (v_result -> 'report' ->> 'id')::uuid, '', 'verification', 'moderator-a', v_moderator,
@@ -413,7 +503,8 @@ begin
   -- Reject ----------------------------------------------------------------
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'multi.project@example.test', null, 500, 'Large grant that will be rejected',
-    null, null, null, 'verification', 'super-admin', v_super, 'to-reject'
+    null, null, null, 'verification', 'super-admin', v_super,
+    'super.admin@example.test', true, 'to-reject'
   );
   v_report := v_result -> 'report';
   v_result := public.marketplace_reject_airs_report(
@@ -532,7 +623,7 @@ begin
     or pg_catalog.has_table_privilege('authenticated', 'public.airs_report_approvers', 'SELECT')
     or pg_catalog.has_function_privilege(
       'authenticated',
-      'public.marketplace_submit_airs_report(uuid,text,text,integer,text,uuid,text,text,text,text,text[],text)',
+      'public.marketplace_submit_airs_report(uuid,text,text,integer,text,uuid,text,text,text,text,text[],text,boolean,text)',
       'EXECUTE'
     )
     or pg_catalog.has_function_privilege(
@@ -548,7 +639,7 @@ begin
   end if;
   if not pg_catalog.has_function_privilege(
     'service_role',
-    'public.marketplace_submit_airs_report(uuid,text,text,integer,text,uuid,text,text,text,text,text[],text)',
+    'public.marketplace_submit_airs_report(uuid,text,text,integer,text,uuid,text,text,text,text,text[],text,boolean,text)',
     'EXECUTE'
   ) then
     raise exception 'service_role cannot submit airs reports';

@@ -674,6 +674,8 @@ create or replace function public.marketplace_submit_airs_report(
   p_actor_issuer text,
   p_actor_subject text,
   p_actor_roles text[],
+  p_actor_email text,
+  p_actor_email_verified boolean,
   p_request_id text
 )
 returns jsonb
@@ -684,6 +686,8 @@ as $$
 declare
   v_project public.projects;
   v_report public.airs_reports;
+  v_actor_email text := lower(btrim(coalesce(p_actor_email, '')));
+  v_auto_blocked text;
   v_email text := lower(btrim(coalesce(p_recipient_email, '')));
   v_name text := nullif(btrim(coalesce(p_recipient_name, '')), '');
   v_document_number text := nullif(btrim(coalesce(p_document_number, '')), '');
@@ -727,6 +731,12 @@ begin
         'report', public.airs_report_json(v_report),
         'autoApproval', jsonb_build_object(
           'approved', coalesce(v_report.decision_kind = 'auto', false),
+          'blockedReason', (
+            select audit.metadata ->> 'autoApprovalBlockedReason'
+            from public.admin_audit_log audit
+            where audit.action = 'airs_report.submitted' and audit.target_id = v_report.id
+            limit 1
+          ),
           'totals', public.airs_report_recipient_totals(v_report.recipient_email, v_report.submitted_at)
         )
       );
@@ -775,7 +785,27 @@ begin
   v_daily := (v_totals ->> 'dailyTotal')::bigint + p_amount;
   v_monthly := (v_totals ->> 'monthlyTotal')::bigint + p_amount;
   v_totals := v_totals || jsonb_build_object('dailyTotal', v_daily, 'monthlyTotal', v_monthly);
-  v_auto := v_daily <= (v_totals ->> 'dailyLimit')::bigint
+
+  -- A report to the submitter's own account always waits for an approver. The
+  -- submitter is identified by the verified token email or by the recipient
+  -- account's issuer and subject; without a verified email that cannot be ruled
+  -- out, so the report waits as well.
+  if (v_actor_email <> '' and v_actor_email = v_email)
+    or exists (
+      select 1
+      from public.users app_user
+      where lower(btrim(app_user.email)) = v_email
+        and app_user.iss = btrim(p_actor_issuer)
+        and app_user.sub = btrim(p_actor_subject)
+    )
+  then
+    v_auto_blocked := 'SELF_REPORT';
+  elsif v_actor_email = '' or not coalesce(p_actor_email_verified, false) then
+    v_auto_blocked := 'SUBMITTER_EMAIL_UNVERIFIED';
+  end if;
+
+  v_auto := v_auto_blocked is null
+    and v_daily <= (v_totals ->> 'dailyLimit')::bigint
     and v_monthly <= (v_totals ->> 'monthlyLimit')::bigint;
 
   v_snapshot := public.airs_report_snapshot(
@@ -799,7 +829,8 @@ begin
   perform public.airs_report_audit(
     p_actor_issuer, p_actor_subject, p_actor_roles, 'airs_report.submitted',
     v_report.id, p_project_id, p_request_id, 'allowed', null, null,
-    public.airs_report_json(v_report), jsonb_build_object('totals', v_totals)
+    public.airs_report_json(v_report),
+    jsonb_build_object('totals', v_totals, 'autoApprovalBlockedReason', v_auto_blocked)
   );
 
   if v_auto then
@@ -827,7 +858,9 @@ begin
     'ok', true,
     'idempotent', false,
     'report', public.airs_report_json(v_report),
-    'autoApproval', jsonb_build_object('approved', v_auto, 'totals', v_totals)
+    'autoApproval', jsonb_build_object(
+      'approved', v_auto, 'blockedReason', v_auto_blocked, 'totals', v_totals
+    )
   );
 end;
 $$;
@@ -1425,7 +1458,7 @@ revoke all on function public.airs_report_replay(text, text, text, text, uuid)
   from public, anon, authenticated;
 
 revoke all on function public.marketplace_submit_airs_report(
-  uuid, text, text, integer, text, uuid, text, text, text, text, text[], text
+  uuid, text, text, integer, text, uuid, text, text, text, text, text[], text, boolean, text
 ) from public, anon, authenticated;
 revoke all on function public.marketplace_approve_airs_report(
   uuid, text, text, text, text[], text, boolean, text
@@ -1449,7 +1482,7 @@ revoke all on function public.marketplace_lookup_airs_report_recipient(
 
 grant execute on function public.airs_report_recipient_totals(text, timestamptz) to service_role;
 grant execute on function public.marketplace_submit_airs_report(
-  uuid, text, text, integer, text, uuid, text, text, text, text, text[], text
+  uuid, text, text, integer, text, uuid, text, text, text, text, text[], text, boolean, text
 ) to service_role;
 grant execute on function public.marketplace_approve_airs_report(
   uuid, text, text, text, text[], text, boolean, text
