@@ -16,7 +16,7 @@ APP_NAME="${INFRA_APP_NAME:-alternun-infra}"
 STAGE="${STACK:-${SST_STAGE:-dev}}"
 REGION="${AWS_REGION:-us-east-1}"
 CACHE_DIR="${INFRA_SSM_ENV_CACHE_DIR:-${TMPDIR:-/tmp}/alternun-infra}"
-CACHE_FILE="${INFRA_SSM_ENV_CACHE_FILE:-${CACHE_DIR}/ssm-env-v3-${STAGE}-${REGION}.sh}"
+CACHE_FILE="${INFRA_SSM_ENV_CACHE_FILE:-${CACHE_DIR}/ssm-env-v4-${STAGE}-${REGION}.sh}"
 
 declare -A SSM_PARAM_CACHE=()
 declare -a CACHE_EXPORT_VARS=(
@@ -45,6 +45,10 @@ declare -a CACHE_EXPORT_VARS=(
   AUTH_EXECUTION_PROVIDER
   EXPO_PUBLIC_AUTH_EXECUTION_PROVIDER
   DATABASE_URL
+  INFRA_BACKEND_API_AIRS_DASHBOARD_URL
+  INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS
+  INFRA_BACKEND_API_AUTHENTIK_API_URL
+  INFRA_BACKEND_API_AUTHENTIK_API_TOKEN
 )
 
 # CI shells and approved local deploys (APPROVE=true) can carry stale local-dev
@@ -437,6 +441,11 @@ main() {
       export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret"
       export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id"
       export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret"
+      # Airs report links must open testnet, never production.
+      export_env_from_ssm "INFRA_BACKEND_API_AIRS_DASHBOARD_URL" "infra-backend-api-airs-dashboard-url-dev" "https://testnet.airs.alternun.co"
+      export_env_from_ssm "INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS" "infra-backend-api-airs-report-support-emails-dev"
+      export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_URL" "infra-backend-api-authentik-api-url-dev"
+      export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_TOKEN" "infra-backend-api-authentik-api-token-dev"
       ;;
     prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
       # Production still resolves the stage-specific Better Auth URLs; the execution provider
@@ -458,6 +467,9 @@ main() {
       export_env_from_ssm "GOOGLE_AUTH_CLIENT_SECRET" "google-auth-client-secret" "" "${SSM_SHARED_STAGE}"
       export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id" "" "${SSM_SHARED_STAGE}"
       export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret" "" "${SSM_SHARED_STAGE}"
+      export_env_from_ssm "INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS" "infra-backend-api-airs-report-support-emails-prod"
+      export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_URL" "infra-backend-api-authentik-api-url-prod"
+      export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_TOKEN" "infra-backend-api-authentik-api-token-prod"
       ;;
     *)
       export_env_from_ssm "EXPO_PUBLIC_BETTER_AUTH_URL" "expo-public-better-auth-url" ""
