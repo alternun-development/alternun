@@ -530,6 +530,13 @@ export const marketplaceCopy = {
         `This person's total today: ${day} of ${dayLimit}. This month: ${month} of ${monthLimit}.`,
       another: 'Report more Airs',
     },
+    summary: {
+      credited: 'Credited',
+      creditedHint: 'Airs already in a guest account',
+      waitingApproval: 'Waiting for approval',
+      waitingClaim: 'Waiting to be claimed',
+      airs: 'Airs in these reports',
+    },
     list: {
       heading: 'Recent reports',
       empty: 'No reports have been sent for this project yet.',
