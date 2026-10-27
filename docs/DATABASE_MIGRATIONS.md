@@ -56,6 +56,14 @@ run `scripts/sync-db-migrations.sh "$SST_STAGE" --all` before SST deployment
 before new API code is deployed, preventing schema drift such as a route
 reaching tables or functions that have not been created yet.
 
+The migration step runs **after** the backend API build in the same CodeBuild
+phase. If the API build fails, the pipeline stops before it reaches the
+migrations, and no migration is applied. A broken build therefore also leaves
+the stage database behind. After a production release, run
+`bash scripts/sync-db-migrations.sh production --dry-run` and expect no pending
+migrations. See
+[dashboard-pipeline-build-incident-2026-10-22.md](dashboard-pipeline-build-incident-2026-10-22.md).
+
 Identity-only pipelines do not opt into this step because they do not own the
 backend API database.
 

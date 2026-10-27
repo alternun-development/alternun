@@ -2,6 +2,7 @@
 set -euo pipefail
 
 pnpm --filter @alternun/email-templates run build
+pnpm --filter @alternun/i18n run build
 
 rm -rf dist dist-lambda
 tsc -p tsconfig.build.json
