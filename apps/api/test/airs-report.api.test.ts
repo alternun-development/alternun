@@ -179,7 +179,12 @@ test('submit sends the actor and the report to the database and maps the result'
   const repository = new AirsReportRepository(client as never);
   const result = await repository.submit(
     projectA.id,
-    { recipientEmail: 'guest@example.test', amount: 150, concept: 'Two nights at the pilot hotel' },
+    {
+      recipientEmail: 'guest@example.test',
+      amount: 150,
+      concept: 'Two nights at the pilot hotel',
+      documentNumber: 'INV-1',
+    },
     { issuer: 'issuer', subject: 'sub_admin-subject', roles: ['sub_admin'] },
     { email: 'moderator@example.test', emailVerified: true },
     'request-1'
@@ -193,7 +198,7 @@ test('submit sends the actor and the report to the database and maps the result'
       p_amount: 150,
       p_concept: 'Two nights at the pilot hotel',
       p_medal_id: null,
-      p_document_number: null,
+      p_document_number: 'INV-1',
       p_document_sha256: null,
       p_actor_issuer: 'issuer',
       p_actor_subject: 'sub_admin-subject',
@@ -252,6 +257,7 @@ test('database reason codes map to API errors', async () => {
     ['AIRS_REPORT_TRANSITION_INVALID', 409],
     ['AIRS_REPORT_RECIPIENT_NAME_REQUIRED', 422],
     ['AIRS_REPORT_REASON_REQUIRED', 422],
+    ['AIRS_REPORT_DOCUMENT_NUMBER_REQUIRED', 422],
     ['AIRS_REPORT_LOOKUP_RATE_LIMITED', 429],
     ['AIRS_REPORT_NOT_FOUND', 404],
   ] as const) {
@@ -494,6 +500,20 @@ test('submit is denied by role and by project scope before reaching the database
   );
   assert.equal(crossProject.statusCode, 403);
   assert.equal(crossProject.json().code, 'PROJECT_SCOPE_DENIED');
+  assert.equal(httpClient.calls.length, before);
+});
+
+test('submit without a document number is rejected before reaching the database', async () => {
+  const before = httpClient.calls.length;
+  const { documentNumber: _document, ...withoutDocument } = submitBody;
+  const response = await inject(
+    'POST',
+    `/v1/admin/projects/${projectA.id}/airs-reports`,
+    'sub_admin',
+    withoutDocument
+  );
+  assert.equal(response.statusCode, 400);
+  assert.equal(response.json().code, 'VALIDATION_FAILED');
   assert.equal(httpClient.calls.length, before);
 });
 

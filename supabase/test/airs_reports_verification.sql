@@ -114,7 +114,7 @@ begin
 
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 40, 'Dinner for the group at the hotel',
-    null, null, null, 'verification', 'moderator-a', v_moderator,
+    null, 'INV-daily-2', null, 'verification', 'moderator-a', v_moderator,
     'moderator.a@example.test', true, 'daily-2'
   );
   if v_result -> 'report' ->> 'status' <> 'released'
@@ -125,7 +125,7 @@ begin
 
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 1, 'Late checkout courtesy points',
-    null, null, null, 'verification', 'moderator-a', v_moderator,
+    null, 'INV-daily-3', null, 'verification', 'moderator-a', v_moderator,
     'moderator.a@example.test', true, 'daily-3'
   );
   v_pending := v_result -> 'report';
@@ -203,7 +203,7 @@ begin
   -- Reports from several projects add up for the same recipient --------------
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'multi.project@example.test', null, 70, 'Tour booked through project A',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-multi-1', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'multi-1'
   );
   if v_result -> 'report' ->> 'status' <> 'released' then
@@ -211,7 +211,7 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'multi.project@example.test', null, 30, 'Workshop booked through project B',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-multi-2', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'multi-2'
   );
   if v_result -> 'report' ->> 'status' <> 'released'
@@ -221,7 +221,7 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'multi.project@example.test', null, 1, 'Extra point from project B',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-multi-3', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'multi-3'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval' then
@@ -231,7 +231,7 @@ begin
   -- Reports waiting for review still count, so small follow-ups cannot slip through.
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'pending.guest@example.test', null, 150, 'Large stay waiting for review',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-pending-1', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'pending-1'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval' then
@@ -239,7 +239,7 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'pending.guest@example.test', null, 1, 'Small follow-up after a large one',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-pending-2', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'pending-2'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval'
@@ -252,12 +252,12 @@ begin
   update public.airs_report_settings set daily_limit = 300 where id;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'monthly.guest@example.test', null, 200, 'Season pass for the nature trail',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-monthly-1', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'monthly-1'
   );
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'monthly.guest@example.test', null, 100, 'Volunteer weekend in project B',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-monthly-2', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'monthly-2'
   );
   if v_result -> 'report' ->> 'status' <> 'released'
@@ -267,7 +267,7 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'monthly.guest@example.test', null, 1, 'One more point this month',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-monthly-3', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'monthly-3'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval' then
@@ -278,7 +278,7 @@ begin
   -- Submit permissions ----------------------------------------------------
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'guest.verified@example.test', null, 5, 'Moderator outside its project',
-    null, null, null, 'verification', 'moderator-a', v_moderator,
+    null, 'INV-cross-project', null, 'verification', 'moderator-a', v_moderator,
     'moderator.a@example.test', true, 'cross-project'
   );
   if v_result ->> 'reasonCode' is distinct from 'PROJECT_SCOPE_DENIED' then
@@ -286,7 +286,7 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 5, 'Read-only role tries to submit',
-    null, null, null, 'verification', 'readonly', array['partner_readonly'],
+    null, 'INV-readonly', null, 'verification', 'readonly', array['partner_readonly'],
     'readonly@example.test', true, 'readonly'
   );
   if v_result ->> 'reasonCode' is distinct from 'PERMISSION_DENIED' then
@@ -294,15 +294,34 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'new.person@example.test', null, 5, 'New person without a name',
-    null, null, null, 'verification', 'moderator-a', v_moderator,
+    null, 'INV-no-name', null, 'verification', 'moderator-a', v_moderator,
     'moderator.a@example.test', true, 'no-name'
   );
   if v_result ->> 'reasonCode' is distinct from 'AIRS_REPORT_RECIPIENT_NAME_REQUIRED' then
     raise exception 'missing name for a new person was accepted: %', v_result;
   end if;
   v_result := public.marketplace_submit_airs_report(
+    v_project_a, 'guest.verified@example.test', null, 5, 'Report without a document number',
+    null, null, null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'no-document'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'AIRS_REPORT_DOCUMENT_NUMBER_REQUIRED' then
+    raise exception 'report without a document number was accepted: %', v_result;
+  end if;
+  v_result := public.marketplace_submit_airs_report(
+    v_project_a, 'guest.verified@example.test', null, 5, 'Report with a blank document number',
+    null, '   ', null, 'verification', 'moderator-a', v_moderator,
+    'moderator.a@example.test', true, 'blank-document'
+  );
+  if v_result ->> 'reasonCode' is distinct from 'AIRS_REPORT_DOCUMENT_NUMBER_REQUIRED' then
+    raise exception 'report with a blank document number was accepted: %', v_result;
+  end if;
+  if exists (select 1 from public.airs_reports where request_id in ('no-document', 'blank-document')) then
+    raise exception 'report without a document number was stored';
+  end if;
+  v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 5, 'Medal before the catalog exists',
-    gen_random_uuid(), null, null, 'verification', 'moderator-a', v_moderator,
+    gen_random_uuid(), 'INV-medal', null, 'verification', 'moderator-a', v_moderator,
     'moderator.a@example.test', true, 'medal'
   );
   if v_result ->> 'reasonCode' is distinct from 'AIRS_REPORT_MEDAL_UNAVAILABLE' then
@@ -342,7 +361,7 @@ begin
   -- An approver cannot approve a report they submitted.
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 10, 'Approver submits a report',
-    null, null, null, 'verification', 'approver-one', v_super,
+    null, 'INV-self-submit', null, 'verification', 'approver-one', v_super,
     'approver.one@example.test', true, 'self-submit'
   );
   if v_result -> 'report' ->> 'status' <> 'pending_approval' then
@@ -431,7 +450,7 @@ begin
   -- New person and unverified account wait for the claim ---------------------
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'new.person@example.test', 'New Person', 20, 'First visit to the pilot hotel',
-    null, null, null, 'verification', 'moderator-a', v_moderator,
+    null, 'INV-new-person', null, 'verification', 'moderator-a', v_moderator,
     'moderator.a@example.test', true, 'new-person'
   );
   v_new_user := v_result -> 'report';
@@ -440,7 +459,7 @@ begin
   end if;
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.unverified@example.test', 'Unverified Guest', 20,
-    'Guest whose email is not confirmed', null, null, null,
+    'Guest whose email is not confirmed', null, 'INV-unverified', null,
     'verification', 'moderator-a', v_moderator,
     'moderator.a@example.test', true, 'unverified'
   );
@@ -480,7 +499,7 @@ begin
 
   v_result := public.marketplace_submit_airs_report(
     v_project_a, 'guest.verified@example.test', null, 50, 'Report the submitter cancels',
-    null, null, null, 'verification', 'moderator-a', v_moderator,
+    null, 'INV-to-cancel', null, 'verification', 'moderator-a', v_moderator,
     'moderator.a@example.test', true, 'to-cancel'
   );
   v_result := public.marketplace_cancel_airs_report(
@@ -503,7 +522,7 @@ begin
   -- Reject ----------------------------------------------------------------
   v_result := public.marketplace_submit_airs_report(
     v_project_b, 'multi.project@example.test', null, 500, 'Large grant that will be rejected',
-    null, null, null, 'verification', 'super-admin', v_super,
+    null, 'INV-to-reject', null, 'verification', 'super-admin', v_super,
     'super.admin@example.test', true, 'to-reject'
   );
   v_report := v_result -> 'report';

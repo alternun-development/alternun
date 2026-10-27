@@ -83,6 +83,8 @@ test('the SQL verification covers the B15 cases for this cut', () => {
     /pending report was not counted toward the limits/,
     /cross-project submit was not denied/,
     /self-approval was not denied/,
+    /report without a document number was accepted/,
+    /report with a blank document number was accepted/,
     /report to the submitter email was auto-approved/,
     /report to the submitter account was auto-approved/,
     /report without a submitter email was auto-approved/,

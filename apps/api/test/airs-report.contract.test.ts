@@ -40,8 +40,20 @@ test('report statuses match the state machine', () => {
 
 test('submit schema accepts a complete report and an existing-user report without a name', async () => {
   assert.deepEqual(await errorsFor(SubmitAirsReportDto, validSubmit), []);
-  const { recipientName: _name, documentNumber: _document, ...minimal } = validSubmit;
+  const { recipientName: _name, ...minimal } = validSubmit;
   assert.deepEqual(await errorsFor(SubmitAirsReportDto, minimal), []);
+});
+
+test('submit schema requires a document number', async () => {
+  const { documentNumber: _document, ...withoutDocument } = validSubmit;
+  assert.deepEqual(await errorsFor(SubmitAirsReportDto, withoutDocument), ['documentNumber']);
+  assert.deepEqual(
+    await errorsFor(SubmitAirsReportDto, { ...validSubmit, documentNumber: '   ' }),
+    ['documentNumber']
+  );
+  assert.deepEqual(await errorsFor(SubmitAirsReportDto, { ...validSubmit, documentNumber: '' }), [
+    'documentNumber',
+  ]);
 });
 
 test('submit schema rejects invalid email, amount, concept, medal and document hash', async () => {
