@@ -25,6 +25,7 @@ export const AIRS_REPORT_DOCUMENT_NUMBER_MAX_LENGTH = 80;
 export const AIRS_REPORT_REASON_MAX_LENGTH = 500;
 export const AIRS_REPORT_EMAIL_MAX_LENGTH = 320;
 export const SHA256_HEX_PATTERN = /^[0-9a-f]{64}$/;
+export const AIRS_REPORT_REQUEST_KEY_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{15,99}$/;
 
 export interface AirsReportActorRef {
   issuer: string;
@@ -108,6 +109,11 @@ export interface SubmitAirsReportRequest {
   documentNumber: string;
   /** SHA-256 (hex) of the supporting file, once uploads exist. */
   documentSha256?: string;
+  /**
+   * Client-generated key (a UUID per form submission). Sending the same key again is an
+   * idempotent replay; a new submission needs a new key. The server generates one when absent.
+   */
+  requestKey?: string;
 }
 
 export interface SubmitAirsReportResponse {
