@@ -1,3 +1,13 @@
+## [1.1.114](https://github.com/alternun-development/alternun/compare/v1.1.113...v1.1.114) (2026-10-27)
+
+### Bug Fixes
+
+- **repo:** feat(mobile): open the profile from the account badge avatar and name
+
+### Features
+
+- **mobile:** open the profile from the account badge avatar and name ([6600d20](https://github.com/alternun-development/alternun/commit/6600d20d17a03d0bdc4d3d75007f1ff233cb81ed))
+
 ## [1.1.113](https://github.com/alternun-development/alternun/compare/v1.1.112...v1.1.113) (2026-10-26)
 
 ### Features
