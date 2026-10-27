@@ -265,6 +265,54 @@ test('non-global role cannot change enterprise status', async () => {
   assert.equal(statusCalls, 0);
 });
 
+test('only global admins create a standalone enterprise, and creation is audited', async () => {
+  let createCalls = 0;
+  const { repository, audits } = adminRepository({
+    createEnterprise: async () => {
+      createCalls += 1;
+      return enterprise;
+    },
+  });
+  const service = new MarketplaceAdminService(repository);
+  const input = { slug: 'new-enterprise', displayName: 'New enterprise' };
+  for (const role of ['platform_owner', 'internal_admin']) {
+    await service.createEnterprise(principal(role), `create-${role}`, input);
+  }
+  assert.equal(createCalls, 2);
+  assert.deepEqual(
+    audits.filter(({ action }) => action === 'enterprise.created').map(({ result }) => result),
+    ['allowed', 'allowed']
+  );
+  for (const role of ['partner_operator', 'sub_admin', 'moderator', 'partner_readonly']) {
+    await assert.rejects(
+      service.createEnterprise(principal(role), `create-denied-${role}`, input),
+      expectApiError('PERMISSION_DENIED', 403)
+    );
+  }
+  assert.equal(createCalls, 2);
+  assert.equal(audits.filter(({ result }) => result === 'denied').length, 4);
+});
+
+test('project-level roles cannot edit enterprise details', async () => {
+  let updateCalls = 0;
+  const { repository } = adminRepository({
+    updateEnterprise: async () => {
+      updateCalls += 1;
+      return enterprise;
+    },
+  });
+  const service = new MarketplaceAdminService(repository);
+  for (const role of ['sub_admin', 'moderator', 'partner_readonly']) {
+    await assert.rejects(
+      service.updateEnterprise(principal(role), `update-denied-${role}`, 'e1', {
+        displayName: 'Renamed',
+      }),
+      expectApiError('PERMISSION_DENIED', 403)
+    );
+  }
+  assert.equal(updateCalls, 0);
+});
+
 test('invalid SQL transition reason maps to the contract 409', async () => {
   const { repository } = adminRepository({
     transitionProject: async () => ({ ok: false, reasonCode: 'PROJECT_STATUS_TRANSITION_INVALID' }),

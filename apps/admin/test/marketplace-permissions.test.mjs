@@ -14,6 +14,8 @@ const ROLES = [
 
 const CLIENT_PERMISSIONS = [
   'enterprises:create',
+  'enterprises:update',
+  'enterprises:status',
   'projects:create',
   'projects:update',
   'projects:publish',
