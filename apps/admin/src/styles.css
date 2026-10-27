@@ -1215,3 +1215,59 @@ select {
     padding: 0;
   }
 }
+
+/* Airs reports: a short summary above the list and a status accent on each card. */
+.airs-report-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin: 0.25rem 0 1rem;
+}
+
+.airs-report-summary-item {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.airs-report-summary-item span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.airs-report-summary-item strong {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.airs-report-summary-item small {
+  color: var(--text-muted);
+}
+
+.airs-report-card {
+  border-left: 4px solid rgba(255, 255, 255, 0.18);
+}
+
+.airs-report-card h4 {
+  margin: 0.6rem 0 0.2rem;
+  font-size: 1.25rem;
+}
+
+.airs-report-card-published {
+  border-left-color: var(--accent);
+}
+
+.airs-report-card-draft {
+  border-left-color: #ffe39a;
+}
+
+.airs-report-card-paused {
+  border-left-color: #ffb27a;
+}
+
+.airs-report-card-archived {
+  border-left-color: #8b94a7;
+}

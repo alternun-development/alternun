@@ -83,3 +83,12 @@ export type AirsReportFormErrors = Partial<Record<AirsReportFormField, string>>;
 
 /** What the person who submitted sees once the server answers. */
 export type AirsReportOutcomeKind = 'credited' | 'waiting_claim' | 'in_review';
+
+export type AirsReportSummary = {
+  credited: number;
+  creditedAirs: number;
+  waitingApproval: number;
+  waitingClaim: number;
+  /** Airs in every report that is not rejected, cancelled or reversed. */
+  totalAirs: number;
+};
