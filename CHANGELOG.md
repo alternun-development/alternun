@@ -1,3 +1,15 @@
+## [1.1.120](https://github.com/alternun-development/alternun/compare/v1.1.119...v1.1.120) (2026-10-27)
+
+### Bug Fixes
+
+- **repo:** chore: sync reentry with follow-ups from #299 review
+- **repo:** chore(docs): remove unused npm lockfile
+- **repo:** fix(marketplace): match panel identities to webhook-synced accounts
+
+### Bug Fixes
+
+- **marketplace:** match panel identities to webhook-synced accounts ([f0a93bd](https://github.com/alternun-development/alternun/commit/f0a93bd6e98f48e713422782edebb014b81f27e8)), closes [#299](https://github.com/alternun-development/alternun/issues/299) [#249](https://github.com/alternun-development/alternun/issues/249)
+
 ## [1.1.119](https://github.com/alternun-development/alternun/compare/v1.1.117...v1.1.119) (2026-10-27)
 
 ### Features
