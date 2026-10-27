@@ -51,6 +51,7 @@ import {
 } from './airs-report.controller';
 import { AirsReportRepository } from './airs-report.repository';
 import { AirsReportService } from './airs-report.service';
+import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-group-sync';
 
 @Module({
   controllers: [
@@ -90,6 +91,14 @@ import { AirsReportService } from './airs-report.service';
     ProjectProposalService,
     AirsReportRepository,
     AirsReportService,
+    {
+      provide: AUTHENTIK_GROUP_SYNC,
+      useFactory: () =>
+        createAuthentikGroupSync({
+          env: process.env,
+          fetch: (url, init) => fetch(url, init as RequestInit),
+        }),
+    },
     { provide: PROJECT_PROPOSAL_EMAIL_SENDER, useValue: sendAirsEmail },
     {
       provide: MARKETPLACE_COMMENT_USER_RESOLVER,
