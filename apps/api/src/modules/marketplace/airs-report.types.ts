@@ -93,6 +93,8 @@ export interface AirsReportRecipientTotals {
   monthlyLimit: number;
 }
 
+export type AirsReportAutoApprovalBlockedReason = 'SELF_REPORT' | 'SUBMITTER_EMAIL_UNVERIFIED';
+
 // POST /v1/admin/projects/:projectId/airs-reports
 export interface SubmitAirsReportRequest {
   recipientEmail: string;
@@ -113,6 +115,11 @@ export interface SubmitAirsReportResponse {
   idempotent: boolean;
   autoApproval: {
     approved: boolean;
+    /**
+     * Why the report waits for an approver even within the limits: it is for the
+     * submitter's own account, or the submitter's email is missing or unverified.
+     */
+    blockedReason: AirsReportAutoApprovalBlockedReason | null;
     /** Totals including this report. */
     totals: AirsReportRecipientTotals;
   };

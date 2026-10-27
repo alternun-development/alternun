@@ -70,7 +70,13 @@ export class AirsReportService {
     projectId: string,
     input: SubmitAirsReportRequest
   ): Promise<SubmitAirsReportResponse> {
-    return this.repository.submit(projectId, input, actorFromPrincipal(principal), requestId);
+    return this.repository.submit(
+      projectId,
+      input,
+      actorFromPrincipal(principal),
+      approverFrom(principal),
+      requestId
+    );
   }
 
   listForProject(projectId: string, status?: AirsReportStatus): Promise<AirsReportRecord[]> {
