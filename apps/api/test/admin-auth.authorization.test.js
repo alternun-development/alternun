@@ -252,6 +252,7 @@ test('marketplace permission matrix preserves role-specific enterprise, project,
     ].includes(role);
     assert.equal(can(role, 'participants:read'), canManageParticipants);
     assert.equal(can(role, 'participants:manage'), canManageParticipants);
+    assert.equal(can(role, 'airs_reports:submit'), canManageParticipants);
   }
   for (const role of EXPECTED_ADMIN_ROLES) {
     assert.equal(
@@ -439,6 +440,8 @@ test('resolveRuntimeOptions accepts RS256 Authentik tokens through the configure
     sub: 'partner-user-1',
     roles: ['partner_operator'],
     organizationIds: ['partner-org-1'],
+    email: 'partner@example.com',
+    emailVerified: true,
   });
 });
 
