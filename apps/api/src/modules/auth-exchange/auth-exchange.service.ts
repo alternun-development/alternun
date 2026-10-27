@@ -17,6 +17,7 @@ import {
 } from './auth-exchange.mapper';
 import { mintIssuerAccessToken, mintIssuerIdToken } from './auth-exchange-jwt';
 import { upsertOidcUserViaSupabase } from '../authentik/supabase-sync';
+import { claimAirsReportsViaSupabase } from './airs-report-claim';
 import { ReferralsService } from '../referrals/referrals.service';
 import {
   normalizeExecutionEmail,
@@ -116,6 +117,27 @@ export class AuthExchangeService {
     );
   }
 
+  // Releases User Airs Reports waiting for this person's confirmed email. A failure here must
+  // never block the sign-in: the claim is idempotent and runs again on the next exchange.
+  private async claimAirsReports(
+    appUserId: string,
+    email: string,
+    emailConfirmed: boolean
+  ): Promise<void> {
+    try {
+      const result = await claimAirsReportsViaSupabase({ appUserId, email, emailConfirmed });
+      if (result.claimed > 0) {
+        this.logger.log(`Released ${result.claimed} Airs report(s) claimed by user ${appUserId}`);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to claim Airs reports for exchange user ${appUserId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
   async exchangeIdentity(
     input: AuthExchangeRequestShape,
     credential: AuthExchangeCredential = {}
@@ -160,6 +182,14 @@ export class AuthExchangeService {
             }`
           );
         });
+    }
+
+    if (syncResult.appUserId && externalIdentity.email && externalIdentity.emailVerified) {
+      await this.claimAirsReports(
+        syncResult.appUserId,
+        externalIdentity.email,
+        externalIdentity.emailVerified
+      );
     }
 
     if (syncResult.skipped) {
