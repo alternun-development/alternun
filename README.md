@@ -124,9 +124,9 @@ Current version: **1.1.108**
 
 ## 📋 Latest Changes (v1.1.108)
 
-### Bug Fixes
+### Documentation
 
-- **repo:** docs: record the Oct 22 dashboard pipeline build incident
+- **repo:** record the Oct 22 dashboard pipeline build incident ([fccf46f](https://github.com/alternun-development/alternun/commit/fccf46f02e3013765560694bb1b929033e7eb885))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
