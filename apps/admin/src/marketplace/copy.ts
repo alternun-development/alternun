@@ -472,6 +472,26 @@ export const marketplaceCopy = {
     updated: 'Team role updated.',
     removed: 'Team access removed.',
   },
+  notifications: {
+    navigation: {
+      title: 'Notifications',
+      description: 'What needs your attention on Airs reports.',
+    },
+    heading: 'Notifications',
+    intro: 'Airs reports that need a review, and the decisions on the reports you sent.',
+    empty: 'You have no notifications yet.',
+    unread: (count: number) => (count === 0 ? 'All read' : `${count} unread`),
+    markRead: 'Mark as read',
+    markAllRead: 'Mark all as read',
+    reason: 'Reason',
+    unknown: 'Update on an Airs report',
+    events: {
+      needsReview: 'A report is waiting for approval',
+      submitted: 'A report was sent and approved automatically',
+      approved: 'Your report was approved',
+      rejected: 'Your report was rejected',
+    },
+  },
   projectTypes: {
     navigation: { title: 'Project types', description: 'The kinds of business a project can be.' },
     heading: 'Project types',

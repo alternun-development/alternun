@@ -1346,3 +1346,39 @@ select {
 .project-type-editor small {
   color: var(--text-muted);
 }
+
+/* Console notifications: the inbox list. */
+.notification-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid transparent;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.notification-item.is-unread {
+  border-left-color: var(--accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.notification-item > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.notification-item span,
+.notification-item small {
+  color: var(--text-muted);
+}
