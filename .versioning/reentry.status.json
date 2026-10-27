@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-27T00:05:10.976Z",
+  "lastUpdated": "2026-10-27T00:12:44.024Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "#249 Part B: build claim (B7) on marketplace_claim_airs_reports, then notifications (B10/B11) and the admin report screens (B12-B14)",
+      "description": "Apply media-host migration and seed environment image hosts; then #249 Part B: build claim (B7) on marketplace_claim_airs_reports, then notifications (B10/B11) and the admin report screens (B12-B14)",
       "id": "next",
       "priority": 1
     }
