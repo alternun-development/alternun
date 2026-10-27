@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-27T02:49:06.195Z",
+  "lastUpdated": "2026-10-27T20:48:29.644Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Review the Airs claim, project accounts and emails PR and the Airs report screens PR; then membership by email (B3) and domain admins (B1), and run the testnet walkthrough (A7) for #249",
+      "description": "Review the Airs reports list polish PR (issue 249), then continue with notifications and project types",
       "id": "next",
       "priority": 1
     }
