@@ -1,4 +1,4 @@
--- Verification for 20261027_0002 and 20261027_0004 (issue #249 B2 and B7).
+-- Verification for 20261027_0002, 20261027_0004 and 20261027_0005 (issue #249 B2, B7, B8).
 -- Run after all migrations on a disposable local database. Every assertion runs
 -- inside a transaction that is always rolled back. All emails are fake.
 
@@ -213,11 +213,19 @@ begin
     raise exception 'recipient does not have exactly two ledger entries: %', v_count;
   end if;
 
-  -- Four rewards, all locked, none credited to the submitter or the project ---
+  -- Four rewards of 5. The claimant holds 70 paid Airs, so the project rewards unlock
+  -- at the claim; the submitter has no Airs account in this fixture, so theirs wait.
   select count(*) into v_count from public.airs_report_rewards
-  where status = 'locked' and amount = 5 and ledger_entry_id is null and credited_at is null;
-  if v_count <> 4 then
-    raise exception 'expected four locked rewards of 5: %', v_count;
+  where kind = 'submitter' and status = 'locked' and amount = 5
+    and ledger_entry_id is null and credited_at is null;
+  if v_count <> 2 then
+    raise exception 'expected two locked submitter rewards of 5: %', v_count;
+  end if;
+  select count(*) into v_count from public.airs_report_rewards
+  where kind = 'project' and status = 'credited' and amount = 5
+    and ledger_entry_id is not null and credited_at is not null;
+  if v_count <> 2 then
+    raise exception 'expected two credited project rewards of 5: %', v_count;
   end if;
   select count(*) into v_count from public.airs_report_rewards
   where kind = 'submitter' and beneficiary_issuer = 'verification'
@@ -234,13 +242,13 @@ begin
   end if;
   select count(*) into v_count from public.airs_ledger_entries
   where user_id::text = v_project_account::text;
-  if v_count <> 0 then
-    raise exception 'the project account was credited before the rewards unlock';
+  if v_count <> 2 then
+    raise exception 'the project account was not credited its two unlocked rewards: %', v_count;
   end if;
   select count(*) into v_count from public.airs_ledger_entries
   where source_kind = 'admin_airs_report_reward';
-  if v_count <> 0 then
-    raise exception 'a reward was written to the ledger in this cut';
+  if v_count <> 2 then
+    raise exception 'expected exactly two reward ledger entries: %', v_count;
   end if;
 
   -- Reports to existing accounts and to other emails never create rewards ----
@@ -307,12 +315,18 @@ begin
     raise exception 'claimed report was not reversed: %', v_result;
   end if;
   select count(*) into v_count from public.airs_report_rewards
-  where report_id = (v_report_one ->> 'id')::uuid and status = 'void' and voided_at is not null;
-  if v_count <> 2 then
-    raise exception 'rewards of the reversed report were not voided: %', v_count;
+  where report_id = (v_report_one ->> 'id')::uuid and status = 'void' and voided_at is not null
+    and kind = 'submitter';
+  if v_count <> 1 then
+    raise exception 'the locked reward of the reversed report was not voided: %', v_count;
   end if;
   select count(*) into v_count from public.airs_report_rewards
-  where report_id = (v_report_two ->> 'id')::uuid and status = 'locked';
+  where report_id = (v_report_one ->> 'id')::uuid and status = 'credited' and kind = 'project';
+  if v_count <> 1 then
+    raise exception 'a reward already credited changed with the reversal: %', v_count;
+  end if;
+  select count(*) into v_count from public.airs_report_rewards
+  where report_id = (v_report_two ->> 'id')::uuid and status in ('locked', 'credited');
   if v_count <> 2 then
     raise exception 'rewards of another report changed with the reversal: %', v_count;
   end if;
