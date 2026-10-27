@@ -25,7 +25,6 @@ import {
   Lightbulb,
   MapPin,
   Play,
-  Search,
   Send,
   Sparkles,
   Sprout,
@@ -36,6 +35,17 @@ import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import ScreenShell from '../components/common/ScreenShell';
 import { MarketplaceEnterpriseBrowser } from '../components/marketplace/MarketplaceEnterpriseDirectory';
+import {
+  DirectoryControls,
+  DirectoryPagination,
+} from '../components/marketplace/DirectoryControls';
+import {
+  directoryPageCount,
+  directoryPageItems,
+  getRememberedDirectoryView,
+  rememberDirectoryView,
+} from '../components/marketplace/directoryPaging';
+import type { DirectoryView } from '../components/marketplace/types';
 import {
   canvaEmbedUrl,
   isDirectVideoUrl,
@@ -60,7 +70,6 @@ import {
 
 const CompassIcon = Compass as React.FC<LucideProps>;
 const LeafIcon = Leaf as React.FC<LucideProps>;
-const SearchIcon = Search as React.FC<LucideProps>;
 const MapPinIcon = MapPin as React.FC<LucideProps>;
 const UsersIcon = Users as React.FC<LucideProps>;
 const SparklesIcon = Sparkles as React.FC<LucideProps>;
@@ -540,6 +549,101 @@ function ProjectCard({
   );
 }
 
+function ProjectGridCard({
+  project,
+  palette,
+  t,
+  onOpen,
+}: {
+  project: MarketProject;
+  palette: Palette;
+  t: Translate;
+  onOpen: (slug: string) => void;
+}): React.JSX.Element {
+  return (
+    <Pressable
+      testID={`explorer-project-${project.id}`}
+      accessibilityRole='button'
+      accessibilityLabel={`${project.title}, ${project.place}`}
+      onPress={() => onOpen(project.slug)}
+      style={[
+        styles.projectGridCard,
+        { backgroundColor: palette.surface, borderColor: palette.border },
+      ]}
+    >
+      {project.imageUrl ? (
+        <Image
+          source={{ uri: project.imageUrl }}
+          style={styles.projectGridImage}
+          resizeMode='cover'
+        />
+      ) : (
+        <View
+          style={[
+            styles.projectGridImage,
+            styles.projectGridMark,
+            { backgroundColor: palette.mist },
+          ]}
+        >
+          <LeafIcon size={22} color={palette.primary} strokeWidth={1.8} />
+        </View>
+      )}
+      <View style={[styles.typePill, styles.projectGridPill, { borderColor: palette.border }]}>
+        <Text numberOfLines={1} style={[styles.typePillText, { color: palette.muted }]}>
+          {categoryLabel(t, project.categoryCode)}
+        </Text>
+      </View>
+      <Text numberOfLines={2} style={[styles.projectGridTitle, { color: palette.text }]}>
+        {project.title}
+      </Text>
+      <View style={styles.locationRow}>
+        <MapPinIcon size={13} color={palette.muted} />
+        <Text numberOfLines={1} style={[styles.locationText, { color: palette.muted }]}>
+          {project.place}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function ProjectCompactRow({
+  project,
+  palette,
+  t,
+  onOpen,
+}: {
+  project: MarketProject;
+  palette: Palette;
+  t: Translate;
+  onOpen: (slug: string) => void;
+}): React.JSX.Element {
+  return (
+    <Pressable
+      testID={`explorer-project-${project.id}`}
+      accessibilityRole='button'
+      accessibilityLabel={`${project.title}, ${project.place}`}
+      onPress={() => onOpen(project.slug)}
+      style={[
+        styles.projectCompactRow,
+        { backgroundColor: palette.surface, borderColor: palette.border },
+      ]}
+    >
+      <View style={[styles.projectCompactMark, { backgroundColor: palette.mist }]}>
+        <LeafIcon size={16} color={palette.primary} strokeWidth={1.8} />
+      </View>
+      <View style={styles.projectCompactCopy}>
+        <Text numberOfLines={1} style={[styles.projectCompactTitle, { color: palette.text }]}>
+          {project.title}
+        </Text>
+        <Text numberOfLines={1} style={[styles.projectCompactMeta, { color: palette.primaryDeep }]}>
+          {`${project.place} · ${categoryLabel(t, project.categoryCode)}`}
+        </Text>
+      </View>
+      <ChevronRightIcon size={17} color={palette.primaryDeep} />
+    </Pressable>
+  );
+}
+
 export function MarketplaceProjectBrowser({
   locale,
   palette,
@@ -547,6 +651,7 @@ export function MarketplaceProjectBrowser({
   loader = loadMarketplaceProjects,
   onFeaturedProjectChange,
   onOpenProject = () => undefined,
+  onListNavigate = () => undefined,
 }: {
   locale: string;
   palette: Palette;
@@ -554,9 +659,13 @@ export function MarketplaceProjectBrowser({
   loader?: LoadMarketplaceProjects;
   onFeaturedProjectChange?: (project: MarketProject | null) => void;
   onOpenProject?: (slug: string) => void;
+  /** Called after the page or the view changes, so the screen can scroll back to the list. */
+  onListNavigate?: () => void;
 }): React.JSX.Element {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ProjectFilter>('all');
+  const [view, setView] = useState<DirectoryView>(() => getRememberedDirectoryView('projects'));
+  const [page, setPage] = useState(1);
   const [projects, setProjects] = useState<MarketProject[]>([]);
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
   const [requestVersion, setRequestVersion] = useState(0);
@@ -565,6 +674,7 @@ export function MarketplaceProjectBrowser({
     const controller = new AbortController();
     setState('loading');
     setProjects([]);
+    setPage(1);
     void loader(locale, controller.signal)
       .then((loadedProjects) => {
         if (controller.signal.aborted) return;
@@ -597,6 +707,31 @@ export function MarketplaceProjectBrowser({
       return matchesQuery && matchesFilter;
     });
   }, [filter, projects, query]);
+  const pageCount = directoryPageCount(visibleProjects.length, view);
+  const currentPage = Math.min(page, pageCount);
+  const pageItems = directoryPageItems(visibleProjects, view, currentPage);
+
+  const changeQuery = (next: string): void => {
+    setQuery(next);
+    setPage(1);
+  };
+
+  const changeFilter = (next: ProjectFilter): void => {
+    setFilter(next);
+    setPage(1);
+  };
+
+  const changeView = (next: DirectoryView): void => {
+    rememberDirectoryView('projects', next);
+    setView(next);
+    setPage(1);
+    onListNavigate();
+  };
+
+  const changePage = (next: number): void => {
+    setPage(next);
+    onListNavigate();
+  };
 
   return (
     <>
@@ -617,21 +752,17 @@ export function MarketplaceProjectBrowser({
         </View>
       </View>
 
-      <View
-        style={[
-          styles.searchBox,
-          { backgroundColor: palette.surface, borderColor: palette.border },
-        ]}
-      >
-        <SearchIcon size={18} color={palette.muted} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder={t('explorer.searchPlaceholder')}
-          placeholderTextColor={palette.muted}
-          style={[styles.searchInput, { color: palette.text }]}
-        />
-      </View>
+      <DirectoryControls
+        idPrefix='project'
+        query={query}
+        onQueryChange={changeQuery}
+        searchLabel={t('explorer.controls.searchLabel.projects')}
+        searchPlaceholder={t('explorer.searchPlaceholder')}
+        view={view}
+        onViewChange={changeView}
+        palette={palette}
+        t={t}
+      />
 
       <ScrollView
         horizontal
@@ -649,7 +780,7 @@ export function MarketplaceProjectBrowser({
                 { borderColor: selected ? palette.primary : palette.border },
                 selected && { backgroundColor: palette.fill },
               ]}
-              onPress={() => setFilter(item.key)}
+              onPress={() => changeFilter(item.key)}
             >
               <Text
                 style={[styles.filterChipText, { color: selected ? '#e9fff5' : palette.muted }]}
@@ -690,15 +821,45 @@ export function MarketplaceProjectBrowser({
             </Pressable>
           </View>
         ) : visibleProjects.length ? (
-          visibleProjects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
+          <>
+            <View
+              testID={`project-directory-${view}`}
+              style={
+                view === 'grid'
+                  ? styles.projectGridLayout
+                  : view === 'compact'
+                  ? styles.projectCompactLayout
+                  : styles.projectList
+              }
+            >
+              {pageItems.map((project) => {
+                const Card =
+                  view === 'grid'
+                    ? ProjectGridCard
+                    : view === 'compact'
+                    ? ProjectCompactRow
+                    : ProjectCard;
+                return (
+                  <Card
+                    key={project.id}
+                    project={project}
+                    palette={palette}
+                    t={t}
+                    onOpen={onOpenProject}
+                  />
+                );
+              })}
+            </View>
+            <DirectoryPagination
+              idPrefix='project'
+              label={t('explorer.controls.pagination.label.projects')}
+              page={currentPage}
+              pageCount={pageCount}
               palette={palette}
               t={t}
-              onOpen={onOpenProject}
+              onChange={changePage}
             />
-          ))
+          </>
         ) : (
           <View
             testID='explorer-empty'
@@ -923,6 +1084,7 @@ export default function ExplorarScreen(): React.JSX.Element {
   const [directory, setDirectory] = useState<'projects' | 'enterprises'>('projects');
   const [projectFormOffset, setProjectFormOffset] = useState(0);
   const [enterpriseListOffset, setEnterpriseListOffset] = useState(0);
+  const [projectListOffset, setProjectListOffset] = useState(0);
   const entrance = useRef(new Animated.Value(0)).current;
   const explorerScrollRef = useRef<ScrollView>(null);
 
@@ -961,6 +1123,13 @@ export default function ExplorarScreen(): React.JSX.Element {
   const scrollToEnterpriseList = (): void => {
     explorerScrollRef.current?.scrollTo({
       y: Math.max(enterpriseListOffset - 12, 0),
+      animated: true,
+    });
+  };
+
+  const scrollToProjectList = (): void => {
+    explorerScrollRef.current?.scrollTo({
+      y: Math.max(projectListOffset - 12, 0),
       animated: true,
     });
   };
@@ -1046,18 +1215,25 @@ export default function ExplorarScreen(): React.JSX.Element {
           </View>
 
           {directory === 'projects' ? (
-            <MarketplaceProjectBrowser
-              locale={language}
-              palette={palette}
-              t={t}
-              onFeaturedProjectChange={setFeaturedProject}
-              onOpenProject={(slug) =>
-                router.push({
-                  pathname: '/explorar/[slug]',
-                  params: { slug },
-                })
-              }
-            />
+            <View
+              testID='explorer-project-list'
+              style={styles.projectBrowser}
+              onLayout={(event) => setProjectListOffset(event.nativeEvent.layout.y)}
+            >
+              <MarketplaceProjectBrowser
+                locale={language}
+                palette={palette}
+                t={t}
+                onFeaturedProjectChange={setFeaturedProject}
+                onListNavigate={scrollToProjectList}
+                onOpenProject={(slug) =>
+                  router.push({
+                    pathname: '/explorar/[slug]',
+                    params: { slug },
+                  })
+                }
+              />
+            </View>
           ) : (
             <View
               testID='explorer-enterprise-list'
@@ -1102,6 +1278,7 @@ export default function ExplorarScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 116, gap: 24 },
+  projectBrowser: { gap: 24 },
   pageHeading: { flexDirection: 'row', alignItems: 'center', gap: 11, marginTop: 4 },
   compassMark: {
     width: 42,
@@ -1319,20 +1496,42 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   marketCountText: { fontSize: 10, fontWeight: '700' },
-  searchBox: {
-    minHeight: 50,
-    borderRadius: 15,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    gap: 9,
-  },
-  searchInput: { flex: 1, fontSize: 13, paddingVertical: 10 },
   filterRow: { gap: 8, paddingRight: 16 },
   filterChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8 },
   filterChipText: { fontSize: 11, fontWeight: '700' },
   projectList: { gap: 12 },
+  projectGridLayout: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 12,
+  },
+  projectGridCard: { width: '48.5%', borderWidth: 1, borderRadius: 20, padding: 12, gap: 7 },
+  projectGridImage: { width: '100%', height: 96, borderRadius: 12 },
+  projectGridMark: { alignItems: 'center', justifyContent: 'center' },
+  projectGridPill: { alignSelf: 'flex-start' },
+  projectGridTitle: { fontFamily: 'Sculpin-Bold', fontSize: 16, lineHeight: 20 },
+  projectCompactLayout: { gap: 8 },
+  projectCompactRow: {
+    minHeight: 56,
+    borderWidth: 1,
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+  },
+  projectCompactMark: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  projectCompactCopy: { flex: 1, gap: 3 },
+  projectCompactTitle: { fontFamily: 'Sculpin-Bold', fontSize: 15 },
+  projectCompactMeta: { fontSize: 12, fontWeight: '800' },
   projectCard: { borderWidth: 1, borderRadius: 21, padding: 18 },
   projectCardImage: { width: '100%', height: 180, borderRadius: 14, marginBottom: 14 },
   projectTopline: {

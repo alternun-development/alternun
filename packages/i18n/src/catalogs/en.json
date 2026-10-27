@@ -1091,6 +1091,28 @@
         "projects": "Projects",
         "enterprises": "Enterprises"
       },
+      "controls": {
+        "searchLabel": {
+          "projects": "Search projects",
+          "enterprises": "Search enterprises"
+        },
+        "clearSearch": "Clear search",
+        "view": {
+          "label": "View type",
+          "list": "List",
+          "grid": "Grid",
+          "compact": "Compact"
+        },
+        "pagination": {
+          "label": {
+            "projects": "Project pages",
+            "enterprises": "Enterprise pages"
+          },
+          "previous": "Previous",
+          "next": "Next",
+          "page": "Page {{page}} of {{total}}"
+        }
+      },
       "enterprises": {
         "eyebrow": "ENTERPRISES",
         "heading": "Enterprises creating impact",
@@ -1098,20 +1120,10 @@
         "projectCount": "{{count}} published projects",
         "loading": "Loading enterprises…",
         "empty": "No enterprises are available yet.",
+        "searchPlaceholder": "Search enterprises by name",
+        "noMatches": "No enterprises match your search.",
         "error": "Enterprises could not be loaded.",
         "retry": "Try again",
-        "view": {
-          "label": "Directory view",
-          "list": "List",
-          "grid": "Grid",
-          "compact": "Compact"
-        },
-        "pagination": {
-          "label": "Enterprise pages",
-          "previous": "Previous",
-          "next": "Next",
-          "page": "Page {{page}} of {{total}}"
-        },
         "detail": {
           "back": "Back to enterprises",
           "loading": "Loading enterprise…",

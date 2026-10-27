@@ -1091,6 +1091,28 @@
         "projects": "โครงการ",
         "enterprises": "องค์กร"
       },
+      "controls": {
+        "searchLabel": {
+          "projects": "ค้นหาโครงการ",
+          "enterprises": "ค้นหาองค์กร"
+        },
+        "clearSearch": "ล้างการค้นหา",
+        "view": {
+          "label": "รูปแบบการแสดงผล",
+          "list": "รายการ",
+          "grid": "ตาราง",
+          "compact": "แบบย่อ"
+        },
+        "pagination": {
+          "label": {
+            "projects": "หน้าของโครงการ",
+            "enterprises": "หน้าขององค์กร"
+          },
+          "previous": "ก่อนหน้า",
+          "next": "ถัดไป",
+          "page": "หน้า {{page}} จาก {{total}}"
+        }
+      },
       "enterprises": {
         "eyebrow": "องค์กร",
         "heading": "องค์กรที่สร้างผลกระทบ",
@@ -1098,20 +1120,10 @@
         "projectCount": "โครงการที่เผยแพร่ {{count}} โครงการ",
         "loading": "กำลังโหลดองค์กร…",
         "empty": "ยังไม่มีองค์กรที่พร้อมให้สำรวจ",
+        "searchPlaceholder": "ค้นหาองค์กรตามชื่อ",
+        "noMatches": "ไม่พบองค์กรที่ตรงกับการค้นหา",
         "error": "โหลดข้อมูลองค์กรไม่ได้",
         "retry": "ลองอีกครั้ง",
-        "view": {
-          "label": "มุมมองไดเรกทอรี",
-          "list": "รายการ",
-          "grid": "ตาราง",
-          "compact": "แบบย่อ"
-        },
-        "pagination": {
-          "label": "หน้าของบริษัท",
-          "previous": "ก่อนหน้า",
-          "next": "ถัดไป",
-          "page": "หน้า {{page}} จาก {{total}}"
-        },
         "detail": {
           "back": "กลับไปที่องค์กร",
           "loading": "กำลังโหลดองค์กร…",
