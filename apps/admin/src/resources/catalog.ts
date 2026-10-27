@@ -52,6 +52,17 @@ export const adminResources: AdminResourceDefinition[] = [
     },
   },
   {
+    name: 'marketplace-airs-reports',
+    list: '/airs-reports',
+    surfaces: ['internal'],
+    meta: {
+      title: marketplaceCopy.airsReports.navigation.title,
+      description: marketplaceCopy.airsReports.navigation.description,
+      endpoint: '/v1/admin/airs-reports',
+      emptyState: marketplaceCopy.airsReports.queue.empty,
+    },
+  },
+  {
     name: 'users',
     list: '/users',
     show: '/users/:id',

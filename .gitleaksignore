@@ -7,3 +7,7 @@ packages/infra/scripts/bootstrap-ssm-parameters.sh:generic-api-key:29
 packages/infra/scripts/bootstrap-ssm-parameters.sh:generic-api-key:36
 packages/infra/test/bootstrap-ssm-parameters.test.ts:generic-api-key:14
 packages/infra/test/bootstrap-ssm-parameters.test.ts:generic-api-key:16
+
+# Airs report idempotency-key fixtures: example UUID/"key-n" literals in tests, not credentials.
+apps/api/test/airs-report.request-key.test.js:generic-api-key:13
+apps/admin/test/airs-reports-views.test.mjs:generic-api-key:176

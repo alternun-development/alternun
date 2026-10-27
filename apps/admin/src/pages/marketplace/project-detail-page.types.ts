@@ -14,6 +14,7 @@ export type ProjectDetailTab =
   | 'media'
   | 'activities'
   | 'participants'
+  | 'airsReports'
   | 'comments'
   | 'team'
   | 'history';

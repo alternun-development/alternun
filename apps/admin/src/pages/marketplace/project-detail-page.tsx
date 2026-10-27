@@ -17,6 +17,7 @@ import { MediaEditor } from './editors/media-editor';
 import { ProjectStatusActions } from './editors/project-status-actions';
 import { TeamEditor } from './editors/team-editor';
 import { CommentModerationQueue } from './editors/comment-moderation-queue';
+import { AirsReportEditor } from './editors/airs-report-editor';
 import { ParticipantEditor } from './editors/participant-editor';
 import { AuditHistory } from './editors/audit-history';
 import type {
@@ -35,6 +36,7 @@ const tabs: ProjectDetailTab[] = [
   'media',
   'activities',
   'participants',
+  'airsReports',
   'comments',
   'team',
   'history',
@@ -338,6 +340,7 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
     (item) =>
       (item !== 'comments' || hasMarketplacePermission(roles, 'comments:read')) &&
       (item !== 'participants' || hasMarketplacePermission(roles, 'participants:read')) &&
+      (item !== 'airsReports' || hasMarketplacePermission(roles, 'airs_reports:submit')) &&
       (item !== 'history' || hasMarketplacePermission(roles, 'audit:read'))
   );
   return (
@@ -483,6 +486,9 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
               />
             )}
           </SectionState>
+        ) : null}
+        {tab === 'airsReports' ? (
+          <AirsReportEditor project={snapshot.project} roles={roles} />
         ) : null}
         {tab === 'comments' ? (
           <CommentModerationQueue
