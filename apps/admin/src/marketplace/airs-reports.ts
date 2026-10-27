@@ -4,6 +4,7 @@ import { hasMarketplacePermission } from './permissions';
 import type {
   AirsReportRecord,
   AirsReportSummary,
+  AirsReportTimelineEntry,
   AirsReportFormErrors,
   AirsReportFormValues,
   AirsReportOutcomeKind,
@@ -157,6 +158,22 @@ export function airsReportRejectReasonError(reason: string): string | null {
 
 export function isAirsReportSnapshotHash(value: string): boolean {
   return SHA256_PATTERN.test(value);
+}
+
+/** Friendly label for an audit action; unknown actions fall back to a readable name. */
+export function describeTimelineAction(
+  entry: Pick<AirsReportTimelineEntry, 'action' | 'result'>
+): string {
+  const labels = marketplaceCopy.airsReports.history.actions;
+  const readable = entry.action
+    .replace(/^airs_report\./, '')
+    .replace(/_/g, ' ')
+    .trim();
+  const fallback = readable ? readable.charAt(0).toUpperCase() + readable.slice(1) : entry.action;
+  const text = labels[entry.action] ?? fallback;
+  return entry.result === 'denied'
+    ? `${text} (${marketplaceCopy.airsReports.history.denied})`
+    : text;
 }
 
 /** Counts shown above the recent reports: what is done, what waits, and how many Airs are involved. */
