@@ -83,7 +83,9 @@ function primaryEnterpriseId(row: Row): string {
 }
 
 function mapProject(row: Row): ProjectRecord {
-  const relationships = rowArray(row.enterprise_projects);
+  // The list query filters `enterprise_projects` to the primary owner; `related_enterprises` keeps
+  // every relationship so callers can see all enterprises tied to the project.
+  const relationships = rowArray(row.related_enterprises ?? row.enterprise_projects);
   const media = rowArray(row.project_media).map(mapMedia);
   return {
     id: text(row.id),
@@ -391,7 +393,8 @@ export class MarketplaceAdminRepository {
     enterpriseIds: readonly string[];
     projectIds: readonly string[];
   }): Promise<ProjectRecord[]> {
-    const select = '*, enterprise_projects!inner(*), project_media(*)';
+    const select =
+      '*, enterprise_projects!inner(*), related_enterprises:enterprise_projects(*), project_media(*)';
     if (!scope) {
       const { data, error } = await this.client
         .from('projects')
