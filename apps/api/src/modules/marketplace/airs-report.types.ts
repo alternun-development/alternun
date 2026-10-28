@@ -105,8 +105,8 @@ export interface SubmitAirsReportRequest {
   concept: string;
   /** Reserved for the per-project medal catalog; rejected until that catalog exists. */
   medalId?: string;
-  /** Required for every report for now, for example the invoice number. */
-  documentNumber: string;
+  /** For example the invoice number. Required when the project type asks for it (or it has none). */
+  documentNumber?: string;
   /** SHA-256 (hex) of the supporting file, once uploads exist. */
   documentSha256?: string;
   /**

@@ -52,6 +52,28 @@ export const adminResources: AdminResourceDefinition[] = [
     },
   },
   {
+    name: 'marketplace-notifications',
+    list: '/notifications',
+    surfaces: ['internal', 'partner'],
+    meta: {
+      title: marketplaceCopy.notifications.navigation.title,
+      description: marketplaceCopy.notifications.navigation.description,
+      endpoint: '/v1/admin/notifications',
+      emptyState: marketplaceCopy.notifications.empty,
+    },
+  },
+  {
+    name: 'marketplace-project-types',
+    list: '/project-types',
+    surfaces: ['internal'],
+    meta: {
+      title: marketplaceCopy.projectTypes.navigation.title,
+      description: marketplaceCopy.projectTypes.navigation.description,
+      endpoint: '/v1/admin/project-types',
+      emptyState: marketplaceCopy.projectTypes.empty,
+    },
+  },
+  {
     name: 'marketplace-airs-reports',
     list: '/airs-reports',
     surfaces: ['internal'],
