@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Review the Airs reports card layout fix, then verified domain admins and the A7 walkthrough
+Next micro-step: Testnet: create SSM params for AIRS*REPORT_SUPPORT_EMAILS and AUTHENTIK_API*\*; watch skipped_unverified in the bootstrap output; follow-ups: admin i18n (en/es/th), API dependency upgrades
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
