@@ -1,3 +1,13 @@
+## [1.1.124](https://github.com/alternun-development/alternun/compare/v1.1.123...v1.1.124) (2026-10-28)
+
+### Bug Fixes
+
+- **repo:** fix(marketplace): count admins from every related enterprise on project access
+
+### Bug Fixes
+
+- **marketplace:** count admins from every related enterprise on project access ([a526360](https://github.com/alternun-development/alternun/commit/a526360c862a1b66b7cceb3e3330ac08084ce577))
+
 ## [1.1.123](https://github.com/alternun-development/alternun/compare/v1.1.122...v1.1.123) (2026-10-27)
 
 ### Changes
