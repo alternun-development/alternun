@@ -1,4 +1,9 @@
-import { renderAirsReportRecipientEmail, renderAirsReportSupportEmail } from './airs-report-emails';
+import {
+  renderAirsReportDecisionEmail,
+  renderAirsReportRecipientEmail,
+  renderAirsReportReviewRequestEmail,
+  renderAirsReportSupportEmail,
+} from './airs-report-emails';
 import type { AirsReportNotifierDependencies } from './airs-report-emails.types';
 import type { AirsReportRecord } from './airs-report.types';
 
@@ -64,6 +69,68 @@ export function createAirsReportNotifier(
       }
     }
 
+    return result;
+  };
+}
+
+export interface AirsReportWorkflowNotifyResult {
+  sent: number;
+}
+
+/**
+ * Emails for the approval workflow: a report waiting for review goes to the approvers and
+ * support; a manual approval or rejection goes to whoever submitted it and to support.
+ * Auto-approved reports have no decision email (support already gets the issuance tracking).
+ * Like the issuance emails, this never throws.
+ */
+export function createAirsReportWorkflowNotifier(
+  dependencies: AirsReportNotifierDependencies
+): (report: AirsReportRecord) => Promise<AirsReportWorkflowNotifyResult> {
+  return async (report) => {
+    const result: AirsReportWorkflowNotifyResult = { sent: 0 };
+    const waiting = report.status === 'pending_approval';
+    const decided = report.decision?.kind === 'manual';
+    if (!waiting && !decided) return result;
+
+    const projectName = await dependencies.projectName(report.projectId).catch(() => null);
+    const context = {
+      report,
+      projectName,
+      appUrl: resolveAirsReportAppUrl(dependencies.env),
+    };
+    const email = waiting
+      ? renderAirsReportReviewRequestEmail(context)
+      : renderAirsReportDecisionEmail(context);
+
+    const audience: string[] = [];
+    if (waiting) {
+      audience.push(
+        ...(await (dependencies.approverEmails?.() ?? Promise.resolve([])).catch(() => []))
+      );
+    } else {
+      const submitter = await (
+        dependencies.submitterEmail?.(report.submittedBy.issuer, report.submittedBy.subject) ??
+        Promise.resolve(null)
+      ).catch(() => null);
+      if (submitter) audience.push(submitter);
+    }
+    audience.push(...resolveAirsReportSupportEmails(dependencies.env));
+
+    const recipients = Array.from(
+      new Set<string>(
+        audience
+          .map((entry) => entry.trim().toLowerCase())
+          .filter((entry) => EMAIL_PATTERN.test(entry))
+      )
+    );
+    for (const to of recipients) {
+      try {
+        const sent = await dependencies.send({ to, email });
+        if (sent.sent) result.sent += 1;
+      } catch {
+        // Notifications are best effort.
+      }
+    }
     return result;
   };
 }

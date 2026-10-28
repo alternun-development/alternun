@@ -72,6 +72,8 @@ export type ProjectMembership = {
   scopeType: 'enterprise' | 'project';
   role: 'partner_operator' | 'sub_admin' | 'partner_readonly';
   status: 'active' | 'revoked';
+  /** Verified email of the member, when they have signed in. */
+  memberEmail?: string | null;
 };
 
 export type ActivityCompletion = {

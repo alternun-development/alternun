@@ -51,6 +51,10 @@ function mapMembership(row: Row): ProjectMembershipRecord {
   };
 }
 
+export function memberKey(issuer: string, subject: string): string {
+  return JSON.stringify([issuer, subject]);
+}
+
 function failDatabase(error: { code?: string } | null): never {
   if (error?.code === '23505') marketplaceError('MEMBERSHIP_CONFLICT');
   throw new MarketplaceApiError('MARKETPLACE_UNAVAILABLE', 'Marketplace storage is unavailable.');
@@ -95,6 +99,88 @@ export class MarketplaceMembershipRepository {
       seen.add(membership.id);
       return true;
     });
+  }
+
+  /** The one verified account with this email; null when none, a conflict when it is ambiguous. */
+  async findVerifiedUserByEmail(
+    email: string
+  ): Promise<{ id: string; issuer: string; subject: string; email: string } | null> {
+    const { data, error } = await this.client
+      .from('users')
+      .select('id, iss, sub, email, raw_claims')
+      .eq('email_verified', true)
+      .ilike(
+        'email',
+        email.trim().replace(/[\\%_]/g, (match) => `\\${match}`)
+      )
+      .limit(2);
+    if (error) failDatabase(error);
+    const matches = rows(data);
+    if (matches.length > 1) marketplaceError('MEMBERSHIP_CONFLICT');
+    const row = matches[0];
+    if (!row) return null;
+    // Accounts synced by the Authentik webhook store a hashed principal in `sub`; the panel token
+    // carries the Authentik user UUID, kept in the raw claims.
+    const claims = record(row.raw_claims);
+    return {
+      id: text(row.id),
+      issuer: text(row.iss),
+      subject: text(claims.uuid) || text(claims.sub) || text(row.sub),
+      email: text(row.email).trim().toLowerCase(),
+    };
+  }
+
+  /** Emails of known members, keyed by memberKey(issuer, subject). */
+  async emailsForMembers(
+    members: ReadonlyArray<{ issuer: string; subject: string }>
+  ): Promise<Map<string, string>> {
+    const found = new Map<string, string>();
+    // Subjects are Authentik UUIDs or hashed principals; anything else cannot be a filter value.
+    const subjects: string[] = [];
+    for (const { subject } of members) {
+      if (/^[A-Za-z0-9._:@-]+$/.test(subject) && !subjects.includes(subject)) {
+        subjects.push(subject);
+      }
+    }
+    if (!subjects.length) return found;
+    const list = subjects.join(',');
+    const { data, error } = await this.client
+      .from('users')
+      .select('sub, email, email_verified, raw_claims')
+      .or(`sub.in.(${list}),raw_claims->>uuid.in.(${list})`);
+    if (error) failDatabase(error);
+    const emailBySubject = new Map<string, string>();
+    for (const row of rows(data)) {
+      if (row.email_verified !== true || !text(row.email)) continue;
+      const email = text(row.email).trim().toLowerCase();
+      emailBySubject.set(text(row.sub), email);
+      const uuid = text(record(row.raw_claims).uuid);
+      if (uuid) emailBySubject.set(uuid, email);
+    }
+    for (const member of members) {
+      const email = emailBySubject.get(member.subject);
+      if (email) found.set(memberKey(member.issuer, member.subject), email);
+    }
+    return found;
+  }
+
+  /** Active memberships a person still holds with this role, optionally ignoring one. */
+  async countActiveWithRole(
+    member: { issuer: string; subject: string },
+    role: ProjectMembershipRecord['role'],
+    exceptId?: string
+  ): Promise<number> {
+    let query = this.client
+      .from('project_memberships')
+      .select('id', { count: 'exact', head: true })
+      .eq('member_issuer', member.issuer)
+      .eq('member_subject', member.subject)
+      .eq('role', role)
+      .eq('status', 'active');
+    if (exceptId) query = query.neq('id', exceptId);
+    const { count, error } = await query;
+    if (error) failDatabase(error);
+    return count ?? 0;
   }
 
   async find(id: string): Promise<ProjectMembershipRecord | null> {

@@ -3,11 +3,12 @@ import React from 'react';
 import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
 import { MarketplaceEnterpriseBrowser } from '../../components/marketplace/MarketplaceEnterpriseDirectory';
 import {
-  ENTERPRISE_PAGE_SIZE,
-  enterprisePageCount,
-  enterprisePageItems,
-  rememberEnterpriseView,
-} from '../../components/marketplace/enterpriseDirectoryPaging';
+  DIRECTORY_PAGE_SIZE,
+  directoryPageCount,
+  directoryPageItems,
+  getRememberedDirectoryView,
+  rememberDirectoryView,
+} from '../../components/marketplace/directoryPaging';
 import type { MarketplaceEnterprise } from '../../components/marketplace/types';
 
 const palette = {
@@ -80,7 +81,7 @@ function indicator(renderer: ReactTestRenderer): string {
 }
 
 describe('Explorer enterprise directory pagination', () => {
-  beforeEach(() => rememberEnterpriseView('list'));
+  beforeEach(() => rememberDirectoryView('enterprises', 'list'));
 
   it.each([
     ['list', 3],
@@ -94,7 +95,7 @@ describe('Explorer enterprise directory pagination', () => {
     expect(visibleCards(renderer)).toHaveLength(size);
     expect(visibleCards(renderer)[0]).toBe('explorer-enterprise-enterprise-1');
     expect(indicator(renderer)).toBe(
-      `explorer.enterprises.pagination.page:${JSON.stringify({
+      `explorer.controls.pagination.page:${JSON.stringify({
         page: 1,
         total: Math.ceil(13 / size),
       })}`
@@ -183,25 +184,90 @@ describe('Explorer enterprise directory pagination', () => {
     const { renderer } = await renderDirectory(7);
     const switcher = renderer.root.findByProps({ testID: 'enterprise-view-switcher' });
     expect(switcher.props.accessibilityRole).toBe('radiogroup');
-    expect(switcher.props.accessibilityLabel).toBe('explorer.enterprises.view.label');
+    expect(switcher.props.accessibilityLabel).toBe('explorer.controls.view.label');
     expect(
       renderer.root.findByProps({ testID: 'enterprise-view-grid' }).props.accessibilityRole
     ).toBe('radio');
     expect(
       renderer.root.findByProps({ testID: 'enterprise-page-next' }).props.accessibilityLabel
-    ).toBe('explorer.enterprises.pagination.next');
+    ).toBe('explorer.controls.pagination.next');
   });
 });
 
-describe('enterprise directory paging helpers', () => {
+describe('Explorer enterprise directory search', () => {
+  beforeEach(() => rememberDirectoryView('enterprises', 'list'));
+
+  async function search(renderer: ReactTestRenderer, query: string): Promise<void> {
+    await act(async () => {
+      renderer.root
+        .findAllByProps({ testID: 'enterprise-search-input' })[0]
+        .props.onChangeText(query);
+      await Promise.resolve();
+    });
+  }
+
+  it('filters by name, ignoring case, and returns to the first page', async () => {
+    const { renderer, onListNavigate } = await renderDirectory(13);
+    await press(renderer, 'enterprise-page-next');
+    await search(renderer, 'ENTERPRISE 1');
+
+    expect(visibleCards(renderer)).toEqual([
+      'explorer-enterprise-enterprise-1',
+      'explorer-enterprise-enterprise-10',
+      'explorer-enterprise-enterprise-11',
+    ]);
+    expect(indicator(renderer)).toBe(
+      `explorer.controls.pagination.page:${JSON.stringify({ page: 1, total: 2 })}`
+    );
+    // Typing does not scroll the screen; only page and view changes do.
+    expect(onListNavigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('labels the search field and uses the enterprise placeholder', async () => {
+    const { renderer } = await renderDirectory(4);
+    const input = renderer.root.findAllByProps({ testID: 'enterprise-search-input' })[0];
+    expect(input.props.accessibilityLabel).toBe('explorer.controls.searchLabel.enterprises');
+    expect(input.props.placeholder).toBe('explorer.enterprises.searchPlaceholder');
+  });
+
+  it('shows a no-match state that keeps the controls, and clears back to the full list', async () => {
+    const { renderer } = await renderDirectory(7);
+    await search(renderer, 'zzz');
+
+    expect(
+      renderer.root.findAllByProps({ testID: 'enterprise-directory-no-matches' })
+    ).not.toHaveLength(0);
+    expect(visibleCards(renderer)).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: 'enterprise-view-switcher' })).not.toHaveLength(
+      0
+    );
+    expect(renderer.root.findAllByProps({ testID: 'enterprise-pagination' })).toHaveLength(0);
+
+    await press(renderer, 'enterprise-search-clear');
+    expect(visibleCards(renderer)).toHaveLength(3);
+    expect(
+      renderer.root.findAllByProps({ testID: 'enterprise-directory-no-matches' })
+    ).toHaveLength(0);
+  });
+});
+
+describe('directory paging helpers', () => {
   it('uses 3, 4, and 6 items per page', () => {
-    expect(ENTERPRISE_PAGE_SIZE).toEqual({ list: 3, grid: 4, compact: 6 });
+    expect(DIRECTORY_PAGE_SIZE).toEqual({ list: 3, grid: 4, compact: 6 });
   });
 
   it('counts at least one page and clamps out-of-range pages', () => {
-    expect(enterprisePageCount(0, 'list')).toBe(1);
-    expect(enterprisePageCount(7, 'grid')).toBe(2);
-    expect(enterprisePageItems([1, 2, 3, 4, 5], 'list', 9)).toEqual([4, 5]);
-    expect(enterprisePageItems([1, 2, 3, 4, 5], 'list', 0)).toEqual([1, 2, 3]);
+    expect(directoryPageCount(0, 'list')).toBe(1);
+    expect(directoryPageCount(7, 'grid')).toBe(2);
+    expect(directoryPageItems([1, 2, 3, 4, 5], 'list', 9)).toEqual([4, 5]);
+    expect(directoryPageItems([1, 2, 3, 4, 5], 'list', 0)).toEqual([1, 2, 3]);
+  });
+
+  it('remembers the view of each directory independently', () => {
+    rememberDirectoryView('projects', 'list');
+    rememberDirectoryView('enterprises', 'compact');
+    expect(getRememberedDirectoryView('projects')).toBe('list');
+    expect(getRememberedDirectoryView('enterprises')).toBe('compact');
+    rememberDirectoryView('enterprises', 'list');
   });
 });

@@ -1,11 +1,18 @@
 import { useState } from 'react';
-import { adminEnv } from '../../../config/env';
 import { requestMarketplace, type ProjectMembership } from '../../../marketplace/api';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import {
   hasMarketplacePermission,
   membershipRolesGrantedBy,
 } from '../../../marketplace/permissions';
+import {
+  addedMessage,
+  buildAddMemberBody,
+  isValidMemberEmail,
+  memberByEmailPath,
+  memberLabel,
+} from '../../../marketplace/team-members';
+import type { GrantByEmailResponse } from '../../../marketplace/team-members.types';
 import { SectionMessage } from '../components';
 import type { MembershipRole, TeamEditorProps } from './team-editor.types';
 
@@ -18,6 +25,7 @@ export function TeamEditor({
   const allowedRoles = membershipRolesGrantedBy(roles);
   const [showAdd, setShowAdd] = useState(false);
   const [person, setPerson] = useState('');
+  const [personError, setPersonError] = useState('');
   const [role, setRole] = useState<MembershipRole>(allowedRoles[0] ?? 'partner_readonly');
   const [removing, setRemoving] = useState<ProjectMembership>();
   const [reason, setReason] = useState('');
@@ -29,23 +37,21 @@ export function TeamEditor({
   const active = memberships.filter((membership) => membership.status === 'active');
 
   async function add(): Promise<void> {
-    if (!person.trim() || !allowedRoles.includes(role)) return;
+    if (!allowedRoles.includes(role)) return;
+    if (!isValidMemberEmail(person)) {
+      setPersonError(marketplaceCopy.teamEditor.invalidEmail);
+      return;
+    }
     setSaving(true);
     setError(undefined);
     try {
-      await requestMarketplace<ProjectMembership>('/v1/admin/project-memberships', {
+      const response = await requestMarketplace<GrantByEmailResponse>(memberByEmailPath, {
         method: 'POST',
-        body: {
-          member: { issuer: adminEnv.authIssuer, subject: person.trim() },
-          enterpriseId: project.enterpriseId,
-          projectId: project.id,
-          scopeType: 'project',
-          role,
-        },
+        body: buildAddMemberBody(project, person, role),
       });
       setPerson('');
       setShowAdd(false);
-      onChanged(marketplaceCopy.teamEditor.added);
+      onChanged(addedMessage(response));
     } catch (requestError) {
       setError(requestError);
     } finally {
@@ -111,9 +117,7 @@ export function TeamEditor({
             const manageable = allowedRoles.includes(membership.role);
             return (
               <article className='metric-card' key={membership.id}>
-                <h4>
-                  {marketplaceCopy.projectDetail.team.member} {index + 1}
-                </h4>
+                <h4>{memberLabel(membership, index)}</h4>
                 {canAssign && manageable ? (
                   <label>
                     <span>{marketplaceCopy.teamEditor.role}</span>
@@ -155,8 +159,18 @@ export function TeamEditor({
           <h4>{marketplaceCopy.teamEditor.add}</h4>
           <label>
             <span>{marketplaceCopy.teamEditor.person}</span>
-            <input value={person} onChange={(event) => setPerson(event.target.value)} />
+            <input
+              autoComplete='off'
+              inputMode='email'
+              type='email'
+              value={person}
+              onChange={(event) => {
+                setPerson(event.target.value);
+                setPersonError('');
+              }}
+            />
             <small>{marketplaceCopy.teamEditor.personHint}</small>
+            {personError ? <strong className='error-text'>{personError}</strong> : null}
           </label>
           <label>
             <span>{marketplaceCopy.teamEditor.role}</span>

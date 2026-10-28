@@ -9,6 +9,8 @@ import type {
   AirsReportDecision,
   AirsReportRecipientLookupResponse,
   AirsReportRecipientTotals,
+  AirsReportRewardRecord,
+  AirsReportTimelineEntry,
   AirsReportRecord,
   AirsReportStatus,
   SubmitAirsReportRequest,
@@ -304,6 +306,40 @@ export class AirsReportRepository {
     return data ? mapAirsReportRow(data as Row) : null;
   }
 
+  /** History of one report, oldest first. Only what an operator needs: no actor identity. */
+  async listTimeline(reportId: string): Promise<AirsReportTimelineEntry[]> {
+    const { data, error } = await this.client
+      .from('admin_audit_log')
+      .select('action, result, reason_code, occurred_at')
+      .eq('target_type', 'airs_report')
+      .eq('target_id', reportId)
+      .like('action', 'airs_report.%')
+      .order('occurred_at', { ascending: true })
+      .limit(100);
+    if (error) failDatabase();
+    return rows(data).map((row) => ({
+      action: String(row.action ?? ''),
+      result: row.result === 'denied' ? 'denied' : 'allowed',
+      reasonCode: typeof row.reason_code === 'string' ? row.reason_code : null,
+      occurredAt: String(row.occurred_at ?? ''),
+    }));
+  }
+
+  async listRewards(reportId: string): Promise<AirsReportRewardRecord[]> {
+    const { data, error } = await this.client
+      .from('airs_report_rewards')
+      .select('kind, amount, status, credited_at')
+      .eq('report_id', reportId)
+      .order('kind', { ascending: true });
+    if (error) failDatabase();
+    return rows(data).map((row) => ({
+      kind: row.kind === 'project' ? 'project' : 'submitter',
+      amount: Number(row.amount ?? 0),
+      status: row.status === 'credited' || row.status === 'void' ? row.status : 'locked',
+      creditedAt: typeof row.credited_at === 'string' ? row.credited_at : null,
+    }));
+  }
+
   async recipientTotals(recipientEmail: string, at: string): Promise<AirsReportRecipientTotals> {
     const { data, error } = await this.client.rpc('airs_report_recipient_totals', {
       p_recipient_email: recipientEmail,
@@ -323,5 +359,32 @@ export class AirsReportRepository {
       .maybeSingle();
     if (error) failDatabase();
     return !!data;
+  }
+
+  async listApproverEmails(): Promise<string[]> {
+    const { data, error } = await this.client
+      .from('airs_report_approvers')
+      .select('email')
+      .eq('is_active', true);
+    if (error) failDatabase();
+    return ((data ?? []) as Array<{ email: string }>).map((row) => row.email);
+  }
+
+  /** Verified email of an admin identity, so a decision can be reported back to them. */
+  async findSubmitterEmail(issuer: string, subject: string): Promise<string | null> {
+    // Accounts synced by the Authentik webhook keep the panel subject (the Authentik UUID) in
+    // raw_claims, not in sub. Only plain identifiers can be used as filter values.
+    const safe = /^[A-Za-z0-9._:@/-]+$/;
+    if (!safe.test(issuer) || !safe.test(subject)) return null;
+    const { data, error } = await this.client
+      .from('users')
+      .select('email')
+      .or(`and(iss.eq."${issuer}",sub.eq."${subject}"),raw_claims->>uuid.eq."${subject}"`)
+      .eq('email_verified', true)
+      .limit(1)
+      .maybeSingle();
+    if (error) failDatabase();
+    const email = (data as { email?: string | null } | null)?.email;
+    return typeof email === 'string' && email.trim() ? email.trim() : null;
   }
 }

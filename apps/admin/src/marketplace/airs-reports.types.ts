@@ -59,9 +59,26 @@ export type AirsReportRecipientLookup = {
   displayName: string | null;
 };
 
+export type AirsReportTimelineEntry = {
+  action: string;
+  result: 'allowed' | 'denied';
+  reasonCode: string | null;
+  occurredAt: string;
+};
+
+export type AirsReportReward = {
+  kind: 'submitter' | 'project';
+  amount: number;
+  status: 'locked' | 'credited' | 'void';
+  creditedAt: string | null;
+};
+
 export type AirsReportDetail = {
   report: AirsReportRecord;
   recipientTotals: AirsReportRecipientTotals;
+  // Older API versions do not send these two lists.
+  timeline?: AirsReportTimelineEntry[];
+  rewards?: AirsReportReward[];
 };
 
 export type AirsReportTransition = {
@@ -83,3 +100,12 @@ export type AirsReportFormErrors = Partial<Record<AirsReportFormField, string>>;
 
 /** What the person who submitted sees once the server answers. */
 export type AirsReportOutcomeKind = 'credited' | 'waiting_claim' | 'in_review';
+
+export type AirsReportSummary = {
+  credited: number;
+  creditedAirs: number;
+  waitingApproval: number;
+  waitingClaim: number;
+  /** Airs in every report that is not rejected, cancelled or reversed. */
+  totalAirs: number;
+};

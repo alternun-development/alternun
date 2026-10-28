@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import {
   grantsGlobally,
   hasPermission,
@@ -8,11 +8,14 @@ import {
 } from '../../common/admin-auth/admin-auth.guard';
 import type {
   ChangeProjectMembershipDto,
+  CreateProjectMembershipByEmailDto,
   CreateProjectMembershipDto,
   ListProjectMembershipsQueryDto,
 } from './marketplace.dto';
+import { AUTHENTIK_GROUP_SYNC } from './authentik-group-sync';
+import type { AuthentikGroupSync, AuthentikGroupSyncStatus } from './authentik-group-sync.types';
 import { marketplaceError } from './marketplace.errors';
-import { MarketplaceMembershipRepository } from './marketplace-membership.repository';
+import { MarketplaceMembershipRepository, memberKey } from './marketplace-membership.repository';
 import { MarketplaceAdminRepository } from './marketplace.repository';
 import {
   actorFromPrincipal,
@@ -48,8 +51,47 @@ function canManageRole(principal: AdminPrincipal, role: string): boolean {
 export class MarketplaceMembershipService {
   constructor(
     private readonly repository: MarketplaceMembershipRepository,
-    private readonly adminRepository: MarketplaceAdminRepository
+    private readonly adminRepository: MarketplaceAdminRepository,
+    @Optional() @Inject(AUTHENTIK_GROUP_SYNC) private readonly groupSync?: AuthentikGroupSync
   ) {}
+
+  // Emails only decorate the lists and drive the group sync, so a lookup failure never breaks them.
+  private async emailsFor(
+    members: ReadonlyArray<{ issuer: string; subject: string }>
+  ): Promise<Map<string, string>> {
+    try {
+      return await this.repository.emailsForMembers(members);
+    } catch {
+      return new Map<string, string>();
+    }
+  }
+
+  // Adds the verified email of each member so the admin screens can show people, not ids.
+  private async withEmails(
+    memberships: ProjectMembershipRecord[]
+  ): Promise<ProjectMembershipRecord[]> {
+    if (!memberships.length) return memberships;
+    const emails = await this.emailsFor(memberships.map((membership) => membership.member));
+    return memberships.map((membership) => ({
+      ...membership,
+      memberEmail:
+        emails.get(memberKey(membership.member.issuer, membership.member.subject)) ?? null,
+    }));
+  }
+
+  // Best effort: the membership in the database is the authority and stays whatever Authentik says.
+  private async syncGroup(
+    action: 'add' | 'remove',
+    email: string | null | undefined,
+    role: ProjectMembershipRecord['role']
+  ): Promise<AuthentikGroupSyncStatus> {
+    if (!this.groupSync || !email) return 'skipped';
+    try {
+      return await this.groupSync[action](email, role);
+    } catch {
+      return 'failed';
+    }
+  }
 
   private async deny(
     principal: AdminPrincipal,
@@ -151,11 +193,11 @@ export class MarketplaceMembershipService {
         query.projectId
       );
     const filters = { ...query, ...(enterpriseId ? { enterpriseId } : {}) };
-    if (isGlobal(principal)) return this.repository.list(filters);
+    if (isGlobal(principal)) return this.withEmails(await this.repository.list(filters));
     const actorMemberships = await this.adminRepository.listActorMemberships(
       actorFromPrincipal(principal)
     );
-    return this.repository.list(filters, {
+    const visible = await this.repository.list(filters, {
       enterpriseIds: [
         ...new Set(
           actorMemberships
@@ -174,6 +216,7 @@ export class MarketplaceMembershipService {
         ),
       ],
     });
+    return this.withEmails(visible);
   }
 
   async get(
@@ -240,6 +283,39 @@ export class MarketplaceMembershipService {
     );
   }
 
+  /**
+   * Grants a membership to the person with this verified email, so nobody has to know their
+   * Authentik id, and keeps the Authentik group in step. The person must have signed in once.
+   */
+  async grantByEmail(
+    principal: AdminPrincipal,
+    requestId: string,
+    input: CreateProjectMembershipByEmailDto
+  ): Promise<{ membership: ProjectMembershipRecord; groupSync: AuthentikGroupSyncStatus }> {
+    const scope = await this.resolveScope(input);
+    // Authorize before looking the email up, so a caller without rights learns nothing about it.
+    await this.authorize(
+      principal,
+      'project_memberships:assign',
+      requestId,
+      scope.enterpriseId,
+      scope.projectId
+    );
+    const user = await this.repository.findVerifiedUserByEmail(input.email);
+    if (!user) marketplaceError('MEMBERSHIP_USER_NOT_FOUND');
+    const membership = await this.grant(principal, requestId, {
+      // Panel tokens share the caller's issuer, not the one stored with the account.
+      member: { issuer: principal.iss, subject: user.subject },
+      memberUserId: user.id,
+      enterpriseId: input.enterpriseId,
+      projectId: input.projectId,
+      scopeType: input.scopeType,
+      role: input.role,
+    });
+    const groupSync = await this.syncGroup('add', user.email, membership.role);
+    return { membership: { ...membership, memberEmail: user.email }, groupSync };
+  }
+
   async change(
     principal: AdminPrincipal,
     requestId: string,
@@ -280,7 +356,7 @@ export class MarketplaceMembershipService {
         membership.projectId ?? undefined
       );
     if (status === 'revoked' && !input.reason) marketplaceError('REVOCATION_REASON_REQUIRED');
-    return this.repository.change(
+    const changed = await this.repository.change(
       membershipId,
       role,
       status,
@@ -288,6 +364,33 @@ export class MarketplaceMembershipService {
       requestId,
       input.reason
     );
+    await this.reconcileGroups(membership, changed);
+    return changed;
+  }
+
+  // After a role change, a reactivation or a revoke: the active role's group is added, and the old
+  // one is removed only when the person holds no other active membership with that role.
+  private async reconcileGroups(
+    before: ProjectMembershipRecord,
+    after: ProjectMembershipRecord
+  ): Promise<void> {
+    const emails = await this.emailsFor([after.member]);
+    const email = emails.get(memberKey(after.member.issuer, after.member.subject));
+    if (!email) return;
+    if (after.status === 'active' && (after.role !== before.role || before.status !== 'active')) {
+      await this.syncGroup('add', email, after.role);
+    }
+    const oldRoleGone =
+      (before.status === 'active' && after.status === 'revoked') || after.role !== before.role;
+    if (before.status === 'active' && oldRoleGone) {
+      let remaining = 1;
+      try {
+        remaining = await this.repository.countActiveWithRole(after.member, before.role);
+      } catch {
+        // Unknown: keep the group rather than remove a role the person may still hold.
+      }
+      if (remaining === 0) await this.syncGroup('remove', email, before.role);
+    }
   }
 
   async revoke(
