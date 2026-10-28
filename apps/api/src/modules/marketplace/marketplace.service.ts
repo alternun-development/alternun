@@ -11,6 +11,7 @@ import type {
   CreateEnterpriseDto,
   CreateProjectDto,
   CreateProjectMediaDto,
+  ReorderMarketplaceDto,
   ReorderProjectMediaDto,
   UpdateEnterpriseDto,
   UpdateProjectDto,
@@ -164,7 +165,11 @@ function activeEnterpriseGroups(rows: PublishedProjectRow[]): PublishedProjectRo
   }
   const result: PublishedProjectRow[][] = [];
   groups.forEach((group) => result.push(group));
-  return result;
+  return result.sort(
+    ([a], [b]) =>
+      a.enterprise.sortOrder - b.enterprise.sortOrder ||
+      a.enterprise.displayName.localeCompare(b.enterprise.displayName)
+  );
 }
 
 function validateContent(content: ProjectContent, defaultLocale: string): void {
@@ -461,6 +466,28 @@ export class MarketplaceAdminService {
       requestId,
       reason
     );
+  }
+
+  async reorderEnterprises(
+    principal: AdminPrincipal,
+    requestId: string,
+    input: ReorderMarketplaceDto
+  ): Promise<EnterpriseRecord[]> {
+    ensureMutationInput(input);
+    await this.authorize(principal, 'enterprises:reorder', requestId, 'enterprise');
+    await this.repository.reorderEnterprises(input.ids, actorFromPrincipal(principal), requestId);
+    return this.repository.listEnterprises();
+  }
+
+  async reorderProjects(
+    principal: AdminPrincipal,
+    requestId: string,
+    input: ReorderMarketplaceDto
+  ): Promise<ProjectRecord[]> {
+    ensureMutationInput(input);
+    await this.authorize(principal, 'projects:reorder', requestId, 'project');
+    await this.repository.reorderProjects(input.ids, actorFromPrincipal(principal), requestId);
+    return this.repository.listProjects();
   }
 
   async listProjects(principal: AdminPrincipal, requestId: string): Promise<ProjectRecord[]> {

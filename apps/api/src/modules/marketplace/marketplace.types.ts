@@ -141,6 +141,7 @@ export interface EnterpriseRecord {
   status: 'active' | 'paused' | 'archived';
   countryCode: string | null;
   websiteUrl: string | null;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -151,12 +152,17 @@ export interface ProjectRecord {
   slug: string;
   status: ProjectStatus;
   categoryCode: string;
+  /** Commerce type (hotel, restaurant, ...), or null while none is assigned. */
+  projectTypeCode?: string | null;
+  /** Whether reports for this project need a document number; true while it has no type. */
+  requiresDocumentNumber?: boolean;
   countryCode: string | null;
   timeZone: string;
   defaultLocale: string;
   content: ProjectContent;
   firstPublishedAt: string | null;
   publishedAt: string | null;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
   enterprises?: Array<{

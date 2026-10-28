@@ -8,11 +8,15 @@ import type { MediaKind } from './api';
 
 export type MarketplacePermission =
   | 'enterprises:create'
+  | 'enterprises:update'
+  | 'enterprises:status'
+  | 'enterprises:reorder'
   | 'projects:create'
   | 'projects:update'
   | 'projects:publish'
   | 'projects:pause'
   | 'projects:archive'
+  | 'projects:reorder'
   | 'project_media:write'
   | 'project_media:moderate'
   | 'activities:write'
@@ -25,6 +29,8 @@ export type MarketplacePermission =
   | 'participants:read'
   | 'participants:manage'
   | 'airs_reports:submit'
+  | 'project_types:manage'
+  | 'medals:manage'
   | 'audit:read'
   | 'project_memberships:assign'
   | 'project_memberships:revoke';
@@ -44,6 +50,7 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'airs_reports:submit',
   ],
   partner_operator: [
+    'enterprises:update',
     'projects:create',
     'projects:update',
     'project_media:write',
@@ -70,11 +77,15 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
   ],
   internal_admin: [
     'enterprises:create',
+    'enterprises:update',
+    'enterprises:status',
+    'enterprises:reorder',
     'projects:create',
     'projects:update',
     'projects:publish',
     'projects:pause',
     'projects:archive',
+    'projects:reorder',
     'project_media:write',
     'project_media:moderate',
     'activities:write',
@@ -85,6 +96,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'project_types:manage',
+    'medals:manage',
     'airs_reports:submit',
     'audit:read',
     'project_memberships:assign',
@@ -92,11 +105,15 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
   ],
   platform_owner: [
     'enterprises:create',
+    'enterprises:update',
+    'enterprises:status',
+    'enterprises:reorder',
     'projects:create',
     'projects:update',
     'projects:publish',
     'projects:pause',
     'projects:archive',
+    'projects:reorder',
     'project_media:write',
     'project_media:moderate',
     'activities:write',
@@ -108,6 +125,8 @@ const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermissi
     'comments:moderate',
     'participants:read',
     'participants:manage',
+    'project_types:manage',
+    'medals:manage',
     'airs_reports:submit',
     'audit:read',
     'project_memberships:assign',

@@ -62,7 +62,7 @@ To remove a scoped role, revoke the membership in **Team**. Also remove the grou
 
 ## Planned: User Airs Reports
 
-Epic #249 adds a User Airs Report that `partner_operator` and `sub_admin` can submit for their project. A report is not an award: nothing is credited until the report is auto-approved within the per-recipient limits or approved by an allowlisted Grant Approver. The rules above for completions and points do not change. The same work plans to assign scoped roles by email instead of the Authentik user ID, and to treat verified `@alternun.co` accounts like `@alternun.io` ones. See [airs-user-reports-and-claiming.md](airs-user-reports-and-claiming.md).
+Epic #249 adds a User Airs Report that `partner_operator` and `sub_admin` can submit for their project. A report is not an award: nothing is credited until the report is auto-approved within the per-recipient limits or approved by an allowlisted Grant Approver. The rules above for completions and points do not change. Scoped roles are assigned by email instead of the Authentik user ID, and accounts on `@alternun.co` are treated like `@alternun.io` ones: the bootstrap makes them `internal_admin` only when the person signed in through a source such as Google (which proves they own the address); an address that merely ends in the domain is skipped and reported as `skipped_unverified`. `platform_owner` is still assigned by hand. See [airs-user-reports-and-claiming.md](airs-user-reports-and-claiming.md).
 
 ## After merging changes to the group map
 

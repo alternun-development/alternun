@@ -42,6 +42,7 @@ import {
   ListProjectsQueryDto,
   ListEnterprisesQueryDto,
   LocaleQueryDto,
+  ReorderMarketplaceDto,
   ReorderProjectMediaDto,
   RejectActivityCompletionDto,
   ReverseActivityCompletionDto,
@@ -169,6 +170,14 @@ export class MarketplaceEnterpriseAdminController {
     return this.service.createEnterprise(request.adminPrincipal!, requestId(request), body);
   }
 
+  @Put('order')
+  @RequireMarketplacePermission('enterprises:reorder')
+  @ApiOperation({ summary: 'Set the marketplace order of every enterprise.' })
+  @ApiOkResponse({ description: 'Enterprises in their new order.' })
+  reorder(@Req() request: FastifyAdminRequest, @Body() body: ReorderMarketplaceDto) {
+    return this.service.reorderEnterprises(request.adminPrincipal!, requestId(request), body);
+  }
+
   @Get(':id')
   @RequireMarketplacePermission('enterprises:read', 'enterprise')
   @ApiOperation({ summary: 'Get an enterprise.' })
@@ -270,6 +279,14 @@ export class MarketplaceProjectAdminController {
   @ApiCreatedResponse({ description: 'Draft project.' })
   create(@Req() request: FastifyAdminRequest, @Body() body: CreateProjectDto) {
     return this.service.createProject(request.adminPrincipal!, requestId(request), body);
+  }
+
+  @Put('order')
+  @RequireMarketplacePermission('projects:reorder')
+  @ApiOperation({ summary: 'Set the marketplace order of every project.' })
+  @ApiOkResponse({ description: 'Projects in their new order.' })
+  reorder(@Req() request: FastifyAdminRequest, @Body() body: ReorderMarketplaceDto) {
+    return this.service.reorderProjects(request.adminPrincipal!, requestId(request), body);
   }
 
   @Get(':id')

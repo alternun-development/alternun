@@ -49,7 +49,11 @@ const rolePriority: readonly AdminRole[] = [
   'partner_readonly',
 ] as const;
 
-const MARKETPLACE_ONLY_RESOURCES = ['marketplace-enterprises', 'marketplace-projects'] as const;
+const MARKETPLACE_ONLY_RESOURCES = [
+  'marketplace-enterprises',
+  'marketplace-projects',
+  'marketplace-notifications',
+] as const;
 
 function createSettings(): UserManagerSettings {
   const origin = typeof window === 'undefined' ? 'http://localhost:4173' : window.location.origin;

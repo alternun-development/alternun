@@ -120,18 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.120**
+Current version: **1.1.122**
 
-## 📋 Latest Changes (v1.1.120)
+## 📋 Latest Changes (v1.1.122)
 
 ### Changes
 
-- **repo:** sync reentry with follow-ups from #299 review ([de986ce](https://github.com/alternun-development/alternun/commit/de986ce95ee32fd673bde6892392984bdb517f24))
-- **docs:** remove unused npm lockfile ([7109163](https://github.com/alternun-development/alternun/commit/710916389807bd0fbb49cb0b78cf36aafd4ac78f))
+- **repo:** sync reentry ([e9e9482](https://github.com/alternun-development/alternun/commit/e9e9482e9fd4b46a1141f98d992a55992fbce62a))
 
 ### Bug Fixes
 
-- **marketplace:** match panel identities to webhook-synced accounts ([f0a93bd](https://github.com/alternun-development/alternun/commit/f0a93bd6e98f48e713422782edebb014b81f27e8))
+- **admin:** let sub-admins and moderators open their notification inbox ([5121adc](https://github.com/alternun-development/alternun/commit/5121adc3e84280c0edbd157e58eeb209ee50c019))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

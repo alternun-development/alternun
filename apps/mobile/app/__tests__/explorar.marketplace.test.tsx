@@ -208,6 +208,37 @@ describe('Explorer marketplace projects', () => {
     expect(renderer.root.findByProps({ testID: 'explorer-project-project-2' })).toBeTruthy();
   });
 
+  it('keeps the admin-defined order from the API in the loader and the list', async () => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [
+            { ...publishedProject, id: 'project-b', slug: 'project-b' },
+            { ...publishedProject, id: 'project-a', slug: 'project-a' },
+          ],
+        }),
+    } as Response);
+    const loaded = await loadMarketplaceProjects('en');
+    expect(loaded.map(({ id }) => id)).toEqual(['project-b', 'project-a']);
+
+    const renderer = await renderBrowser(() =>
+      Promise.resolve([conservationProject, productiveProject])
+    );
+    const rendered = renderer.root
+      .findAll(
+        (node) =>
+          typeof node.props.testID === 'string' &&
+          node.props.testID.startsWith('explorer-project-') &&
+          typeof node.type === 'string'
+      )
+      .map((node) => node.props.testID as string);
+    expect([...new Set(rendered)]).toEqual([
+      `explorer-project-${conservationProject.id}`,
+      `explorer-project-${productiveProject.id}`,
+    ]);
+  });
+
   it('renders the empty state for an empty published list', async () => {
     const renderer = await renderBrowser(() => Promise.resolve([]));
 
