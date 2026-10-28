@@ -1,3 +1,17 @@
+## [1.1.123](https://github.com/alternun-development/alternun/compare/v1.1.122...v1.1.123) (2026-10-28)
+
+### Bug Fixes
+
+- **repo:** chore: sync reentry after #310 and docs update
+- **repo:** docs(marketplace): bring #249 docs up to the released state
+- **repo:** chore(infra): default AUTHENTIK_API_URL per stage for the group sync
+- **repo:** chore: sync reentry for the project access screen
+- **repo:** feat(marketplace): project access screen for Super Admins
+
+### Features
+
+- **marketplace:** project access screen for Super Admins ([67f604f](https://github.com/alternun-development/alternun/commit/67f604f517558054518c0a69debb921b98ac72f7)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+
 ## [1.1.122](https://github.com/alternun-development/alternun/compare/v1.1.121...v1.1.122) (2026-10-27)
 
 ### Changes
