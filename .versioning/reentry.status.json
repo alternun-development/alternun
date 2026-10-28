@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-28T00:11:58.923Z",
+  "lastUpdated": "2026-10-28T00:23:27.880Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Testnet: create SSM params for AIRS_REPORT_SUPPORT_EMAILS and AUTHENTIK_API_*; watch skipped_unverified in the bootstrap output; follow-ups: admin i18n (en/es/th), API dependency upgrades",
+      "description": "Review the project access screen PR (issue 249 B4), then the A7 walkthrough once testnet is configured",
       "id": "next",
       "priority": 1
     }
