@@ -52,12 +52,16 @@ void test('partner readonly access exposes no internal admin resource links', ()
   }
 });
 
-void test('moderator and sub-admin profiles expose only marketplace resources', () => {
+void test('moderator and sub-admin profiles expose only marketplace resources and their inbox', () => {
   for (const role of ['moderator', 'sub_admin']) {
     const access = resolveAdminAccessProfile([role], ['assigned-enterprise']);
     assert.ok(access);
     assert.equal(access.surface, 'partner');
-    assert.deepEqual(access.allowedResources, ['marketplace-enterprises', 'marketplace-projects']);
+    assert.deepEqual(access.allowedResources, [
+      'marketplace-enterprises',
+      'marketplace-projects',
+      'marketplace-notifications',
+    ]);
   }
 });
 
