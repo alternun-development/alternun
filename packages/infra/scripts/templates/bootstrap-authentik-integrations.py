@@ -10,7 +10,7 @@ from cryptography.x509.oid import NameOID
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
-from authentik.core.models import Application, Group
+from authentik.core.models import Application, Group, UserSourceConnection
 from authentik.crypto.models import CertificateKeyPair
 from authentik.events.models import Event, EventAction, NotificationTransport, NotificationRule, NotificationSeverity
 from authentik.flows.models import Flow, FlowStageBinding, FlowToken
@@ -730,7 +730,7 @@ else:
 super_admin_emails = {e.lower() for e in read_list_env("ALTERNUN_BOOTSTRAP_SUPER_ADMIN_EMAILS")}
 dev_admin_emails = {e.lower() for e in read_list_env("ALTERNUN_BOOTSTRAP_DEV_ADMIN_EMAILS")}
 internal_email_domains = {d.lower().lstrip("@") for d in read_list_env("ALTERNUN_BOOTSTRAP_INTERNAL_EMAIL_DOMAINS")}
-platform_access_summary = {"promoted": [], "created": []}
+platform_access_summary = {"promoted": [], "created": [], "skipped_unverified": []}
 
 
 def promote_platform_user(user, group_names):
@@ -756,9 +756,25 @@ for email in sorted(super_admin_emails | dev_admin_emails):
         promote_platform_user(user, groups)
         platform_access_summary["promoted"].append(email)
 
+def verified_domain_member(email, domain, user_pk, connected_user_ids):
+    """An address on an internal domain only counts when a source vouches for it.
+
+    A name ending in the domain proves nothing by itself: Authentik does not verify the
+    address of a user who signed up with a password. People who signed in through a source
+    (for example Google Workspace) have proven they own it. The address must also have
+    exactly one "@" and the domain as its host, so look-alikes never match.
+    """
+    local, _, host = (email or "").strip().lower().rpartition("@")
+    return bool(local) and "@" not in local and host == domain and user_pk in connected_user_ids
+
+
+connected_user_ids = set(UserSourceConnection.objects.values_list("user_id", flat=True))
 for domain in sorted(internal_email_domains):
     for user in user_model.objects.filter(email__iendswith="@" + domain, is_active=True):
         if user.email.lower() in super_admin_emails:
+            continue
+        if not verified_domain_member(user.email, domain, user.pk, connected_user_ids):
+            platform_access_summary["skipped_unverified"].append(user.email)
             continue
         promote_platform_user(user, ["Alternun Internal Admin"])
         platform_access_summary["promoted"].append(user.email)
