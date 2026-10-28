@@ -1,26 +1,33 @@
-## [1.1.121](https://github.com/alternun-development/alternun/compare/v1.1.120...v1.1.121) (2026-10-28)
+## [1.1.121](https://github.com/alternun-development/alternun/compare/v1.1.120...v1.1.121) (2026-10-27)
+
+### Changes
+
+- **repo:** sync reentry after integrating #300-#308 ([29dc96b](https://github.com/alternun-development/alternun/commit/29dc96b440b51e8ca7f48c50791a83f1a6ecdcb6))
+- **repo:** sync reentry for pilot ownership fix (refs #249) ([f76183d](https://github.com/alternun-development/alternun/commit/f76183d5c8d57119cea2ad98d8376b6f6c5039f2))
+- **repo:** sync reentry for marketplace ordering (refs #249) ([9644875](https://github.com/alternun-development/alternun/commit/9644875f3a34ea5ee166c520f6dd8d4c2aa907f6))
+- **repo:** sync reentry for project medals ([521d58a](https://github.com/alternun-development/alternun/commit/521d58aeb00957a2512598b4a78a32283bdddb7a))
+- **repo:** sync reentry for console notifications ([96290b4](https://github.com/alternun-development/alternun/commit/96290b4971f639114fed8161f44000ce4530a139))
+- **repo:** sync reentry for project types ([eab9185](https://github.com/alternun-development/alternun/commit/eab9185269a056e0a7ea73b6a66e355519469b5d))
+- **repo:** sync reentry for the domain admins change ([f978413](https://github.com/alternun-development/alternun/commit/f9784137dcbab28cc6347b845248b4e925d7e8b3))
+- **repo:** sync reentry for the card layout fix ([8c6c823](https://github.com/alternun-development/alternun/commit/8c6c8238a0fcbc002009dfa9e8135667e441acfb))
+
+### Documentation
+
+- **marketplace:** architecture and security note with OpenAPI export (refs #249) ([5bc58b1](https://github.com/alternun-development/alternun/commit/5bc58b1ce08f44942a75504b4a09bd1d49e5a12b))
 
 ### Bug Fixes
 
-- **repo:** chore: sync reentry after integrating #300-#308
-- **repo:** docs(marketplace): architecture and security note with OpenAPI export (refs #249)
-- **repo:** chore: sync reentry for pilot ownership fix (refs #249)
-- **repo:** fix(marketplace): archive the Hotel Piloto placeholder enterprise (refs #249)
-- **repo:** chore: sync reentry for marketplace ordering (refs #249)
-
-### Bug Fixes
-
-- **admin:** open report cards use the full width and keep the date on its own line ([897d627](https://github.com/alternun-development/alternun/commit/897d62764ea66b2fcddb93ccc237c07ffab3abd1)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
-- **marketplace:** archive the Hotel Piloto placeholder enterprise (refs [#249](https://github.com/alternun-development/alternun/issues/249)) ([7b57870](https://github.com/alternun-development/alternun/commit/7b57870c04f9a7e94725b0222823c901f9ef9055))
+- **marketplace:** archive the Hotel Piloto placeholder enterprise (refs #249) ([7b57870](https://github.com/alternun-development/alternun/commit/7b57870c04f9a7e94725b0222823c901f9ef9055))
+- **admin:** open report cards use the full width and keep the date on its own line ([897d627](https://github.com/alternun-development/alternun/commit/897d62764ea66b2fcddb93ccc237c07ffab3abd1))
 
 ### Features
 
-- **admin:** manage enterprises from the marketplace panel (refs [#249](https://github.com/alternun-development/alternun/issues/249)) ([068ae0f](https://github.com/alternun-development/alternun/commit/068ae0f73549e10446411bc6b564046c89bf967d))
-- **infra:** make alternun.co internal admins, only for verified addresses ([52306e7](https://github.com/alternun-development/alternun/commit/52306e7f43b9e67857ec82fe51bf5450b92ae539)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
-- **marketplace:** admin-controlled order for enterprises and projects (refs [#249](https://github.com/alternun-development/alternun/issues/249)) ([754c006](https://github.com/alternun-development/alternun/commit/754c00611427e6ad8d547bb6562f98f926369a8e))
-- **marketplace:** console inbox for Airs report notifications ([6119f0d](https://github.com/alternun-development/alternun/commit/6119f0db579d320d37776e3b173bedd4d99a084c)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
-- **marketplace:** medal catalog for each project ([465e406](https://github.com/alternun-development/alternun/commit/465e4065b0e7c8c4b9560b3687e1a3dfe65be36b)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
-- **marketplace:** project types decide the document number for Airs reports ([1df94e5](https://github.com/alternun-development/alternun/commit/1df94e55a20fdee5c9ec773ce50951ce9f62e5d3)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
+- **marketplace:** admin-controlled order for enterprises and projects (refs #249) ([754c006](https://github.com/alternun-development/alternun/commit/754c00611427e6ad8d547bb6562f98f926369a8e))
+- **marketplace:** medal catalog for each project ([465e406](https://github.com/alternun-development/alternun/commit/465e4065b0e7c8c4b9560b3687e1a3dfe65be36b))
+- **admin:** manage enterprises from the marketplace panel (refs #249) ([068ae0f](https://github.com/alternun-development/alternun/commit/068ae0f73549e10446411bc6b564046c89bf967d))
+- **marketplace:** console inbox for Airs report notifications ([6119f0d](https://github.com/alternun-development/alternun/commit/6119f0db579d320d37776e3b173bedd4d99a084c))
+- **marketplace:** project types decide the document number for Airs reports ([1df94e5](https://github.com/alternun-development/alternun/commit/1df94e55a20fdee5c9ec773ce50951ce9f62e5d3))
+- **infra:** make alternun.co internal admins, only for verified addresses ([52306e7](https://github.com/alternun-development/alternun/commit/52306e7f43b9e67857ec82fe51bf5450b92ae539))
 
 ## [1.1.120](https://github.com/alternun-development/alternun/compare/v1.1.119...v1.1.120) (2026-10-27)
 
