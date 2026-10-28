@@ -44,9 +44,10 @@ test('submit schema accepts a complete report and an existing-user report withou
   assert.deepEqual(await errorsFor(SubmitAirsReportDto, minimal), []);
 });
 
-test('submit schema requires a document number', async () => {
+test('submit schema accepts a missing document number but not a blank one', async () => {
   const { documentNumber: _document, ...withoutDocument } = validSubmit;
-  assert.deepEqual(await errorsFor(SubmitAirsReportDto, withoutDocument), ['documentNumber']);
+  // Whether it is needed depends on the project type, which the database knows.
+  assert.deepEqual(await errorsFor(SubmitAirsReportDto, withoutDocument), []);
   assert.deepEqual(
     await errorsFor(SubmitAirsReportDto, { ...validSubmit, documentNumber: '   ' }),
     ['documentNumber']
