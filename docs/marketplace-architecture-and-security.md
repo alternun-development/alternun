@@ -4,12 +4,12 @@ This note explains how the marketplace (epic [#249](https://github.com/alternun-
 
 ## Components
 
-| Part        | Where                                                                | Role                                                                                                                                    |
-| ----------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Explorer    | `apps/mobile/app/explorar.tsx`, `apps/mobile/app/explorar/*`         | Public listing and detail of published projects and active enterprises. Reads only the public API.                                      |
-| Admin panel | `apps/admin/src/pages/marketplace/*`, `apps/admin/src/marketplace/*` | Alternun Admin screens for enterprises, projects, media, activities, team, comments, audit and Airs reports.                            |
-| API         | `apps/api/src/modules/marketplace/*`                                 | NestJS on Fastify. Public routes under `/v1/projects`, `/v1/enterprises` and `/v1/project-proposals`; admin routes under `/v1/admin/*`. |
-| Database    | `supabase/migrations/20261013_*` and later                           | Postgres tables, security-definer functions for every sensitive change, and the admin audit log.                                        |
+| Part        | Where                                                                | Role                                                                                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Explorer    | `apps/mobile/app/explorar.tsx`, `apps/mobile/app/explorar/*`         | Public listing and detail of published projects and active enterprises. Reads only the public API.                                                                                                                |
+| Admin panel | `apps/admin/src/pages/marketplace/*`, `apps/admin/src/marketplace/*` | Alternun Admin screens for enterprises (create, edit, pause, archive, order), projects, media, activities, team, comments, audit, Airs reports, project types, medals, the notification inbox and project access. |
+| API         | `apps/api/src/modules/marketplace/*`                                 | NestJS on Fastify. Public routes under `/v1/projects`, `/v1/enterprises` and `/v1/project-proposals`; admin routes under `/v1/admin/*`.                                                                           |
+| Database    | `supabase/migrations/20261013_*` and later                           | Postgres tables, security-definer functions for every sensitive change, and the admin audit log.                                                                                                                  |
 
 Explorer and the panel never talk to the database. Every read and write goes through the API.
 
@@ -21,6 +21,9 @@ Explorer and the panel never talk to the database. Every read and write goes thr
 - `project_activities`, `project_activity_completions` and `project_participants`. Approved completions write to `airs_ledger_entries`.
 - `project_comments`, `project_proposals` and `project_proposal_ip_submissions`.
 - `airs_reports`, `airs_report_rewards`, `airs_report_approvers` and `airs_report_settings` (User Airs Reports).
+- `project_types` (commerce type per project; decides whether a report needs a document number), `project_medals` (medal catalog per project) and `user_medals` (medals awarded through reports).
+- `admin_notifications`: the console inbox for report events.
+- `sort_order` on `enterprises` and `projects`: the admin-controlled order that the public API and Explorer follow.
 - `admin_audit_log`: every allowed sensitive change and every denied attempt.
 
 ## How a request is authorized
@@ -56,7 +59,7 @@ Denied attempts return a stable error code (`marketplace.errors.ts`) and are wri
 
 ## Pilot data
 
-`20261013_0001` seeded a local placeholder enterprise, "Hotel Piloto", that owned `eco-turismo`. `20261018_0001` made the `alternun` enterprise the primary owner of `eco-turismo` and kept the old relation as non-primary. Hotel Piloto has no project of its own and is being archived by an audited migration (issue #249, A4). Its non-primary relation to `eco-turismo` is kept for the record; because of rule 3 above, nobody should get an enterprise membership on Hotel Piloto.
+`20261013_0001` seeded a local placeholder enterprise, "Hotel Piloto", that owned `eco-turismo`. `20261018_0001` made the `alternun` enterprise the primary owner of `eco-turismo` and kept the old relation as non-primary. Hotel Piloto has no project of its own and was archived through the audited status function by `20261030_0002` (issue #249, A4). Its non-primary relation to `eco-turismo` is kept for the record; because of rule 3 above, nobody should get an enterprise membership on Hotel Piloto.
 
 ## OpenAPI
 

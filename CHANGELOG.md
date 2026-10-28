@@ -1,3 +1,19 @@
+## [1.1.123](https://github.com/alternun-development/alternun/compare/v1.1.122...v1.1.123) (2026-10-27)
+
+### Changes
+
+- **repo:** sync reentry after #310 and docs update ([0890c44](https://github.com/alternun-development/alternun/commit/0890c447bdaa18b19aa6c4dac4065c687d711bf7))
+- **infra:** default AUTHENTIK_API_URL per stage for the group sync ([f5db1ec](https://github.com/alternun-development/alternun/commit/f5db1ec19fc6e0c9b79976a758429c8d30ea5812))
+- **repo:** sync reentry for the project access screen ([8923933](https://github.com/alternun-development/alternun/commit/892393357b56481cea6135f47d4f3acff4a2267b))
+
+### Documentation
+
+- **marketplace:** bring #249 docs up to the released state ([2ab64bb](https://github.com/alternun-development/alternun/commit/2ab64bb96b96ecae0b2eb68c09a5255ef1b10ca3))
+
+### Features
+
+- **marketplace:** project access screen for Super Admins ([67f604f](https://github.com/alternun-development/alternun/commit/67f604f517558054518c0a69debb921b98ac72f7))
+
 ## [1.1.122](https://github.com/alternun-development/alternun/compare/v1.1.121...v1.1.122) (2026-10-27)
 
 ### Changes

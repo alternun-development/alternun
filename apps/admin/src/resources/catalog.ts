@@ -51,6 +51,17 @@ export const adminResources: AdminResourceDefinition[] = [
     },
   },
   {
+    name: 'marketplace-project-access',
+    list: '/project-access',
+    surfaces: ['internal'],
+    meta: {
+      title: marketplaceCopy.projectAccess.navigation.title,
+      description: marketplaceCopy.projectAccess.navigation.description,
+      endpoint: '/v1/admin/project-access/gaps',
+      emptyState: marketplaceCopy.projectAccess.empty,
+    },
+  },
+  {
     name: 'marketplace-notifications',
     list: '/notifications',
     surfaces: ['internal', 'partner'],

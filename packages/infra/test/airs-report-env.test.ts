@@ -16,5 +16,13 @@ void test('Airs report and Authentik sync settings reach the API Lambda from SSM
     assert.match(backend, new RegExp(`${name}: args\\.env\\.INFRA_BACKEND_API_${name}`));
     assert.match(resolver, new RegExp(`"INFRA_BACKEND_API_${name}"`));
   }
-  assert.match(resolver, /infra-backend-api-airs-dashboard-url-dev" "https:\/\/testnet\.airs\.alternun\.co"/);
+  assert.match(
+    resolver,
+    /infra-backend-api-airs-dashboard-url-dev" "https:\/\/testnet\.airs\.alternun\.co"/
+  );
+  assert.match(
+    resolver,
+    /infra-backend-api-authentik-api-url-dev" "https:\/\/testnet\.sso\.alternun\.co"/
+  );
+  assert.match(resolver, /infra-backend-api-authentik-api-url-prod" "https:\/\/sso\.alternun\.co"/);
 });

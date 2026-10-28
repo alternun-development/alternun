@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-28T00:11:58.923Z",
+  "lastUpdated": "2026-10-28T01:50:31.319Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Testnet: create SSM params for AIRS_REPORT_SUPPORT_EMAILS and AUTHENTIK_API_*; watch skipped_unverified in the bootstrap output; follow-ups: admin i18n (en/es/th), API dependency upgrades",
+      "description": "Testnet: ecoturismo@alternun.co signs in, run set-project-account, assign a Project Admin and a project type; create AIRS_REPORT_SUPPORT_EMAILS and AUTHENTIK_API_TOKEN params; then A7/B16 walkthrough. Remaining dev: document bucket, medal art upload, medals in app profile, rewards-unlocked notice",
       "id": "next",
       "priority": 1
     }

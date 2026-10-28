@@ -1409,3 +1409,25 @@ select {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+/* Project access: who runs each project. */
+.project-access-card.has-gap {
+  border-left: 4px solid #ffb27a;
+}
+
+.project-access-card h5 {
+  margin: 0.75rem 0 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.project-access-people {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.project-access-none {
+  color: var(--text-muted);
+}
