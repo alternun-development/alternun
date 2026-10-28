@@ -18,11 +18,16 @@ export function auditFilterResult(filter: AuditFilter): AuditRecord['result'] | 
   return undefined;
 }
 
-export function auditQueryPath(projectId: string, filter: AuditFilter, page: number): string {
+export function auditQueryPath(
+  targetId: string,
+  filter: AuditFilter,
+  page: number,
+  collection: 'projects' | 'enterprises' = 'projects'
+): string {
   const params = new URLSearchParams({ page: String(page), perPage: '20' });
   const result = auditFilterResult(filter);
   if (result) params.set('result', result);
-  return `/v1/admin/projects/${encodeURIComponent(projectId)}/audit?${params.toString()}`;
+  return `/v1/admin/${collection}/${encodeURIComponent(targetId)}/audit?${params.toString()}`;
 }
 
 export function auditEventMessage(event: AuditRecord): string {
@@ -58,7 +63,10 @@ function auditDate(value: string): string {
     : new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
-export function AuditHistory({ project, roles }: AuditHistoryProps): JSX.Element {
+export function AuditHistory({ project, enterpriseId, roles }: AuditHistoryProps): JSX.Element {
+  const targetId = enterpriseId ?? project?.id ?? '';
+  const collection = enterpriseId ? 'enterprises' : 'projects';
+  const heading = enterpriseId ? marketplaceCopy.enterpriseAudit : marketplaceCopy.audit;
   const [filter, setFilter] = useState<AuditFilter>('all');
   const [state, setState] = useState<AuditState>({ kind: 'loading' });
   const [loadingMore, setLoadingMore] = useState(false);
@@ -72,7 +80,9 @@ export function AuditHistory({ project, roles }: AuditHistoryProps): JSX.Element
       if (append) setLoadingMore(true);
       else setState({ kind: 'loading' });
       try {
-        const next = await requestMarketplace<AuditPage>(auditQueryPath(project.id, filter, page));
+        const next = await requestMarketplace<AuditPage>(
+          auditQueryPath(targetId, filter, page, collection)
+        );
         setState((current) => ({
           kind: 'success',
           page:
@@ -90,7 +100,7 @@ export function AuditHistory({ project, roles }: AuditHistoryProps): JSX.Element
         setLoadingMore(false);
       }
     },
-    [filter, project.id, roles]
+    [collection, filter, roles, targetId]
   );
 
   useEffect(() => {
@@ -99,13 +109,9 @@ export function AuditHistory({ project, roles }: AuditHistoryProps): JSX.Element
 
   return (
     <section className='panel'>
-      <h3>{marketplaceCopy.audit.heading}</h3>
-      <p>{marketplaceCopy.audit.intro}</p>
-      <div
-        aria-label={marketplaceCopy.audit.filtersLabel}
-        className='marketplace-tabs'
-        role='tablist'
-      >
+      <h3>{heading.heading}</h3>
+      <p>{heading.intro}</p>
+      <div aria-label={heading.filtersLabel} className='marketplace-tabs' role='tablist'>
         {filters.map((item) => (
           <button
             aria-selected={filter === item}
