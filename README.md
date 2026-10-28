@@ -124,14 +124,13 @@ Current version: **1.1.122**
 
 ## 📋 Latest Changes (v1.1.122)
 
+### Changes
+
+- **repo:** sync reentry ([e9e9482](https://github.com/alternun-development/alternun/commit/e9e9482e9fd4b46a1141f98d992a55992fbce62a))
+
 ### Bug Fixes
 
-- **repo:** chore: sync reentry
-- **repo:** fix(admin): let sub-admins and moderators open their notification inbox
-
-### Bug Fixes
-
-- **admin:** let sub-admins and moderators open their notification inbox ([5121adc](https://github.com/alternun-development/alternun/commit/5121adc3e84280c0edbd157e58eeb209ee50c019)), closes [#309](https://github.com/alternun-development/alternun/issues/309)
+- **admin:** let sub-admins and moderators open their notification inbox ([5121adc](https://github.com/alternun-development/alternun/commit/5121adc3e84280c0edbd157e58eeb209ee50c019))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
