@@ -531,6 +531,25 @@ export const marketplaceCopy = {
     updated: 'Team role updated.',
     removed: 'Team access removed.',
   },
+  projectAccess: {
+    navigation: { title: 'Project access', description: 'Who runs each project.' },
+    heading: 'Project access',
+    intro:
+      'Who administers and moderates each project. Open a project to add or remove people by email.',
+    gapsSummary: (count: number) =>
+      count === 0
+        ? 'Every project has an admin and an account.'
+        : `${count} project(s) need attention.`,
+    empty: 'There are no projects yet.',
+    admins: 'Project admins',
+    moderators: 'Moderators',
+    readOnly: 'Read-only',
+    nobody: 'Nobody yet',
+    unknownPerson: 'Person who has not signed in yet',
+    missingAdmin: 'This project has no admin.',
+    missingAccount: 'This project has no Airs account linked.',
+    manage: 'Manage team',
+  },
   medals: {
     heading: 'Medals',
     intro:
