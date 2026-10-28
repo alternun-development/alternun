@@ -15,12 +15,14 @@ export type AdminPermission =
   | 'enterprises:create'
   | 'enterprises:update'
   | 'enterprises:status'
+  | 'enterprises:reorder'
   | 'projects:read'
   | 'projects:create'
   | 'projects:update'
   | 'projects:publish'
   | 'projects:pause'
   | 'projects:archive'
+  | 'projects:reorder'
   | 'projects:transfer'
   | 'project_media:read'
   | 'project_media:write'
@@ -40,6 +42,10 @@ export type AdminPermission =
   | 'comments:moderate'
   | 'participants:read'
   | 'participants:manage'
+  | 'notifications:read'
+  | 'project_types:read'
+  | 'project_types:manage'
+  | 'medals:manage'
   | 'airs_reports:submit'
   | 'audit:read';
 
@@ -124,6 +130,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
   partner_readonly: [
     'allowances:read',
     'enterprises:read',
+    'notifications:read',
+    'project_types:read',
     'projects:read',
     'project_media:read',
     'project_memberships:read',
@@ -132,6 +140,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
   ],
   sub_admin: [
     'enterprises:read',
+    'notifications:read',
+    'project_types:read',
     'projects:read',
     'projects:update',
     'project_media:read',
@@ -153,6 +163,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'allowances:read',
     'allowances:write',
     'enterprises:read',
+    'notifications:read',
+    'project_types:read',
     'enterprises:update',
     'projects:read',
     'projects:create',
@@ -179,6 +191,8 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
   ],
   moderator: [
     'enterprises:read',
+    'notifications:read',
+    'project_types:read',
     'projects:read',
     'projects:update',
     'project_media:read',
@@ -194,15 +208,21 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'allowances:read',
     'allowances:write',
     'enterprises:read',
+    'notifications:read',
+    'project_types:read',
+    'project_types:manage',
+    'medals:manage',
     'enterprises:create',
     'enterprises:update',
     'enterprises:status',
+    'enterprises:reorder',
     'projects:read',
     'projects:create',
     'projects:update',
     'projects:publish',
     'projects:pause',
     'projects:archive',
+    'projects:reorder',
     'project_media:read',
     'project_media:write',
     'project_media:moderate',
@@ -227,15 +247,21 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'allowances:read',
     'allowances:write',
     'enterprises:read',
+    'notifications:read',
+    'project_types:read',
+    'project_types:manage',
+    'medals:manage',
     'enterprises:create',
     'enterprises:update',
     'enterprises:status',
+    'enterprises:reorder',
     'projects:read',
     'projects:create',
     'projects:update',
     'projects:publish',
     'projects:pause',
     'projects:archive',
+    'projects:reorder',
     'projects:transfer',
     'project_media:read',
     'project_media:write',

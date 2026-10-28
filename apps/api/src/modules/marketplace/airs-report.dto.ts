@@ -59,20 +59,25 @@ export class SubmitAirsReportDto {
   @MaxLength(AIRS_REPORT_CONCEPT_MAX_LENGTH)
   concept!: string;
 
-  @ApiPropertyOptional({ format: 'uuid', description: 'Reserved for the project medal catalog.' })
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: "A medal from this project's catalog (an active one).",
+  })
   @IsOptional()
   @IsUUID()
   medalId?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     maxLength: AIRS_REPORT_DOCUMENT_NUMBER_MAX_LENGTH,
-    description: 'Supporting document number, for example the invoice number. Required for now.',
+    description:
+      'Supporting document number, for example the invoice number. Required when the project type asks for it, or when the project has no type yet.',
   })
+  @IsOptional()
   @IsString()
   @MinLength(1)
   @MaxLength(AIRS_REPORT_DOCUMENT_NUMBER_MAX_LENGTH)
   @Matches(/\S/)
-  documentNumber!: string;
+  documentNumber?: string;
 
   @ApiPropertyOptional({ pattern: SHA256_HEX_PATTERN.source })
   @IsOptional()

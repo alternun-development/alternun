@@ -40,11 +40,17 @@ export type Project = {
   defaultLocale: string;
   content: Record<string, ProjectContentBlock>;
   media?: ProjectMedia[];
+  /** Commerce type (hotel, restaurant, ...), or null while none is assigned. */
+  projectTypeCode?: string | null;
+  /** False only when the project's type says reports need no document number. */
+  requiresDocumentNumber?: boolean;
 };
 
 export type Enterprise = {
   id: string;
+  slug: string;
   displayName: string;
+  legalName: string | null;
   status: EnterpriseStatus;
   countryCode: string | null;
   websiteUrl: string | null;

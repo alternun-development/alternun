@@ -13,7 +13,10 @@ import { AuthRelayPage } from './pages/auth/relay-page';
 import { DashboardPage } from './pages/dashboard/page';
 import { LoginPage } from './pages/login/page';
 import { AirsReportQueuePage } from './pages/marketplace/airs-report-queue-page';
+import { NotificationsPage } from './pages/marketplace/notifications-page';
+import { ProjectTypesPage } from './pages/marketplace/project-types-page';
 import { MarketplaceEnterpriseDetailPage } from './pages/marketplace/enterprise-detail-page';
+import { MarketplaceEnterprisesPage } from './pages/marketplace/enterprises-page';
 import { MarketplaceProjectDetailPage } from './pages/marketplace/project-detail-page';
 import { MarketplaceProjectsPage } from './pages/marketplace/projects-page';
 import { ResourceListPage } from './pages/resources/resource-list-page';
@@ -94,6 +97,44 @@ export function AdminRouter() {
                 fallback={<ForbiddenPage />}
               >
                 <MarketplaceEnterpriseDetailPage />
+              </CanAccess>
+            }
+          />
+          <Route
+            path='/marketplace/enterprises'
+            element={
+              <CanAccess
+                resource='marketplace-enterprises'
+                action='list'
+                fallback={<ForbiddenPage />}
+              >
+                <MarketplaceEnterprisesPage />
+              </CanAccess>
+            }
+          />
+
+          <Route
+            path='/notifications'
+            element={
+              <CanAccess
+                resource='marketplace-notifications'
+                action='list'
+                fallback={<ForbiddenPage />}
+              >
+                <NotificationsPage />
+              </CanAccess>
+            }
+          />
+
+          <Route
+            path='/project-types'
+            element={
+              <CanAccess
+                resource='marketplace-project-types'
+                action='list'
+                fallback={<ForbiddenPage />}
+              >
+                <ProjectTypesPage />
               </CanAccess>
             }
           />

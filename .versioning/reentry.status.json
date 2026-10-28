@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-10-27T22:31:57.269Z",
+  "lastUpdated": "2026-10-28T00:11:58.923Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Follow-ups: admin panel i18n (en/es/th via @alternun/i18n 'admin' namespace) and API dependency upgrades (NestJS 11, nodemailer 10, zod 4, fastify 5.12); A7 testnet walkthrough for #249",
+      "description": "Testnet: create SSM params for AIRS_REPORT_SUPPORT_EMAILS and AUTHENTIK_API_*; watch skipped_unverified in the bootstrap output; follow-ups: admin i18n (en/es/th), API dependency upgrades",
       "id": "next",
       "priority": 1
     }

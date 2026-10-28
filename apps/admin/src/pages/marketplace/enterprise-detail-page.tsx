@@ -7,7 +7,11 @@ import {
   type Project,
 } from '../../marketplace/api';
 import { marketplaceCopy } from '../../marketplace/copy';
+import { useMarketplaceRoles } from '../../marketplace/permissions';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
+import { AuditHistory } from './editors/audit-history';
+import { EnterpriseEditor } from './editors/enterprise-editor';
+import { EnterpriseStatusActions } from './editors/enterprise-status-actions';
 import type { EnterpriseDetail } from './enterprise-detail-page.types';
 
 async function loadEnterprise(id: string): Promise<EnterpriseDetail> {
@@ -22,6 +26,9 @@ export function MarketplaceEnterpriseDetailPage(): JSX.Element {
   const { id = '' } = useParams();
   const [data, setData] = useState<EnterpriseDetail | null>(null);
   const [error, setError] = useState<unknown>();
+  const [success, setSuccess] = useState<string>();
+  const [historyKey, setHistoryKey] = useState(0);
+  const roles = useMarketplaceRoles();
 
   const load = useCallback(() => {
     setData(null);
@@ -34,6 +41,12 @@ export function MarketplaceEnterpriseDetailPage(): JSX.Element {
   if (error) return <ErrorPanel error={error} onRetry={load} />;
   if (!data) return <LoadingPanel />;
 
+  function changed(enterprise: Enterprise, message: string): void {
+    setData((current) => (current ? { ...current, enterprise } : current));
+    setSuccess(message);
+    setHistoryKey((current) => current + 1);
+  }
+
   return (
     <div className='page-grid'>
       <section className='panel hero-panel marketplace-detail-heading'>
@@ -45,6 +58,11 @@ export function MarketplaceEnterpriseDetailPage(): JSX.Element {
         <Link className='inline-link' to='/marketplace'>
           {marketplaceCopy.common.backToProjects}
         </Link>
+        {success ? (
+          <p className='marketplace-success' role='status'>
+            {success}
+          </p>
+        ) : null}
       </section>
 
       <section className='panel'>
@@ -100,6 +118,24 @@ export function MarketplaceEnterpriseDetailPage(): JSX.Element {
           </div>
         )}
       </section>
+
+      {roles ? (
+        <>
+          <EnterpriseEditor
+            enterprise={data.enterprise}
+            roles={roles}
+            onSaved={(enterprise) => changed(enterprise, marketplaceCopy.edit.success)}
+          />
+          <EnterpriseStatusActions
+            enterprise={data.enterprise}
+            roles={roles}
+            onChanged={(enterprise) =>
+              changed(enterprise, marketplaceCopy.enterpriseActions.success)
+            }
+          />
+          <AuditHistory enterpriseId={data.enterprise.id} key={historyKey} roles={roles} />
+        </>
+      ) : null}
     </div>
   );
 }
