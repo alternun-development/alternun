@@ -120,17 +120,21 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.122**
+Current version: **1.1.123**
 
-## 📋 Latest Changes (v1.1.122)
-
-### Changes
-
-- **repo:** sync reentry ([e9e9482](https://github.com/alternun-development/alternun/commit/e9e9482e9fd4b46a1141f98d992a55992fbce62a))
+## 📋 Latest Changes (v1.1.123)
 
 ### Bug Fixes
 
-- **admin:** let sub-admins and moderators open their notification inbox ([5121adc](https://github.com/alternun-development/alternun/commit/5121adc3e84280c0edbd157e58eeb209ee50c019))
+- **repo:** chore: sync reentry after #310 and docs update
+- **repo:** docs(marketplace): bring #249 docs up to the released state
+- **repo:** chore(infra): default AUTHENTIK_API_URL per stage for the group sync
+- **repo:** chore: sync reentry for the project access screen
+- **repo:** feat(marketplace): project access screen for Super Admins
+
+### Features
+
+- **marketplace:** project access screen for Super Admins ([67f604f](https://github.com/alternun-development/alternun/commit/67f604f517558054518c0a69debb921b98ac72f7)), closes [#249](https://github.com/alternun-development/alternun/issues/249)
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
