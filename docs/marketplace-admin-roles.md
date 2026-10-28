@@ -41,8 +41,8 @@ To remove the role, take the person out of the group. The change applies when th
 
 A scoped role needs **both** of the following. If either one is missing, the API denies access.
 
-1. **The group.** In Authentik, add the person to the role's group. This lets the person sign in to Alternun Admin and puts the role in their token.
-2. **The membership.** In Alternun Admin, open the project, go to **Team**, and add the person with the same role. The person identifier is the person's Authentik user ID (UUID), shown on the user's page in Authentik. `platform_owner` and `internal_admin` can give any scoped role. A `partner_operator` can give `sub_admin` and `partner_readonly` only within their own scope.
+1. **The group.** The person must be in the role's Authentik group. This lets them sign in to Alternun Admin and puts the role in their token. When the API has `AUTHENTIK_API_URL` and `AUTHENTIK_API_TOKEN`, granting or revoking the membership adds or removes the group automatically; without the token, add the group by hand in Authentik.
+2. **The membership.** In Alternun Admin, open the project, go to **Team**, and add the person by email with the same role. The email must belong to an account with a verified address, so the person has to sign in once before they can be added. `platform_owner` and `internal_admin` can give any scoped role. A `partner_operator` can give `sub_admin` and `partner_readonly` only within their own scope.
 
 To remove a scoped role, revoke the membership in **Team**. Also remove the group if the person has no other membership that needs it. Nobody can change or revoke their own membership.
 
@@ -50,17 +50,21 @@ To remove a scoped role, revoke the membership in **Team**. Also remove the grou
 
 **Step 2: the Super Admin assigns the hotel Project Admin.**
 
-1. In Authentik, add the hotel administrator to `Alternun Partner Operator`.
-2. Signed in as `platform_owner`, open the hotel project in Alternun Admin. Go to **Team** and add the administrator's Authentik user ID with the role `partner_operator`.
+1. The hotel administrator signs in once, so their account exists with a verified email.
+2. Signed in as `platform_owner` or `internal_admin`, open the hotel project in Alternun Admin. Go to **Team** and add the administrator by email with the role `partner_operator`. The `Alternun Partner Operator` group is added automatically when the Authentik group sync is configured; otherwise add it in Authentik.
 3. The hotel administrator signs in to Alternun Admin and sees only the hotel project. **Team** grants project-scope memberships; an enterprise-scope membership, which is needed to create new projects for the enterprise, is not yet available from the console.
 
 **Step 4: the Project Admin adds a scoped sub-admin.**
 
-1. In Authentik, add the sub-admin to `Alternun Sub Admin`. This step is done by whoever administers Authentik; a `partner_operator` cannot change Authentik groups.
-2. Signed in as the hotel `partner_operator`, open the hotel project. Go to **Team** and add the sub-admin's Authentik user ID with the role `sub_admin`.
+1. The sub-admin signs in once, so their account exists with a verified email.
+2. Signed in as the hotel `partner_operator`, open the hotel project. Go to **Team** and add the sub-admin by email with the role `sub_admin`. Without the Authentik group sync, whoever administers Authentik adds them to `Alternun Sub Admin`; a `partner_operator` cannot change Authentik groups.
 3. The sub-admin signs in. They can edit copy and gallery media, moderate comments, and support participants in that project only. They cannot change the logo or cover image, and they cannot approve completions or award points.
 
-## Planned: User Airs Reports
+## Project access
+
+Super Admins (`platform_owner` and `internal_admin`) have a **Project access** page that lists every project with its admins, moderators and read-only members, and flags the projects that still have no Project Admin or no linked Airs account. Those come first. Each card links to the project's **Team** tab.
+
+## User Airs Reports
 
 Epic #249 adds a User Airs Report that `partner_operator` and `sub_admin` can submit for their project. A report is not an award: nothing is credited until the report is auto-approved within the per-recipient limits or approved by an allowlisted Grant Approver. The rules above for completions and points do not change. Scoped roles are assigned by email instead of the Authentik user ID, and accounts on `@alternun.co` are treated like `@alternun.io` ones: the bootstrap makes them `internal_admin` only when the person signed in through a source such as Google (which proves they own the address); an address that merely ends in the domain is skipped and reported as `skipped_unverified`. `platform_owner` is still assigned by hand. See [airs-user-reports-and-claiming.md](airs-user-reports-and-claiming.md).
 
