@@ -7,9 +7,11 @@ import {
   type Enterprise,
   type Project,
 } from '../../marketplace/api';
-import { marketplaceCopy } from '../../marketplace/copy';
+import { marketplaceCopy, marketplaceErrorMessage } from '../../marketplace/copy';
+import { moveId, saveMarketplaceOrder } from '../../marketplace/ordering';
 import { hasMarketplacePermission, useMarketplaceRoles } from '../../marketplace/permissions';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
+import { OrderControls } from './order-controls';
 import { ProjectCreateWizard } from './project-create-wizard';
 import type { ProjectListData } from './projects-page.types';
 
@@ -27,7 +29,11 @@ export function MarketplaceProjectsPage(): JSX.Element {
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [success, setSuccess] = useState<string>();
+  const [ordering, setOrdering] = useState(false);
+  const [orderError, setOrderError] = useState<unknown>();
   const roles = useMarketplaceRoles();
+  const canReorder = Boolean(roles && hasMarketplacePermission(roles, 'projects:reorder'));
+  const searching = search.trim().length > 0;
 
   const load = useCallback(() => {
     setError(undefined);
@@ -47,6 +53,28 @@ export function MarketplaceProjectsPage(): JSX.Element {
 
   if (error) return <ErrorPanel error={error} onRetry={load} />;
   if (!data) return <LoadingPanel />;
+
+  async function move(index: number, delta: -1 | 1): Promise<void> {
+    if (!data) return;
+    setOrdering(true);
+    setOrderError(undefined);
+    try {
+      const reordered = await saveMarketplaceOrder<Project>(
+        'projects',
+        moveId(
+          data.projects.map(({ id }) => id),
+          index,
+          delta
+        )
+      );
+      setData((current) => (current ? { ...current, projects: reordered } : current));
+      setSuccess(marketplaceCopy.ordering.saved);
+    } catch (requestError) {
+      setOrderError(requestError);
+    } finally {
+      setOrdering(false);
+    }
+  }
 
   return (
     <div className='page-grid'>
@@ -77,6 +105,10 @@ export function MarketplaceProjectsPage(): JSX.Element {
             placeholder={marketplaceCopy.projectList.searchPlaceholder}
           />
         </label>
+        {canReorder ? (
+          <p>{searching ? marketplaceCopy.ordering.searchActive : marketplaceCopy.ordering.hint}</p>
+        ) : null}
+        {orderError ? <p className='error-text'>{marketplaceErrorMessage(orderError)}</p> : null}
       </section>
 
       {showCreate && roles ? (
@@ -108,7 +140,7 @@ export function MarketplaceProjectsPage(): JSX.Element {
         </section>
       ) : (
         <section className='marketplace-card-grid' aria-label={marketplaceCopy.projectList.title}>
-          {projects.map((project) => {
+          {projects.map((project, index) => {
             const content = localizedProjectContent(project);
             const title = content?.title?.trim()
               ? content.title
@@ -135,6 +167,14 @@ export function MarketplaceProjectsPage(): JSX.Element {
                   <Link className='inline-link' to={`/marketplace/projects/${project.id}`}>
                     {marketplaceCopy.common.openProject}
                   </Link>
+                  {canReorder ? (
+                    <OrderControls
+                      count={projects.length}
+                      disabled={ordering || searching}
+                      index={index}
+                      onMove={(delta) => void move(index, delta)}
+                    />
+                  ) : null}
                 </div>
               </article>
             );
