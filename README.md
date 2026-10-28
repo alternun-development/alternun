@@ -120,13 +120,18 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.117**
+Current version: **1.1.120**
 
-## 📋 Latest Changes (v1.1.117)
+## 📋 Latest Changes (v1.1.120)
 
 ### Changes
 
-- **mobile:** cover every top-nav menu action through the full-screen menu ([704421c](https://github.com/alternun-development/alternun/commit/704421c866ccaeafe27ea8cffb03793b774b6d69))
+- **repo:** sync reentry with follow-ups from #299 review ([de986ce](https://github.com/alternun-development/alternun/commit/de986ce95ee32fd673bde6892392984bdb517f24))
+- **docs:** remove unused npm lockfile ([7109163](https://github.com/alternun-development/alternun/commit/710916389807bd0fbb49cb0b78cf36aafd4ac78f))
+
+### Bug Fixes
+
+- **marketplace:** match panel identities to webhook-synced accounts ([f0a93bd](https://github.com/alternun-development/alternun/commit/f0a93bd6e98f48e713422782edebb014b81f27e8))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

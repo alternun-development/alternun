@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Building2, ChevronRight, MapPin, RotateCcw } from 'lucide-react-native';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
-import { EnterprisePagination, EnterpriseViewSwitcher } from './EnterpriseDirectoryControls';
+import { DirectoryControls, DirectoryPagination } from './DirectoryControls';
 import {
-  enterprisePageCount,
-  enterprisePageItems,
-  getRememberedEnterpriseView,
-  rememberEnterpriseView,
-} from './enterpriseDirectoryPaging';
+  directoryPageCount,
+  directoryPageItems,
+  getRememberedDirectoryView,
+  rememberDirectoryView,
+} from './directoryPaging';
 import type {
-  EnterpriseDirectoryView,
+  DirectoryView,
   EnterprisePalette,
   LoadMarketplaceEnterprises,
   MarketplaceEnterprise,
@@ -111,7 +111,7 @@ function EnterpriseCard({
   enterprise: MarketplaceEnterprise;
   palette: EnterprisePalette;
   t: Translate;
-  view: EnterpriseDirectoryView;
+  view: DirectoryView;
   onOpen: (slug: string) => void;
 }): React.JSX.Element {
   const projectCount = t('explorer.enterprises.projectCount', { count: enterprise.projectCount });
@@ -206,17 +206,30 @@ export function MarketplaceEnterpriseBrowser({
   const [enterprises, setEnterprises] = useState<MarketplaceEnterprise[]>([]);
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
   const [requestVersion, setRequestVersion] = useState(0);
-  const [view, setView] = useState<EnterpriseDirectoryView>(getRememberedEnterpriseView);
+  const [view, setView] = useState<DirectoryView>(() => getRememberedDirectoryView('enterprises'));
   const [page, setPage] = useState(1);
-  const pageCount = enterprisePageCount(enterprises.length, view);
+  const [query, setQuery] = useState('');
+  const matchingEnterprises = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return enterprises;
+    return enterprises.filter((enterprise) =>
+      enterprise.displayName.toLowerCase().includes(normalizedQuery)
+    );
+  }, [enterprises, query]);
+  const pageCount = directoryPageCount(matchingEnterprises.length, view);
   const currentPage = Math.min(page, pageCount);
-  const pageItems = enterprisePageItems(enterprises, view, currentPage);
+  const pageItems = directoryPageItems(matchingEnterprises, view, currentPage);
 
-  const changeView = (next: EnterpriseDirectoryView): void => {
-    rememberEnterpriseView(next);
+  const changeView = (next: DirectoryView): void => {
+    rememberDirectoryView('enterprises', next);
     setView(next);
     setPage(1);
     onListNavigate();
+  };
+
+  const changeQuery = (next: string): void => {
+    setQuery(next);
+    setPage(1);
   };
 
   const changePage = (next: number): void => {
@@ -297,7 +310,28 @@ export function MarketplaceEnterpriseBrowser({
       ) : null}
       {state === 'success' && enterprises.length > 0 ? (
         <>
-          <EnterpriseViewSwitcher view={view} palette={palette} t={t} onChange={changeView} />
+          <DirectoryControls
+            idPrefix='enterprise'
+            query={query}
+            onQueryChange={changeQuery}
+            searchLabel={t('explorer.controls.searchLabel.enterprises')}
+            searchPlaceholder={t('explorer.enterprises.searchPlaceholder')}
+            view={view}
+            onViewChange={changeView}
+            palette={palette}
+            t={t}
+          />
+          {matchingEnterprises.length === 0 ? (
+            <View
+              testID='enterprise-directory-no-matches'
+              style={[styles.state, { borderColor: palette.border }]}
+            >
+              <Building2 size={28} color={palette.primary} />
+              <Text style={[styles.stateTitle, { color: palette.text }]}>
+                {t('explorer.enterprises.noMatches')}
+              </Text>
+            </View>
+          ) : null}
           <View
             testID={`enterprise-directory-${view}`}
             style={
@@ -319,7 +353,9 @@ export function MarketplaceEnterpriseBrowser({
               />
             ))}
           </View>
-          <EnterprisePagination
+          <DirectoryPagination
+            idPrefix='enterprise'
+            label={t('explorer.controls.pagination.label.enterprises')}
             page={currentPage}
             pageCount={pageCount}
             palette={palette}

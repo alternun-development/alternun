@@ -372,6 +372,18 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
       ...(args.env.MARKETPLACE_CONTACT_EMAIL
         ? { MARKETPLACE_CONTACT_EMAIL: args.env.MARKETPLACE_CONTACT_EMAIL }
         : {}),
+      ...(args.env.INFRA_BACKEND_API_AIRS_DASHBOARD_URL
+        ? { AIRS_DASHBOARD_URL: args.env.INFRA_BACKEND_API_AIRS_DASHBOARD_URL }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS
+        ? { AIRS_REPORT_SUPPORT_EMAILS: args.env.INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_AUTHENTIK_API_URL
+        ? { AUTHENTIK_API_URL: args.env.INFRA_BACKEND_API_AUTHENTIK_API_URL }
+        : {}),
+      ...(args.env.INFRA_BACKEND_API_AUTHENTIK_API_TOKEN
+        ? { AUTHENTIK_API_TOKEN: args.env.INFRA_BACKEND_API_AUTHENTIK_API_TOKEN }
+        : {}),
       ...(args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL
         ? { AUTH_BETTER_AUTH_URL: args.env.INFRA_BACKEND_API_AUTH_BETTER_AUTH_URL }
         : args.env.AUTH_BETTER_AUTH_URL

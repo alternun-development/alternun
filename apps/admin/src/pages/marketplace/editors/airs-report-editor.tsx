@@ -12,6 +12,7 @@ import {
   formatAirs,
   isValidAirsReportEmail,
   newAirsReportRequestKey,
+  summarizeAirsReports,
   validateAirsReportForm,
 } from '../../../marketplace/airs-reports';
 import type {
@@ -23,6 +24,7 @@ import type {
 } from '../../../marketplace/airs-reports.types';
 import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/copy';
 import { SectionMessage } from '../components';
+import { AirsReportHistory } from './airs-report-history';
 import type {
   AirsReportEditorProps,
   FormStep,
@@ -73,6 +75,7 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
   const [error, setError] = useState<unknown>();
   const [result, setResult] = useState<SubmitAirsReportResponse>();
   const [recent, setRecent] = useState<RecentReportsState>({ kind: 'loading' });
+  const [openReportId, setOpenReportId] = useState<string>();
   // One key per form submission: pressing "Send" twice or retrying after a network error
   // replays the same report instead of creating a second one.
   const requestKey = useRef(newAirsReportRequestKey());
@@ -362,21 +365,65 @@ export function AirsReportEditor({ project, roles }: AirsReportEditorProps): JSX
         <SectionMessage>{copy.list.empty}</SectionMessage>
       ) : null}
       {recent.kind === 'success' && recent.data.length > 0 ? (
-        <div className='marketplace-card-grid'>
-          {recent.data.map((report) => (
-            <article className='metric-card' key={report.id}>
-              <AirsReportStatusPill status={report.status} />
-              <h4>{formatAirs(report.amount)}</h4>
-              <p>{report.recipientName ?? report.recipientEmail}</p>
-              <small>
-                {copy.list.document}: {report.documentNumber ?? marketplaceCopy.common.notAvailable}{' '}
-                · {formatDate(report.submittedAt)}
-              </small>
-            </article>
-          ))}
-        </div>
+        <>
+          <AirsReportSummaryStrip records={recent.data} />
+          <div className='marketplace-card-grid'>
+            {recent.data.map((report) => (
+              <article
+                className={`metric-card airs-report-card airs-report-card-${
+                  statusStyle[report.status]
+                }`}
+                key={report.id}
+              >
+                <AirsReportStatusPill status={report.status} />
+                <h4>{formatAirs(report.amount)}</h4>
+                <p>{report.recipientName ?? report.recipientEmail}</p>
+                <small>
+                  {copy.list.document}:{' '}
+                  {report.documentNumber ?? marketplaceCopy.common.notAvailable} ·{' '}
+                  {formatDate(report.submittedAt)}
+                </small>
+                <button
+                  className='secondary-button airs-report-toggle'
+                  onClick={() =>
+                    setOpenReportId((current) => (current === report.id ? undefined : report.id))
+                  }
+                  type='button'
+                >
+                  {openReportId === report.id ? copy.history.hide : copy.history.show}
+                </button>
+                {openReportId === report.id ? <AirsReportHistory reportId={report.id} /> : null}
+              </article>
+            ))}
+          </div>
+        </>
       ) : null}
     </section>
+  );
+}
+
+function AirsReportSummaryStrip({
+  records,
+}: {
+  records: readonly AirsReportRecord[];
+}): JSX.Element {
+  const summary = summarizeAirsReports(records);
+  const items: Array<[string, string, string]> = [
+    [copy.summary.credited, String(summary.credited), formatAirs(summary.creditedAirs)],
+    [copy.summary.waitingApproval, String(summary.waitingApproval), ''],
+    [copy.summary.waitingClaim, String(summary.waitingClaim), ''],
+    [copy.summary.airs, formatAirs(summary.totalAirs), ''],
+  ];
+  return (
+    <div className='airs-report-summary' role='group' aria-label={copy.list.heading}>
+      {items.map(([label, value, hint]) => (
+        <div className='airs-report-summary-item' key={label}>
+          <span>{label}</span>
+          <strong>{value}</strong>
+          {hint ? <small>{hint}</small> : null}
+        </div>
+      ))}
+    </div>
   );
 }
 
