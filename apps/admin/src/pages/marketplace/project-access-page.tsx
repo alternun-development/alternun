@@ -73,7 +73,9 @@ export function ProjectAccessPage(): JSX.Element {
         const rows = buildAccessRows(
           projects.map((project) => ({
             id: project.id,
-            enterpriseId: project.enterpriseId,
+            enterpriseIds: project.enterprises?.length
+              ? project.enterprises.map(({ enterpriseId }) => enterpriseId)
+              : [project.enterpriseId],
             slug: project.slug,
             title: localizedProjectContent(project)?.title ?? project.slug,
           })),

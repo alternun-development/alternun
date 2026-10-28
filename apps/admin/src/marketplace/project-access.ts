@@ -15,7 +15,8 @@ function person(membership: AccessMembership): string {
 
 /**
  * One row per project: who administers it, who moderates it, and what is missing. A membership
- * counts for a project when it is active and set on that project, or on its enterprise.
+ * counts for a project when it is active and set on that project, or on any related enterprise
+ * (matching marketplace_projects_missing_account_or_admin).
  */
 export function buildAccessRows(
   projects: readonly AccessProject[],
@@ -29,7 +30,7 @@ export function buildAccessRows(
       const relevant = active.filter((membership) =>
         membership.scopeType === 'project'
           ? membership.projectId === project.id
-          : membership.enterpriseId === project.enterpriseId
+          : project.enterpriseIds.includes(membership.enterpriseId)
       );
       const names = (role: AccessMembership['role']): string[] =>
         Array.from(new Set(relevant.filter((item) => item.role === role).map(person))).sort();

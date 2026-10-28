@@ -19,7 +19,8 @@ export type AccessMembership = {
 
 export type AccessProject = {
   id: string;
-  enterpriseId: string;
+  /** Every enterprise related to the project, not only its primary owner. */
+  enterpriseIds: string[];
   slug: string;
   title: string;
 };
