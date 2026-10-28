@@ -126,10 +126,6 @@ Current version: **1.1.124**
 
 ### Bug Fixes
 
-- **repo:** fix(marketplace): count admins from every related enterprise on project access
-
-### Bug Fixes
-
 - **marketplace:** count admins from every related enterprise on project access ([a526360](https://github.com/alternun-development/alternun/commit/a526360c862a1b66b7cceb3e3330ac08084ce577))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
