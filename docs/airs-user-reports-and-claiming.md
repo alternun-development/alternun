@@ -2,11 +2,11 @@
 
 This page describes how project admins and moderators grant Airs to people from the admin console (Alternun Admin), and how a person claims Airs that were granted before they had an account. It is the working spec for epic [#249](https://github.com/alternun-development/alternun/issues/249), Part B. Update it as each phase lands.
 
-**Status (2026-10-26): specified, not built.** The decisions below are agreed. No code, migration or admin screen for User Airs Reports exists yet. The [current platform](#current-platform) section describes what works today.
+**Status (2026-10-28): built, pending configuration and the testnet walkthrough.** Reports, auto-approval, the review queue, claiming, locked rewards that unlock at 20 paid Airs, the workflow emails, the console inbox, project types and the per-project medal catalog are released (v1.1.112 to v1.1.122). Still missing: the private bucket for supporting documents (only the document number is stored), uploading medal art, showing awarded medals in the app profile, the "rewards unlocked" notice, and the walkthrough (B16). The [current platform](#current-platform) section below describes the platform this process was built on, before epic #249.
 
 ## Current platform
 
-What exists today and what this process builds on:
+What existed before this process, and what it builds on (as of 2026-10-26):
 
 - **Activity awards.** A project admin records an activity completion and approves it. The approval writes the activity's configured amount to `airs_ledger_entries` (`source_kind = validated_regenerative_action`) with an idempotency key. The approver never chooses the amount. See `marketplace_approve_activity_completion` in `supabase/migrations/20261013_0003_*`.
 - **Participants need an account.** `marketplace_add_project_participant` takes an email and returns `USER_NOT_FOUND` when no account exists. There are no pending users, invitations or claimable grants.
@@ -106,6 +106,6 @@ Email delivery is tracked apart from the report state. A failed email never bloc
 
 ## Still open
 
-- Confirm the approver mailboxes `admin@alternun.co` and `sgomez@alternun.io`.
-- Decide whether domain Super Admins are `platform_owner` or stay `internal_admin`.
+- Decided: domain accounts (`@alternun.io` and `@alternun.co`) are `internal_admin`, and only when the address is proven by a source sign-in such as Google. `platform_owner` stays manual.
+- The approvers `edward@alternun.io`, `admin@alternun.co` and `sgomez@alternun.io` are configured on testnet; production has not been checked yet (`airs_report_approvers`).
 - **Deferred:** limits per submitter or per project. Today's limits are per recipient only. Revisit together with monitoring for many small grants spread across many recipients.
