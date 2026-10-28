@@ -16,7 +16,7 @@ APP_NAME="${INFRA_APP_NAME:-alternun-infra}"
 STAGE="${STACK:-${SST_STAGE:-dev}}"
 REGION="${AWS_REGION:-us-east-1}"
 CACHE_DIR="${INFRA_SSM_ENV_CACHE_DIR:-${TMPDIR:-/tmp}/alternun-infra}"
-CACHE_FILE="${INFRA_SSM_ENV_CACHE_FILE:-${CACHE_DIR}/ssm-env-v4-${STAGE}-${REGION}.sh}"
+CACHE_FILE="${INFRA_SSM_ENV_CACHE_FILE:-${CACHE_DIR}/ssm-env-v5-${STAGE}-${REGION}.sh}"
 
 declare -A SSM_PARAM_CACHE=()
 declare -a CACHE_EXPORT_VARS=(
@@ -444,7 +444,8 @@ main() {
       # Airs report links must open testnet, never production.
       export_env_from_ssm "INFRA_BACKEND_API_AIRS_DASHBOARD_URL" "infra-backend-api-airs-dashboard-url-dev" "https://testnet.airs.alternun.co"
       export_env_from_ssm "INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS" "infra-backend-api-airs-report-support-emails-dev"
-      export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_URL" "infra-backend-api-authentik-api-url-dev"
+      # Group sync stays off until a token is set; the URL only says which Authentik to call.
+      export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_URL" "infra-backend-api-authentik-api-url-dev" "https://testnet.sso.alternun.co"
       export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_TOKEN" "infra-backend-api-authentik-api-token-dev"
       ;;
     prod|production|*production*|dashboard-prod|dashboard-production|backend-prod|backend-api-prod|api-prod|api-production|identity-prod|identity-production|auth-prod|authentik-prod|admin-prod|admin-production|backoffice-prod|backoffice-admin-prod)
@@ -468,7 +469,7 @@ main() {
       export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id" "" "${SSM_SHARED_STAGE}"
       export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret" "" "${SSM_SHARED_STAGE}"
       export_env_from_ssm "INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS" "infra-backend-api-airs-report-support-emails-prod"
-      export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_URL" "infra-backend-api-authentik-api-url-prod"
+      export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_URL" "infra-backend-api-authentik-api-url-prod" "https://sso.alternun.co"
       export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_TOKEN" "infra-backend-api-authentik-api-token-prod"
       ;;
     *)
