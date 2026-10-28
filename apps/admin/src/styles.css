@@ -1331,3 +1331,74 @@ select {
   display: grid;
   gap: 0.1rem;
 }
+
+/* Project types: the catalog page and the type selector in a project. */
+.project-type-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.project-type-card.is-retired {
+  opacity: 0.6;
+}
+
+.project-type-editor {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  max-width: 24rem;
+}
+
+.project-type-editor small {
+  color: var(--text-muted);
+}
+
+/* Console notifications: the inbox list. */
+.notification-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid transparent;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.notification-item.is-unread {
+  border-left-color: var(--accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.notification-item > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.notification-item span,
+.notification-item small {
+  color: var(--text-muted);
+}
+
+/* Project medals: the catalog cards. */
+.medal-card img {
+  display: block;
+  margin-bottom: 0.5rem;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.medal-card.is-retired {
+  opacity: 0.6;
+}
