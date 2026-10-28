@@ -48,7 +48,9 @@ export type Project = {
 
 export type Enterprise = {
   id: string;
+  slug: string;
   displayName: string;
+  legalName: string | null;
   status: EnterpriseStatus;
   countryCode: string | null;
   websiteUrl: string | null;

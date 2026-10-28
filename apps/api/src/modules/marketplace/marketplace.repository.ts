@@ -69,6 +69,7 @@ function mapEnterprise(row: Row): EnterpriseRecord {
     status: text(row.status) as EnterpriseRecord['status'],
     countryCode: nullableText(row.country_code),
     websiteUrl: nullableText(row.website_url),
+    sortOrder: Number(row.sort_order ?? 0),
     createdAt: text(row.created_at),
     updatedAt: text(row.updated_at),
   };
@@ -98,6 +99,7 @@ function mapProject(row: Row): ProjectRecord {
     content: record(row.content) as ProjectContent,
     firstPublishedAt: nullableText(row.first_published_at),
     publishedAt: nullableText(row.published_at),
+    sortOrder: Number(row.sort_order ?? 0),
     createdAt: text(row.created_at),
     updatedAt: text(row.updated_at),
     enterprises: relationships.map((relationship) => ({
@@ -169,6 +171,7 @@ export class MarketplacePublicRepository {
       .eq('status', 'published')
       .eq('enterprise_projects.is_primary', true)
       .eq('project_media.is_active', true)
+      .order('sort_order')
       .order('published_at', { ascending: false });
     if (categoryCode) query = query.eq('category_code', categoryCode);
     const { data, error } = await query;
@@ -269,7 +272,11 @@ export class MarketplaceAdminRepository {
 
   async listEnterprises(enterpriseIds?: readonly string[]): Promise<EnterpriseRecord[]> {
     if (enterpriseIds?.length === 0) return [];
-    let query = this.client.from('enterprises').select('*').order('display_name');
+    let query = this.client
+      .from('enterprises')
+      .select('*')
+      .order('sort_order')
+      .order('display_name');
     if (enterpriseIds) query = query.in('id', [...enterpriseIds]);
     const { data, error } = await query;
     if (error) failDatabase(error);
@@ -346,6 +353,40 @@ export class MarketplaceAdminRepository {
     return mapEnterprise(record(result.enterprise));
   }
 
+  async reorderEnterprises(
+    ids: readonly string[],
+    actor: AdminActor,
+    requestId: string
+  ): Promise<void> {
+    const { data, error } = await this.client.rpc('marketplace_reorder_enterprises', {
+      p_ids: [...ids],
+      p_actor_issuer: actor.issuer,
+      p_actor_subject: actor.subject,
+      p_actor_roles: [...actor.roles],
+      p_request_id: requestId,
+    });
+    if (error) failDatabase(error);
+    const result = record(data);
+    if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'SORT_ORDER_INVALID');
+  }
+
+  async reorderProjects(
+    ids: readonly string[],
+    actor: AdminActor,
+    requestId: string
+  ): Promise<void> {
+    const { data, error } = await this.client.rpc('marketplace_reorder_projects', {
+      p_ids: [...ids],
+      p_actor_issuer: actor.issuer,
+      p_actor_subject: actor.subject,
+      p_actor_roles: [...actor.roles],
+      p_request_id: requestId,
+    });
+    if (error) failDatabase(error);
+    const result = record(data);
+    if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'SORT_ORDER_INVALID');
+  }
+
   async listProjects(scope?: {
     enterpriseIds: readonly string[];
     projectIds: readonly string[];
@@ -356,6 +397,7 @@ export class MarketplaceAdminRepository {
         .from('projects')
         .select(select)
         .eq('enterprise_projects.is_primary', true)
+        .order('sort_order')
         .order('created_at', { ascending: false });
       if (error) failDatabase(error);
       return rowArray(data).map(mapProject);
@@ -368,6 +410,7 @@ export class MarketplaceAdminRepository {
         .select(select)
         .eq('enterprise_projects.is_primary', true)
         .in('enterprise_projects.enterprise_id', [...scope.enterpriseIds])
+        .order('sort_order')
         .order('created_at', { ascending: false });
       if (error) failDatabase(error);
       rows.push(...rowArray(data));
@@ -378,6 +421,7 @@ export class MarketplaceAdminRepository {
         .select(select)
         .eq('enterprise_projects.is_primary', true)
         .in('id', [...scope.projectIds])
+        .order('sort_order')
         .order('created_at', { ascending: false });
       if (error) failDatabase(error);
       rows.push(...rowArray(data));
@@ -385,7 +429,11 @@ export class MarketplaceAdminRepository {
 
     const seen = new Set<string>();
     return rows
-      .sort((a, b) => text(b.created_at).localeCompare(text(a.created_at)))
+      .sort(
+        (a, b) =>
+          Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0) ||
+          text(b.created_at).localeCompare(text(a.created_at))
+      )
       .filter((row) => {
         const id = text(row.id);
         if (seen.has(id)) return false;

@@ -10,6 +10,9 @@ export type AuditState =
   | { kind: 'success'; page: AuditPage };
 
 export type AuditHistoryProps = {
-  project: Project;
+  /** Project whose history is listed. */
+  project?: Project;
+  /** When set, the enterprise history is listed instead of a project's. */
+  enterpriseId?: string;
   roles: readonly AdminRole[];
 };
