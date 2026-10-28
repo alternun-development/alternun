@@ -10,6 +10,7 @@ let marketplaceCopy;
 let marketplaceErrorMessage;
 let reports;
 let AirsReportEditor;
+let AirsReportHistoryView;
 let AirsReportQueuePage;
 let resolveAdminAccessProfile;
 
@@ -76,6 +77,9 @@ before(async () => {
   ({ AirsReportEditor } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/editors/airs-report-editor.tsx'
   ));
+  ({ AirsReportHistoryView } = await viteServer.ssrLoadModule(
+    '/src/pages/marketplace/editors/airs-report-history.tsx'
+  ));
   ({ AirsReportQueuePage } = await viteServer.ssrLoadModule(
     '/src/pages/marketplace/airs-report-queue-page.tsx'
   ));
@@ -108,7 +112,8 @@ test('every required field has its own friendly message', () => {
     'recipientEmail',
   ]);
   assert.equal(errors.documentNumber, marketplaceCopy.airsReports.errors.documentRequired);
-  for (const message of Object.values(errors)) assert.doesNotMatch(message, /AIRS_REPORT|undefined/);
+  for (const message of Object.values(errors))
+    assert.doesNotMatch(message, /AIRS_REPORT|undefined/);
 });
 
 test('the guest name is required only when the email has no account', () => {
@@ -164,7 +169,7 @@ test('the request body is normalized and carries a key for safe retries', () => 
       documentNumber: ' INV-9 ',
     },
     noAccount,
-    'key-0123456789abcdef'
+    'test-request-key'
   );
 
   assert.deepEqual(body, {
@@ -173,7 +178,7 @@ test('the request body is normalized and carries a key for safe retries', () => 
     amount: 75,
     concept: 'Two nights at the pilot hotel',
     documentNumber: 'INV-9',
-    requestKey: 'key-0123456789abcdef',
+    requestKey: 'test-request-key',
   });
   // An existing account keeps its own name.
   assert.equal(
@@ -181,7 +186,7 @@ test('the request body is normalized and carries a key for safe retries', () => 
       reports.buildSubmitAirsReportBody(
         { ...validForm, recipientName: 'Typed name' },
         hasAccount,
-        'key-0123456789abcdef'
+        'test-request-key'
       ),
     false
   );
@@ -196,10 +201,7 @@ test('each form submission gets its own key', () => {
 });
 
 test('paths are encoded so an email cannot change the request', () => {
-  assert.equal(
-    reports.airsReportsPath('project-1'),
-    '/v1/admin/projects/project-1/airs-reports'
-  );
+  assert.equal(reports.airsReportsPath('project-1'), '/v1/admin/projects/project-1/airs-reports');
   assert.equal(
     reports.airsReportRecipientPath('project-1', ' ada+test@example.com '),
     '/v1/admin/projects/project-1/airs-reports/recipient?email=ada%2Btest%40example.com'
@@ -209,7 +211,10 @@ test('paths are encoded so an email cannot change the request', () => {
     '/v1/admin/projects/project-1/airs-reports/recipient?email=a%40b.co%26x%3D1'
   );
   assert.equal(reports.airsReportDetailPath('r-1'), '/v1/admin/airs-reports/r-1');
-  assert.equal(reports.airsReportActionPath('r-1', 'approve'), '/v1/admin/airs-reports/r-1/approve');
+  assert.equal(
+    reports.airsReportActionPath('r-1', 'approve'),
+    '/v1/admin/airs-reports/r-1/approve'
+  );
   assert.equal(reports.airsReportActionPath('r-1', 'reject'), '/v1/admin/airs-reports/r-1/reject');
 });
 
@@ -237,7 +242,11 @@ test('the approvals section is in the menu of internal admins and nobody else', 
     assert.ok(resolveAdminAccessProfile([role]).allowedResources.includes(resource), role);
   }
   for (const role of ['partner_operator', 'sub_admin', 'moderator', 'partner_readonly']) {
-    assert.equal(resolveAdminAccessProfile([role]).allowedResources.includes(resource), false, role);
+    assert.equal(
+      resolveAdminAccessProfile([role]).allowedResources.includes(resource),
+      false,
+      role
+    );
   }
 });
 
@@ -269,9 +278,18 @@ test('a report that waits for review says why', () => {
 });
 
 test('rejecting needs a reason that is not too long', () => {
-  assert.equal(reports.airsReportRejectReasonError(''), marketplaceCopy.airsReports.queue.reasonRequired);
-  assert.equal(reports.airsReportRejectReasonError('   '), marketplaceCopy.airsReports.queue.reasonRequired);
-  assert.equal(reports.airsReportRejectReasonError('x'.repeat(501)), marketplaceCopy.airsReports.queue.reasonLong);
+  assert.equal(
+    reports.airsReportRejectReasonError(''),
+    marketplaceCopy.airsReports.queue.reasonRequired
+  );
+  assert.equal(
+    reports.airsReportRejectReasonError('   '),
+    marketplaceCopy.airsReports.queue.reasonRequired
+  );
+  assert.equal(
+    reports.airsReportRejectReasonError('x'.repeat(501)),
+    marketplaceCopy.airsReports.queue.reasonLong
+  );
   assert.equal(reports.airsReportRejectReasonError('Wrong amount'), null);
 });
 
@@ -297,7 +315,10 @@ test('every report error code from the API shows a sentence, never a raw code', 
     seen.add(message);
   }
   assert.equal(seen.size, codes.length);
-  assert.match(marketplaceErrorMessage({ code: 'AIRS_REPORT_SELF_APPROVAL_DENIED' }), /can't approve/);
+  assert.match(
+    marketplaceErrorMessage({ code: 'AIRS_REPORT_SELF_APPROVAL_DENIED' }),
+    /can't approve/
+  );
 });
 
 test('the project report form renders for roles that can report and says why for others', () => {
@@ -315,7 +336,7 @@ test('the project report form renders for roles that can report and says why for
   const denied = renderToString(
     createElement(AirsReportEditor, { project, roles: ['partner_readonly'] })
   );
-  assert.match(denied, new RegExp(copy.permission.replace(/'/g, '&#x27;|\'')));
+  assert.match(denied, new RegExp(copy.permission.replace(/'/g, "&#x27;|'")));
   assert.doesNotMatch(denied, new RegExp(copy.form.review));
 });
 
@@ -323,4 +344,87 @@ test('the approvals page renders its loading state without a session', () => {
   const html = renderToString(createElement(AirsReportQueuePage));
 
   assert.match(html, new RegExp(marketplaceCopy.common.loading));
+});
+
+test('the summary counts what is credited and what waits, and leaves out closed reports', () => {
+  const summary = reports.summarizeAirsReports([
+    { status: 'released', amount: 50 },
+    { status: 'released', amount: 25 },
+    { status: 'pending_approval', amount: 300 },
+    { status: 'awaiting_claim', amount: 40 },
+    { status: 'auto_approved', amount: 5 },
+    { status: 'rejected', amount: 999 },
+    { status: 'cancelled', amount: 999 },
+    { status: 'reversed', amount: 999 },
+  ]);
+
+  assert.deepEqual(summary, {
+    credited: 2,
+    creditedAirs: 75,
+    waitingApproval: 1,
+    waitingClaim: 1,
+    totalAirs: 420,
+  });
+  assert.deepEqual(reports.summarizeAirsReports([]), {
+    credited: 0,
+    creditedAirs: 0,
+    waitingApproval: 0,
+    waitingClaim: 0,
+    totalAirs: 0,
+  });
+});
+
+test('timeline actions read as sentences, with a fallback and a note when denied', () => {
+  const history = marketplaceCopy.airsReports.history;
+  assert.equal(
+    reports.describeTimelineAction({ action: 'airs_report.released', result: 'allowed' }),
+    history.actions['airs_report.released']
+  );
+  assert.equal(
+    reports.describeTimelineAction({ action: 'airs_report.approve_denied', result: 'denied' }),
+    `Approve denied (${history.denied})`
+  );
+  assert.equal(
+    reports.describeTimelineAction({ action: 'airs_report.submitted', result: 'denied' }),
+    `${history.actions['airs_report.submitted']} (${history.denied})`
+  );
+});
+
+test('the history shows the timeline and what each reward is waiting for', () => {
+  const history = marketplaceCopy.airsReports.history;
+  const detail = {
+    report: { id: 'r-1' },
+    recipientTotals: {},
+    timeline: [
+      {
+        action: 'airs_report.submitted',
+        result: 'allowed',
+        reasonCode: null,
+        occurredAt: '2026-10-27T12:00:00Z',
+      },
+      {
+        action: 'airs_report.claimed',
+        result: 'allowed',
+        reasonCode: null,
+        occurredAt: '2026-10-27T13:00:00Z',
+      },
+    ],
+    rewards: [
+      { kind: 'submitter', amount: 5, status: 'locked', creditedAt: null },
+      { kind: 'project', amount: 5, status: 'credited', creditedAt: '2026-10-27T13:30:00Z' },
+    ],
+  };
+  const html = renderToString(createElement(AirsReportHistoryView, { detail }));
+
+  assert.match(html, new RegExp(history.actions['airs_report.submitted']));
+  assert.match(html, new RegExp(history.actions['airs_report.claimed']));
+  assert.match(html, new RegExp(history.rewardKind.submitter));
+  assert.match(html, new RegExp(history.rewardStatus.locked));
+  assert.match(html, new RegExp(history.rewardStatus.credited));
+
+  const empty = renderToString(
+    createElement(AirsReportHistoryView, { detail: { report: { id: 'r-2' }, recipientTotals: {} } })
+  );
+  assert.match(empty, new RegExp(history.empty));
+  assert.ok(empty.includes(history.rewardsEmpty));
 });
