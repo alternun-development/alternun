@@ -44,6 +44,8 @@ export type Project = {
   projectTypeCode?: string | null;
   /** False only when the project's type says reports need no document number. */
   requiresDocumentNumber?: boolean;
+  /** Every enterprise related to the project, the primary owner included. */
+  enterprises?: Array<{ enterpriseId: string; isPrimary: boolean }>;
 };
 
 export type Enterprise = {

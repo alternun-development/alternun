@@ -9,9 +9,9 @@ let access;
 let permissions;
 
 const projects = [
-  { id: 'p-1', enterpriseId: 'e-1', slug: 'eco-turismo', title: 'Eco Turismo' },
-  { id: 'p-2', enterpriseId: 'e-2', slug: 'golf-club', title: 'Golf Club' },
-  { id: 'p-3', enterpriseId: 'e-3', slug: 'a-cafe', title: 'A Cafe' },
+  { id: 'p-1', enterpriseIds: ['e-1'], slug: 'eco-turismo', title: 'Eco Turismo' },
+  { id: 'p-2', enterpriseIds: ['e-2'], slug: 'golf-club', title: 'Golf Club' },
+  { id: 'p-3', enterpriseIds: ['e-3', 'e-4'], slug: 'a-cafe', title: 'A Cafe' },
 ];
 
 const member = (overrides) => ({
@@ -62,6 +62,23 @@ test('people are grouped by role for each project, from project and enterprise m
   assert.deepEqual(eco.moderators, ['mod@example.test']);
   assert.deepEqual(eco.readOnly, ['viewer@example.test']);
   assert.deepEqual(rows.find((row) => row.projectId === 'p-2').admins, ['owner@example.test']);
+});
+
+test('enterprise admins of a non-primary related enterprise count for the project', () => {
+  const rows = access.buildAccessRows(
+    projects,
+    [
+      member({
+        scopeType: 'enterprise',
+        enterpriseId: 'e-4',
+        role: 'partner_operator',
+        memberEmail: 'partner@example.test',
+      }),
+    ],
+    []
+  );
+  assert.deepEqual(rows.find((row) => row.projectId === 'p-3').admins, ['partner@example.test']);
+  assert.deepEqual(rows.find((row) => row.projectId === 'p-1').admins, []);
 });
 
 test('revoked memberships and other projects never show', () => {
