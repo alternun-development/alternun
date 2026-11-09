@@ -85,3 +85,62 @@ test('the endpoint requires a bearer token and rejects invalid ones', async () =
   assert.throws(() => controller.get(undefined), UnauthorizedException);
   await assert.rejects(controller.get('Bearer bad'), UnauthorizedException);
 });
+
+test('memberships resolve project slugs without embedding projects (no foreign key)', async () => {
+  const { AdminAccessRepository } = await import('../src/modules/marketplace/admin-access.service');
+  const selects: string[] = [];
+  const tables: Record<string, unknown[]> = {
+    project_memberships: [
+      {
+        role: 'project_moderator',
+        enterprise_id: 'e1',
+        project_id: 'p1',
+        enterprises: { slug: 'taybo' },
+      },
+      {
+        role: 'partner_operator',
+        enterprise_id: 'e1',
+        project_id: null,
+        enterprises: [{ slug: 'taybo' }],
+      },
+    ],
+    projects: [{ id: 'p1', slug: 'fundacion-rio-gaira' }],
+  };
+  const client = {
+    from(table: string) {
+      const query: any = {
+        select(columns: string) {
+          selects.push(`${table}:${columns}`);
+          if (table === 'project_memberships' && columns.includes('projects('))
+            return {
+              ...query,
+              then: (r: any) => r({ data: null, error: { message: 'no relationship' } }),
+            };
+          return query;
+        },
+        eq: () => query,
+        in: () => query,
+        then: (resolve: any) => resolve({ data: tables[table], error: null }),
+      };
+      return query;
+    },
+  };
+  const repository = new AdminAccessRepository(client as any);
+  assert.deepEqual(await repository.listActiveMemberships('user-1'), [
+    {
+      role: 'project_moderator',
+      enterpriseId: 'e1',
+      enterpriseSlug: 'taybo',
+      projectId: 'p1',
+      projectSlug: 'fundacion-rio-gaira',
+    },
+    {
+      role: 'partner_operator',
+      enterpriseId: 'e1',
+      enterpriseSlug: 'taybo',
+      projectId: null,
+      projectSlug: null,
+    },
+  ]);
+  assert.ok(selects.every((select) => !select.includes('projects(')));
+});

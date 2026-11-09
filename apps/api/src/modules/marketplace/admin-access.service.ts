@@ -53,19 +53,38 @@ export class AdminAccessRepository implements AdminAccessRepositoryPort {
   }
 
   async listActiveMemberships(userId: string): Promise<AdminAccessScope[]> {
+    // project_memberships.project_id has no foreign key to projects, so project slugs are
+    // looked up separately; enterprises can be embedded.
     const { data, error } = await this.client
       .from('project_memberships')
-      .select('role, enterprise_id, project_id, enterprises(slug), projects(slug)')
+      .select('role, enterprise_id, project_id, enterprises(slug)')
       .eq('member_user_id', userId)
       .eq('status', 'active');
     if (error) this.unavailable();
-    return ((data ?? []) as Row[]).map((row) => ({
-      role: text(row.role) ?? '',
-      enterpriseId: text(row.enterprise_id) ?? '',
-      enterpriseSlug: text(single(row.enterprises).slug),
-      projectId: text(row.project_id),
-      projectSlug: text(single(row.projects).slug),
-    }));
+    const rows = (data ?? []) as Row[];
+    const projectIds = [
+      ...new Set(rows.map((row) => text(row.project_id)).filter((id): id is string => !!id)),
+    ];
+    const projectSlugs = new Map<string, string>();
+    if (projectIds.length > 0) {
+      const projects = await this.client.from('projects').select('id, slug').in('id', projectIds);
+      if (projects.error) this.unavailable();
+      for (const project of (projects.data ?? []) as Row[]) {
+        const id = text(project.id);
+        const slug = text(project.slug);
+        if (id && slug) projectSlugs.set(id, slug);
+      }
+    }
+    return rows.map((row) => {
+      const projectId = text(row.project_id);
+      return {
+        role: text(row.role) ?? '',
+        enterpriseId: text(row.enterprise_id) ?? '',
+        enterpriseSlug: text(single(row.enterprises).slug),
+        projectId,
+        projectSlug: projectId ? projectSlugs.get(projectId) ?? null : null,
+      };
+    });
   }
 }
 

@@ -358,7 +358,7 @@ export interface ProjectMembershipRecord {
   enterpriseId: string;
   projectId: string | null;
   scopeType: 'enterprise' | 'project';
-  role: 'partner_operator' | 'sub_admin' | 'partner_readonly';
+  role: 'partner_operator' | 'sub_admin' | 'partner_readonly' | 'project_moderator';
   status: 'active' | 'revoked';
   /** Verified email of the member, when they have signed in. Filled on lists and grants. */
   memberEmail?: string | null;

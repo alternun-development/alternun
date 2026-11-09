@@ -155,7 +155,7 @@ export type ProjectMembership = {
   enterpriseId: string;
   projectId: string | null;
   scopeType: 'enterprise' | 'project';
-  role: 'partner_operator' | 'sub_admin' | 'partner_readonly';
+  role: 'partner_operator' | 'sub_admin' | 'partner_readonly' | 'project_moderator';
   status: 'active' | 'revoked';
   /** Verified email of the member, when they have signed in. */
   memberEmail?: string | null;

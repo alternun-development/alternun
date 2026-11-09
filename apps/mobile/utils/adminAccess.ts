@@ -10,6 +10,7 @@ const ADMIN_PANEL_ROLES = new Set([
   'moderator',
   'partner_operator',
   'sub_admin',
+  'project_moderator',
   'partner_readonly',
 ]);
 

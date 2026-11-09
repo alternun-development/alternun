@@ -814,6 +814,7 @@
           "moderator": "Moderator",
           "partner_operator": "Project admin",
           "sub_admin": "Sub admin",
+          "project_moderator": "Project moderator",
           "partner_readonly": "Read only"
         }
       },
@@ -913,6 +914,7 @@
       },
       "tierJourney": "Tier Journey",
       "accountRows": {
+        "accountAndRoles": "Account & roles",
         "personalInfo": "Personal information",
         "wallet": "Wallet",
         "accessMethod": "Access method",

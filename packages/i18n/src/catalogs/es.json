@@ -814,6 +814,7 @@
           "moderator": "Moderador",
           "partner_operator": "Admin de proyecto",
           "sub_admin": "Sub admin",
+          "project_moderator": "Moderador de proyecto",
           "partner_readonly": "Solo lectura"
         }
       },
@@ -913,6 +914,7 @@
       },
       "tierJourney": "Trayecto de Tier",
       "accountRows": {
+        "accountAndRoles": "Cuenta y roles",
         "personalInfo": "Información personal",
         "wallet": "Billetera",
         "accessMethod": "Método de acceso",

@@ -932,6 +932,7 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         "Alternun Partner Operator": "partner_operator",
         "Alternun Sub Admin": "sub_admin",
         "Alternun Partner Read Only": "partner_readonly",
+        "Alternun Project Moderator": "project_moderator",
     }
     # Every mapped group must exist so it can be assigned in Authentik; the
     # access policy and the alternun_roles claim below are built from this map.

@@ -2,13 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView as BlurViewRaw } from 'expo-blur';
-import {
-  LayoutDashboard,
-  ShieldCheck,
-  Leaf,
-  CircleUserRound,
-  type LucideProps,
-} from 'lucide-react-native';
+import { LayoutDashboard, Leaf, CircleUserRound, type LucideProps } from 'lucide-react-native';
 import type { FC } from 'react';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
@@ -24,7 +18,6 @@ interface DockItem {
 
 const DOCK_ITEMS: DockItem[] = [
   { key: 'dashboard', label: 'Home', icon: LayoutDashboard as FC<LucideProps> },
-  { key: 'portfolio', label: 'Portfolio', icon: ShieldCheck as FC<LucideProps> },
   { key: 'explore', label: 'Explore', icon: Leaf as FC<LucideProps> },
   { key: 'profile', label: 'Profile', icon: CircleUserRound as FC<LucideProps> },
 ];
