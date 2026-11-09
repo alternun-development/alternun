@@ -804,6 +804,19 @@
       }
     },
     "profile": {
+      "roles": {
+        "title": "บทบาท",
+        "none": "ผู้ใช้",
+        "scoped": "ใน {{target}}",
+        "labels": {
+          "platform_owner": "ผู้ดูแลระบบหลัก Alternun",
+          "internal_admin": "ผู้ดูแล Alternun",
+          "moderator": "ผู้ตรวจสอบ",
+          "partner_operator": "ผู้ดูแลโครงการ",
+          "sub_admin": "ผู้ช่วยผู้ดูแล",
+          "partner_readonly": "อ่านอย่างเดียว"
+        }
+      },
       "screenTitle": "โปรไฟล์ของฉัน",
       "signInPrompt": "เข้าสู่ระบบเพื่อดูโปรไฟล์ของคุณ",
       "tabs": {
@@ -1065,6 +1078,11 @@
       }
     },
     "explorer": {
+      "admin": {
+        "openPanel": "แผงผู้ดูแล Alternun",
+        "manageProject": "จัดการโครงการ",
+        "manageEnterprise": "จัดการองค์กร"
+      },
       "profile": {
         "about": "เกี่ยวกับ",
         "location": "ที่ตั้ง",

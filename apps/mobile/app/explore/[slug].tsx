@@ -7,11 +7,14 @@ import { useAppPreferences } from '../../components/settings/AppPreferencesProvi
 import { MarketplaceProjectDetailView } from '../../components/marketplace/MarketplaceProjectDetail';
 import type { DetailPalette } from '../../components/marketplace/types';
 import type { MarketplaceAuthContext } from './[slug].types';
+import { resolveAdminPanelUrl } from '../../utils/adminAccess';
+import { useAdminAccess } from '../../hooks/useAdminAccess';
 
 export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{ slug?: string | string[] }>();
   const router = useRouter();
   const { user, client } = (useAuth as unknown as () => MarketplaceAuthContext)();
+  const adminAccess = useAdminAccess();
   const { language, themeMode } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const slug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
@@ -54,6 +57,8 @@ export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
             params: { slug: enterpriseSlug },
           })
         }
+        adminUrl={resolveAdminPanelUrl()}
+        adminAccess={adminAccess}
         signedIn={Boolean(user)}
         getSessionToken={() => client.getSessionToken()}
         onSignIn={() =>

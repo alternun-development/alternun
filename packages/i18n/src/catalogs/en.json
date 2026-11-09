@@ -804,6 +804,19 @@
       }
     },
     "profile": {
+      "roles": {
+        "title": "Roles",
+        "none": "User",
+        "scoped": "On {{target}}",
+        "labels": {
+          "platform_owner": "Alternun global admin",
+          "internal_admin": "Alternun admin",
+          "moderator": "Moderator",
+          "partner_operator": "Project admin",
+          "sub_admin": "Sub admin",
+          "partner_readonly": "Read only"
+        }
+      },
       "screenTitle": "My Profile",
       "signInPrompt": "Sign in to view your profile",
       "tabs": {
@@ -1065,6 +1078,11 @@
       }
     },
     "explorer": {
+      "admin": {
+        "openPanel": "Alternun admin panel",
+        "manageProject": "Manage project",
+        "manageEnterprise": "Manage enterprise"
+      },
       "profile": {
         "about": "About",
         "location": "Location",
