@@ -1,3 +1,9 @@
+## [1.1.127](https://github.com/alternun-development/alternun/compare/v1.1.126-dev.0...v1.1.127) (2026-11-09)
+
+### Bug Fixes
+
+- **repo:** test(admin,api,mobile): oidc-client, api, copy, permissions
+
 ## [1.1.126](https://github.com/alternun-development/alternun/compare/v1.1.125-dev.0...v1.1.126) (2026-11-09)
 
 ### Bug Fixes
