@@ -1,8 +1,10 @@
-## [1.1.127](https://github.com/alternun-development/alternun/compare/v1.1.126-dev.0...v1.1.127) (2026-11-09)
+## [1.1.127](https://github.com/alternun-development/alternun/compare/v1.1.124...v1.1.127) (2026-11-09)
 
-### Bug Fixes
+### Changes
 
-- **repo:** test(admin,api,mobile): oidc-client, api, copy, permissions
+- **admin,api,mobile:** oidc-client, api, copy, permissions ([5f44adb](https://github.com/alternun-development/alternun/commit/5f44adb2b73e0b697a0ebff35524c1790e3711af))
+- **api,docs,mobile:** admin-access.controller, admin-access.service, admin-access.types, marketplace.module ([3db6574](https://github.com/alternun-development/alternun/commit/3db65745ef111d7350d64cb89f1cad7da92fd4c7))
+- **repo,admin,api:** .gitignore, AGENTS, CLAUDE, api ([449dbf9](https://github.com/alternun-development/alternun/commit/449dbf904fcb9c2bb20c85bc115e4dc6a5c16f41))
 
 ## [1.1.126](https://github.com/alternun-development/alternun/compare/v1.1.125-dev.0...v1.1.126) (2026-11-09)
 
