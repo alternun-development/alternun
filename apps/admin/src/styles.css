@@ -687,6 +687,25 @@ select {
   object-fit: cover;
 }
 
+.marketplace-image-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.marketplace-image-field img.marketplace-preview {
+  width: 100%;
+  max-height: 12rem;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.marketplace-upload {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+  cursor: pointer;
+}
+
 .marketplace-confirmation {
   margin-top: 1rem;
   border-color: rgba(255, 227, 154, 0.35);

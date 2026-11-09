@@ -50,3 +50,6 @@ apps/admin/src/bones/
 
 packages/video-studio/build
 .pnpm-store/
+
+# Testnet seed data with partner contact details; never commit
+apps/api/scripts/data/*.local.json

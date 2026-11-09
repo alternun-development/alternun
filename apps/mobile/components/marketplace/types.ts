@@ -13,6 +13,47 @@ export interface EnterprisePalette {
   mist: string;
 }
 
+export type PartnershipStatus =
+  | 'structuring'
+  | 'in_conversation'
+  | 'onboarding'
+  | 'pilot'
+  | 'postponed'
+  | 'signed';
+
+/** Public contact values are free text and may be placeholders such as "POR CONFIRMAR". */
+export type ProfileContact = Partial<
+  Record<'web' | 'email' | 'phone' | 'whatsapp' | 'instagram' | 'facebook', string>
+>;
+
+export interface ProfileLocation {
+  municipality?: string;
+  department?: string;
+  address?: string;
+  coverage?: string;
+}
+
+export interface EnterpriseProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  airsMin: number | null;
+  airsMax: number | null;
+  airsNote: string | null;
+}
+
+export interface EnterpriseSite {
+  name: string;
+  address?: string;
+  rooms?: number | null;
+  web?: string;
+}
+
+export interface EnterpriseEventDetails {
+  date?: string;
+  venue?: ProfileLocation & { name?: string; web?: string };
+}
+
 export interface MarketplaceEnterprise {
   id: string;
   slug: string;
@@ -21,6 +62,17 @@ export interface MarketplaceEnterprise {
   countryCode: string | null;
   websiteUrl: string | null;
   projectCount: number;
+  // Profile fields; optional so older API responses still render.
+  kind?: 'company' | 'event';
+  sector?: string | null;
+  description?: string | null;
+  partnershipStatus?: PartnershipStatus;
+  location?: ProfileLocation;
+  publicContact?: ProfileContact;
+  bannerUrl?: string | null;
+  eventDetails?: EnterpriseEventDetails;
+  sites?: EnterpriseSite[];
+  products?: EnterpriseProduct[];
 }
 
 export interface MarketplaceProjectMedia {
@@ -46,6 +98,10 @@ export interface MarketplacePublicProject {
   theme: string;
   description: string;
   waysToContribute: string[];
+  alternateName?: string | null;
+  partnershipStatus?: PartnershipStatus;
+  locationDetails?: ProfileLocation;
+  publicContact?: ProfileContact;
   enterprise: { slug: string; displayName: string };
   media: MarketplaceProjectMedia[];
 }

@@ -20,6 +20,6 @@ it('opens the profile from the hero status badge', () => {
     tree = renderer.create(<HeroStats totalAIRS={30} />);
   });
   act(() => tree.root.findByType(HeroPanel).props.onOpenProfile());
-  expect(mockPush).toHaveBeenCalledWith('/mi-perfil');
+  expect(mockPush).toHaveBeenCalledWith('/profile');
   act(() => tree.unmount());
 });

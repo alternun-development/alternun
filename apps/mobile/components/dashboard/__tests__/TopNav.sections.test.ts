@@ -14,11 +14,11 @@ describeTest('NAV_SECTIONS', () => {
       (section) => section.key
     );
 
-    expectValue(comingSoonKeys).toEqual(['portafolio']);
+    expectValue(comingSoonKeys).toEqual(['portfolio']);
     expectValue(NAV_SECTIONS.find((section) => section.key === 'dashboard')?.comingSoon).toBe(
       undefined
     );
-    expectValue(NAV_SECTIONS.find((section) => section.key === 'explorar')?.comingSoon).toBe(
+    expectValue(NAV_SECTIONS.find((section) => section.key === 'explore')?.comingSoon).toBe(
       undefined
     );
   });

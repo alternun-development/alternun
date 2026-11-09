@@ -704,7 +704,7 @@ function ATNCard({
         </View>
         <View style={[styles.walletLinkDivider, { backgroundColor: p.accent, opacity: 0.18 }]} />
 
-        <TouchableOpacity onPress={() => onNavigate?.('mi-perfil:wallet')} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => onNavigate?.('profile:wallet')} activeOpacity={0.7}>
           <View style={[styles.walletLinkRow, useDenseLayout && styles.walletLinkRowDense]}>
             <View style={styles.walletLinkLabelGroup}>
               <WalletIcon size={15} color={p.accent} />

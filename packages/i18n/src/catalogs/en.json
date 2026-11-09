@@ -1065,6 +1065,38 @@
       }
     },
     "explorer": {
+      "profile": {
+        "about": "About",
+        "location": "Location",
+        "coverage": "Coverage",
+        "contact": "Contact",
+        "sites": "Locations",
+        "rooms": "{{count}} rooms",
+        "event": "Event",
+        "eventDate": "Date",
+        "venue": "Venue",
+        "products": "Where to earn Airs",
+        "airsRange": "{{min}} to {{max}} Airs",
+        "airsFrom": "From {{min}} Airs",
+        "airsExact": "{{min}} Airs",
+        "airsPending": "Airs to be defined",
+        "contactFields": {
+          "web": "Website",
+          "email": "Email",
+          "phone": "Phone",
+          "whatsapp": "WhatsApp",
+          "instagram": "Instagram",
+          "facebook": "Facebook"
+        },
+        "partnership": {
+          "structuring": "Being set up",
+          "in_conversation": "In conversation",
+          "onboarding": "Onboarding",
+          "pilot": "Pilot",
+          "postponed": "Postponed",
+          "signed": "Partner"
+        }
+      },
       "title": "Explorer",
       "subtitle": "The global map of AIRS projects",
       "marketplace": "AIRS PROJECT MARKETPLACE",

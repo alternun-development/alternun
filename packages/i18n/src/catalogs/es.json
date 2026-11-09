@@ -1065,6 +1065,38 @@
       }
     },
     "explorer": {
+      "profile": {
+        "about": "Acerca de",
+        "location": "Ubicación",
+        "coverage": "Cobertura",
+        "contact": "Contacto",
+        "sites": "Sedes",
+        "rooms": "{{count}} habitaciones",
+        "event": "Evento",
+        "eventDate": "Fecha",
+        "venue": "Lugar",
+        "products": "Dónde sumar Airs",
+        "airsRange": "{{min}} a {{max}} Airs",
+        "airsFrom": "Desde {{min}} Airs",
+        "airsExact": "{{min}} Airs",
+        "airsPending": "Airs por definir",
+        "contactFields": {
+          "web": "Sitio web",
+          "email": "Correo",
+          "phone": "Teléfono",
+          "whatsapp": "WhatsApp",
+          "instagram": "Instagram",
+          "facebook": "Facebook"
+        },
+        "partnership": {
+          "structuring": "En estructuración",
+          "in_conversation": "En conversación",
+          "onboarding": "En vinculación",
+          "pilot": "Piloto",
+          "postponed": "Aplazado",
+          "signed": "Aliado"
+        }
+      },
       "title": "Explorar",
       "subtitle": "El mapa global de proyectos AIRS",
       "marketplace": "MERCADO DE PROYECTOS AIRS",

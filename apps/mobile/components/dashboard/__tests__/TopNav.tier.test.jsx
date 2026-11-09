@@ -97,7 +97,7 @@ it.each(
         .some((node) => StyleSheet.flatten(node.props.style)?.backgroundColor === color)
     ).toBe(false);
     act(() => {
-      tree.update(<TopNav {...props} themeMode={themeMode} activeSection='mi-perfil' />);
+      tree.update(<TopNav {...props} themeMode={themeMode} activeSection='profile' />);
     });
     expectTier();
     act(() => {
