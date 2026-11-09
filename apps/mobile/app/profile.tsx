@@ -82,6 +82,9 @@ import AchievementCollection from '../components/profile/AchievementCollection';
 import { TierJourney } from '../components/profile/TierJourney';
 import { STATUS_BADGES } from '../components/profile/badgeAssets';
 import { ReferralCard } from '../components/profile/ReferralCard';
+import { RoleChips, sortRoles } from '../components/profile/RoleChips';
+import { useAdminAccess } from '../hooks/useAdminAccess';
+import type { ResolvedAdminAccess } from '../utils/adminAccess';
 import type {
   UserMetadata,
   AccountReferralSummary,
@@ -368,6 +371,7 @@ function ProfileHeader({
   score,
   email,
   location,
+  roles = [],
   isDark,
   c,
   floatAnim1,
@@ -377,6 +381,8 @@ function ProfileHeader({
   score: number | null;
   email?: string;
   location?: string | null;
+  /** Admin roles, shown as chips under the email; nothing is shown for regular users. */
+  roles?: readonly string[];
   isDark: boolean;
   c: ColorPalette;
   floatAnim1?: Animated.Value;
@@ -587,6 +593,13 @@ function ProfileHeader({
           </Text>
         )}
 
+        {/* Roles */}
+        {sortRoles(roles).length > 0 ? (
+          <View testID='profile-header-roles' style={{ marginBottom: 14, paddingHorizontal: 12 }}>
+            <RoleChips roles={roles} accent={c.accent} muted={c.muted} />
+          </View>
+        ) : null}
+
         {/* Location chip */}
         {location ? (
           <View
@@ -749,12 +762,14 @@ function SettingRow({
 function AccountInfoModal({
   visible,
   user,
+  adminAccess,
   isDark,
   c,
   onClose,
 }: {
   visible: boolean;
   user: User | null;
+  adminAccess: ResolvedAdminAccess | null;
   isDark: boolean;
   c: ColorPalette;
   onClose: () => void;
@@ -1013,6 +1028,41 @@ function AccountInfoModal({
               <Text style={{ fontSize: 14, color: c.text, fontWeight: '500' }}>
                 {profile.displayName || t('profile.accountInfoModal.na', undefined, 'N/A')}
               </Text>
+            </View>
+          </View>
+
+          {/* Roles */}
+          <View testID='account-info-roles' style={{ marginBottom: 18 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: c.muted,
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+              }}
+            >
+              {t('profile.roles.title', undefined, 'Roles')}
+            </Text>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: c.cardBorder,
+                borderRadius: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(11,45,49,0.04)',
+              }}
+            >
+              <RoleChips
+                roles={adminAccess?.roles ?? []}
+                scopes={adminAccess?.scopes ?? []}
+                showScopes
+                accent={c.accent}
+                muted={c.muted}
+                align='flex-start'
+              />
             </View>
           </View>
 
@@ -2467,6 +2517,11 @@ function PerfilTab({
     }
   }, [authMethodDescriptor, t]);
   const [showAccountInfoModal, setShowAccountInfoModal] = useState(false);
+  const adminAccess = useAdminAccess();
+  const topRole = sortRoles(adminAccess?.roles ?? [])[0];
+  const rolesSummary = topRole
+    ? t(`profile.roles.labels.${topRole}`, undefined, topRole)
+    : t('profile.roles.none', undefined, 'User');
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [achievements, setAchievements] = useState<
@@ -2590,6 +2645,7 @@ function PerfilTab({
           score={airsScore}
           email={profile.email}
           location={resolveProfileLocation(user)}
+          roles={adminAccess?.roles ?? []}
           isDark={isDark}
           c={c}
           floatAnim1={floatAnim1}
@@ -2620,6 +2676,13 @@ function PerfilTab({
               icon={UserCircle2}
               label={accountIdLabel}
               value={user?.id ? truncateMiddle(user.id, 10, 6) : naLabel}
+              c={c}
+              onPress={() => setShowAccountInfoModal(true)}
+            />
+            <SettingRow
+              icon={Shield}
+              label={t('profile.roles.title', undefined, 'Roles')}
+              value={rolesSummary}
               c={c}
               onPress={() => setShowAccountInfoModal(true)}
             />
@@ -2815,6 +2878,7 @@ function PerfilTab({
       <AccountInfoModal
         visible={showAccountInfoModal}
         user={user}
+        adminAccess={adminAccess}
         isDark={isDark}
         c={c}
         onClose={() => setShowAccountInfoModal(false)}

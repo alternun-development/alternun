@@ -5,6 +5,7 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import ExplorarScreen, { loadMarketplaceProjects, MarketplaceProjectBrowser } from '../explore';
 
 const mockPush = jest.fn();
+let mockUser: unknown = null;
 const originalMarketplaceContactEmail = process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL;
 
 jest.mock('expo-router', () => ({
@@ -17,6 +18,10 @@ jest.mock('../../components/i18n/useAppTranslation', () => ({
 
 jest.mock('../../components/settings/AppPreferencesProvider', () => ({
   useAppPreferences: () => ({ themeMode: 'light', language: 'en' }),
+}));
+
+jest.mock('../../components/auth/AppAuthProvider', () => ({
+  useAuth: () => ({ user: mockUser, client: { getSessionToken: () => Promise.resolve(null) } }),
 }));
 
 jest.mock('../../components/common/ScreenShell', () => ({
@@ -146,6 +151,39 @@ async function renderExplorerScreen(): Promise<ReactTestRenderer> {
   mountedScreen = renderer!;
   return mountedScreen;
 }
+
+describe('Explorer admin entry point', () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    global.fetch = jest.fn(() => new Promise<Response>(() => undefined)) as typeof fetch;
+  });
+
+  afterEach(() => {
+    mockUser = null;
+    global.fetch = originalFetch;
+    if (mountedScreen) {
+      void act(() => mountedScreen?.unmount());
+      mountedScreen = undefined;
+    }
+  });
+
+  it('shows the Alternun admin panel only to global admins', async () => {
+    let screen = await renderExplorerScreen();
+    expect(screen.root.findAllByProps({ testID: 'explorer-admin-panel' })).toHaveLength(0);
+    void act(() => screen.unmount());
+
+    mockUser = { metadata: { rawClaims: { alternun_roles: ['sub_admin'] } } };
+    screen = await renderExplorerScreen();
+    expect(screen.root.findAllByProps({ testID: 'explorer-admin-panel' })).toHaveLength(0);
+    void act(() => screen.unmount());
+
+    mockUser = { metadata: { rawClaims: { alternun_roles: ['platform_owner'] } } };
+    screen = await renderExplorerScreen();
+    const [button] = screen.root.findAllByProps({ testID: 'explorer-admin-panel' });
+    expect(button.props.url).toMatch(/\/marketplace$/);
+  });
+});
 
 describe('Explorer marketplace projects', () => {
   afterEach(() => {

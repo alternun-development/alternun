@@ -5,10 +5,13 @@ import { useAppTranslation } from '../../../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../../../components/settings/AppPreferencesProvider';
 import { MarketplaceEnterpriseDetailView } from '../../../components/marketplace/MarketplaceEnterpriseDetail';
 import type { DetailPalette } from '../../../components/marketplace/types';
+import { resolveAdminPanelUrl } from '../../../utils/adminAccess';
+import { useAdminAccess } from '../../../hooks/useAdminAccess';
 
 export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{ slug?: string | string[] }>();
   const router = useRouter();
+  const adminAccess = useAdminAccess();
   const { language, themeMode } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const slug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
@@ -45,6 +48,8 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
         palette={palette}
         t={t}
         onBack={() => router.back()}
+        adminUrl={resolveAdminPanelUrl()}
+        adminAccess={adminAccess}
         onOpenProject={(projectSlug) =>
           router.push({ pathname: '/explore/[slug]', params: { slug: projectSlug } })
         }

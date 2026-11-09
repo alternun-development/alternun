@@ -100,6 +100,7 @@ describe('profile sections', () => {
       <SitesSection key='s' sites={[]} palette={palette} t={t} />,
       <ProductsSection key='p' products={undefined} palette={palette} t={t} />,
       <PartnershipBadge key='b' status={undefined} palette={palette} t={t} />,
+      <PartnershipBadge key='signed' status='signed' palette={palette} t={t} />,
     ]) {
       expect(render(element).toJSON()).toBeNull();
     }

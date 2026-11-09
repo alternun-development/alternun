@@ -8,7 +8,7 @@ import type {
   User,
 } from '@edcalderon/auth';
 import { SupabaseClient as UniversalSupabaseClient } from '@edcalderon/auth/supabase';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, processLock } from '@supabase/supabase-js';
 import {
   getValidationErrorMessage,
   parseEmailAddress,
@@ -224,6 +224,10 @@ export class AlternunMobileAuthClient implements AuthClient {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: false,
+          // On web the default Navigator lock is shared by every client and tab; when another
+          // holder has it, the auto-refresh tick throws an uncaught "immediately failed" error.
+          // An in-process lock still serializes this client's session work without that contention.
+          ...(this.runtime === 'web' ? { lock: processLock } : {}),
         },
       });
 

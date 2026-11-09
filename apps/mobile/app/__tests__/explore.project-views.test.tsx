@@ -17,6 +17,10 @@ jest.mock('../../components/i18n/useAppTranslation', () => ({
 jest.mock('../../components/settings/AppPreferencesProvider', () => ({
   useAppPreferences: () => ({ themeMode: 'light', language: 'en' }),
 }));
+jest.mock('../../components/auth/AppAuthProvider', () => ({
+  useAuth: () => ({ user: null, client: { getSessionToken: () => Promise.resolve(null) } }),
+}));
+
 jest.mock('../../components/common/ScreenShell', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => children,

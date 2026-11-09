@@ -86,7 +86,8 @@ export function PartnershipBadge({
   palette: DetailPalette;
   t: Translate;
 }): React.JSX.Element | null {
-  if (!status) return null;
+  // A signed partnership needs no qualifier; the badge only explains partnerships in progress.
+  if (!status || status === 'signed') return null;
   return (
     <View testID='profile-partnership' style={[styles.badge, { backgroundColor: palette.mist }]}>
       <Text style={[styles.badgeText, { color: palette.primaryDeep }]}>
