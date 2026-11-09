@@ -2,7 +2,7 @@
 import React from 'react';
 import { Linking } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
-import ExplorarScreen, { loadMarketplaceProjects, MarketplaceProjectBrowser } from '../explorar';
+import ExplorarScreen, { loadMarketplaceProjects, MarketplaceProjectBrowser } from '../explore';
 
 const mockPush = jest.fn();
 const originalMarketplaceContactEmail = process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL;
@@ -345,7 +345,7 @@ describe('Explorer marketplace projects', () => {
       renderer.root.findByProps({ testID: 'explorer-project-project-1' }).props.onPress()
     );
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/explorar/[slug]',
+      pathname: '/explore/[slug]',
       params: { slug: 'productive-project' },
     });
 
@@ -362,7 +362,7 @@ describe('Explorer marketplace projects', () => {
     expect(() => enterpriseBrowser.props.onListNavigate()).not.toThrow();
     await act(() => enterpriseBrowser.props.onOpenEnterprise('forest-enterprise'));
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/explorar/empresa/[slug]',
+      pathname: '/explore/enterprise/[slug]',
       params: { slug: 'forest-enterprise' },
     });
 

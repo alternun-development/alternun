@@ -82,6 +82,13 @@ import AchievementCollection from '../components/profile/AchievementCollection';
 import { TierJourney } from '../components/profile/TierJourney';
 import { STATUS_BADGES } from '../components/profile/badgeAssets';
 import { ReferralCard } from '../components/profile/ReferralCard';
+import type {
+  UserMetadata,
+  AccountReferralSummary,
+  TierLabelMap,
+  AuthMethodDescriptor,
+  LeaderboardRow,
+} from './profile.types';
 
 const AwardIcon = Award as React.FC<LucideProps>;
 const BellIcon = Bell as React.FC<LucideProps>;
@@ -100,35 +107,11 @@ const WalletIcon = Wallet as React.FC<LucideProps>;
 
 // ─── Data & Helpers ──────────────────────────────────────────────────────────
 
-type UserMetadata = Record<string, unknown>;
-
-interface AccountReferralSummary {
-  user_created_at?: string | null;
-  referred_by_user_id?: string | null;
-  referred_by_referral_code?: string | null;
-  referred_by_name?: string | null;
-  referred_by_email?: string | null;
-}
-
 const NETWORKS = [
   { name: 'Polygon', color: '#8247e5' },
   { name: 'Ethereum', color: '#627eea' },
   { name: 'Celo', color: '#35d07f' },
 ];
-
-type TierLabelMap = {
-  bronze: string;
-  silver: string;
-  gold: string;
-  platinum: string;
-};
-
-type AuthMethodDescriptor =
-  | { kind: 'guest' }
-  | { kind: 'wallet' }
-  | { kind: 'email' }
-  | { kind: 'session' }
-  | { kind: 'provider'; provider: string };
 
 function getMetadata(user: User | null): UserMetadata {
   if (!user?.metadata || typeof user.metadata !== 'object') return {};
@@ -1614,15 +1597,6 @@ function PersonalInfoModal({
 
 // ─── Tab components ──────────────────────────────────────────────────────────
 
-interface LeaderboardRow {
-  rank: number;
-  name: string;
-  score: number;
-  medal: string | null;
-  color: string | null;
-  isMe: boolean;
-}
-
 const MEDAL_DATA: Record<number, { medal: string; color: string }> = {
   1: { medal: '🥇', color: '#d4b96a' },
   2: { medal: '🥈', color: '#a8b8cc' },
@@ -2663,7 +2637,7 @@ function PerfilTab({
               c={c}
               onPress={() => {
                 if (!walletConnected) {
-                  router.push({ pathname: '/mi-perfil', params: { tab: 'wallet' } });
+                  router.push({ pathname: '/profile', params: { tab: 'wallet' } });
                 }
               }}
             />
@@ -2956,7 +2930,7 @@ export default function MiPerfilScreen(): React.JSX.Element {
   }
 
   return (
-    <ScreenShell activeSection='mi-perfil' backgroundColor={c.bg}>
+    <ScreenShell activeSection='profile' backgroundColor={c.bg}>
       <View style={[styles.root, { backgroundColor: c.bg }]}>
         <View style={styles.headerBar}>
           <View style={styles.tabRow}>

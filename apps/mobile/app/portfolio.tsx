@@ -15,6 +15,7 @@ import HorizontalCardScroller from '../components/common/HorizontalCardScroller'
 import ScreenShell from '../components/common/ScreenShell';
 import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
 import SearchFilterBar, { type SearchFilterOption } from '../components/common/SearchFilterBar';
+import type { ColorPalette, TokenStatus, Tier } from './portfolio.types';
 
 const CoinsIcon = Coins as React.FC<LucideProps>;
 const TrendingUpIcon = TrendingUp as React.FC<LucideProps>;
@@ -22,15 +23,6 @@ const CheckIcon = Check as React.FC<LucideProps>;
 const GiftIcon = Gift as React.FC<LucideProps>;
 const LockIcon = Lock as React.FC<LucideProps>;
 const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
-
-interface ColorPalette {
-  bg: string;
-  cardBg: string;
-  border: string;
-  text: string;
-  muted: string;
-  accent: string;
-}
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -40,16 +32,12 @@ const ATN_FILTER_OPTIONS: SearchFilterOption[] = ATN_FILTERS.map((label) => ({
   label,
 }));
 
-type TokenStatus = 'Free' | 'Deposited' | 'Consumed';
-
 const TOKENS: { id: string; project: string; price: string; status: TokenStatus }[] = [
   { id: 'ATN-001', project: 'Reforestación Amazonas', price: '$48.20', status: 'Free' },
   { id: 'ATN-002', project: 'Energía Solar Bolivia', price: '$51.00', status: 'Deposited' },
   { id: 'ATN-003', project: 'Manglares Colombia', price: '$44.75', status: 'Free' },
   { id: 'ATN-004', project: 'Biodiversidad Perú', price: '$39.90', status: 'Consumed' },
 ];
-
-type Tier = 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
 
 const TIER_COLORS: Record<Tier, { bg: string; text: string; border: string }> = {
   Bronze: { bg: 'rgba(205,127,50,0.14)', text: '#cd7f32', border: 'rgba(205,127,50,0.3)' },
@@ -304,7 +292,7 @@ export default function PortafolioScreen(): React.JSX.Element {
       };
 
   return (
-    <ScreenShell activeSection='portafolio' backgroundColor={c.bg}>
+    <ScreenShell activeSection='portfolio' backgroundColor={c.bg}>
       <View style={[styles.root, { backgroundColor: c.bg }]}>
         {/* Page Header + Tab Bar (Single Line) */}
         <View style={styles.headerBar}>
@@ -344,7 +332,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    // See mi-perfil.tsx's headerBar comment — without this, the PageTabBar tooltip below renders
+    // See profile.tsx's headerBar comment — without this, the PageTabBar tooltip below renders
     // behind the tab content area, which has its own stacking context from a transform style.
     position: 'relative',
     zIndex: 20,

@@ -20,6 +20,7 @@ import type {
   Translate,
 } from './types';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { ContactSection, LocationSection } from './ProfileSections';
 
 export class MarketplaceProjectRequestError extends Error {
   constructor(readonly status: number) {
@@ -293,6 +294,11 @@ export function MarketplaceProjectDetailView({
               </Pressable>
               <Text style={[styles.theme, { color: palette.primary }]}>{project.theme}</Text>
               <Text style={[styles.title, { color: palette.text }]}>{project.title}</Text>
+              {project.alternateName ? (
+                <Text testID='project-detail-alternate-name' style={{ color: palette.muted }}>
+                  {project.alternateName}
+                </Text>
+              ) : null}
               <View style={styles.locationRow}>
                 <MapPin size={16} color={palette.muted} />
                 <Text style={{ color: palette.muted }}>{project.location}</Text>
@@ -393,6 +399,14 @@ export function MarketplaceProjectDetailView({
               <ExternalLink size={16} color='#effff7' />
             </Pressable>
           ) : null}
+
+          <LocationSection location={project.locationDetails} palette={palette} t={t} />
+          <ContactSection
+            contact={project.publicContact}
+            palette={palette}
+            t={t}
+            openUrl={openUrl}
+          />
 
           <MarketplaceProjectComments
             slug={project.slug}

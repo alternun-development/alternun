@@ -534,7 +534,7 @@ describe('DashboardSummaryCards render', () => {
     );
 
     clickElementByText(renderState.container, 'Gestionar billetera de recompensas');
-    expect(navigationCalls).toContain('mi-perfil:wallet');
+    expect(navigationCalls).toContain('profile:wallet');
   });
 
   it('shows accessible help for every ATN and RBI metric', () => {

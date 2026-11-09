@@ -153,6 +153,8 @@ test('the public enterprise directory follows the enterprise sort order', async 
       row('bravo', 'Bravo', 0),
       row('charlie', 'Charlie', 1),
     ],
+    listAffiliations: async () => [],
+    listActiveProducts: async () => [],
   } as unknown as MarketplacePublicRepository);
   const page = await service.listEnterprises('en');
   assert.deepEqual(

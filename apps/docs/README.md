@@ -46,7 +46,7 @@ The docs editor is exposed at `/admin` and is protected by Authentik before Deca
 
 - Auth client: `alternun-docs-cms`
 - Expected callback: `https://docs.alternun.io/admin/auth/callback`
-- Local callback: `http://127.0.0.1:8083/admin/auth/callback`
+- Local callback: `http://127.0.0.1:8090/admin/auth/callback`
 - Allowed groups:
   - `authentik Admins`
   - `Alternun Dashboard Admins`

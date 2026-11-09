@@ -44,7 +44,7 @@ function normalizeGroup(value: string): string {
 }
 
 export function createDocsCmsUserManager(config: DocsCmsCustomFields): DocsCmsUserManager {
-  const origin = typeof window === 'undefined' ? 'http://127.0.0.1:8083' : window.location.origin;
+  const origin = typeof window === 'undefined' ? 'http://127.0.0.1:8090' : window.location.origin;
 
   const settings: UserManagerSettings = {
     authority: config.auth.issuer,

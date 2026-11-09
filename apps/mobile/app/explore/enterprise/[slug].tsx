@@ -38,7 +38,7 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
         };
 
   return (
-    <ScreenShell activeSection='explorar' backgroundColor={palette.background}>
+    <ScreenShell activeSection='explore' backgroundColor={palette.background}>
       <MarketplaceEnterpriseDetailView
         slug={slug}
         locale={language}
@@ -46,7 +46,7 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
         t={t}
         onBack={() => router.back()}
         onOpenProject={(projectSlug) =>
-          router.push({ pathname: '/explorar/[slug]', params: { slug: projectSlug } })
+          router.push({ pathname: '/explore/[slug]', params: { slug: projectSlug } })
         }
       />
     </ScreenShell>

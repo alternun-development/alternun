@@ -14,6 +14,16 @@ export const MEDIA_KINDS = ['logo', 'cover', 'gallery_image', 'video', 'canva'] 
 export const ACTIVITY_STATUSES = ['draft', 'published', 'paused', 'archived'] as const;
 export const ACTIVITY_REPEAT_PERIODS = ['none', 'day', 'week', 'month', 'assignment'] as const;
 export const COMMENT_STATUSES = ['pending', 'visible', 'rejected', 'hidden'] as const;
+export const ENTERPRISE_KINDS = ['company', 'event'] as const;
+export const PARTNERSHIP_STATUSES = [
+  'structuring',
+  'in_conversation',
+  'onboarding',
+  'pilot',
+  'postponed',
+  'signed',
+] as const;
+export const UPLOAD_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 export type MediaKind = (typeof MEDIA_KINDS)[number];
@@ -21,6 +31,58 @@ export type LocalizedText = Record<string, string>;
 export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
 export type ActivityRepeatPeriod = (typeof ACTIVITY_REPEAT_PERIODS)[number];
 export type CommentStatus = (typeof COMMENT_STATUSES)[number];
+export type EnterpriseKind = (typeof ENTERPRISE_KINDS)[number];
+export type PartnershipStatus = (typeof PARTNERSHIP_STATUSES)[number];
+
+/** Free-form public contact fields; values may be placeholders such as "POR CONFIRMAR". */
+export type PublicContact = Partial<
+  Record<'web' | 'email' | 'phone' | 'whatsapp' | 'instagram' | 'facebook' | 'note', string>
+>;
+
+export interface ProfileLocation {
+  municipality?: string;
+  department?: string;
+  address?: string;
+  note?: string;
+  coverage?: string;
+}
+
+export interface InternalContact {
+  name: string;
+  role?: string;
+  email?: string;
+}
+
+export interface EnterpriseSite {
+  name: string;
+  address?: string;
+  rooms?: number | null;
+  web?: string;
+}
+
+export interface EnterpriseEventDetails {
+  date?: string;
+  venue?: ProfileLocation & { name?: string; web?: string };
+}
+
+export interface EnterpriseProductRecord {
+  id: string;
+  enterpriseId: string;
+  name: string;
+  description: string | null;
+  airsMin: number | null;
+  airsMax: number | null;
+  airsNote: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PublicEnterpriseProduct = Pick<
+  EnterpriseProductRecord,
+  'id' | 'name' | 'description' | 'airsMin' | 'airsMax' | 'airsNote'
+>;
 
 export interface ProjectCommentRecord {
   id: string;
@@ -142,6 +204,22 @@ export interface EnterpriseRecord {
   countryCode: string | null;
   websiteUrl: string | null;
   sortOrder: number;
+  kind: EnterpriseKind;
+  sector: string | null;
+  description: string | null;
+  partnershipStatus: PartnershipStatus;
+  location: ProfileLocation;
+  publicContact: PublicContact;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  eventDetails: EnterpriseEventDetails;
+  sites: EnterpriseSite[];
+  /** Admin only. */
+  internalContacts: InternalContact[];
+  /** Admin only. */
+  pendingItems: string[];
+  /** Admin only. */
+  internalNotes: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -163,6 +241,16 @@ export interface ProjectRecord {
   firstPublishedAt: string | null;
   publishedAt: string | null;
   sortOrder: number;
+  alternateName?: string | null;
+  partnershipStatus?: PartnershipStatus;
+  locationDetails?: ProfileLocation;
+  publicContact?: PublicContact;
+  /** Admin only. */
+  internalContacts?: InternalContact[];
+  /** Admin only. */
+  pendingItems?: string[];
+  /** Admin only. */
+  internalNotes?: string | null;
   createdAt: string;
   updatedAt: string;
   enterprises?: Array<{
@@ -205,6 +293,10 @@ export interface PublicProject {
   participationCopy?: string;
   ctaLabel?: string;
   waysToContribute: string[];
+  alternateName: string | null;
+  partnershipStatus: PartnershipStatus;
+  locationDetails: ProfileLocation;
+  publicContact: PublicContact;
   enterprise: {
     id: string;
     slug: string;
@@ -225,6 +317,16 @@ export interface PublicEnterprise {
   countryCode: string | null;
   websiteUrl: string | null;
   projectCount: number;
+  kind: EnterpriseKind;
+  sector: string | null;
+  description: string | null;
+  partnershipStatus: PartnershipStatus;
+  location: ProfileLocation;
+  publicContact: PublicContact;
+  bannerUrl: string | null;
+  eventDetails: EnterpriseEventDetails;
+  sites: EnterpriseSite[];
+  products: PublicEnterpriseProduct[];
 }
 
 export interface PublicEnterpriseDetail extends PublicEnterprise {

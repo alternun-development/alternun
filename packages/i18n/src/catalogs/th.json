@@ -1065,6 +1065,38 @@
       }
     },
     "explorer": {
+      "profile": {
+        "about": "เกี่ยวกับ",
+        "location": "ที่ตั้ง",
+        "coverage": "พื้นที่ให้บริการ",
+        "contact": "ติดต่อ",
+        "sites": "สาขา",
+        "rooms": "{{count}} ห้อง",
+        "event": "กิจกรรม",
+        "eventDate": "วันที่",
+        "venue": "สถานที่",
+        "products": "สะสม Airs ได้ที่ไหน",
+        "airsRange": "{{min}} ถึง {{max}} Airs",
+        "airsFrom": "ตั้งแต่ {{min}} Airs",
+        "airsExact": "{{min}} Airs",
+        "airsPending": "Airs รอกำหนด",
+        "contactFields": {
+          "web": "เว็บไซต์",
+          "email": "อีเมล",
+          "phone": "โทรศัพท์",
+          "whatsapp": "WhatsApp",
+          "instagram": "Instagram",
+          "facebook": "Facebook"
+        },
+        "partnership": {
+          "structuring": "กำลังจัดตั้ง",
+          "in_conversation": "อยู่ระหว่างพูดคุย",
+          "onboarding": "กำลังเข้าร่วม",
+          "pilot": "โครงการนำร่อง",
+          "postponed": "เลื่อนออกไป",
+          "signed": "พันธมิตร"
+        }
+      },
       "title": "สำรวจ",
       "subtitle": "แผนที่โครงการ AIRS ระดับโลก",
       "marketplace": "ตลาดโครงการ AIRS",
