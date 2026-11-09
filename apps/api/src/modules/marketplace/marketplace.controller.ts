@@ -37,8 +37,11 @@ import {
   CreateActivityCompletionDto,
   CreateProjectActivityDto,
   CreateEnterpriseDto,
+  CreateEnterpriseProductDto,
   CreateProjectDto,
   CreateProjectMediaDto,
+  CreateUploadUrlDto,
+  LinkProjectEnterpriseDto,
   ListProjectsQueryDto,
   ListEnterprisesQueryDto,
   LocaleQueryDto,
@@ -49,6 +52,7 @@ import {
   TransitionProjectDto,
   TransitionActivityDto,
   UpdateEnterpriseDto,
+  UpdateEnterpriseProductDto,
   UpdateProjectDto,
   UpdateProjectActivityDto,
   UpdateProjectMediaDto,
@@ -197,6 +201,73 @@ export class MarketplaceEnterpriseAdminController {
     @Body() body: UpdateEnterpriseDto
   ) {
     return this.service.updateEnterprise(request.adminPrincipal!, requestId(request), id, body);
+  }
+
+  @Post(':id/upload-url')
+  @RequireMarketplacePermission('enterprises:update', 'enterprise')
+  @ApiOperation({ summary: 'Get a signed URL to upload the enterprise logo or banner.' })
+  createUploadUrl(
+    @Req() request: FastifyAdminRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() body: CreateUploadUrlDto
+  ) {
+    return this.service.createUploadUrl(
+      request.adminPrincipal!,
+      requestId(request),
+      { type: 'enterprise', id },
+      body
+    );
+  }
+
+  @Get(':id/products')
+  @RequireMarketplacePermission('enterprises:read', 'enterprise')
+  @ApiOperation({ summary: 'List the products of an enterprise and their Airs.' })
+  listProducts(
+    @Req() request: FastifyAdminRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string
+  ) {
+    return this.service.listProducts(request.adminPrincipal!, requestId(request), id);
+  }
+
+  @Post(':id/products')
+  @RequireMarketplacePermission('enterprises:update', 'enterprise')
+  @ApiOperation({ summary: 'Add a product with its Airs to an enterprise.' })
+  createProduct(
+    @Req() request: FastifyAdminRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() body: CreateEnterpriseProductDto
+  ) {
+    return this.service.createProduct(request.adminPrincipal!, requestId(request), id, body);
+  }
+
+  @Patch(':id/products/:productId')
+  @RequireMarketplacePermission('enterprises:update', 'enterprise')
+  @ApiOperation({ summary: 'Edit a product of an enterprise.' })
+  updateProduct(
+    @Req() request: FastifyAdminRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
+    @Body() body: UpdateEnterpriseProductDto
+  ) {
+    return this.service.updateProduct(
+      request.adminPrincipal!,
+      requestId(request),
+      id,
+      productId,
+      body
+    );
+  }
+
+  @Delete(':id/products/:productId')
+  @HttpCode(204)
+  @RequireMarketplacePermission('enterprises:update', 'enterprise')
+  @ApiOperation({ summary: 'Delete a product of an enterprise.' })
+  async deleteProduct(
+    @Req() request: FastifyAdminRequest,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string
+  ): Promise<void> {
+    await this.service.deleteProduct(request.adminPrincipal!, requestId(request), id, productId);
   }
 
   @Post(':id/pause')
@@ -405,6 +476,56 @@ export class MarketplaceProjectAdminController {
       projectId,
       mediaId,
       body
+    );
+  }
+
+  @Post(':projectId/media/upload-url')
+  @RequireMarketplacePermission('project_media:write', 'project')
+  @ApiOperation({ summary: 'Get a signed URL to upload a project logo, cover or gallery image.' })
+  createMediaUploadUrl(
+    @Req() request: FastifyAdminRequest,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Body() body: CreateUploadUrlDto
+  ) {
+    return this.service.createUploadUrl(
+      request.adminPrincipal!,
+      requestId(request),
+      { type: 'project', id: projectId },
+      body
+    );
+  }
+
+  @Put(':projectId/enterprises/:enterpriseId')
+  @RequireMarketplacePermission('projects:update', 'project')
+  @ApiOperation({ summary: 'Link an enterprise to a project as operator, sponsor or partner.' })
+  linkEnterprise(
+    @Req() request: FastifyAdminRequest,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string,
+    @Body() body: LinkProjectEnterpriseDto
+  ) {
+    return this.service.linkEnterprise(
+      request.adminPrincipal!,
+      requestId(request),
+      projectId,
+      enterpriseId,
+      body
+    );
+  }
+
+  @Delete(':projectId/enterprises/:enterpriseId')
+  @RequireMarketplacePermission('projects:update', 'project')
+  @ApiOperation({ summary: 'Remove a non-primary enterprise from a project.' })
+  unlinkEnterprise(
+    @Req() request: FastifyAdminRequest,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string
+  ) {
+    return this.service.unlinkEnterprise(
+      request.adminPrincipal!,
+      requestId(request),
+      projectId,
+      enterpriseId
     );
   }
 

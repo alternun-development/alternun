@@ -59,7 +59,7 @@ import type {
   Palette,
   ProjectFilter,
   Translate,
-} from './explorar.types';
+} from './explore.types';
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 import { getContentGutter } from '../utils/layout';
 import {
@@ -1142,7 +1142,7 @@ export default function ExplorarScreen(): React.JSX.Element {
   };
 
   return (
-    <ScreenShell activeSection='explorar' backgroundColor={palette.background}>
+    <ScreenShell activeSection='explore' backgroundColor={palette.background}>
       <Animated.View
         style={[
           styles.root,
@@ -1228,7 +1228,7 @@ export default function ExplorarScreen(): React.JSX.Element {
                 onListNavigate={scrollToProjectList}
                 onOpenProject={(slug) =>
                   router.push({
-                    pathname: '/explorar/[slug]',
+                    pathname: '/explore/[slug]',
                     params: { slug },
                   })
                 }
@@ -1246,7 +1246,7 @@ export default function ExplorarScreen(): React.JSX.Element {
                 onListNavigate={scrollToEnterpriseList}
                 onOpenEnterprise={(slug) =>
                   router.push({
-                    pathname: '/explorar/empresa/[slug]',
+                    pathname: '/explore/enterprise/[slug]',
                     params: { slug },
                   })
                 }

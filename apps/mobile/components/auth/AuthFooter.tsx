@@ -296,7 +296,7 @@ export function AuthFooter({ apiUrl, locale = 'en', appVersion }: AuthFooterProp
 
     // Local development
     if (normalizedApiUrl.includes('localhost') || normalizedApiUrl.includes('127.0.0.1')) {
-      return 'http://127.0.0.1:8083';
+      return 'http://127.0.0.1:8090';
     }
 
     // Testnet

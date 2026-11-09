@@ -105,14 +105,14 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
                   />
                   <Stack.Screen name='settings' options={{ headerShown: false }} />
                   <Stack.Screen
-                    name='explorar'
+                    name='explore'
                     options={{ headerShown: false, animation: 'slide_from_right' }}
                   />
                   <Stack.Screen
-                    name='portafolio'
+                    name='portfolio'
                     options={{ headerShown: false, animation: 'slide_from_right' }}
                   />
-                  <Stack.Screen name='mi-perfil' options={{ headerShown: false }} />
+                  <Stack.Screen name='profile' options={{ headerShown: false }} />
                   <Stack.Screen
                     name='privacy'
                     options={{ headerShown: false, animation: 'slide_from_right' }}

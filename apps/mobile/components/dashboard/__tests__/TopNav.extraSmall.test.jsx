@@ -99,7 +99,7 @@ it('runs every full-screen menu action and closes the menu where it navigates aw
 
   openMenu(tree);
   pressLabel(tree, 'Explorer');
-  expect(handlers.onNavigate).toHaveBeenCalledWith('explorar');
+  expect(handlers.onNavigate).toHaveBeenCalledWith('explore');
   expect(byId(tree, 'fullscreen-menu')).toHaveLength(0);
 
   openMenu(tree);

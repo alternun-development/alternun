@@ -26,8 +26,11 @@ import {
 import {
   ACTIVITY_REPEAT_PERIODS,
   COMMENT_STATUSES,
+  ENTERPRISE_KINDS,
   MEDIA_KINDS,
+  PARTNERSHIP_STATUSES,
   PROJECT_CATEGORIES,
+  UPLOAD_IMAGE_TYPES,
 } from './marketplace.types';
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -63,7 +66,87 @@ export class ProjectContentBlockDto {
   waysToContribute!: string[];
 }
 
-export class CreateEnterpriseDto {
+// Profile values are free text on purpose: testnet keeps placeholders such as "POR CONFIRMAR".
+export class ProfileLocationDto {
+  @IsOptional() @IsString() @MaxLength(160) municipality?: string;
+  @IsOptional() @IsString() @MaxLength(160) department?: string;
+  @IsOptional() @IsString() @MaxLength(240) address?: string;
+  @IsOptional() @IsString() @MaxLength(500) note?: string;
+  @IsOptional() @IsString() @MaxLength(500) coverage?: string;
+}
+
+export class PublicContactDto {
+  @IsOptional() @IsString() @MaxLength(240) web?: string;
+  @IsOptional() @IsString() @MaxLength(240) email?: string;
+  @IsOptional() @IsString() @MaxLength(80) phone?: string;
+  @IsOptional() @IsString() @MaxLength(80) whatsapp?: string;
+  @IsOptional() @IsString() @MaxLength(240) instagram?: string;
+  @IsOptional() @IsString() @MaxLength(240) facebook?: string;
+  @IsOptional() @IsString() @MaxLength(500) note?: string;
+}
+
+export class InternalContactDto {
+  @IsString() @MinLength(1) @MaxLength(160) name!: string;
+  @IsOptional() @IsString() @MaxLength(160) role?: string;
+  @IsOptional() @IsString() @MaxLength(240) email?: string;
+}
+
+export class EnterpriseSiteDto {
+  @IsString() @MinLength(1) @MaxLength(160) name!: string;
+  @IsOptional() @IsString() @MaxLength(240) address?: string;
+  @IsOptional() @IsInt() @Min(0) rooms?: number;
+  @IsOptional() @IsString() @MaxLength(240) web?: string;
+}
+
+export class EventVenueDto extends ProfileLocationDto {
+  @IsOptional() @IsString() @MaxLength(160) name?: string;
+  @IsOptional() @IsString() @MaxLength(240) web?: string;
+}
+
+export class EnterpriseEventDetailsDto {
+  @IsOptional() @IsString() @MaxLength(160) date?: string;
+  @IsOptional() @ValidateNested() @Type(() => EventVenueDto) venue?: EventVenueDto;
+}
+
+class EnterpriseProfileDto {
+  @IsOptional() @IsIn(ENTERPRISE_KINDS) kind?: (typeof ENTERPRISE_KINDS)[number];
+  @IsOptional() @IsString() @MaxLength(160) sector?: string;
+  @IsOptional() @IsString() @MaxLength(4000) description?: string;
+  @IsOptional()
+  @IsIn(PARTNERSHIP_STATUSES)
+  partnershipStatus?: (typeof PARTNERSHIP_STATUSES)[number];
+  @IsOptional() @ValidateNested() @Type(() => ProfileLocationDto) location?: ProfileLocationDto;
+  @IsOptional() @ValidateNested() @Type(() => PublicContactDto) publicContact?: PublicContactDto;
+  /** https URL on an allowed logo host; an empty string clears it. */
+  @IsOptional() @IsString() @MaxLength(2048) logoUrl?: string;
+  /** https URL on an allowed cover host; an empty string clears it. */
+  @IsOptional() @IsString() @MaxLength(2048) bannerUrl?: string;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => EnterpriseEventDetailsDto)
+  eventDetails?: EnterpriseEventDetailsDto;
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => EnterpriseSiteDto)
+  sites?: EnterpriseSiteDto[];
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => InternalContactDto)
+  internalContacts?: InternalContactDto[];
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  pendingItems?: string[];
+  @IsOptional() @IsString() @MaxLength(4000) internalNotes?: string;
+}
+
+export class CreateEnterpriseDto extends EnterpriseProfileDto {
   @ApiProperty({ pattern: SLUG_PATTERN.source, minLength: 3, maxLength: 80 })
   @IsString()
   @Matches(SLUG_PATTERN)
@@ -76,11 +159,33 @@ export class CreateEnterpriseDto {
   @IsOptional() @IsUrl({ protocols: ['https'], require_protocol: true }) websiteUrl?: string;
 }
 
-export class UpdateEnterpriseDto {
+export class UpdateEnterpriseDto extends EnterpriseProfileDto {
   @IsOptional() @IsString() @MinLength(1) @MaxLength(160) displayName?: string;
   @IsOptional() @IsString() @MinLength(1) @MaxLength(240) legalName?: string;
   @IsOptional() @Matches(/^[A-Z]{2}$/) countryCode?: string;
   @IsOptional() @IsUrl({ protocols: ['https'], require_protocol: true }) websiteUrl?: string;
+}
+
+export class CreateEnterpriseProductDto {
+  @IsString() @MinLength(1) @MaxLength(160) name!: string;
+  @IsOptional() @IsString() @MaxLength(1000) description?: string;
+  @IsOptional() @IsInt() @Min(0) airsMin?: number;
+  @IsOptional() @IsInt() @Min(0) airsMax?: number;
+  @IsOptional() @IsString() @MaxLength(160) airsNote?: string;
+  @IsOptional() @IsInt() @Min(0) sortOrder?: number;
+  @IsOptional() @IsBoolean() isActive?: boolean;
+}
+
+export class UpdateEnterpriseProductDto extends PartialType(CreateEnterpriseProductDto) {}
+
+export class LinkProjectEnterpriseDto {
+  @IsIn(['operator', 'sponsor', 'partner']) relation!: 'operator' | 'sponsor' | 'partner';
+}
+
+export class CreateUploadUrlDto {
+  /** project: logo | cover | gallery_image; enterprise: logo | banner. */
+  @IsIn(['logo', 'cover', 'gallery_image', 'banner']) kind!: string;
+  @IsIn(UPLOAD_IMAGE_TYPES) contentType!: (typeof UPLOAD_IMAGE_TYPES)[number];
 }
 
 export class CreateProjectDto {
@@ -101,6 +206,28 @@ export class UpdateProjectDto {
   @IsOptional() @IsString() @MinLength(1) @MaxLength(80) timeZone?: string;
   @IsOptional() @IsString() @Matches(LOCALE_PATTERN) defaultLocale?: string;
   @IsOptional() @IsObject() @IsNotEmptyObject() content?: Record<string, ProjectContentBlockDto>;
+  @IsOptional() @IsString() @MaxLength(160) alternateName?: string;
+  @IsOptional()
+  @IsIn(PARTNERSHIP_STATUSES)
+  partnershipStatus?: (typeof PARTNERSHIP_STATUSES)[number];
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ProfileLocationDto)
+  locationDetails?: ProfileLocationDto;
+  @IsOptional() @ValidateNested() @Type(() => PublicContactDto) publicContact?: PublicContactDto;
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => InternalContactDto)
+  internalContacts?: InternalContactDto[];
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  pendingItems?: string[];
+  @IsOptional() @IsString() @MaxLength(4000) internalNotes?: string;
 }
 
 export class TransitionProjectDto {

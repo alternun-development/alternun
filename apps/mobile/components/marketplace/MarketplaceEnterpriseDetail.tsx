@@ -11,6 +11,14 @@ import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { isPublicProject } from './MarketplaceProjectDetail';
 import { isMarketplaceEnterprise, safeEnterpriseUrl } from './MarketplaceEnterpriseDirectory';
+import {
+  ContactSection,
+  EventSection,
+  LocationSection,
+  PartnershipBadge,
+  ProductsSection,
+  SitesSection,
+} from './ProfileSections';
 import type { DetailPalette, MarketplaceEnterpriseDetail, Translate } from './types';
 
 export class MarketplaceEnterpriseRequestError extends Error {
@@ -46,6 +54,7 @@ export async function loadMarketplaceEnterprise(
         ? { ...payload.logo, url: safeEnterpriseUrl(payload.logo.url)! }
         : null,
     websiteUrl: safeEnterpriseUrl(payload.websiteUrl),
+    bannerUrl: safeEnterpriseUrl(payload.bannerUrl),
   };
 }
 
@@ -149,6 +158,15 @@ export function MarketplaceEnterpriseDetailView({
           <View
             style={[styles.hero, { backgroundColor: palette.surface, borderColor: palette.border }]}
           >
+            {enterprise.bannerUrl ? (
+              <Image
+                testID='enterprise-detail-banner'
+                source={{ uri: enterprise.bannerUrl }}
+                accessibilityLabel={enterprise.displayName}
+                style={styles.banner}
+                resizeMode='cover'
+              />
+            ) : null}
             {enterprise.logo ? (
               <Image
                 testID='enterprise-detail-logo'
@@ -163,6 +181,12 @@ export function MarketplaceEnterpriseDetailView({
               </View>
             )}
             <Text style={[styles.title, { color: palette.text }]}>{enterprise.displayName}</Text>
+            {enterprise.sector ? (
+              <Text testID='enterprise-detail-sector' style={{ color: palette.muted }}>
+                {enterprise.sector}
+              </Text>
+            ) : null}
+            <PartnershipBadge status={enterprise.partnershipStatus} palette={palette} t={t} />
             {enterprise.countryCode ? (
               <View style={styles.metaRow}>
                 <MapPin size={16} color={palette.muted} />
@@ -183,6 +207,33 @@ export function MarketplaceEnterpriseDetailView({
               </Pressable>
             ) : null}
           </View>
+
+          {enterprise.description ? (
+            <View
+              testID='enterprise-detail-about'
+              style={[
+                styles.about,
+                { backgroundColor: palette.surface, borderColor: palette.border },
+              ]}
+            >
+              <Text style={[styles.sectionTitle, { color: palette.text }]}>
+                {t('explorer.profile.about')}
+              </Text>
+              <Text style={[styles.description, { color: palette.text }]}>
+                {enterprise.description}
+              </Text>
+            </View>
+          ) : null}
+          <ProductsSection products={enterprise.products} palette={palette} t={t} />
+          <EventSection event={enterprise.eventDetails} palette={palette} t={t} />
+          <LocationSection location={enterprise.location} palette={palette} t={t} />
+          <SitesSection sites={enterprise.sites} palette={palette} t={t} />
+          <ContactSection
+            contact={enterprise.publicContact}
+            palette={palette}
+            t={t}
+            openUrl={openUrl}
+          />
 
           <View style={styles.projectsSection}>
             <Text style={[styles.sectionTitle, { color: palette.text }]}>
@@ -245,7 +296,17 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   primaryButtonText: { color: '#effff7', fontSize: 14, fontWeight: '900' },
-  hero: { borderWidth: 1, borderRadius: 24, padding: 22, alignItems: 'center', gap: 12 },
+  hero: {
+    borderWidth: 1,
+    borderRadius: 24,
+    padding: 22,
+    alignItems: 'center',
+    gap: 12,
+    overflow: 'hidden',
+  },
+  banner: { alignSelf: 'stretch', height: 140, marginTop: -22, marginHorizontal: -22 },
+  about: { borderWidth: 1, borderRadius: 20, padding: 18, gap: 10 },
+  description: { fontSize: 15, lineHeight: 22 },
   logo: { width: 96, height: 96, borderRadius: 20 },
   logoFallback: {
     width: 96,

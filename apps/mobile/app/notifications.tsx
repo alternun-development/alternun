@@ -225,7 +225,7 @@ export default function NotificationsScreen(): React.JSX.Element {
 
         {/* PageTabBar — wrapped with elevated zIndex so its hover tooltip renders above the
             notifications list below, which has its own stacking context from a transform style
-            (see mi-perfil.tsx's headerBar comment for the full explanation). */}
+            (see profile.tsx's headerBar comment for the full explanation). */}
         <View style={styles.tabBarWrapper}>
           <PageTabBar
             tabs={tabs}

@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 import React from 'react';
 import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
-import { MarketplaceProjectBrowser } from '../explorar';
+import { MarketplaceProjectBrowser } from '../explore';
 import {
   getRememberedDirectoryView,
   rememberDirectoryView,
 } from '../../components/marketplace/directoryPaging';
-import type { MarketProject } from '../explorar.types';
+import type { MarketProject } from '../explore.types';
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn() }),

@@ -45,7 +45,58 @@ export type Project = {
   /** False only when the project's type says reports need no document number. */
   requiresDocumentNumber?: boolean;
   /** Every enterprise related to the project, the primary owner included. */
-  enterprises?: Array<{ enterpriseId: string; isPrimary: boolean }>;
+  enterprises?: Array<{ enterpriseId: string; isPrimary: boolean; relation?: string }>;
+  alternateName?: string | null;
+  partnershipStatus?: PartnershipStatus;
+  locationDetails?: ProfileLocation;
+  publicContact?: PublicContact;
+  /** Team only: never shown on the public mini-page. */
+  internalContacts?: InternalContact[];
+  pendingItems?: string[];
+  internalNotes?: string | null;
+};
+
+export type PartnershipStatus =
+  | 'structuring'
+  | 'in_conversation'
+  | 'onboarding'
+  | 'pilot'
+  | 'postponed'
+  | 'signed';
+
+export const PARTNERSHIP_STATUSES: readonly PartnershipStatus[] = [
+  'structuring',
+  'in_conversation',
+  'onboarding',
+  'pilot',
+  'postponed',
+  'signed',
+];
+
+export type ProfileLocation = {
+  municipality?: string;
+  department?: string;
+  address?: string;
+  note?: string;
+  coverage?: string;
+};
+
+export type PublicContact = Partial<
+  Record<'web' | 'email' | 'phone' | 'whatsapp' | 'instagram' | 'facebook', string>
+>;
+
+export type InternalContact = { name: string; role?: string; email?: string };
+
+export type EnterpriseSite = {
+  name: string;
+  address?: string;
+  rooms?: number | null;
+  web?: string;
+};
+
+export type EnterpriseEventDetails = {
+  date?: string;
+  venue?: ProfileLocation & { name?: string; web?: string };
 };
 
 export type Enterprise = {
@@ -56,6 +107,32 @@ export type Enterprise = {
   status: EnterpriseStatus;
   countryCode: string | null;
   websiteUrl: string | null;
+  kind?: 'company' | 'event';
+  sector?: string | null;
+  description?: string | null;
+  partnershipStatus?: PartnershipStatus;
+  location?: ProfileLocation;
+  publicContact?: PublicContact;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
+  eventDetails?: EnterpriseEventDetails;
+  sites?: EnterpriseSite[];
+  /** Team only: never shown on the public mini-page. */
+  internalContacts?: InternalContact[];
+  pendingItems?: string[];
+  internalNotes?: string | null;
+};
+
+export type EnterpriseProduct = {
+  id: string;
+  enterpriseId: string;
+  name: string;
+  description: string | null;
+  airsMin: number | null;
+  airsMax: number | null;
+  airsNote: string | null;
+  sortOrder: number;
+  isActive: boolean;
 };
 
 export type ProjectActivity = {
@@ -189,4 +266,40 @@ export function localizedProjectContent(project: Project): ProjectContentBlock |
 
 export function activeProjectMedia(project: Project, kind: MediaKind): ProjectMedia | undefined {
   return project.media?.find((item) => item.isActive && item.kind === kind);
+}
+
+export const UPLOAD_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const UPLOAD_MAX_BYTES = 5 * 1024 * 1024;
+
+/** Why a file cannot be uploaded, or null when it can. */
+export function uploadFileProblem(file: { type: string; size: number }): 'type' | 'size' | null {
+  if (!(UPLOAD_IMAGE_TYPES as readonly string[]).includes(file.type)) return 'type';
+  if (file.size > UPLOAD_MAX_BYTES) return 'size';
+  return null;
+}
+
+/**
+ * Uploads an image to the marketplace bucket through an API-signed URL and returns its public URL.
+ * `uploadPath` is the API endpoint that signs it, e.g. /v1/admin/projects/:id/media/upload-url.
+ * The returned URL still has to be saved as project media or as the enterprise logo/banner.
+ */
+export async function uploadMarketplaceImage(
+  uploadPath: string,
+  kind: string,
+  file: File
+): Promise<string> {
+  const problem = uploadFileProblem(file);
+  if (problem)
+    throw new MarketplaceRequestError(400, problem === 'type' ? 'UPLOAD_TYPE' : 'UPLOAD_SIZE');
+  const signed = await requestMarketplace<{ uploadUrl: string; publicUrl: string }>(uploadPath, {
+    method: 'POST',
+    body: { kind, contentType: file.type },
+  });
+  const response = await fetch(signed.uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type, 'x-upsert': 'false' },
+    body: file,
+  });
+  if (!response.ok) throw new MarketplaceRequestError(response.status, 'UPLOAD_FAILED');
+  return signed.publicUrl;
 }
