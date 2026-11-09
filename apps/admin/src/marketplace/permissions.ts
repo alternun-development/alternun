@@ -38,6 +38,8 @@ export type MarketplacePermission =
 
 const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermission[]>> = {
   partner_readonly: [],
+  // Scoped moderation; the API limits it to the projects of the membership.
+  project_moderator: ['project_media:moderate', 'comments:read', 'comments:moderate'],
   sub_admin: [
     'projects:update',
     'project_media:write',
@@ -164,9 +166,11 @@ export function useMarketplaceRoles(): readonly AdminRole[] | null {
 
 export function membershipRolesGrantedBy(
   roles: readonly AdminRole[]
-): Array<'partner_operator' | 'sub_admin' | 'partner_readonly'> {
+): Array<'partner_operator' | 'sub_admin' | 'partner_readonly' | 'project_moderator'> {
   if (roles.some((role) => role === 'platform_owner' || role === 'internal_admin')) {
-    return ['partner_operator', 'sub_admin', 'partner_readonly'];
+    return ['partner_operator', 'sub_admin', 'project_moderator', 'partner_readonly'];
   }
-  return roles.includes('partner_operator') ? ['sub_admin', 'partner_readonly'] : [];
+  return roles.includes('partner_operator')
+    ? ['sub_admin', 'project_moderator', 'partner_readonly']
+    : [];
 }

@@ -2618,7 +2618,6 @@ function PerfilTab({
     void fetchAchievements();
   }, [user?.id, client]);
 
-  const accountIdLabel = t('profile.accountInfoModal.accountId', undefined, 'Account ID');
   const naLabel = t('profile.accountInfoModal.na', undefined, 'N/A');
   const verifiedLabel = t('profile.accountStatus.verified', undefined, 'Verified');
   const walletNotConnectedLabel = t('profile.wallet.notConnected', undefined, 'Not connected');
@@ -2674,15 +2673,8 @@ function PerfilTab({
           <GlassCard>
             <SettingRow
               icon={UserCircle2}
-              label={accountIdLabel}
-              value={user?.id ? truncateMiddle(user.id, 10, 6) : naLabel}
-              c={c}
-              onPress={() => setShowAccountInfoModal(true)}
-            />
-            <SettingRow
-              icon={Shield}
-              label={t('profile.roles.title', undefined, 'Roles')}
-              value={rolesSummary}
+              label={t('profile.accountRows.accountAndRoles', undefined, 'Account & roles')}
+              value={topRole ? rolesSummary : user?.id ? truncateMiddle(user.id, 10, 6) : naLabel}
               c={c}
               onPress={() => setShowAccountInfoModal(true)}
             />

@@ -132,6 +132,7 @@ void test('every Alternun admin role has its own Authentik group', () => {
     'Alternun Partner Operator': 'partner_operator',
     'Alternun Sub Admin': 'sub_admin',
     'Alternun Partner Read Only': 'partner_readonly',
+    'Alternun Project Moderator': 'project_moderator',
   };
 
   for (const [groupName, role] of Object.entries(roleGroups)) {

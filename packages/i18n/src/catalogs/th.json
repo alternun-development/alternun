@@ -814,6 +814,7 @@
           "moderator": "ผู้ตรวจสอบ",
           "partner_operator": "ผู้ดูแลโครงการ",
           "sub_admin": "ผู้ช่วยผู้ดูแล",
+          "project_moderator": "ผู้ตรวจสอบโครงการ",
           "partner_readonly": "อ่านอย่างเดียว"
         }
       },
@@ -913,6 +914,7 @@
       },
       "tierJourney": "การเดินทางระดับชั้น",
       "accountRows": {
+        "accountAndRoles": "บัญชีและบทบาท",
         "personalInfo": "ข้อมูลส่วนบุคคล",
         "wallet": "วอลเล็ต",
         "accessMethod": "วิธีการเข้าถึง",
