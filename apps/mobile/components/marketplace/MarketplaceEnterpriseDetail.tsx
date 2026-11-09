@@ -19,6 +19,12 @@ import {
   ProductsSection,
   SitesSection,
 } from './ProfileSections';
+import { AdminEntryButton } from './AdminEntryButton';
+import {
+  adminEnterpriseUrl,
+  canManageEnterprise,
+  type ResolvedAdminAccess,
+} from '../../utils/adminAccess';
 import type { DetailPalette, MarketplaceEnterpriseDetail, Translate } from './types';
 
 export class MarketplaceEnterpriseRequestError extends Error {
@@ -67,6 +73,8 @@ export function MarketplaceEnterpriseDetailView({
   onBack,
   onOpenProject,
   openUrl = async (url) => Linking.openURL(url),
+  adminUrl = null,
+  adminAccess = null,
 }: {
   slug: string;
   locale: string;
@@ -76,6 +84,10 @@ export function MarketplaceEnterpriseDetailView({
   onBack: () => void;
   onOpenProject: (slug: string) => void;
   openUrl?: (url: string) => Promise<unknown>;
+  /** Admin panel origin when the viewer holds an admin role; null hides the entry point. */
+  adminUrl?: string | null;
+  /** The viewer's admin roles; the link shows only for enterprises they can manage. */
+  adminAccess?: ResolvedAdminAccess | null;
 }): React.JSX.Element {
   const [enterprise, setEnterprise] = useState<MarketplaceEnterpriseDetail | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -187,6 +199,16 @@ export function MarketplaceEnterpriseDetailView({
               </Text>
             ) : null}
             <PartnershipBadge status={enterprise.partnershipStatus} palette={palette} t={t} />
+            {adminUrl && canManageEnterprise(adminAccess, enterprise.id) ? (
+              <AdminEntryButton
+                testID='enterprise-detail-admin'
+                label={t('explorer.admin.manageEnterprise')}
+                url={adminEnterpriseUrl(enterprise.id, adminUrl)}
+                color={palette.primaryDeep}
+                borderColor={palette.border}
+                openUrl={openUrl}
+              />
+            ) : null}
             {enterprise.countryCode ? (
               <View style={styles.metaRow}>
                 <MapPin size={16} color={palette.muted} />

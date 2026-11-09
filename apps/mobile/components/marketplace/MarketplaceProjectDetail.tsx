@@ -21,6 +21,12 @@ import type {
 } from './types';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { ContactSection, LocationSection } from './ProfileSections';
+import { AdminEntryButton } from './AdminEntryButton';
+import {
+  adminProjectUrl,
+  canManageProject,
+  type ResolvedAdminAccess,
+} from '../../utils/adminAccess';
 
 export class MarketplaceProjectRequestError extends Error {
   constructor(readonly status: number) {
@@ -157,6 +163,8 @@ export function MarketplaceProjectDetailView({
   getSessionToken = () => Promise.resolve(null),
   onSignIn = () => undefined,
   onOpenEnterprise = () => undefined,
+  adminUrl = null,
+  adminAccess = null,
 }: {
   slug: string;
   locale: string;
@@ -169,6 +177,10 @@ export function MarketplaceProjectDetailView({
   getSessionToken?: () => Promise<string | null>;
   onSignIn?: () => void;
   onOpenEnterprise?: (slug: string) => void;
+  /** Admin panel origin when the viewer holds an admin role; null hides the entry point. */
+  adminUrl?: string | null;
+  /** The viewer's admin roles; the link shows only for projects they can manage. */
+  adminAccess?: ResolvedAdminAccess | null;
 }): React.JSX.Element {
   const [project, setProject] = useState<MarketplacePublicProject | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -294,6 +306,16 @@ export function MarketplaceProjectDetailView({
               </Pressable>
               <Text style={[styles.theme, { color: palette.primary }]}>{project.theme}</Text>
               <Text style={[styles.title, { color: palette.text }]}>{project.title}</Text>
+              {adminUrl && canManageProject(adminAccess, project) ? (
+                <AdminEntryButton
+                  testID='project-detail-admin'
+                  label={t('explorer.admin.manageProject')}
+                  url={adminProjectUrl(project.id, adminUrl)}
+                  color={palette.primaryDeep}
+                  borderColor={palette.border}
+                  openUrl={openUrl}
+                />
+              ) : null}
               {project.alternateName ? (
                 <Text testID='project-detail-alternate-name' style={{ color: palette.muted }}>
                   {project.alternateName}

@@ -61,6 +61,9 @@ import type {
   Translate,
 } from './explore.types';
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
+import { resolveAdminPanelUrl } from '../utils/adminAccess';
+import { useAdminAccess } from '../hooks/useAdminAccess';
+import { AdminEntryButton } from '../components/marketplace/AdminEntryButton';
 import { getContentGutter } from '../utils/layout';
 import {
   resolveMarketplaceContactMailto,
@@ -1079,6 +1082,7 @@ export default function ExplorarScreen(): React.JSX.Element {
   const { themeMode, language } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const router = useRouter();
+  const isGlobalAdmin = useAdminAccess()?.isGlobalAdmin === true;
   const isDark = themeMode === 'dark';
   const [featuredProject, setFeaturedProject] = useState<MarketProject | null>(null);
   const [directory, setDirectory] = useState<'projects' | 'enterprises'>('projects');
@@ -1173,6 +1177,15 @@ export default function ExplorarScreen(): React.JSX.Element {
               </Text>
             </View>
           </View>
+          {isGlobalAdmin ? (
+            <AdminEntryButton
+              testID='explorer-admin-panel'
+              label={t('explorer.admin.openPanel')}
+              url={`${resolveAdminPanelUrl()}/marketplace`}
+              color={palette.primaryDeep}
+              borderColor={palette.border}
+            />
+          ) : null}
 
           <HeroCarousel
             palette={palette}

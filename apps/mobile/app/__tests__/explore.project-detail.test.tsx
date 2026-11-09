@@ -155,6 +155,47 @@ describe('Marketplace project detail', () => {
     expect(onOpenEnterprise).toHaveBeenCalledWith('bosque-vivo');
   });
 
+  it('shows the project admin link only to people who can manage the project', async () => {
+    const plain = await render(() => Promise.resolve(project));
+    expect(plain.root.findAllByProps({ testID: 'project-detail-admin' })).toHaveLength(0);
+
+    const openUrl = jest.fn(() => Promise.resolve());
+    let renderer: ReactTestRenderer | undefined;
+    await act(async () => {
+      renderer = create(
+        <MarketplaceProjectDetailView
+          slug='forest-hotel'
+          locale='es'
+          palette={palette}
+          t={t}
+          loader={() => Promise.resolve(project)}
+          onBack={() => undefined}
+          openUrl={openUrl}
+          adminUrl='https://testnet.admin.alternun.co'
+          adminAccess={{
+            isGlobalAdmin: false,
+            canOpenAdminPanel: true,
+            roles: ['partner_operator'],
+            scopes: [
+              {
+                role: 'partner_operator',
+                enterpriseId: 'other',
+                enterpriseSlug: null,
+                projectId: project.id,
+                projectSlug: null,
+              },
+            ],
+          }}
+        />
+      );
+      await Promise.resolve();
+    });
+    const [button] = renderer!.root.findAllByProps({ testID: 'project-detail-admin' });
+    expect(button.props.url).toBe(
+      `https://testnet.admin.alternun.co/marketplace/projects/${project.id}`
+    );
+  });
+
   it('opens a non-file video in the system browser', async () => {
     jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     const externalVideo = project.media.map((item) =>

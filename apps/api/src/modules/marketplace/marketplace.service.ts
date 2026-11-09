@@ -166,10 +166,11 @@ function publicEnterprise(
   if (safePublicHttpsUrl(enterprise.logoUrl)) {
     logo = { url: enterprise.logoUrl!, altText: enterprise.displayName };
   } else {
-    // Without its own logo, an owner falls back to the logo of a project it owns. Affiliated
-    // enterprises never borrow a project's logo: it belongs to the project, not to them.
-    const logoRow = listings
-      .filter((listing) => listing.isPrimary)
+    // Without its own logo, an enterprise that owns a single project (e.g. a hotel and its stay)
+    // falls back to that project's logo. With several projects there is no single logo to
+    // borrow, and affiliated enterprises never borrow one: it belongs to the project.
+    const owned = listings.filter((listing) => listing.isPrimary);
+    const logoRow = (owned.length === 1 ? owned : [])
       .flatMap(({ row }) => row.media.map((item) => ({ item, project: row.project })))
       .find(
         ({ item }) => item.kind === 'logo' && item.isActive && safePublicHttpsUrl(item.url) !== null

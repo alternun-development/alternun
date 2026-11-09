@@ -204,3 +204,23 @@ void test('bootstrap promotes platform users to internal and provisions the shar
   assert.match(template, /def promote_platform_user\(user, group_names\):/);
   assert.match(template, /user\.type = "internal"/);
 });
+
+void test('the mobile client receives the same groups and alternun_roles claim as the admin client', () => {
+  const template = fs.readFileSync(templatePath, 'utf8');
+  const mobileSection = template.slice(template.indexOf('mobile_scope_mapping_ids = ['));
+
+  assert.match(
+    template,
+    /ADMIN_GROUP_CLAIM_MAPPING_NAME = "Alternun Admin OAuth Mapping: profile groups"/
+  );
+  assert.match(
+    mobileSection,
+    /ScopeMapping\.objects\.filter\(\s*name=ADMIN_GROUP_CLAIM_MAPPING_NAME\s*\)\.first\(\)/
+  );
+  assert.match(mobileSection, /desired_scope_mappings\.append\(mobile_group_claim_mapping\)/);
+  // The admin section creates the mapping before the mobile provider is configured.
+  assert.ok(
+    template.indexOf('ensure_admin_group_claim_mapping(admin_group_roles)') <
+      template.indexOf('name=ADMIN_GROUP_CLAIM_MAPPING_NAME')
+  );
+});

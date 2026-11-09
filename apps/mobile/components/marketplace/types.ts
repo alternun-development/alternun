@@ -102,7 +102,7 @@ export interface MarketplacePublicProject {
   partnershipStatus?: PartnershipStatus;
   locationDetails?: ProfileLocation;
   publicContact?: ProfileContact;
-  enterprise: { slug: string; displayName: string };
+  enterprise: { id?: string; slug: string; displayName: string };
   media: MarketplaceProjectMedia[];
 }
 

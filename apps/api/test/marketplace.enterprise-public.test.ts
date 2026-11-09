@@ -137,7 +137,8 @@ test('public enterprise list includes only active enterprises with published pro
     id: enterprise.id,
     slug: enterprise.slug,
     displayName: enterprise.displayName,
-    logo: { url: logo.url, altText: 'Hotel logo' },
+    // Two owned projects: no single project logo to fall back to.
+    logo: null,
     countryCode: 'CO',
     websiteUrl: 'https://forest.example',
     projectCount: 2,
@@ -278,4 +279,20 @@ test('an enterprise logo set on the enterprise wins over the project logo', asyn
     url: 'https://cdn.example/own-logo.png',
     altText: enterprise.displayName,
   });
+});
+
+test('an enterprise owning several projects does not borrow one of their logos', async () => {
+  const service = new MarketplacePublicService(
+    repository([
+      { project, enterprise, media: [logo] },
+      {
+        project: { ...project, id: 'project-2', slug: 'second' },
+        enterprise,
+        media: [{ ...logo, id: 'logo-2', projectId: 'project-2' }],
+      },
+    ])
+  );
+  const detail = await service.findEnterpriseBySlug(enterprise.slug, 'en');
+  assert.equal(detail.logo, null);
+  assert.equal(detail.projectCount, 2);
 });

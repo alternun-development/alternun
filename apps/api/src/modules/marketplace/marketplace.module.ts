@@ -69,9 +69,12 @@ import { AdminNotificationService } from './admin-notification.service';
 import { ProjectTypeRepository } from './project-type.repository';
 import { ProjectTypeService } from './project-type.service';
 import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-group-sync';
+import { AdminAccessController } from './admin-access.controller';
+import { AdminAccessRepository, AdminAccessService } from './admin-access.service';
 
 @Module({
   controllers: [
+    AdminAccessController,
     MarketplacePublicController,
     MarketplaceEnterprisePublicController,
     MarketplaceEnterpriseAdminController,
@@ -96,6 +99,8 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
     MarketplacePublicRepository,
+    AdminAccessRepository,
+    AdminAccessService,
     MarketplaceAdminRepository,
     MarketplaceActivityRepository,
     MarketplaceMembershipRepository,
