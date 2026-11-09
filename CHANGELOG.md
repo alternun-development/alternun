@@ -1,3 +1,9 @@
+## [1.1.125](https://github.com/alternun-development/alternun/compare/v1.1.124...v1.1.125) (2026-11-09)
+
+### Bug Fixes
+
+- **repo:** test(repo,admin,api): .gitignore, AGENTS, CLAUDE, api
+
 ## [1.1.124](https://github.com/alternun-development/alternun/compare/v1.1.123...v1.1.124) (2026-10-28)
 
 ### Bug Fixes
