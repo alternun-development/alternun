@@ -57,6 +57,7 @@ export const ADMIN_ROLES = [
   'partner_operator',
   'sub_admin',
   'partner_readonly',
+  'project_moderator',
 ] as const;
 
 export const ADMIN_PERMISSION_METADATA = 'admin-auth:permission';
@@ -189,6 +190,18 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'participants:manage',
     'airs_reports:submit',
     'audit:read',
+  ],
+  // Moderation for the projects a membership covers; never global (see globalAdminRoles).
+  project_moderator: [
+    'enterprises:read',
+    'notifications:read',
+    'projects:read',
+    'project_media:read',
+    'project_media:moderate',
+    'project_memberships:read',
+    'activities:read',
+    'comments:read',
+    'comments:moderate',
   ],
   moderator: [
     'enterprises:read',

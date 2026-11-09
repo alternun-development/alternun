@@ -237,6 +237,7 @@ export const marketplaceCopy = {
       roles: {
         partner_operator: 'Project admin',
         sub_admin: 'Sub-admin',
+        project_moderator: 'Project moderator',
         partner_readonly: 'Read-only',
       },
     },

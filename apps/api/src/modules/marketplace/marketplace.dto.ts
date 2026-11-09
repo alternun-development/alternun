@@ -39,6 +39,7 @@ export const PROJECT_MEMBERSHIP_ROLES = [
   'partner_operator',
   'sub_admin',
   'partner_readonly',
+  'project_moderator',
 ] as const;
 
 export class ApiErrorDto {

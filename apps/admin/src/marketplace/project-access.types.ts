@@ -12,7 +12,7 @@ export type AccessMembership = {
   projectId: string | null;
   enterpriseId: string;
   scopeType: 'enterprise' | 'project';
-  role: 'partner_operator' | 'sub_admin' | 'partner_readonly';
+  role: 'partner_operator' | 'sub_admin' | 'partner_readonly' | 'project_moderator';
   status: 'active' | 'revoked';
   memberEmail?: string | null;
 };

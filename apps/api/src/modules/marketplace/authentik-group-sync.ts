@@ -10,6 +10,7 @@ export const AUTHENTIK_GROUP_BY_ROLE: Readonly<Record<AuthentikGroupRole, string
   partner_operator: 'Alternun Partner Operator',
   sub_admin: 'Alternun Sub Admin',
   partner_readonly: 'Alternun Partner Read Only',
+  project_moderator: 'Alternun Project Moderator',
 };
 
 const REQUEST_TIMEOUT_MS = 8000;

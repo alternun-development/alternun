@@ -129,7 +129,12 @@ test('membership delegation allowlist is enforced in the API', async () => {
     'request-2',
     grantInput('partner_readonly')
   );
-  assert.equal(partner.calls.grants.length, 2);
+  await partner.service.grant(
+    principal('partner_operator'),
+    'request-2b',
+    grantInput('project_moderator')
+  );
+  assert.equal(partner.calls.grants.length, 3);
   await assert.rejects(
     partner.service.grant(
       principal('partner_operator'),
@@ -139,7 +144,7 @@ test('membership delegation allowlist is enforced in the API', async () => {
     expectApiError('ROLE_ESCALATION_DENIED', 403)
   );
 
-  for (const role of ['sub_admin', 'partner_readonly', 'moderator']) {
+  for (const role of ['sub_admin', 'partner_readonly', 'moderator', 'project_moderator']) {
     await assert.rejects(
       repositories().service.grant(principal(role), 'request-4', grantInput('sub_admin')),
       expectApiError('PERMISSION_DENIED', 403)

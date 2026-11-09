@@ -12,6 +12,7 @@ const ROLE_ORDER = [
   'moderator',
   'partner_operator',
   'sub_admin',
+  'project_moderator',
   'partner_readonly',
 ];
 
