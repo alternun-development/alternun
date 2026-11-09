@@ -1,3 +1,9 @@
+## [1.1.126](https://github.com/alternun-development/alternun/compare/v1.1.125-dev.0...v1.1.126) (2026-11-09)
+
+### Bug Fixes
+
+- **repo:** test(api,docs,mobile): admin-access.controller, admin-access.service, admin-access.types, marketplace.module
+
 ## [1.1.125](https://github.com/alternun-development/alternun/compare/v1.1.124...v1.1.125) (2026-11-09)
 
 ### Bug Fixes
