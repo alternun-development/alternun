@@ -1,9 +1,8 @@
-## [1.1.131](https://github.com/alternun-development/alternun/compare/v1.1.130...v1.1.131) (2026-11-10)
+## [1.1.131](https://github.com/alternun-development/alternun/compare/v1.1.130...v1.1.131) (2026-11-09)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: update reentry status
-- **repo:** feat(marketplace): client form feedback and invitation emails with Airs details
+- **repo:** update reentry status ([fc905b6](https://github.com/alternun-development/alternun/commit/fc905b6fd21a07d6f3914bc17cb273b1a5035b02))
 
 ### Features
 
