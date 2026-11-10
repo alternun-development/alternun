@@ -1,8 +1,4 @@
-## [1.1.129](https://github.com/alternun-development/alternun/compare/v1.1.128...v1.1.129) (2026-11-10)
-
-### Bug Fixes
-
-- **repo:** fix(mobile): hide native scrollbars on detail, manage and menu views
+## [1.1.129](https://github.com/alternun-development/alternun/compare/v1.1.128...v1.1.129) (2026-11-09)
 
 ### Bug Fixes
 
