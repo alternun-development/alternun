@@ -126,10 +126,6 @@ Current version: **1.1.129**
 
 ### Bug Fixes
 
-- **repo:** fix(mobile): hide native scrollbars on detail, manage and menu views
-
-### Bug Fixes
-
 - **mobile:** hide native scrollbars on detail, manage and menu views ([0313ccd](https://github.com/alternun-development/alternun/commit/0313ccd1608d1e3cecb28c414483260bb09f705b))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
