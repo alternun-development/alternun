@@ -124,10 +124,9 @@ Current version: **1.1.134**
 
 ## 📋 Latest Changes (v1.1.134)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: update reentry status
-- **repo:** feat(marketplace): private in-app proof viewer, visible labels, discard changes
+- **repo:** update reentry status ([754e8aa](https://github.com/alternun-development/alternun/commit/754e8aad13c88ff415f7a1d1857a46dd6138c4b6))
 
 ### Features
 
