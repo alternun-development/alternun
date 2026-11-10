@@ -1,3 +1,14 @@
+## [1.1.133](https://github.com/alternun-development/alternun/compare/v1.1.132...v1.1.133) (2026-11-10)
+
+### Bug Fixes
+
+- **repo:** chore: update reentry status
+- **repo:** feat(email,marketplace): send through Tláo only, auth-style form fields, client history
+
+### Features
+
+- **email,marketplace:** send through Tláo only, auth-style form fields, client history ([c02931d](https://github.com/alternun-development/alternun/commit/c02931df00cade60a16e915f30b39b95a4125179))
+
 ## [1.1.132](https://github.com/alternun-development/alternun/compare/v1.1.131...v1.1.132) (2026-11-09)
 
 ### Bug Fixes
