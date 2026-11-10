@@ -122,6 +122,8 @@ function clientsClient(extra: Partial<ClientsClient> = {}): ClientsClient {
     cancelInvitation: jest.fn(async () => undefined),
     remove: jest.fn(async () => undefined),
     proofFile: jest.fn(async () => ({ type: 'image/png', size: 10 } as never)),
+    resendReport: jest.fn(async () => ({ sentTo: 'client' as const })),
+    resendInvitation: jest.fn(async () => ({ sentTo: 'client' as const })),
     ...extra,
   };
 }
@@ -485,6 +487,133 @@ describe('ManageClientsSection', () => {
     await press(r, 'manage-clients-search-filter-cancelled');
     expect(byId(r, 'manage-client-c1').length).toBeGreaterThan(0);
     expect(byId(r, 'manage-client-m1')).toHaveLength(0);
+  });
+
+  it('sends pending steps again from the list, with feedback', async () => {
+    const pendingListing: ClientsListing = {
+      projects: listing.projects,
+      clients: [
+        {
+          ...listing.clients[1],
+          reports: [
+            {
+              id: 'r-wait',
+              amount: 20,
+              concept: 'Recibo pago',
+              status: 'awaiting_claim',
+              submittedAt: '',
+              hasProof: false,
+            },
+            {
+              id: 'r-review',
+              amount: 100,
+              concept: 'Pago factura',
+              status: 'pending_approval',
+              submittedAt: '',
+              hasProof: false,
+            },
+            {
+              id: 'r-done',
+              amount: 5,
+              concept: 'Visita',
+              status: 'released',
+              submittedAt: '',
+              hasProof: false,
+            },
+          ],
+        },
+      ],
+    };
+    const c = clientsClient({
+      list: jest.fn(async () => pendingListing),
+      resendReport: jest
+        .fn()
+        .mockResolvedValueOnce({ sentTo: 'client' })
+        .mockResolvedValueOnce({ sentTo: 'admins' })
+        .mockRejectedValueOnce(new ManageRequestError(429, 'CLIENT_RESEND_TOO_SOON')),
+    });
+    const onToast = jest.fn();
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true, assignAirs: true }}
+        palette={palette}
+        t={t}
+        canPickFiles={false}
+        onToast={onToast}
+      />
+    );
+    // Only steps with something pending can be sent again.
+    expect(texts(r)).toContain('manage.clients.resendEmail');
+    expect(texts(r)).toContain('manage.clients.remindAdmins');
+    expect(byId(r, 'manage-client-resend-r-done')).toHaveLength(0);
+
+    await press(r, 'manage-client-resend-r-wait');
+    expect(c.resendReport).toHaveBeenCalledWith('p2', 'r-wait');
+    expect(onToast).toHaveBeenLastCalledWith({
+      type: 'success',
+      title: 'manage.clients.toasts.resentTitle',
+      message: 'luis@x.test',
+    });
+    await press(r, 'manage-client-resend-r-review');
+    expect(onToast).toHaveBeenLastCalledWith({
+      type: 'success',
+      title: 'manage.clients.toasts.remindedTitle',
+      message: 'manage.clients.toasts.remindedBody',
+    });
+    await press(r, 'manage-client-resend-r-wait');
+    expect(texts(r)).toContain('manage.clients.errors.resendTooSoon');
+
+    await press(r, 'manage-client-resend-invitation-i1');
+    expect(c.resendInvitation).toHaveBeenCalledWith('p2', 'i1');
+  });
+
+  it('pages long client lists and folds long Airs histories', async () => {
+    const many: ClientsListing = {
+      projects: listing.projects,
+      clients: Array.from({ length: 12 }, (_, index) => ({
+        id: `m${index}`,
+        kind: 'member' as const,
+        projectId: 'p1',
+        email: `persona${index}@x.test`,
+        name: `Persona ${index}`,
+        since: '',
+        reports:
+          index === 0
+            ? Array.from({ length: 5 }, (__, n) => ({
+                id: `r${n}`,
+                amount: n + 1,
+                concept: `Compra ${n}`,
+                status: 'released' as const,
+                submittedAt: '',
+                hasProof: false,
+              }))
+            : [],
+      })),
+    };
+    const r = await render(
+      <ManageClientsSection
+        client={clientsClient({ list: jest.fn(async () => many) })}
+        can={{}}
+        palette={palette}
+        t={t}
+        canPickFiles={false}
+      />
+    );
+    expect(byId(r, 'manage-client-m0').length).toBeGreaterThan(0);
+    expect(byId(r, 'manage-client-m10')).toHaveLength(0);
+    // The first client shows its 3 latest assignments until asked for all.
+    expect(texts(r)).toContain('1 Airs · Compra 0');
+    expect(texts(r)).not.toContain('5 Airs · Compra 4');
+    await press(r, 'manage-client-reports-m0');
+    expect(texts(r)).toContain('5 Airs · Compra 4');
+
+    await press(r, 'manage-clients-page-next');
+    expect(byId(r, 'manage-client-m10').length).toBeGreaterThan(0);
+    expect(byId(r, 'manage-client-m0')).toHaveLength(0);
+    // A new search starts again on the first page.
+    await type(r, 'manage-clients-search-search-input', 'persona1');
+    expect(byId(r, 'manage-client-m1').length).toBeGreaterThan(0);
   });
 
   it('shows an error when the list cannot load', async () => {

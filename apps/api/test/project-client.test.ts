@@ -14,7 +14,7 @@ const OTHER = '22222222-2222-4222-8222-222222222222';
 const PROOF = `${PROJECT}/33333333-3333-4333-8333-333333333333.pdf`;
 
 const principal = (roles: string[] = ['partner_operator']) =>
-  ({ iss: 'i', aud: 'a', sub: 's', roles, organizationIds: [] } as any);
+  ({ iss: 'i', aud: 'a', sub: 's', roles, organizationIds: [], email: 'Actor@alternun.io' } as any);
 
 const isError = (code: string) => (error: unknown) =>
   error instanceof MarketplaceApiError && error.code === code;
@@ -28,6 +28,8 @@ function setup(
     stored?: { contentType: string; sizeBytes: number; sha256: string } | null;
     denied?: string[];
     reports?: any[];
+    findStatus?: string;
+    resendCount?: number;
   } = {}
 ) {
   const calls: Record<string, any[]> = {
@@ -39,12 +41,21 @@ function setup(
     sent: [],
     cancel: [],
     notify: [],
+    notices: [],
+    audit: [],
   };
   const members: any[] = [];
   const invitations: any[] = [];
   const repository = {
     hasVerifiedAccount: async () => options.hasAccount ?? false,
     listInvitations: async () => invitations,
+    listClientNoticeRecipients: async () => [
+      { userId: 'u-edward', email: 'edward@alternun.io' },
+      { userId: 'u-sgomez', email: 'security-ceo@alternun.example' },
+      { userId: 'u-actor', email: 'actor@alternun.io' },
+    ],
+    createNotifications: async (notices: any[]) => calls.notices.push(...notices),
+    countResendsSince: async () => options.resendCount ?? 0,
     findInvitation: async (_projectId: string, id: string) =>
       invitations.find((item) => item.id === id) ?? null,
     invite: async (projectId: string, email: string, name: string) => {
@@ -121,9 +132,20 @@ function setup(
         },
       ],
     find: async (id: string) =>
-      id === 'rep-1' ? { id, projectId: PROJECT } : { id, projectId: OTHER },
+      id === 'rep-1'
+        ? {
+            id,
+            projectId: PROJECT,
+            status: options.findStatus ?? 'released',
+            recipientEmail: 'ana@example.com',
+            recipientName: 'Ana',
+            amount: 40,
+            concept: 'Compra',
+          }
+        : { id, projectId: OTHER },
   };
   const adminRepository = {
+    audit: async (input: any) => calls.audit.push(input),
     findProject: async (id: string) => ({
       id,
       slug: 'rio',
@@ -227,7 +249,7 @@ test('a new person gets one invitation email with the Airs waiting for them', as
   assert.equal(result.invitationSent, true);
   // The report's own "claim your Airs" email is skipped: the invitation carries the details.
   assert.deepEqual(calls.notify, [{ recipient: false }]);
-  assert.equal(calls.sent.length, 1);
+  assert.equal(calls.sent.filter((item: any) => item.to === 'new@example.com').length, 1);
   assert.match(calls.sent[0].email.text, /tienes 50 Airs esperando por ti/);
   assert.match(calls.sent[0].email.text, /Motivo: Compra/);
   assert.match(calls.sent[0].email.text, /Proyecto: Río <Gaira>/);
@@ -271,7 +293,7 @@ test('existing accounts keep the usual Airs email and failed invitations are not
     airs: { amount: 5, concept: 'Compra de café' },
   });
   assert.deepEqual(calls.notify, [{ recipient: true }]);
-  assert.equal(calls.sent.length, 0);
+  assert.equal(calls.sent.filter((item: any) => !item.to.endsWith('@alternun.io')).length, 0);
 
   const failing = setup();
   failing.service.send = async () => {
@@ -493,4 +515,123 @@ test('clients carry their invitation history and cancelled invitations stay list
     ]
   );
   assert.equal(clients[0].invitations[1].cancelledAt, '2026-11-10T03:46:05Z');
+});
+
+test('global and project admins hear about a new client by email and in the app', async () => {
+  const { service, calls } = setup({ reportStatus: 'pending_approval' });
+  await service.add(principal(), 'req', PROJECT, {
+    email: 'new@example.com',
+    name: 'Nueva',
+    airs: { amount: 500, concept: 'Compra grande' },
+  });
+  // Whoever made the change is not notified.
+  assert.deepEqual(
+    calls.notices.map((notice: any) => notice.userId),
+    ['u-edward', 'u-sgomez']
+  );
+  const notice = calls.notices[0];
+  assert.equal(notice.eventType, 'project_client_added');
+  assert.equal(notice.severity, 'warning');
+  assert.deepEqual(notice.payload, {
+    projectId: PROJECT,
+    projectName: 'Río <Gaira>',
+    clientName: 'Nueva',
+    clientEmail: 'new@example.com',
+    clientKind: 'invitation',
+    amount: 500,
+    concept: 'Compra grande',
+    reportStatus: 'pending_approval',
+    link: `/manage/${PROJECT}`,
+  });
+  assert.equal(notice.dedupeKey, 'project-client:inv-1:rep-1');
+  const adminEmails = calls.sent.filter((item: any) => item.to.endsWith('@alternun.io'));
+  assert.deepEqual(
+    adminEmails.map((item: any) => item.to),
+    ['edward@alternun.io', 'security-ceo@alternun.example']
+  );
+  assert.match(adminEmails[0].email.subject, /Airs en revisión para un cliente de Río <Gaira>/);
+  assert.match(adminEmails[0].email.text, /espera la aprobación de un admin global/);
+  assert.match(adminEmails[0].email.text, /Agregado por: actor@alternun\.io/);
+  assert.match(adminEmails[0].email.text, new RegExp(`/manage/${PROJECT}`));
+});
+
+test('a plain new client is an informative notice, and nothing new means no notice', async () => {
+  const { service, calls } = setup({ hasAccount: true });
+  await service.add(principal(), 'req', PROJECT, { email: 'ana@example.com' });
+  assert.equal(calls.notices[0].severity, 'info');
+  assert.equal(calls.notices[0].payload.amount, undefined);
+  assert.match(calls.sent[0].email.subject, /Nuevo cliente en Río <Gaira>: Ana/);
+
+  const again = setup({ hasAccount: true, addError: 'PARTICIPANT_CONFLICT' });
+  again.members.push({ id: 'part-1', email: 'ana@example.com', displayName: 'Ana', addedAt: 'x' });
+  await again.service.add(principal(), 'req', PROJECT, { email: 'ana@example.com' });
+  assert.equal(again.calls.notices.length, 0);
+});
+
+test('pending steps can be sent again: the invitation to the client, a reminder to admins', async () => {
+  // Airs waiting for sign-up: the invitation goes again to the person, with those Airs.
+  const waiting = setup({ findStatus: 'awaiting_claim' });
+  assert.deepEqual(await waiting.service.resendReport(principal(), 'req', PROJECT, 'rep-1'), {
+    sentTo: 'client',
+  });
+  assert.equal(waiting.calls.sent[0].to, 'ana@example.com');
+  assert.match(waiting.calls.sent[0].email.text, /tienes 40 Airs esperando por ti/);
+  assert.equal(waiting.calls.audit[0].action, 'client.resend');
+  assert.equal(waiting.calls.audit[0].targetId, 'rep-1');
+
+  // Airs in review: admins get a new notice, marked as a reminder.
+  const review = setup({ findStatus: 'pending_approval', hasAccount: true });
+  review.members.push({ id: 'part-1', email: 'ana@example.com', displayName: 'Ana', addedAt: 'x' });
+  assert.deepEqual(await review.service.resendReport(principal(), 'req', PROJECT, 'rep-1'), {
+    sentTo: 'admins',
+  });
+  assert.match(review.calls.notices[0].dedupeKey, /^project-client:part-1:rep-1:reminder:\d+$/);
+  assert.match(review.calls.sent[0].email.subject, /^Recordatorio: Airs en revisión/);
+
+  // Nothing pending to send for credited Airs, and one resend every 10 minutes.
+  await assert.rejects(
+    setup().service.resendReport(principal(), 'req', PROJECT, 'rep-1'),
+    isError('CLIENT_RESEND_NOT_APPLICABLE')
+  );
+  await assert.rejects(
+    setup({ findStatus: 'awaiting_claim', resendCount: 1 }).service.resendReport(
+      principal(),
+      'req',
+      PROJECT,
+      'rep-1'
+    ),
+    isError('CLIENT_RESEND_TOO_SOON')
+  );
+  await assert.rejects(
+    setup().service.resendReport(principal(), 'req', PROJECT, 'rep-2'),
+    isError('CLIENT_NOT_FOUND')
+  );
+});
+
+test('a pending invitation can be sent again, only while it is pending', async () => {
+  const { service, invitations, calls } = setup({
+    reports: [
+      {
+        id: 'rep-9',
+        recipientEmail: 'luis@example.com',
+        amount: 12,
+        concept: 'Visita guiada',
+        status: 'awaiting_claim',
+        submittedAt: 'x',
+      },
+    ],
+  });
+  invitations.push(
+    { id: 'inv-5', email: 'luis@example.com', name: 'Luis', status: 'pending', invitedAt: 'x' },
+    { id: 'inv-4', email: 'eva@example.com', name: 'Eva', status: 'cancelled', invitedAt: 'x' }
+  );
+  assert.deepEqual(await service.resendInvitation(principal(), 'req', PROJECT, 'inv-5'), {
+    sentTo: 'client',
+  });
+  assert.equal(calls.sent[0].to, 'luis@example.com');
+  assert.match(calls.sent[0].email.text, /12 Airs/);
+  await assert.rejects(
+    service.resendInvitation(principal(), 'req', PROJECT, 'inv-4'),
+    isError('CLIENT_INVITATION_NOT_PENDING')
+  );
 });

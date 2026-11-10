@@ -79,6 +79,9 @@ export interface ClientsClient {
   add(projectId: string, input: AddClientInput, proof?: ProofFile | null): Promise<AddClientResult>;
   cancelInvitation(projectId: string, invitationId: string): Promise<void>;
   remove(projectId: string, participantId: string, reason: string): Promise<void>;
+  /** Sends again the invitation (Airs waiting for sign-up) or a reminder to admins (in review). */
+  resendReport(projectId: string, reportId: string): Promise<{ sentTo: 'client' | 'admins' }>;
+  resendInvitation(projectId: string, invitationId: string): Promise<{ sentTo: 'client' }>;
   /** The supporting file, downloaded with the session; it is never exposed as a URL. */
   proofFile(projectId: string, reportId: string): Promise<Blob>;
 }
@@ -197,6 +200,16 @@ export function createClientsClient(
         { method: 'POST', body: { reason } }
       );
     },
+    resendReport: (projectId, reportId) =>
+      request<{ sentTo: 'client' | 'admins' }>(
+        `${projectBase(projectId)}/reports/${encodeURIComponent(reportId)}/resend`,
+        { method: 'POST', body: {} }
+      ),
+    resendInvitation: (projectId, invitationId) =>
+      request<{ sentTo: 'client' }>(
+        `${projectBase(projectId)}/invitations/${encodeURIComponent(invitationId)}/resend`,
+        { method: 'POST', body: {} }
+      ),
     async proofFile(projectId, reportId) {
       const token = await getToken();
       if (!token) throw new ManageRequestError(401, 'AUTH_REQUIRED');

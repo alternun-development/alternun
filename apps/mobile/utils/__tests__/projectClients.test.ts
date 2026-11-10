@@ -231,3 +231,24 @@ describe('formatClientDate', () => {
     expect(formatClientDate('not a date')).toBe('');
   });
 });
+
+describe('client resends', () => {
+  it('posts the report and invitation resends to their project', async () => {
+    const fetcher = jest
+      .fn()
+      .mockResolvedValueOnce(response({ sentTo: 'admins' }))
+      .mockResolvedValueOnce(response({ sentTo: 'client' }));
+    const client = createClientsClient(
+      { enterpriseId: 'e1' },
+      async () => 'tok',
+      fetcher,
+      'http://api.test'
+    );
+    expect(await client.resendReport('p1', 'r1')).toEqual({ sentTo: 'admins' });
+    expect(await client.resendInvitation('p1', 'i1')).toEqual({ sentTo: 'client' });
+    expect(fetcher.mock.calls.map(([url, init]) => [url, init.method])).toEqual([
+      ['http://api.test/v1/me/projects/p1/manage/clients/reports/r1/resend', 'POST'],
+      ['http://api.test/v1/me/projects/p1/manage/clients/invitations/i1/resend', 'POST'],
+    ]);
+  });
+});
