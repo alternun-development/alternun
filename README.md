@@ -124,10 +124,9 @@ Current version: **1.1.135**
 
 ## 📋 Latest Changes (v1.1.135)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: update reentry status
-- **repo:** feat(marketplace): admin notices for new clients, resends and client pagination
+- **repo:** update reentry status ([760249f](https://github.com/alternun-development/alternun/commit/760249f6fb85d7dbc09c1ec5604096caf22ae2ab))
 
 ### Features
 
