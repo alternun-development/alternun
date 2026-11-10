@@ -120,13 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.129**
+Current version: **1.1.130**
 
-## 📋 Latest Changes (v1.1.129)
+## 📋 Latest Changes (v1.1.130)
 
 ### Bug Fixes
 
-- **mobile:** hide native scrollbars on detail, manage and menu views ([0313ccd](https://github.com/alternun-development/alternun/commit/0313ccd1608d1e3cecb28c414483260bb09f705b))
+- **repo:** fix(mobile): size the top bar pill and controls to the Airs logo mark
+
+### Bug Fixes
+
+- **mobile:** size the top bar pill and controls to the Airs logo mark ([c6f3669](https://github.com/alternun-development/alternun/commit/c6f36698b19006c1831325553779776558c79781))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
