@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-10T03:34:51.285Z",
+  "lastUpdated": "2026-11-10T04:17:55.421Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Probar en testnet: invitación de cliente desde notifications@alternun.co con detalle de Airs; validación del formulario de clientes",
+      "description": "Probar en testnet que la invitación de cliente llega desde notifications@alternun.co (Tláo); revisar formularios con FormField",
       "id": "next",
       "priority": 1
     }
