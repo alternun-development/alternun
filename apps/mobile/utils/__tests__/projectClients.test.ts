@@ -50,7 +50,7 @@ describe('createClientsClient', () => {
       .fn()
       .mockResolvedValueOnce(response({ email: 'a@b.test', hasAccount: false, displayName: null }))
       .mockResolvedValueOnce(response({ client: { id: 'c1' } }))
-      .mockResolvedValueOnce(response(null, 204))
+      .mockResolvedValueOnce(response({ cancelledAirs: 2 }))
       .mockResolvedValueOnce(response({ id: 'c1', status: 'removed' }))
       .mockResolvedValueOnce({
         ok: true,
@@ -69,7 +69,7 @@ describe('createClientsClient', () => {
       name: ' Ana ',
       airs: { amount: 10, concept: ' Compra ', documentNumber: ' ' },
     });
-    await client.cancelInvitation('p1', 'i1');
+    expect(await client.cancelInvitation('p1', 'i1')).toEqual({ cancelledAirs: 2 });
     await client.remove('p1', 'm1', 'Ya no');
     // The supporting file comes back as a file, never as a URL.
     expect(await client.proofFile('p1', 'r1')).toEqual({ type: 'application/pdf', size: 4 });

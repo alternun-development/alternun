@@ -290,7 +290,7 @@ export class ProjectClientService {
     requestId: string,
     projectId: string,
     invitationId: string
-  ): Promise<void> {
+  ): Promise<{ cancelledAirs: number }> {
     await this.participants.authorizeProject(
       principal,
       'participants:manage',
@@ -299,7 +299,7 @@ export class ProjectClientService {
     );
     const invitation = await this.repository.findInvitation(projectId, invitationId);
     if (!invitation) marketplaceError('CLIENT_NOT_FOUND');
-    await this.repository.cancelInvitation(invitationId, actorFromPrincipal(principal), requestId);
+    return this.repository.cancelInvitation(invitationId, actorFromPrincipal(principal), requestId);
   }
 
   remove(

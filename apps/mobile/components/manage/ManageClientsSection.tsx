@@ -325,9 +325,10 @@ export function ManageClientsSection({
 
   const remove = (item: ProjectClient): Promise<void> =>
     run(`remove-${item.id}`, async () => {
+      let cancelledAirs = 0;
       if (item.kind === 'member')
         await client.remove(item.projectId, item.id, t('manage.clients.removeReason'));
-      else await client.cancelInvitation(item.projectId, item.id);
+      else ({ cancelledAirs } = await client.cancelInvitation(item.projectId, item.id));
       onToast?.({
         type: 'success',
         title: t(
@@ -335,7 +336,10 @@ export function ManageClientsSection({
             ? 'manage.clients.toasts.removedTitle'
             : 'manage.clients.toasts.cancelledTitle'
         ),
-        message: item.email,
+        message:
+          cancelledAirs > 0
+            ? t('manage.clients.toasts.cancelledAirs', { count: cancelledAirs, email: item.email })
+            : item.email,
       });
       load();
     });

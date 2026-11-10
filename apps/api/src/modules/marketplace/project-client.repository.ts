@@ -118,7 +118,7 @@ export class ProjectClientRepository {
     invitationId: string,
     actor: AdminActor,
     requestId: string
-  ): Promise<void> {
+  ): Promise<{ cancelledAirs: number }> {
     const { data, error } = await this.client.rpc('marketplace_cancel_project_client_invitation', {
       p_invitation_id: invitationId,
       p_actor_issuer: actor.issuer,
@@ -129,6 +129,10 @@ export class ProjectClientRepository {
     if (error) failDatabase();
     const result = record(data);
     if (result.ok !== true) marketplaceError(text(result.reasonCode) || 'CLIENT_INPUT_INVALID');
+    // The Airs that were waiting for the person are cancelled with the invitation.
+    return {
+      cancelledAirs: typeof result.cancelledAirs === 'number' ? result.cancelledAirs : 0,
+    };
   }
 
   async createProofUpload(path: string): Promise<{ uploadUrl: string; path: string }> {
