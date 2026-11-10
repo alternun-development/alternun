@@ -187,6 +187,7 @@ export default function TopNav({
   // Room left between the circles and the pill edge (the pill has a 1px border).
   const pillInset = (scale.pill - scale.circle) / 2 - 1;
   const circleSize = { width: scale.circle, height: scale.circle, borderRadius: scale.circle / 2 };
+  const skeletonTone = isDark ? '#39464f' : '#c8d2d9';
   // On phones the signed-in pill takes the room the wordmark leaves, within sane bounds.
   const mobilePillWidth = Math.min(
     300,
@@ -631,38 +632,36 @@ export default function TopNav({
                   width: isExtraSmall ? scale.pill : isMobile ? mobilePillWidth : 300,
                   maxWidth: '100%',
                   height: scale.pill,
+                  paddingLeft: pillInset,
+                  paddingRight: pillInset,
                   backgroundColor: isDark ? '#202a32' : '#e4e9ec',
                   boxShadow: 'none',
                 },
               ]}
             >
-              <View
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 15,
-                  backgroundColor: isDark ? '#39464f' : '#c8d2d9',
-                }}
-              />
+              {/* Same layout as the loaded pill: avatar, name and score, then the two controls. */}
+              <View style={[circleSize, { backgroundColor: skeletonTone }]} />
               {!isExtraSmall && (
-                <View style={{ gap: 6, flex: 1, paddingHorizontal: 6 }}>
-                  <View
-                    style={{
-                      width: '70%',
-                      height: 10,
-                      borderRadius: 5,
-                      backgroundColor: isDark ? '#39464f' : '#c8d2d9',
-                    }}
-                  />
-                  <View
-                    style={{
-                      width: '90%',
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: isDark ? '#39464f' : '#c8d2d9',
-                    }}
-                  />
-                </View>
+                <>
+                  <View style={styles.skeletonText}>
+                    <View
+                      style={[
+                        styles.skeletonLine,
+                        { width: '72%', height: Math.round(scale.name * 0.75) },
+                        { backgroundColor: skeletonTone },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.skeletonLine,
+                        { width: '52%', height: Math.round(scale.score * 0.75) },
+                        { backgroundColor: skeletonTone },
+                      ]}
+                    />
+                  </View>
+                  <View style={[circleSize, { backgroundColor: skeletonTone }]} />
+                  <View style={[circleSize, { backgroundColor: skeletonTone }]} />
+                </>
               )}
             </View>
           )}
@@ -1198,6 +1197,8 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'transparent',
   },
+  skeletonText: { flex: 1, minWidth: 0, gap: 6, paddingHorizontal: 2 },
+  skeletonLine: { borderRadius: 999 },
   badgeOverlay: {
     position: 'absolute',
     top: -3,

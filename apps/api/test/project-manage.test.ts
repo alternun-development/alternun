@@ -206,3 +206,36 @@ test('enterprise management needs a global role or an enterprise-wide membership
     isError('ENTERPRISE_SCOPE_DENIED')
   );
 });
+
+test('supporting files are sent privately: no cache, no sniffing, inline, never as a URL', async () => {
+  const { ProjectManageController } = await import(
+    '../src/modules/marketplace/project-manage.controller'
+  );
+  const controller = Object.create(ProjectManageController.prototype) as any;
+  controller.access = { resolve: async () => ({ principal: { roles: ['partner_operator'] } }) };
+  controller.clients = {
+    proofFile: async () => ({
+      bytes: Buffer.from('%PDF'),
+      contentType: 'application/pdf',
+      fileName: 'soporte.pdf',
+    }),
+  };
+  const sent: Record<string, unknown> = { headers: {} };
+  const reply: any = {
+    code: (status: number) => ((sent.status = status), reply),
+    header: (name: string, value: string) => (((sent.headers as any)[name] = value), reply),
+    type: (type: string) => ((sent.type = type), reply),
+    send: async (body: unknown) => {
+      sent.body = body;
+    },
+  };
+  await controller.clientProof({ id: 'req', headers: {} }, reply, 'Bearer t', 'p1', 'r1');
+  assert.equal(sent.status, 200);
+  assert.equal(sent.type, 'application/pdf');
+  assert.deepEqual(sent.headers, {
+    'cache-control': 'private, no-store',
+    'x-content-type-options': 'nosniff',
+    'content-disposition': 'inline; filename="soporte.pdf"',
+  });
+  assert.equal((sent.body as Buffer).toString(), '%PDF');
+});

@@ -52,7 +52,11 @@ describe('createClientsClient', () => {
       .mockResolvedValueOnce(response({ client: { id: 'c1' } }))
       .mockResolvedValueOnce(response(null, 204))
       .mockResolvedValueOnce(response({ id: 'c1', status: 'removed' }))
-      .mockResolvedValueOnce(response({ url: 'https://signed/x' }));
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        blob: () => Promise.resolve({ type: 'application/pdf', size: 4 }),
+      });
     const client = createClientsClient(
       { enterpriseId: 'e1' },
       async () => 'tok',
@@ -67,7 +71,8 @@ describe('createClientsClient', () => {
     });
     await client.cancelInvitation('p1', 'i1');
     await client.remove('p1', 'm1', 'Ya no');
-    expect(await client.proofUrl('p1', 'r1')).toBe('https://signed/x');
+    // The supporting file comes back as a file, never as a URL.
+    expect(await client.proofFile('p1', 'r1')).toEqual({ type: 'application/pdf', size: 4 });
     expect(fetcher.mock.calls.map(([url, init]) => [url, init.method, init.body])).toEqual([
       [`${project}/lookup?email=a%40b.test`, 'GET', undefined],
       [

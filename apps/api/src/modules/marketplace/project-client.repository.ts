@@ -7,9 +7,10 @@ import { MARKETPLACE_SUPABASE } from './marketplace.repository';
 import type { AdminActor } from './marketplace.types';
 import {
   AIRS_REPORT_PROOF_BUCKET,
-  AIRS_REPORT_PROOF_URL_SECONDS,
+  AIRS_REPORT_PROOF_TYPES,
   type ProjectClientInvitationRecord,
   type ProjectClientProof,
+  type ProjectClientProofFile,
 } from './project-client.types';
 
 type Row = Record<string, unknown>;
@@ -174,19 +175,24 @@ export class ProjectClientRepository {
     return new Set(rows(data).map((row) => text(row.report_id)));
   }
 
-  async proofUrl(reportId: string): Promise<string | null> {
+  /** The stored file of a report, read with the service role; null when it has none. */
+  async readProof(reportId: string): Promise<ProjectClientProofFile | null> {
     const { data, error } = await this.client
       .from('airs_report_proofs')
-      .select('storage_path')
+      .select('storage_path, content_type')
       .eq('report_id', reportId)
       .maybeSingle();
     if (error) failDatabase();
-    const path = text(record(data).storage_path);
+    const row = record(data);
+    const path = text(row.storage_path);
     if (!path) return null;
-    const signed = await this.client.storage
-      .from(AIRS_REPORT_PROOF_BUCKET)
-      .createSignedUrl(path, AIRS_REPORT_PROOF_URL_SECONDS);
-    if (signed.error ?? !signed.data) failDatabase();
-    return signed.data.signedUrl;
+    const file = await this.client.storage.from(AIRS_REPORT_PROOF_BUCKET).download(path);
+    if (file.error ?? !file.data) failDatabase();
+    const contentType = text(row.content_type) || file.data.type;
+    return {
+      bytes: Buffer.from(await file.data.arrayBuffer()),
+      contentType,
+      fileName: `soporte.${AIRS_REPORT_PROOF_TYPES[contentType] ?? 'bin'}`,
+    };
   }
 }

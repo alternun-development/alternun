@@ -1274,7 +1274,15 @@
         "sentOn": "enviada el {{date}}",
         "cancelledAt": "cancelada el {{date}}",
         "acceptedAt": "aceptada el {{date}}",
-        "reinvite": "Invitar de nuevo"
+        "reinvite": "Invitar de nuevo",
+        "proof": {
+          "title": "Soporte",
+          "private": "Archivo privado: solo lo ve el equipo del proyecto y quien aprueba.",
+          "loading": "Cargando soporte…",
+          "error": "No se pudo cargar el soporte.",
+          "close": "Cerrar",
+          "webOnly": "Los PDF se ven desde la versión web de Airs."
+        }
       },
       "comments": {
         "empty": "No hay comentarios en este estado.",
@@ -1289,7 +1297,8 @@
           "hidden": "Ocultos",
           "rejected": "Rechazados"
         }
-      }
+      },
+      "discard": "Descartar cambios"
     },
     "explorer": {
       "seeProject": "Ver proyecto",
