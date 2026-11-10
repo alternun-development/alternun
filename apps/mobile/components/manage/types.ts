@@ -6,7 +6,7 @@ import type {
   ManageRole,
   TeamMember,
 } from '../../utils/projectManage';
-import type { ClientsClient, ProofFile } from '../../utils/projectClients';
+import type { ClientsClient, ProjectClient, ProofFile } from '../../utils/projectClients';
 import type {
   EnterpriseManageClient,
   EnterpriseManageOverview,
@@ -110,7 +110,23 @@ export interface ManageClientsSectionProps {
   onToast?: (toast: { type: 'success' | 'error'; title: string; message?: string }) => void;
 }
 
-export type ClientFilter = 'all' | 'member' | 'invitation' | 'withAirs';
+export type ClientFilter = 'all' | 'member' | 'invitation' | 'cancelled' | 'withAirs';
+
+export interface ClientListItemProps {
+  item: ProjectClient;
+  palette: DetailPalette;
+  t: Translate;
+  /** The client's project, shown in the enterprise view. */
+  projectTitle?: string;
+  canEdit: boolean;
+  canAssign: boolean;
+  /** Action running in the section ('remove-<id>', 'proof-<id>', ...). */
+  busyAction: string | null;
+  onAssign: () => void;
+  onReinvite: () => void;
+  onRemove: () => void;
+  onShowProof: (reportId: string) => void;
+}
 
 export interface ClientDraft {
   email: string;

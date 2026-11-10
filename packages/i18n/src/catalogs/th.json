@@ -1178,7 +1178,8 @@
         "noMatch": "ไม่มีลูกค้าที่ตรงกับการค้นหา",
         "kind": {
           "member": "ใช้งานอยู่",
-          "invitation": "เชิญแล้ว"
+          "invitation": "เชิญแล้ว",
+          "cancelled": "ยกเลิกคำเชิญแล้ว"
         },
         "status": {
           "draft": "ฉบับร่าง",
@@ -1241,7 +1242,8 @@
           "all": "ทั้งหมด",
           "member": "ใช้งานอยู่",
           "invitation": "เชิญแล้ว",
-          "withAirs": "มี Airs"
+          "withAirs": "มี Airs",
+          "cancelled": "ยกเลิกแล้ว"
         },
         "conceptCount": "{{count}}/{{min}} ตัวอักษรขั้นต่ำ",
         "lookupFirst": "ค้นหาอีเมลใน Airs เพื่อดำเนินการต่อ",
@@ -1257,7 +1259,22 @@
           "lookupErrorTitle": "ค้นหาอีเมลไม่สำเร็จ",
           "removedTitle": "ลบลูกค้าแล้ว",
           "cancelledTitle": "ยกเลิกคำเชิญแล้ว"
-        }
+        },
+        "invitationStatus": {
+          "pending": "รอดำเนินการ",
+          "accepted": "ยอมรับแล้ว",
+          "cancelled": "ยกเลิกแล้ว"
+        },
+        "since": "เป็นลูกค้าตั้งแต่ {{date}}",
+        "invitedOn": "ส่งคำเชิญเมื่อ {{date}}",
+        "cancelledOn": "ยกเลิกคำเชิญเมื่อ {{date}}",
+        "assignedOn": "มอบเมื่อ {{date}}",
+        "history": "ดูประวัติคำเชิญ ({{count}})",
+        "historyHide": "ซ่อนประวัติ",
+        "sentOn": "ส่งเมื่อ {{date}}",
+        "cancelledAt": "ยกเลิกเมื่อ {{date}}",
+        "acceptedAt": "ยอมรับเมื่อ {{date}}",
+        "reinvite": "เชิญอีกครั้ง"
       },
       "comments": {
         "empty": "ไม่มีความคิดเห็นในสถานะนี้",
@@ -1316,7 +1333,8 @@
         "validationError": "โปรดตรวจสอบช่องที่ไฮไลต์",
         "rateLimited": "เราได้รับใบสมัครหลายรายการติดกัน โปรดลองอีกครั้งภายหลัง",
         "submitError": "ส่งใบสมัครไม่สำเร็จ โปรดลองอีกครั้ง",
-        "finePrint": "เราจัดเก็บใบสมัครของคุณเพื่อให้ทีม Alternun พิจารณาและติดต่อกลับ"
+        "finePrint": "เราจัดเก็บใบสมัครของคุณเพื่อให้ทีม Alternun พิจารณาและติดต่อกลับ",
+        "fieldInvalid": "ตรวจสอบช่องนี้"
       },
       "tips": {
         "label": "ไอเดียเพื่อเติบโตใน Airs",

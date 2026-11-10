@@ -57,8 +57,12 @@ const variables = {
     secret: true,
     required: true,
   },
-  POSTMARK_API_TOKEN: {
-    description: 'Postmark API token',
+  ALTERNUN_NOTIFICATIONS_EMAIL: {
+    description: 'Tláo Mail mailbox that sends Airs emails (Postmark is retired)',
+    example: 'notifications@alternun.co',
+  },
+  ALTERNUN_NOTIFICATIONS_PASSWORD: {
+    description: 'Password of the Tláo Mail notifications mailbox',
     secret: true,
   },
   FOSSA_API_KEY: {

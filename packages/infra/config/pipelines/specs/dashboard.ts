@@ -50,7 +50,7 @@ export function buildDashboardPipelineSpecs({
   // Falling back to the shared DATABASE_URL would silently pin testnet to the wrong project.
   const backendDatabaseUrl = env.INFRA_BACKEND_API_DATABASE_URL ?? '';
   const smtpSecretArn =
-    env.AUTHENTIK_SMTP_SECRET_ARN ?? env.AIRS_SMTP_SECRET_ARN ?? 'alternun/postmark/smtp';
+    env.AUTHENTIK_SMTP_SECRET_ARN ?? env.AIRS_SMTP_SECRET_ARN ?? 'alternun/tlao/smtp';
 
   return {
     'dashboard-dev': {

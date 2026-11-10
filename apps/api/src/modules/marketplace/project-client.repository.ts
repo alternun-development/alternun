@@ -41,6 +41,8 @@ function mapInvitation(value: unknown): ProjectClientInvitationRecord {
     name: text(row.name),
     status: text(row.status) as ProjectClientInvitationRecord['status'],
     invitedAt: text(row.invited_at),
+    cancelledAt: typeof row.cancelled_at === 'string' ? row.cancelled_at : null,
+    acceptedAt: typeof row.accepted_at === 'string' ? row.accepted_at : null,
   };
 }
 
@@ -64,12 +66,12 @@ export class ProjectClientRepository {
     return rows(data).length > 0;
   }
 
-  async listPendingInvitations(projectId: string): Promise<ProjectClientInvitationRecord[]> {
+  /** Every invitation of the project (pending, accepted and cancelled), newest first. */
+  async listInvitations(projectId: string): Promise<ProjectClientInvitationRecord[]> {
     const { data, error } = await this.client
       .from('project_client_invitations')
-      .select('id, project_id, email, name, status, invited_at')
+      .select('id, project_id, email, name, status, invited_at, cancelled_at, accepted_at')
       .eq('project_id', projectId)
-      .eq('status', 'pending')
       .order('invited_at', { ascending: false });
     if (error) failDatabase();
     return rows(data).map(mapInvitation);
@@ -81,7 +83,7 @@ export class ProjectClientRepository {
   ): Promise<ProjectClientInvitationRecord | null> {
     const { data, error } = await this.client
       .from('project_client_invitations')
-      .select('id, project_id, email, name, status, invited_at')
+      .select('id, project_id, email, name, status, invited_at, cancelled_at, accepted_at')
       .eq('project_id', projectId)
       .eq('id', invitationId)
       .maybeSingle();

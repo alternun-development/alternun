@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { hasPermission, type AdminPrincipal } from '../../common/admin-auth/admin-auth.guard';
-import { resolveAirsNotificationsFrom, sendAirsEmail } from '../airs/airs.email';
+import { sendAirsEmail } from '../airs/airs.email';
 import { renderProjectClientInvitationEmail } from './airs-report-emails';
 import type { AirsReportEmailContent } from './airs-report-emails.types';
 import { resolveAirsReportAppUrl } from './airs-report-notifier';
@@ -19,6 +19,7 @@ import {
   AIRS_REPORT_PROOF_TYPES,
   type AddProjectClientRequest,
   type AddProjectClientResponse,
+  type ProjectClientInvitationRecord,
   type ProjectClientProof,
   type ProjectClientProofUploadResponse,
   type ProjectClientRecord,
@@ -42,7 +43,7 @@ export class ProjectClientService {
   private readonly logger = new Logger(ProjectClientService.name);
   /** Sends one email and says whether it left; replaceable in tests. */
   send: (to: string, email: AirsReportEmailContent) => Promise<boolean> = async (to, email) =>
-    (await sendAirsEmail({ to, from: resolveAirsNotificationsFrom(this.env), email })).sent;
+    (await sendAirsEmail({ to, email })).sent;
   env: Record<string, string | undefined> = process.env;
 
   constructor(
@@ -228,15 +229,15 @@ export class ProjectClientService {
   private async compose(projectId: string): Promise<ProjectClientRecord[]> {
     const [members, invitations, reports] = await Promise.all([
       this.participantRepository.list(projectId, 'active'),
-      this.repository.listPendingInvitations(projectId),
+      this.repository.listInvitations(projectId),
       this.reportRepository.listForProject(projectId),
     ]);
     const withProof = await this.repository.proofReportIds(reports.map((report) => report.id));
-    const byEmail = new Map<string, ProjectClientReport[]>();
+    const reportsByEmail = new Map<string, ProjectClientReport[]>();
     for (const report of reports) {
       const key = report.recipientEmail.toLowerCase();
-      byEmail.set(key, [
-        ...(byEmail.get(key) ?? []),
+      reportsByEmail.set(key, [
+        ...(reportsByEmail.get(key) ?? []),
         {
           id: report.id,
           amount: report.amount,
@@ -247,18 +248,44 @@ export class ProjectClientService {
         },
       ]);
     }
-    const reportsFor = (email: string): ProjectClientReport[] =>
-      byEmail.get(email.toLowerCase()) ?? [];
-    return [
-      ...invitations.map((invitation) => ({
+    // Invitations arrive newest first, so each email's list keeps that order.
+    const invitationsByEmail = new Map<string, ProjectClientInvitationRecord[]>();
+    for (const invitation of invitations) {
+      const key = invitation.email.toLowerCase();
+      invitationsByEmail.set(key, [...(invitationsByEmail.get(key) ?? []), invitation]);
+    }
+    const history = (email: string): Pick<ProjectClientRecord, 'reports' | 'invitations'> => ({
+      reports: reportsByEmail.get(email.toLowerCase()) ?? [],
+      invitations: (invitationsByEmail.get(email.toLowerCase()) ?? []).map((invitation) => ({
         id: invitation.id,
-        kind: 'invitation' as const,
-        projectId,
-        email: invitation.email,
-        name: invitation.name,
-        since: invitation.invitedAt,
-        reports: reportsFor(invitation.email),
+        status: invitation.status,
+        invitedAt: invitation.invitedAt,
+        cancelledAt: invitation.cancelledAt,
+        acceptedAt: invitation.acceptedAt,
       })),
+    });
+
+    const memberEmails = new Set(members.map((member) => member.email.toLowerCase()));
+    const pending: ProjectClientRecord[] = [];
+    const cancelled: ProjectClientRecord[] = [];
+    invitationsByEmail.forEach((list, email) => {
+      if (memberEmails.has(email)) return;
+      const open = list.find((invitation) => invitation.status === 'pending');
+      // Someone whose invitations were all cancelled stays listed, as a cancelled invitation.
+      const latest = open ?? list.find((invitation) => invitation.status === 'cancelled');
+      if (!latest) return;
+      (open ? pending : cancelled).push({
+        id: latest.id,
+        kind: open ? 'invitation' : 'cancelled',
+        projectId,
+        email: latest.email,
+        name: latest.name,
+        since: latest.invitedAt,
+        ...history(email),
+      });
+    });
+    return [
+      ...pending,
       ...members.map((member) => ({
         id: member.id,
         kind: 'member' as const,
@@ -266,8 +293,9 @@ export class ProjectClientService {
         email: member.email,
         name: member.displayName,
         since: member.addedAt,
-        reports: reportsFor(member.email),
+        ...history(member.email),
       })),
+      ...cancelled,
     ];
   }
 

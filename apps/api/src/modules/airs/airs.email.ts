@@ -24,16 +24,15 @@ export interface AirsSmtpConfig {
 export interface AirsWelcomeEmailSendInput {
   to: string;
   replyTo?: string;
-  /** Sender address for this email; defaults to the SMTP secret's `from`. */
-  from?: string;
   email: AirsTransactionalEmail;
 }
 
-const DEFAULT_NOTIFICATIONS_FROM = 'notifications@alternun.co';
+/** Tláo Mail, the only email provider (see docs/email-delivery.md). */
+const TLAO_SMTP_HOST = 'mail.xn--tlo-fla.com';
 
-/** Sender of marketplace notifications (Airs reports, client invitations). */
-export function resolveAirsNotificationsFrom(env: Record<string, string | undefined>): string {
-  return (env.AIRS_NOTIFICATIONS_EMAIL_FROM ?? '').trim() || DEFAULT_NOTIFICATIONS_FROM;
+/** Postmark is retired: a configuration pointing at it is refused instead of used. */
+export function isRetiredSmtpHost(host: string): boolean {
+  return /postmark/i.test(host); // retired provider
 }
 
 export interface AirsWelcomeEmailSendResult {
@@ -106,13 +105,39 @@ function resolveSenderName(env: Record<string, string | undefined>): string {
   );
 }
 
+/**
+ * Local development has no Secrets Manager access: the Tláo notifications mailbox from .env
+ * (ALTERNUN_NOTIFICATIONS_EMAIL / ALTERNUN_NOTIFICATIONS_PASSWORD) is used instead.
+ */
+export function smtpConfigFromEnv(env: Record<string, string | undefined>): AirsSmtpConfig | null {
+  const username = firstNonEmptyTrimmed([env.ALTERNUN_NOTIFICATIONS_EMAIL]);
+  const password = firstNonEmptyTrimmed([env.ALTERNUN_NOTIFICATIONS_PASSWORD]);
+  if (!username || !password) return null;
+  const port = parsePort(
+    firstNonEmptyTrimmed([env.ALTERNUN_SMTP_PORT, env.NODEMAILER_PORT_INFO]),
+    587
+  );
+  return {
+    host:
+      firstNonEmptyTrimmed([env.ALTERNUN_SMTP_HOST, env.NODEMAILER_HOST_INFO]) ?? TLAO_SMTP_HOST,
+    port,
+    username,
+    password,
+    // Tláo only relays mail from the authenticated mailbox.
+    from: username,
+    senderName: resolveSenderName(env),
+    secure: port === 465,
+    requireTls: port !== 465,
+  };
+}
+
 async function loadSmtpSecret(
   env: Record<string, string | undefined>
 ): Promise<AirsSmtpConfig | null> {
   const secretArn = firstNonEmptyTrimmed([env.AUTHENTIK_SMTP_SECRET_ARN, env.AIRS_SMTP_SECRET_ARN]);
 
   if (!secretArn) {
-    return null;
+    return smtpConfigFromEnv(env);
   }
 
   const region = firstNonEmptyTrimmed([env.AWS_REGION, env.AWS_DEFAULT_REGION]) ?? 'us-east-1';
@@ -178,6 +203,12 @@ export async function sendAirsEmail(
       reason: 'smtp_not_configured',
     };
   }
+  if (isRetiredSmtpHost(config.host)) {
+    console.error(
+      '[airs-email] Refusing to send through Postmark, which is retired; use Tláo Mail.'
+    );
+    return { sent: false, skipped: true, reason: 'smtp_provider_retired' };
+  }
 
   const transporter: Transporter = nodemailer.createTransport({
     host: config.host,
@@ -195,9 +226,8 @@ export async function sendAirsEmail(
     allowedAttributes: false,
   });
 
-  const fromAddress = firstNonEmptyTrimmed([input.from, config.from]) ?? config.from;
   await transporter.sendMail({
-    from: `"${config.senderName}" <${fromAddress}>`,
+    from: `"${config.senderName}" <${config.from}>`,
     to: input.to,
     ...(input.replyTo ? { replyTo: input.replyTo } : {}),
     subject: input.email.subject,
