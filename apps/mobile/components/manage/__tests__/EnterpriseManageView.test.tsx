@@ -132,6 +132,17 @@ describe('EnterpriseManageView', () => {
     await act(async () =>
       input(r, 'enterprise-manage-description').props.onChangeText('Hoteles en El Rodadero')
     );
+    // Discarding brings back the saved text; the change is typed again before saving.
+    expect(
+      r.root.findAll((n) => n.props.testID === 'enterprise-manage-discard').length
+    ).toBeGreaterThan(0);
+    await press(r, 'enterprise-manage-discard');
+    expect(input(r, 'enterprise-manage-description').props.value).not.toBe(
+      'Hoteles en El Rodadero'
+    );
+    await act(async () =>
+      input(r, 'enterprise-manage-description').props.onChangeText('Hoteles en El Rodadero')
+    );
     await press(r, 'enterprise-manage-save');
     expect((c.updateEnterprise as jest.Mock).mock.calls[0][0]).toMatchObject({
       displayName: 'Hoteles Taybo',

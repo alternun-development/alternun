@@ -79,7 +79,8 @@ export interface ClientsClient {
   add(projectId: string, input: AddClientInput, proof?: ProofFile | null): Promise<AddClientResult>;
   cancelInvitation(projectId: string, invitationId: string): Promise<void>;
   remove(projectId: string, participantId: string, reason: string): Promise<void>;
-  proofUrl(projectId: string, reportId: string): Promise<string>;
+  /** The supporting file, downloaded with the session; it is never exposed as a URL. */
+  proofFile(projectId: string, reportId: string): Promise<Blob>;
 }
 
 export const PROOF_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
@@ -196,11 +197,15 @@ export function createClientsClient(
         { method: 'POST', body: { reason } }
       );
     },
-    async proofUrl(projectId, reportId) {
-      const { url } = await request<{ url: string }>(
-        `${projectBase(projectId)}/reports/${encodeURIComponent(reportId)}/proof`
+    async proofFile(projectId, reportId) {
+      const token = await getToken();
+      if (!token) throw new ManageRequestError(401, 'AUTH_REQUIRED');
+      const response = await fetcher(
+        `${projectBase(projectId)}/reports/${encodeURIComponent(reportId)}/proof`,
+        { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
       );
-      return url;
+      if (!response.ok) throw new ManageRequestError(response.status, 'PROOF_UNAVAILABLE');
+      return response.blob();
     },
   };
 }

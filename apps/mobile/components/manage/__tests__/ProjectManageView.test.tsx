@@ -139,6 +139,20 @@ describe('ProjectManageView', () => {
     expect(byId(r, 'project-manage-denied').length).toBeGreaterThan(0);
   });
 
+  it('discards unsaved info and returns to the saved values', async () => {
+    const c = client(overview(['partner_operator'], { editContent: true, editProfile: true }));
+    const r = await render(
+      <ProjectManageView client={c} palette={palette} t={t} onBack={jest.fn()} canPickFiles />
+    );
+    expect(byId(r, 'manage-info-discard')).toHaveLength(0);
+    await act(async () => input(r, 'manage-info-title').props.onChangeText(''));
+    expect(input(r, 'manage-info-title').props.value).toBe('');
+    await press(r, 'manage-info-discard');
+    expect(input(r, 'manage-info-title').props.value).toBe('Río Gaira');
+    expect(byId(r, 'manage-info-discard')).toHaveLength(0);
+    expect(c.updateProject).not.toHaveBeenCalled();
+  });
+
   it('lets a project admin save info and manage the team', async () => {
     const c = client(
       overview(['partner_operator'], {

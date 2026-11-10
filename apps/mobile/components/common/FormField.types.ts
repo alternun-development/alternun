@@ -2,7 +2,7 @@ import type React from 'react';
 import type { TextInputProps } from 'react-native';
 
 export interface FormFieldProps {
-  /** Placeholder while empty; shown as a small label above the text once there is a value. */
+  /** Always shown above the field; also the input's accessible name. */
   label: string;
   value: string;
   onChangeText: (value: string) => void;

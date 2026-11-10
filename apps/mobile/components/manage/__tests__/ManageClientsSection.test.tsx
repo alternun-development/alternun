@@ -121,7 +121,7 @@ function clientsClient(extra: Partial<ClientsClient> = {}): ClientsClient {
     })),
     cancelInvitation: jest.fn(async () => undefined),
     remove: jest.fn(async () => undefined),
-    proofUrl: jest.fn(async () => 'https://signed/r1'),
+    proofFile: jest.fn(async () => ({ type: 'image/png', size: 10 } as never)),
     ...extra,
   };
 }
@@ -201,9 +201,9 @@ describe('ManageClientsSection', () => {
     expect(byId(r, 'manage-client-i1').length).toBeGreaterThan(0);
   });
 
-  it('opens a supporting file through its signed URL', async () => {
+  it('shows a supporting file inside the view, from a local copy released on close', async () => {
     const c = clientsClient();
-    const openUrl = jest.fn(async () => undefined);
+    const toLocalUrl = jest.fn(async () => 'data:image/png;base64,AAAA');
     const r = await render(
       <ManageClientsSection
         client={c}
@@ -211,12 +211,38 @@ describe('ManageClientsSection', () => {
         palette={palette}
         t={t}
         canPickFiles
-        openUrl={openUrl}
+        toLocalUrl={toLocalUrl}
       />
     );
     await press(r, 'manage-client-proof-r1');
-    expect(c.proofUrl).toHaveBeenCalledWith('p1', 'r1');
-    expect(openUrl).toHaveBeenCalledWith('https://signed/r1');
+    expect(c.proofFile).toHaveBeenCalledWith('p1', 'r1');
+    const image = r.root.findAll((n) => n.props.testID === 'manage-client-proof-image')[0];
+    expect(image.props.source).toEqual({ uri: 'data:image/png;base64,AAAA' });
+    expect(texts(r)).toContain('manage.clients.proof.private');
+    await press(r, 'manage-client-proof-close');
+    expect(byId(r, 'manage-client-proof-image')).toHaveLength(0);
+  });
+
+  it('explains when a supporting file cannot be loaded', async () => {
+    const c = clientsClient({
+      proofFile: jest.fn(async () => {
+        throw new ManageRequestError(404, 'PROOF_UNAVAILABLE');
+      }),
+    });
+    const onToast = jest.fn();
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{}}
+        palette={palette}
+        t={t}
+        canPickFiles
+        onToast={onToast}
+      />
+    );
+    await press(r, 'manage-client-proof-r1');
+    expect(texts(r)).toContain('manage.clients.proof.error');
+    expect(onToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
   });
 
   it('invites a new person with Airs and a supporting file', async () => {

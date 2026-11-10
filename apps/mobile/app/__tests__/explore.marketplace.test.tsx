@@ -569,27 +569,27 @@ describe('Explorer marketplace projects', () => {
 
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.projectName' })
+        .findByProps({ accessibilityLabel: 'explorer.form.projectName' })
         .props.onChangeText('Community forest')
     );
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.location' })
+        .findByProps({ accessibilityLabel: 'explorer.form.location' })
         .props.onChangeText('Andes')
     );
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.contactName' })
+        .findByProps({ accessibilityLabel: 'explorer.form.contactName' })
         .props.onChangeText('Proposal Test')
     );
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.contactEmail' })
+        .findByProps({ accessibilityLabel: 'explorer.form.contactEmail' })
         .props.onChangeText('Proposer@Example.com')
     );
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.message' })
+        .findByProps({ accessibilityLabel: 'explorer.form.message' })
         .props.onChangeText('Restore native forest.')
     );
     await act(() => pressableWithText(renderer, 'explorer.form.conservation').props.onPress());
@@ -645,22 +645,22 @@ describe('Explorer marketplace projects', () => {
 
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.projectName' })
+        .findByProps({ accessibilityLabel: 'explorer.form.projectName' })
         .props.onChangeText('Community forest')
     );
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.location' })
+        .findByProps({ accessibilityLabel: 'explorer.form.location' })
         .props.onChangeText('Andes')
     );
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.contactName' })
+        .findByProps({ accessibilityLabel: 'explorer.form.contactName' })
         .props.onChangeText('Proposal Test')
     );
     await act(() =>
       renderer.root
-        .findByProps({ placeholder: 'explorer.form.contactEmail' })
+        .findByProps({ accessibilityLabel: 'explorer.form.contactEmail' })
         .props.onChangeText('proposer@example.com')
     );
     await act(async () => {

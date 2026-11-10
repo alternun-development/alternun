@@ -9,8 +9,14 @@ export const AIRS_REPORT_PROOF_TYPES: Readonly<Record<string, string>> = {
   'image/webp': 'webp',
   'application/pdf': 'pdf',
 };
-/** Lifetime of a signed URL to read a supporting file. */
-export const AIRS_REPORT_PROOF_URL_SECONDS = 60;
+
+/** A supporting file read through the API; files are never shared as URLs. */
+export interface ProjectClientProofFile {
+  bytes: Buffer;
+  contentType: string;
+  /** Download name, e.g. `soporte.pdf`. */
+  fileName: string;
+}
 
 /** `cancelled`: every invitation for the email was cancelled and it has no account here. */
 export type ProjectClientKind = 'member' | 'invitation' | 'cancelled';

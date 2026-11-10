@@ -11,11 +11,12 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UnauthorizedException,
   UseFilters,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateProjectMediaDto, CreateUploadUrlDto, UpdateProjectDto } from './marketplace.dto';
 import { MarketplaceExceptionFilter, marketplaceError } from './marketplace.errors';
 import { MarketplaceAdminService } from './marketplace.service';
@@ -280,15 +281,25 @@ export class ProjectManageController {
   }
 
   @Get('clients/reports/:reportId/proof')
-  @ApiOperation({ summary: 'Short-lived URL to read the supporting file of assigned Airs.' })
+  @ApiOperation({
+    summary: 'The supporting file of assigned Airs, only to the project team; never as a URL.',
+  })
   async clientProof(
     @Req() request: FastifyRequest,
+    @Res() reply: FastifyReply,
     @Headers('authorization') authorization: string | undefined,
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
     @Param('reportId', new ParseUUIDPipe({ version: '4' })) reportId: string
-  ) {
+  ): Promise<void> {
     const { principal } = await this.access.resolve(bearer(authorization), projectId);
-    return this.clients.proofUrl(principal, requestId(request), projectId, reportId);
+    const file = await this.clients.proofFile(principal, requestId(request), projectId, reportId);
+    await reply
+      .code(200)
+      .header('cache-control', 'private, no-store')
+      .header('x-content-type-options', 'nosniff')
+      .header('content-disposition', `inline; filename="${file.fileName}"`)
+      .type(file.contentType)
+      .send(file.bytes);
   }
 
   @Post('clients/members/:participantId/remove')
