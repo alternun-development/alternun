@@ -124,16 +124,14 @@ Current version: **1.1.128**
 
 ## 📋 Latest Changes (v1.1.128)
 
-### Bug Fixes
+### Changes
 
-- **repo:** feat(marketplace): domain project admins and demo role accounts
-- **repo:** feat(marketplace): clients tab, intent guides and compact page headers
-- **repo:** feat(marketplace): in-app project and enterprise management, enrolment and explorer refresh
+- **repo:** sync reentry status for v1.1.128-dev.0 ([ab9ac08](https://github.com/alternun-development/alternun/commit/ab9ac083fe08ff02c6a4f8e15261116d65577d71))
 
 ### Features
 
-- **marketplace:** clients tab, intent guides and compact page headers ([1c4c073](https://github.com/alternun-development/alternun/commit/1c4c073592b9ca2fbda0f4106669338d751e59d7))
 - **marketplace:** domain project admins and demo role accounts ([3a358de](https://github.com/alternun-development/alternun/commit/3a358de2a3dabb2ebef7f493df96d85c6ffa42e8))
+- **marketplace:** clients tab, intent guides and compact page headers ([1c4c073](https://github.com/alternun-development/alternun/commit/1c4c073592b9ca2fbda0f4106669338d751e59d7))
 - **marketplace:** in-app project and enterprise management, enrolment and explorer refresh ([546678f](https://github.com/alternun-development/alternun/commit/546678fd6fc60514d062b57c82126ff46b3fbe4c))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
