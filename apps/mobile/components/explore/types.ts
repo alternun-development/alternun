@@ -59,3 +59,23 @@ export type EnterpriseTextField = Exclude<
   keyof EnterpriseApplicationRequest,
   'companySize' | 'language'
 >;
+
+/** What a person wants to do from the Explorer; also the `?intent=` deep link value. */
+export type IntentKey = 'collaborate' | 'propose' | 'donate';
+
+export interface IntentGuideAction {
+  testID: string;
+  label: string;
+  onPress: () => void;
+  primary?: boolean;
+}
+
+export interface IntentGuideModalProps {
+  /** Open intent, or null when closed. */
+  intent: IntentKey | null;
+  icon?: React.FC<LucideProps>;
+  palette: ExplorePalette;
+  t: Translate;
+  actions: readonly IntentGuideAction[];
+  onClose: () => void;
+}

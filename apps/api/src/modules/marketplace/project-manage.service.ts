@@ -130,6 +130,7 @@ export function manageOverview(
         hasPermission(principal, 'project_media:moderate'),
       team: hasPermission(principal, 'project_memberships:assign'),
       comments: hasPermission(principal, 'comments:moderate'),
+      ...clientCapabilities(principal),
     },
   };
 }
@@ -154,6 +155,18 @@ export function enterpriseManageOverview(
       images: edit,
       products: edit,
       team: hasPermission(principal, 'project_memberships:assign'),
+      ...clientCapabilities(principal),
     },
+  };
+}
+
+function clientCapabilities(
+  principal: AdminPrincipal
+): Pick<EnterpriseManageOverview['can'], 'clients' | 'editClients' | 'assignAirs'> {
+  const editClients = hasPermission(principal, 'participants:manage');
+  return {
+    clients: hasPermission(principal, 'participants:read'),
+    editClients,
+    assignAirs: editClients && hasPermission(principal, 'airs_reports:submit'),
   };
 }

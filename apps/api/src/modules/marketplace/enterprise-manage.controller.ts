@@ -26,6 +26,7 @@ import { MarketplaceAdminService } from './marketplace.service';
 import { MarketplaceMembershipService } from './marketplace-membership.service';
 import { AddProjectTeamMemberDto, RevokeProjectTeamMemberDto } from './project-manage.dto';
 import { enterpriseManageOverview, ProjectManageAccess } from './project-manage.service';
+import { ProjectClientService } from './project-client.service';
 
 function requestId(request: FastifyRequest): string {
   return String(request.id ?? request.headers['x-request-id'] ?? 'unknown');
@@ -48,7 +49,8 @@ export class EnterpriseManageController {
   constructor(
     private readonly access: ProjectManageAccess,
     private readonly marketplace: MarketplaceAdminService,
-    private readonly memberships: MarketplaceMembershipService
+    private readonly memberships: MarketplaceMembershipService,
+    private readonly clients: ProjectClientService
   ) {}
 
   @Get()
@@ -194,5 +196,16 @@ export class EnterpriseManageController {
     if (membership.enterpriseId !== enterpriseId || membership.scopeType !== 'enterprise')
       marketplaceError('MEMBERSHIP_NOT_FOUND');
     return this.memberships.revoke(principal, requestId(request), membershipId, body.reason);
+  }
+
+  @Get('clients')
+  @ApiOperation({ summary: "Clients of the enterprise's projects, with the project names." })
+  async listClients(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string
+  ) {
+    const { principal } = await this.access.resolveEnterprise(bearer(authorization), enterpriseId);
+    return this.clients.listForEnterprise(principal, requestId(request), enterpriseId);
   }
 }

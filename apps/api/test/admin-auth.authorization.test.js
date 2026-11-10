@@ -251,7 +251,11 @@ test('marketplace permission matrix preserves role-specific enterprise, project,
       'partner_operator',
       'sub_admin',
     ].includes(role);
-    assert.equal(can(role, 'participants:read'), canManageParticipants);
+    // Project moderators see a project's clients (read-only) in the app.
+    assert.equal(
+      can(role, 'participants:read'),
+      canManageParticipants || role === 'project_moderator'
+    );
     assert.equal(can(role, 'participants:manage'), canManageParticipants);
     assert.equal(can(role, 'airs_reports:submit'), canManageParticipants);
   }

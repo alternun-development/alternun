@@ -76,6 +76,8 @@ import { EnterpriseApplicationService } from './enterprise-application.service';
 import { ProjectManageController } from './project-manage.controller';
 import { EnterpriseManageController } from './enterprise-manage.controller';
 import { ProjectManageAccess } from './project-manage.service';
+import { ProjectClientRepository } from './project-client.repository';
+import { ProjectClientService } from './project-client.service';
 import { AdminAccessRepository, AdminAccessService } from './admin-access.service';
 
 @Module({
@@ -111,6 +113,8 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     AdminAccessRepository,
     AdminAccessService,
     ProjectManageAccess,
+    ProjectClientRepository,
+    ProjectClientService,
     MarketplaceAdminRepository,
     MarketplaceActivityRepository,
     MarketplaceMembershipRepository,

@@ -11,6 +11,13 @@ import {
   type ManageOverview,
 } from '../../../utils/projectManage';
 
+jest.mock('@alternun/ui', () => ({
+  // SearchFilterBar only reads colors from the theme.
+  useTheme: () => ({
+    theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
+  }),
+}));
+
 jest.mock('../../i18n/useAppTranslation', () => ({
   useAppTranslation: () => ({
     t: (key: string, _p?: unknown, fallback?: string) => fallback ?? key,
@@ -188,7 +195,8 @@ describe('ProjectManageView', () => {
     await act(async () => input(r, 'manage-info-title').props.onChangeText('Fundación Batiss'));
     await press(r, 'manage-info-save');
     const title = r.root.findAll(
-      (n) => n.props.testID === 'project-manage-title' && typeof n.props.children === 'string'
+      (n) =>
+        n.props.testID === 'project-manage-heading-title' && typeof n.props.children === 'string'
     )[0];
     expect(title.props.children).toBe('Fundación Batiss');
     expect(input(r, 'manage-info-title').props.value).toBe('Fundación Batiss');
