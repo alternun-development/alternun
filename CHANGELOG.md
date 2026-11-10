@@ -1,3 +1,14 @@
+## [1.1.131](https://github.com/alternun-development/alternun/compare/v1.1.130...v1.1.131) (2026-11-10)
+
+### Bug Fixes
+
+- **repo:** chore: update reentry status
+- **repo:** feat(marketplace): client form feedback and invitation emails with Airs details
+
+### Features
+
+- **marketplace:** client form feedback and invitation emails with Airs details ([01d7700](https://github.com/alternun-development/alternun/commit/01d7700b3e99c91cd5b08ab5d6b90beb2b69689c))
+
 ## [1.1.130](https://github.com/alternun-development/alternun/compare/v1.1.129...v1.1.130) (2026-11-09)
 
 ### Bug Fixes
