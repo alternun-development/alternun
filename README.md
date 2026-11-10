@@ -120,13 +120,18 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.130**
+Current version: **1.1.131**
 
-## 📋 Latest Changes (v1.1.130)
+## 📋 Latest Changes (v1.1.131)
 
 ### Bug Fixes
 
-- **mobile:** size the top bar pill and controls to the Airs logo mark ([c6f3669](https://github.com/alternun-development/alternun/commit/c6f36698b19006c1831325553779776558c79781))
+- **repo:** chore: update reentry status
+- **repo:** feat(marketplace): client form feedback and invitation emails with Airs details
+
+### Features
+
+- **marketplace:** client form feedback and invitation emails with Airs details ([01d7700](https://github.com/alternun-development/alternun/commit/01d7700b3e99c91cd5b08ab5d6b90beb2b69689c))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
