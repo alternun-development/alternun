@@ -196,6 +196,34 @@ describe('Marketplace project detail', () => {
     );
   });
 
+  it('opens the in-app manage view instead of the admin console', async () => {
+    const openUrl = jest.fn(() => Promise.resolve());
+    const onManageProject = jest.fn();
+    let renderer: ReactTestRenderer | undefined;
+    await act(async () => {
+      renderer = create(
+        <MarketplaceProjectDetailView
+          slug='forest-hotel'
+          locale='es'
+          palette={palette}
+          t={t}
+          loader={() => Promise.resolve(project)}
+          onBack={() => undefined}
+          openUrl={openUrl}
+          onManageProject={onManageProject}
+          adminAccess={{ isGlobalAdmin: true, canOpenAdminPanel: true, roles: [], scopes: [] }}
+        />
+      );
+      await Promise.resolve();
+    });
+    const [button] = renderer!.root.findAllByProps({ testID: 'project-detail-admin' });
+    await act(async () => {
+      await button.props.openUrl(button.props.url);
+    });
+    expect(onManageProject).toHaveBeenCalledWith(project.id);
+    expect(openUrl).not.toHaveBeenCalled();
+  });
+
   it('opens a non-file video in the system browser', async () => {
     jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     const externalVideo = project.media.map((item) =>

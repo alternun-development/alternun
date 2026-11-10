@@ -75,6 +75,7 @@ export function MarketplaceEnterpriseDetailView({
   openUrl = async (url) => Linking.openURL(url),
   adminUrl = null,
   adminAccess = null,
+  onManageEnterprise,
 }: {
   slug: string;
   locale: string;
@@ -88,6 +89,8 @@ export function MarketplaceEnterpriseDetailView({
   adminUrl?: string | null;
   /** The viewer's admin roles; the link shows only for enterprises they can manage. */
   adminAccess?: ResolvedAdminAccess | null;
+  /** Opens the in-app manage view; without it the link opens the admin console. */
+  onManageEnterprise?: (enterpriseId: string) => void;
 }): React.JSX.Element {
   const [enterprise, setEnterprise] = useState<MarketplaceEnterpriseDetail | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -170,6 +173,27 @@ export function MarketplaceEnterpriseDetailView({
           <View
             style={[styles.hero, { backgroundColor: palette.surface, borderColor: palette.border }]}
           >
+            {(onManageEnterprise !== undefined || adminUrl !== null) &&
+            canManageEnterprise(adminAccess, enterprise.id) ? (
+              <AdminEntryButton
+                testID='enterprise-detail-admin'
+                label={t('explorer.admin.manageEnterprise')}
+                url={
+                  onManageEnterprise
+                    ? `/manage/enterprise/${enterprise.id}`
+                    : adminEnterpriseUrl(enterprise.id, adminUrl!)
+                }
+                color={palette.primaryDeep}
+                borderColor={palette.border}
+                floating
+                backgroundColor={palette.surface}
+                openUrl={
+                  onManageEnterprise
+                    ? () => Promise.resolve(onManageEnterprise(enterprise.id))
+                    : openUrl
+                }
+              />
+            ) : null}
             {enterprise.bannerUrl ? (
               <Image
                 testID='enterprise-detail-banner'
@@ -199,16 +223,6 @@ export function MarketplaceEnterpriseDetailView({
               </Text>
             ) : null}
             <PartnershipBadge status={enterprise.partnershipStatus} palette={palette} t={t} />
-            {adminUrl && canManageEnterprise(adminAccess, enterprise.id) ? (
-              <AdminEntryButton
-                testID='enterprise-detail-admin'
-                label={t('explorer.admin.manageEnterprise')}
-                url={adminEnterpriseUrl(enterprise.id, adminUrl)}
-                color={palette.primaryDeep}
-                borderColor={palette.border}
-                openUrl={openUrl}
-              />
-            ) : null}
             {enterprise.countryCode ? (
               <View style={styles.metaRow}>
                 <MapPin size={16} color={palette.muted} />

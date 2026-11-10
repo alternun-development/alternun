@@ -194,10 +194,13 @@ export function MarketplaceEnterpriseBrowser({
   loader = loadMarketplaceEnterprises,
   onOpenEnterprise = () => undefined,
   onListNavigate = () => undefined,
+  refreshKey = 0,
 }: {
   locale: string;
   palette: EnterprisePalette;
   t: Translate;
+  /** Changing it reloads the directory (the screen's reload button). */
+  refreshKey?: number;
   loader?: LoadMarketplaceEnterprises;
   onOpenEnterprise?: (slug: string) => void;
   /** Called after the page or the view changes, so the screen can scroll back to the list. */
@@ -209,13 +212,27 @@ export function MarketplaceEnterpriseBrowser({
   const [view, setView] = useState<DirectoryView>(() => getRememberedDirectoryView('enterprises'));
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState('');
+  const [kind, setKind] = useState<'all' | 'company' | 'event'>('all');
   const matchingEnterprises = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return enterprises;
-    return enterprises.filter((enterprise) =>
-      enterprise.displayName.toLowerCase().includes(normalizedQuery)
+    return enterprises.filter(
+      (enterprise) =>
+        (kind === 'all' || (enterprise.kind ?? 'company') === kind) &&
+        (!normalizedQuery ||
+          enterprise.displayName.toLowerCase().includes(normalizedQuery) ||
+          (enterprise.sector ?? '').toLowerCase().includes(normalizedQuery))
     );
-  }, [enterprises, query]);
+  }, [enterprises, kind, query]);
+  // Only offer the kind filter when the directory actually mixes companies and events.
+  const kindFilters = useMemo(() => {
+    const kinds = new Set(enterprises.map((enterprise) => enterprise.kind ?? 'company'));
+    return kinds.size > 1
+      ? (['all', 'company', 'event'] as const).map((key) => ({
+          key,
+          label: t(`explorer.enterprises.filters.${key}`),
+        }))
+      : [];
+  }, [enterprises, t]);
   const pageCount = directoryPageCount(matchingEnterprises.length, view);
   const currentPage = Math.min(page, pageCount);
   const pageItems = directoryPageItems(matchingEnterprises, view, currentPage);
@@ -229,6 +246,11 @@ export function MarketplaceEnterpriseBrowser({
 
   const changeQuery = (next: string): void => {
     setQuery(next);
+    setPage(1);
+  };
+
+  const changeKind = (next: string): void => {
+    setKind(next === 'company' || next === 'event' ? next : 'all');
     setPage(1);
   };
 
@@ -254,7 +276,7 @@ export function MarketplaceEnterpriseBrowser({
         setState('error');
       });
     return () => controller.abort();
-  }, [loader, locale, requestVersion]);
+  }, [loader, locale, requestVersion, refreshKey]);
 
   return (
     <View style={styles.directory}>
@@ -320,6 +342,10 @@ export function MarketplaceEnterpriseBrowser({
             onViewChange={changeView}
             palette={palette}
             t={t}
+            filters={kindFilters}
+            activeFilter={kind}
+            onFilterChange={changeKind}
+            filterLabel={t('explorer.enterprises.filters.heading')}
           />
           {matchingEnterprises.length === 0 ? (
             <View

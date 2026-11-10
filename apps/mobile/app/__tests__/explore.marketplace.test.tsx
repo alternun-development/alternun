@@ -2,7 +2,18 @@
 import React from 'react';
 import { Linking } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
-import ExplorarScreen, { loadMarketplaceProjects, MarketplaceProjectBrowser } from '../explore';
+import ExplorarScreen, {
+  buildShowcase,
+  loadMarketplaceProjects,
+  MarketplaceProjectBrowser,
+} from '../explore';
+
+jest.mock('@alternun/ui', () => ({
+  // SearchFilterBar only reads colors from the theme.
+  useTheme: () => ({
+    theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
+  }),
+}));
 
 const mockPush = jest.fn();
 let mockUser: unknown = null;
@@ -141,6 +152,14 @@ async function renderBrowser(
   return renderer!;
 }
 
+async function openProjectForm(renderer: ReactTestRenderer): Promise<void> {
+  // The proposal form starts as a call-to-action card.
+  await act(async () => {
+    renderer.root.findAllByProps({ testID: 'explorer-project-cta-open' })[0].props.onPress();
+    await Promise.resolve();
+  });
+}
+
 async function renderExplorerScreen(): Promise<ReactTestRenderer> {
   let renderer: ReactTestRenderer | undefined;
   await act(async () => {
@@ -180,8 +199,38 @@ describe('Explorer admin entry point', () => {
 
     mockUser = { metadata: { rawClaims: { alternun_roles: ['platform_owner'] } } };
     screen = await renderExplorerScreen();
+    const openUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     const [button] = screen.root.findAllByProps({ testID: 'explorer-admin-panel' });
-    expect(button.props.url).toMatch(/\/marketplace$/);
+    // Icon-only button in the Explorer title row.
+    expect(button.props.accessibilityLabel).toBe('explorer.admin.openPanel');
+    void act(() => button.props.onPress());
+    expect(openUrl.mock.calls[0][0]).toMatch(/\/marketplace$/);
+    openUrl.mockRestore();
+  });
+
+  it('reloads the projects from the header reload button', async () => {
+    const screen = await renderExplorerScreen();
+    const calls = (global.fetch as jest.Mock).mock.calls.length;
+    await act(async () => {
+      screen.root.findAllByProps({ testID: 'explorer-reload' })[0].props.onPress();
+      await Promise.resolve();
+    });
+    expect((global.fetch as jest.Mock).mock.calls.length).toBeGreaterThan(calls);
+  });
+});
+
+describe('Explorer hero showcase', () => {
+  it('keeps only projects with a presentation, video or banner, in random order', () => {
+    const base = { ...productiveProject, canvaUrl: null, videoUrl: null, imageUrl: null };
+    const projects = [
+      { ...base, id: 'a', imageUrl: 'https://cdn.test/a.png' },
+      { ...base, id: 'b' },
+      { ...base, id: 'c', canvaUrl: 'https://www.canva.com/design/c/view?embed' },
+      { ...base, id: 'd', videoUrl: 'https://cdn.test/d.mp4' },
+    ];
+    expect(buildShowcase(projects, () => 0.999).map((p) => p.id)).toEqual(['a', 'c', 'd']);
+    expect(buildShowcase(projects, () => 0).map((p) => p.id)).toEqual(['c', 'd', 'a']);
+    expect(buildShowcase([base])).toEqual([]);
   });
 });
 
@@ -207,9 +256,33 @@ describe('Explorer marketplace projects', () => {
     } as Response);
 
     await expect(loadMarketplaceProjects('en')).resolves.toEqual([
-      { ...productiveProject, imageUrl: 'https://cdn.example/gallery.png' },
+      { ...productiveProject, imageUrl: 'https://cdn.example/gallery.png', logoUrl: null },
     ]);
     expect(fetchMock.mock.calls[0]?.[0]).toContain('/v1/projects?locale=en');
+  });
+
+  it('puts the project logo in the card mark, never as the card image', async () => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [
+            {
+              ...publishedProject,
+              media: [
+                { kind: 'logo', url: 'https://cdn.example/logo.png', isActive: true, sortOrder: 0 },
+              ],
+            },
+          ],
+        }),
+    } as Response);
+    const [loaded] = await loadMarketplaceProjects('en');
+    expect(loaded.imageUrl).toBeNull();
+    expect(loaded.logoUrl).toBe('https://cdn.example/logo.png');
+
+    const renderer = await renderBrowser(() => Promise.resolve([loaded]));
+    const logos = renderer.root.findAll((node) => node.props.testID === 'explorer-project-logo');
+    expect(logos[0].props.source).toEqual({ uri: 'https://cdn.example/logo.png' });
   });
 
   it('resolves canva and direct-video media for the featured banner', async () => {
@@ -222,6 +295,7 @@ describe('Explorer marketplace projects', () => {
       {
         ...productiveProject,
         imageUrl: 'https://cdn.example/gallery.png',
+        logoUrl: null,
         canvaUrl: 'https://www.canva.com/design/abc/view?embed',
         videoUrl: 'https://cdn.example/promo.mp4',
       },
@@ -307,17 +381,20 @@ describe('Explorer marketplace projects', () => {
     expect(renderer.root.findByProps({ testID: 'explorer-project-project-1' })).toBeTruthy();
   });
 
-  it('filters the loaded list by mapped category', async () => {
+  it('filters the loaded list by mapped category from the search filter menu', async () => {
     const renderer = await renderBrowser(() =>
       Promise.resolve([productiveProject, conservationProject])
     );
+    void act(() => {
+      renderer.root.findByProps({ testID: 'project-filter-button' }).props.onPress();
+    });
 
     const categoryFilters = new Set(
       renderer.root
         .findAll(
           (node) =>
             typeof node.props.testID === 'string' &&
-            node.props.testID.startsWith('explorer-filter-')
+            /^project-filter-(?!button)/.test(node.props.testID)
         )
         .map((node) => {
           const testId = node.props.testID as unknown;
@@ -325,14 +402,14 @@ describe('Explorer marketplace projects', () => {
         })
     );
     expect(categoryFilters.size).toBe(3);
-    expect(renderer.root.findByProps({ testID: 'explorer-filter-all' })).toBeTruthy();
+    expect(renderer.root.findByProps({ testID: 'project-filter-all' })).toBeTruthy();
     expect(
-      renderer.root.findByProps({ testID: 'explorer-filter-productive_enterprise' })
+      renderer.root.findByProps({ testID: 'project-filter-productive_enterprise' })
     ).toBeTruthy();
-    expect(renderer.root.findByProps({ testID: 'explorer-filter-conservation' })).toBeTruthy();
+    expect(renderer.root.findByProps({ testID: 'project-filter-conservation' })).toBeTruthy();
 
     void act(() => {
-      renderer.root.findByProps({ testID: 'explorer-filter-conservation' }).props.onPress();
+      renderer.root.findByProps({ testID: 'project-filter-conservation' }).props.onPress();
     });
 
     expect(renderer.root.findAllByProps({ testID: 'explorer-project-project-1' })).toHaveLength(0);
@@ -367,7 +444,7 @@ describe('Explorer marketplace projects', () => {
     expect(onOpenProject).toHaveBeenNthCalledWith(2, 'productive-project');
   });
 
-  it('renders the hero and proposal form and navigates to projects and enterprises', async () => {
+  it('renders the hero showcase and proposal card and navigates to projects and enterprises', async () => {
     process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL = 'marketplace@example.com';
     jest.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
@@ -377,7 +454,12 @@ describe('Explorer marketplace projects', () => {
     const renderer = await renderExplorerScreen();
 
     expect(renderer.root.findByProps({ children: 'explorer.heroTitle' })).toBeTruthy();
-    expect(renderer.root.findByProps({ children: 'explorer.form.title' })).toBeTruthy();
+    expect(renderer.root.findByProps({ children: 'explorer.cta.project.title' })).toBeTruthy();
+    expect(renderer.root.findAllByProps({ testID: 'project-proposal-form' })).toHaveLength(0);
+    await openProjectForm(renderer);
+    expect(
+      renderer.root.findAllByProps({ testID: 'project-proposal-form' }).length
+    ).toBeGreaterThan(0);
 
     await act(() =>
       renderer.root.findByProps({ testID: 'explorer-project-project-1' }).props.onPress()
@@ -390,6 +472,11 @@ describe('Explorer marketplace projects', () => {
     await act(() =>
       renderer.root.findByProps({ testID: 'explorer-directory-enterprises' }).props.onPress()
     );
+    // Each tab ends with its own enrolment card.
+    expect(
+      renderer.root.findAllByProps({ testID: 'explorer-enterprise-cta' }).length
+    ).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: 'explorer-project-cta' })).toHaveLength(0);
     const enterpriseBrowser = renderer.root.findByType('MockEnterpriseBrowser' as never);
     await act(async () => {
       renderer.root.findByProps({ testID: 'explorer-enterprise-list' }).props.onLayout({
@@ -404,11 +491,16 @@ describe('Explorer marketplace projects', () => {
       params: { slug: 'forest-enterprise' },
     });
 
-    await act(() => pressableWithText(renderer, 'explorer.collaborate').props.onPress());
-    await act(() => pressableWithText(renderer, 'explorer.submitProject').props.onPress());
-    expect(openUrl).toHaveBeenCalledTimes(2);
-    expect(openUrl).toHaveBeenNthCalledWith(1, 'mailto:marketplace@example.com');
-    expect(openUrl).toHaveBeenNthCalledWith(2, 'mailto:marketplace@example.com');
+    // The hero showcases projects with media; each slide opens its project.
+    mockPush.mockClear();
+    await act(() =>
+      renderer.root.findAllByProps({ testID: 'explorer-hero-open-project-1' })[0].props.onPress()
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/explore/[slug]',
+      params: { slug: 'productive-project' },
+    });
+    expect(openUrl).not.toHaveBeenCalled();
   });
 
   it('submits a valid project proposal and shows the sent state', async () => {
@@ -425,6 +517,7 @@ describe('Explorer marketplace projects', () => {
       } as Response);
     });
     const renderer = await renderExplorerScreen();
+    await openProjectForm(renderer);
 
     await act(() =>
       renderer.root
@@ -479,6 +572,7 @@ describe('Explorer marketplace projects', () => {
       json: () => Promise.resolve({ data: [] }),
     } as Response);
     const renderer = await renderExplorerScreen();
+    await openProjectForm(renderer);
 
     await act(() =>
       renderer.root.findByProps({ testID: 'explorer-project-proposal-submit' }).props.onPress()
@@ -499,6 +593,7 @@ describe('Explorer marketplace projects', () => {
       return Promise.resolve({ ok: true, json: () => Promise.resolve({ data: [] }) } as Response);
     });
     const renderer = await renderExplorerScreen();
+    await openProjectForm(renderer);
 
     await act(() =>
       renderer.root

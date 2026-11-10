@@ -15,6 +15,13 @@ import type {
   MarketplaceEnterpriseDetail,
 } from '../../components/marketplace/types';
 
+jest.mock('@alternun/ui', () => ({
+  // SearchFilterBar only reads colors from the theme.
+  useTheme: () => ({
+    theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
+  }),
+}));
+
 jest.mock('../../components/onboarding/AirsIntroVideoCard', () => ({
   __esModule: true,
   default: 'MockVideoCard',
@@ -135,6 +142,95 @@ describe('Explorer enterprise directory', () => {
       renderer.root.findByProps({ testID: 'explorer-enterprise-enterprise-1' }).props.onPress()
     );
     expect(onOpenEnterprise).toHaveBeenCalledWith('forest-hotel');
+  });
+
+  it('filters companies and events from the search menu, which hides when there is one kind', async () => {
+    const event = {
+      ...enterprise,
+      id: 'enterprise-2',
+      slug: 'golf-cup',
+      displayName: 'Golf Cup',
+      kind: 'event' as const,
+      sector: 'Golf',
+    };
+    const { renderer } = await renderDirectory(() => Promise.resolve([enterprise, event]));
+    const cards = () =>
+      new Set(
+        renderer.root
+          .findAll(
+            (node) =>
+              typeof node.props.testID === 'string' &&
+              /^explorer-enterprise-enterprise-\d$/.test(node.props.testID)
+          )
+          .map((node) => node.props.testID as string)
+      );
+    expect(cards().size).toBe(2);
+    void act(() =>
+      renderer.root.findByProps({ testID: 'enterprise-filter-button' }).props.onPress()
+    );
+    void act(() =>
+      renderer.root.findByProps({ testID: 'enterprise-filter-event' }).props.onPress()
+    );
+    expect([...cards()]).toEqual(['explorer-enterprise-enterprise-2']);
+    // Search also matches the sector.
+    void act(() =>
+      renderer.root.findByProps({ testID: 'enterprise-filter-button' }).props.onPress()
+    );
+    void act(() => renderer.root.findByProps({ testID: 'enterprise-filter-all' }).props.onPress());
+    void act(() =>
+      renderer.root.findByProps({ testID: 'enterprise-search-input' }).props.onChangeText('golf')
+    );
+    expect([...cards()]).toEqual(['explorer-enterprise-enterprise-2']);
+
+    const single = await renderDirectory(() => Promise.resolve([enterprise]));
+    expect(
+      single.renderer.root.findAllByProps({ testID: 'enterprise-filter-button' })
+    ).toHaveLength(0);
+  });
+
+  it('opens the in-app enterprise manage view from a button in the top-right corner', async () => {
+    const onManageEnterprise = jest.fn();
+    const openUrl = jest.fn().mockResolvedValue(undefined);
+    let renderer: ReactTestRenderer | undefined;
+    await act(async () => {
+      renderer = create(
+        <MarketplaceEnterpriseDetailView
+          slug={enterprise.slug}
+          locale='en'
+          palette={palette}
+          t={t}
+          loader={() => Promise.resolve(detail)}
+          onBack={() => undefined}
+          onOpenProject={jest.fn()}
+          openUrl={openUrl}
+          onManageEnterprise={onManageEnterprise}
+          adminAccess={{
+            isGlobalAdmin: false,
+            canOpenAdminPanel: true,
+            roles: ['partner_operator'],
+            scopes: [
+              {
+                role: 'partner_operator',
+                enterpriseId: enterprise.id,
+                enterpriseSlug: enterprise.slug,
+                projectId: null,
+                projectSlug: null,
+              },
+            ],
+          }}
+        />
+      );
+      await Promise.resolve();
+    });
+    const button = renderer!.root.findAll(
+      (node) => node.props.testID === 'enterprise-detail-admin' && node.props.floating === true
+    )[0];
+    expect(button).toBeTruthy();
+    await act(async () => {
+      await button.props.openUrl(button.props.url);
+    });
+    expect(onManageEnterprise).toHaveBeenCalledWith(enterprise.id);
+    expect(openUrl).not.toHaveBeenCalled();
   });
 
   it('renders the empty state', async () => {

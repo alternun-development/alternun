@@ -21,13 +21,14 @@ export function formatLines(values: readonly string[] | undefined): string {
   return (values ?? []).join('\n');
 }
 
-/** "name | address | rooms" per line. */
+/** "name | address | rooms | web" per line. */
 export function parseSites(text: string): EnterpriseSite[] {
   return lines(text).map((line) => {
-    const [name, address, rooms] = parts(line);
+    const [name, address, rooms, web] = parts(line);
     const site: EnterpriseSite = { name };
     if (address) site.address = address;
     if (rooms && /^\d+$/.test(rooms)) site.rooms = Number(rooms);
+    if (web) site.web = web;
     return site;
   });
 }
@@ -35,7 +36,12 @@ export function parseSites(text: string): EnterpriseSite[] {
 export function formatSites(sites: readonly EnterpriseSite[] | undefined): string {
   return (sites ?? [])
     .map((site) =>
-      [site.name, site.address ?? '', typeof site.rooms === 'number' ? String(site.rooms) : '']
+      [
+        site.name,
+        site.address ?? '',
+        typeof site.rooms === 'number' ? String(site.rooms) : '',
+        site.web ?? '',
+      ]
         .join(' | ')
         .replace(/(\s\|\s)+$/, '')
     )
@@ -68,6 +74,23 @@ export function compactRecord<T extends Record<string, string | undefined>>(
   const result: Partial<Record<keyof T, string>> = {};
   for (const [key, value] of Object.entries(record))
     if (typeof value === 'string' && value.trim()) result[key as keyof T] = value.trim();
+  return result;
+}
+
+/**
+ * Applies the fields a form exposes onto the stored object: filled values are trimmed and set,
+ * emptied ones are removed, and keys the form does not show (e.g. a venue's `web`) are kept.
+ */
+export function mergeEdited(
+  existing: Record<string, unknown> | null | undefined,
+  edited: Record<string, string | undefined>
+): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...(existing ?? {}) };
+  for (const [key, value] of Object.entries(edited)) {
+    const trimmed = value?.trim() ?? '';
+    if (trimmed) result[key] = trimmed;
+    else delete result[key];
+  }
   return result;
 }
 

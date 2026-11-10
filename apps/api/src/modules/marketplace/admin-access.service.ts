@@ -86,6 +86,35 @@ export class AdminAccessRepository implements AdminAccessRepositoryPort {
       };
     });
   }
+
+  /**
+   * Active memberships of the user that cover this project (or, with a null project, the whole
+   * enterprise), with the identity stored on them.
+   */
+  async listProjectMembershipIdentities(
+    userId: string,
+    enterpriseId: string,
+    projectId: string | null
+  ): Promise<Array<{ role: string; issuer: string; subject: string }>> {
+    const { data, error } = await this.client
+      .from('project_memberships')
+      .select('role, member_issuer, member_subject, scope_type, project_id')
+      .eq('member_user_id', userId)
+      .eq('enterprise_id', enterpriseId)
+      .eq('status', 'active');
+    if (error) this.unavailable();
+    return ((data ?? []) as Row[])
+      .filter(
+        (row) =>
+          row.scope_type === 'enterprise' || (projectId !== null && row.project_id === projectId)
+      )
+      .map((row) => ({
+        role: text(row.role) ?? '',
+        issuer: text(row.member_issuer) ?? '',
+        subject: text(row.member_subject) ?? '',
+      }))
+      .filter((row) => row.role && row.issuer && row.subject);
+  }
 }
 
 /** Combines the Alternun global role and per-project memberships into one access summary. */
