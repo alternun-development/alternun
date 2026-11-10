@@ -175,6 +175,97 @@ export class ProjectClientRepository {
     return new Set(rows(data).map((row) => text(row.report_id)));
   }
 
+  /**
+   * Who hears about a new client of the project: active Alternun global admins and the
+   * project's admins (partner_operator of the project or its whole enterprise), with a
+   * verified email, once each.
+   */
+  async listClientNoticeRecipients(
+    projectId: string,
+    enterpriseId: string
+  ): Promise<Array<{ userId: string; email: string }>> {
+    const [admins, memberships] = await Promise.all([
+      this.client.from('platform_admins').select('email').eq('is_active', true),
+      this.client
+        .from('project_memberships')
+        .select('member_user_id, scope_type, project_id')
+        .eq('enterprise_id', enterpriseId)
+        .eq('role', 'partner_operator')
+        .eq('status', 'active'),
+    ]);
+    if (admins.error ?? memberships.error) failDatabase();
+    const adminEmails = rows(admins.data)
+      .map((row) => text(row.email).trim().toLowerCase())
+      .filter(Boolean);
+    const memberIds = rows(memberships.data)
+      .filter((row) => row.scope_type === 'enterprise' || row.project_id === projectId)
+      .map((row) => text(row.member_user_id))
+      .filter(Boolean);
+
+    const found: Row[] = [];
+    if (adminEmails.length > 0) {
+      const byEmail = await this.client
+        .from('users')
+        .select('id, email')
+        .eq('email_verified', true)
+        .in('email', adminEmails);
+      if (byEmail.error) failDatabase();
+      found.push(...rows(byEmail.data));
+    }
+    if (memberIds.length > 0) {
+      const byId = await this.client
+        .from('users')
+        .select('id, email')
+        .eq('email_verified', true)
+        .in('id', memberIds);
+      if (byId.error) failDatabase();
+      found.push(...rows(byId.data));
+    }
+    const recipients = new Map<string, { userId: string; email: string }>();
+    for (const row of found) {
+      const userId = text(row.id);
+      const email = text(row.email).trim().toLowerCase();
+      if (userId && email) recipients.set(userId, { userId, email });
+    }
+    return Array.from(recipients.values());
+  }
+
+  /** Resends of this report or invitation since the given time (from the audit log). */
+  async countResendsSince(targetId: string, since: string): Promise<number> {
+    const { count, error } = await this.client
+      .from('admin_audit_log')
+      .select('id', { count: 'exact', head: true })
+      .eq('action', 'client.resend')
+      .eq('target_id', targetId)
+      .gte('occurred_at', since);
+    if (error) failDatabase();
+    return count ?? 0;
+  }
+
+  /** In-app notices; a repeated key for the same person is ignored. */
+  async createNotifications(
+    notices: Array<{
+      userId: string;
+      eventType: string;
+      severity: 'info' | 'warning';
+      payload: Record<string, unknown>;
+      dedupeKey: string;
+    }>
+  ): Promise<void> {
+    if (notices.length === 0) return;
+    const { error } = await this.client.from('user_notifications').upsert(
+      notices.map((notice) => ({
+        user_id: notice.userId,
+        event_type: notice.eventType,
+        severity: notice.severity,
+        payload: notice.payload,
+        dedupe_key: notice.dedupeKey,
+      })),
+      { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true }
+    );
+    if (error) failDatabase();
+  }
+
   /** The stored file of a report, read with the service role; null when it has none. */
   async readProof(reportId: string): Promise<ProjectClientProofFile | null> {
     const { data, error } = await this.client

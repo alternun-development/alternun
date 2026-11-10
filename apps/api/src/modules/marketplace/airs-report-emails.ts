@@ -334,3 +334,125 @@ export function renderProjectClientInvitationEmail(context: {
     ]),
   };
 }
+
+const CLIENT_NOTICE_AIRS_STATUS: Readonly<Record<string, [string, string]>> = {
+  auto_approved: ['Aprobados automáticamente', 'Approved automatically'],
+  approved: ['Aprobados', 'Approved'],
+  pending_approval: ['En revisión: esperan aprobación', 'In review: waiting for approval'],
+  awaiting_claim: ['Esperando que la persona se registre', 'Waiting for the person to sign up'],
+  released: ['Acreditados', 'Credited'],
+};
+
+/**
+ * Informative email to Alternun global admins and the project's admins: someone added a client
+ * or assigned Airs to one. When the Airs went over the automatic limits, it says they wait for
+ * a global admin's approval. Spanish first, English below.
+ */
+export function renderProjectClientNoticeEmail(context: {
+  projectId: string;
+  projectName: string | null;
+  clientName: string;
+  clientEmail: string;
+  /** `member` has an Airs account; `invitation` was invited by email. */
+  clientKind: 'member' | 'invitation' | 'cancelled';
+  /** True when the person already was a client and only Airs were added. */
+  alreadyClient: boolean;
+  airs: { amount: number; concept: string; status: string } | null;
+  addedBy: string | null;
+  appUrl: string;
+  /** A reminder sent again from the Clients tab. */
+  reminder?: boolean;
+}): AirsReportEmailContent {
+  const project = context.projectName ?? 'un proyecto';
+  const projectEn = context.projectName ?? 'a project';
+  const who = context.addedBy ?? 'Un admin del proyecto';
+  const whoEn = context.addedBy ?? 'A project admin';
+  const pending = context.airs?.status === 'pending_approval';
+  const link = `${context.appUrl}/manage/${encodeURIComponent(context.projectId)}`;
+  const airsOnly = context.alreadyClient && context.airs !== null;
+  const statusLabel = (index: 0 | 1): string =>
+    context.airs
+      ? CLIENT_NOTICE_AIRS_STATUS[context.airs.status]?.[index] ?? context.airs.status
+      : '';
+
+  const subject = context.reminder
+    ? `Recordatorio: Airs en revisión para un cliente de ${project} / Reminder: Airs waiting for review in ${projectEn}`
+    : pending
+    ? `Airs en revisión para un cliente de ${project} / Airs waiting for review in ${projectEn}`
+    : airsOnly
+    ? `Airs asignados a un cliente de ${project} / Airs assigned to a client of ${projectEn}`
+    : `Nuevo cliente en ${project}: ${context.clientName} / New client in ${projectEn}`;
+  const introEs = airsOnly
+    ? `${who} asignó Airs a ${context.clientName}, cliente de ${project}.`
+    : `${who} agregó a ${context.clientName} como cliente de ${project}.`;
+  const introEn = airsOnly
+    ? `${whoEn} assigned Airs to ${context.clientName}, a client of ${projectEn}.`
+    : `${whoEn} added ${context.clientName} as a client of ${projectEn}.`;
+  const pendingEs =
+    'Esta asignación superó los límites automáticos y espera la aprobación de un admin global de Alternun en el panel admin.';
+  const pendingEn =
+    'This assignment went over the automatic limits and waits for an Alternun global admin to approve it in the admin panel.';
+
+  const rows = (index: 0 | 1): Array<[string, string]> => {
+    const labels =
+      index === 0
+        ? ['Cliente', 'Correo', 'Cuenta', 'Airs', 'Motivo', 'Estado de los Airs', 'Agregado por']
+        : ['Client', 'Email', 'Account', 'Airs', 'Reason', 'Airs status', 'Added by'];
+    const account =
+      context.clientKind === 'member'
+        ? ['Ya tiene cuenta en Airs', 'Has an Airs account'][index]
+        : ['Invitado, aún sin cuenta', 'Invited, no account yet'][index];
+    return [
+      [labels[0], context.clientName],
+      [labels[1], context.clientEmail],
+      [labels[2], account],
+      ...(context.airs
+        ? ([
+            [labels[3], airsLabel(context.airs.amount)],
+            [labels[4], context.airs.concept],
+            [labels[5], statusLabel(index)],
+          ] as Array<[string, string]>)
+        : []),
+      ...(context.addedBy ? ([[labels[6], context.addedBy]] as Array<[string, string]>) : []),
+    ];
+  };
+  const htmlRows = (index: 0 | 1): string[] =>
+    rows(index).map(
+      ([label, value]) =>
+        `<p style="margin:4px 0"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`
+    );
+  const button = (label: string): string =>
+    `<p style="margin:16px 0"><a href="${escapeHtml(
+      link
+    )}" style="background:#0fb88a;color:#04120d;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">${escapeHtml(
+      label
+    )}</a></p>`;
+  const ctaEs = 'Ver clientes del proyecto';
+  const ctaEn = "See the project's clients";
+
+  return {
+    subject,
+    text: [
+      introEs,
+      ...(pending ? [pendingEs] : []),
+      ...rows(0).map(([label, value]) => `${label}: ${value}`),
+      `${ctaEs}: ${link}`,
+      '',
+      introEn,
+      ...(pending ? [pendingEn] : []),
+      ...rows(1).map(([label, value]) => `${label}: ${value}`),
+      `${ctaEn}: ${link}`,
+    ].join('\n'),
+    html: wrapHtml([
+      `<p>${escapeHtml(introEs)}</p>`,
+      ...(pending ? [`<p><strong>${escapeHtml(pendingEs)}</strong></p>`] : []),
+      ...htmlRows(0),
+      button(ctaEs),
+      '<hr style="border:none;border-top:1px solid #d5e3dc;margin:24px 0" />',
+      `<p>${escapeHtml(introEn)}</p>`,
+      ...(pending ? [`<p><strong>${escapeHtml(pendingEn)}</strong></p>`] : []),
+      ...htmlRows(1),
+      button(ctaEn),
+    ]),
+  };
+}

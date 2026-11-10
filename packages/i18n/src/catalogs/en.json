@@ -406,6 +406,12 @@
         "generic": {
           "title": "Account update",
           "body": "There is a new update to your AIRS account."
+        },
+        "project_client_added": {
+          "title": "New client in {{project}}",
+          "titlePending": "Airs in review in {{project}}",
+          "body": "{{client}} ({{email}}) is now a client of the project.",
+          "bodyAirs": "{{client}} ({{email}}): {{amount}} Airs for {{concept}}."
         }
       }
     },
@@ -1234,7 +1240,9 @@
           "conceptShort": "The reason needs at least {{min}} characters to explain the assignment.",
           "conceptLong": "The reason can have up to {{max}} characters.",
           "documentLong": "The document number can have up to {{max}} characters.",
-          "review": "Check the highlighted fields to add the client."
+          "review": "Check the highlighted fields to add the client.",
+          "resendTooSoon": "It was sent a moment ago. You can send it again in a few minutes.",
+          "resendNotApplicable": "This assignment has nothing pending to send."
         },
         "clear": "Clear search",
         "filterLabel": "Show",
@@ -1258,7 +1266,10 @@
           "errorTitle": "Could not finish",
           "lookupErrorTitle": "Could not search the email",
           "removedTitle": "Client removed",
-          "cancelledTitle": "Invitation cancelled"
+          "cancelledTitle": "Invitation cancelled",
+          "resentTitle": "Email sent again",
+          "remindedTitle": "Reminder sent",
+          "remindedBody": "Admins got the request again by email and in the app."
         },
         "invitationStatus": {
           "pending": "Pending",
@@ -1282,7 +1293,13 @@
           "error": "The file could not be loaded.",
           "close": "Close",
           "webOnly": "PDF files open in the web version of Airs."
-        }
+        },
+        "resendEmail": "Send email again",
+        "remindAdmins": "Remind admins",
+        "resendInvitation": "Send invitation again",
+        "reportsAll": "See all assignments ({{count}})",
+        "reportsLess": "See only the latest",
+        "pagination": "Client pages"
       },
       "comments": {
         "empty": "No comments with this status.",

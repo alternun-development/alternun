@@ -78,6 +78,22 @@ function notificationCopy(
     case 'referral_confirmed':
     case 'profile_completed':
       return { title: t.t(`${key}.title`), body: t.t(`${key}.body`) };
+    case 'project_client_added': {
+      // Sent to Alternun global admins and the project's admins.
+      const values = {
+        project: textPayload(record.payload, 'projectName'),
+        client: textPayload(record.payload, 'clientName'),
+        email: textPayload(record.payload, 'clientEmail'),
+        amount: textPayload(record.payload, 'amount'),
+        concept: textPayload(record.payload, 'concept'),
+      };
+      const pending = record.payload.reportStatus === 'pending_approval';
+      const withAirs = values.amount !== undefined;
+      return {
+        title: t.t(`${key}.${pending ? 'titlePending' : 'title'}`, values),
+        body: t.t(`${key}.${withAirs ? 'bodyAirs' : 'body'}`, values),
+      };
+    }
     default:
       return {
         title: t.t('notifications.events.generic.title'),

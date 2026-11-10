@@ -4,6 +4,14 @@ import { manageStyles } from './styles';
 import type { ClientListItemProps } from './types';
 import { formatClientDate } from '../../utils/projectClients';
 
+const VISIBLE_REPORTS = 3;
+
+/** What sending a report again does, by status; other statuses have nothing pending. */
+const RESEND_LABELS: Readonly<Record<string, string>> = {
+  awaiting_claim: 'manage.clients.resendEmail',
+  pending_approval: 'manage.clients.remindAdmins',
+};
+
 /** One client of the Clients tab: status, dates, assigned Airs and invitation history. */
 export function ClientListItem({
   item,
@@ -17,8 +25,13 @@ export function ClientListItem({
   onReinvite,
   onRemove,
   onShowProof,
+  onResendReport,
+  onResendInvitation,
 }: ClientListItemProps): React.JSX.Element {
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [allReports, setAllReports] = useState(false);
+  // Long histories show the latest assignments first; the rest are one tap away.
+  const reports = allReports ? item.reports : item.reports.slice(0, VISIBLE_REPORTS);
   const busy = busyAction !== null;
   const invitations = item.invitations ?? [];
   const lastCancelled = invitations.find((invitation) => invitation.status === 'cancelled');
@@ -62,7 +75,7 @@ export function ClientListItem({
         </Text>
       </View>
 
-      {item.reports.map((report) => (
+      {reports.map((report) => (
         <View key={report.id} style={[manageStyles.row, styles.report]}>
           <View style={styles.reportCopy}>
             <Text style={[manageStyles.muted, { color: palette.text }]}>
@@ -91,8 +104,38 @@ export function ClientListItem({
               )}
             </Pressable>
           ) : null}
+          {canEdit && RESEND_LABELS[report.status] ? (
+            <Pressable
+              testID={`manage-client-resend-${report.id}`}
+              accessibilityRole='button'
+              disabled={busy}
+              onPress={() => onResendReport(report.id)}
+            >
+              {busyAction === `resend-${report.id}` ? (
+                <ActivityIndicator size='small' color={palette.primaryDeep} />
+              ) : (
+                <Text style={[manageStyles.secondaryButtonText, { color: palette.primaryDeep }]}>
+                  {t(RESEND_LABELS[report.status] ?? '')}
+                </Text>
+              )}
+            </Pressable>
+          ) : null}
         </View>
       ))}
+      {item.reports.length > VISIBLE_REPORTS ? (
+        <Pressable
+          testID={`manage-client-reports-${item.id}`}
+          accessibilityRole='button'
+          accessibilityState={{ expanded: allReports }}
+          onPress={() => setAllReports((open) => !open)}
+        >
+          <Text style={[styles.small, styles.link, { color: palette.primaryDeep }]}>
+            {allReports
+              ? t('manage.clients.reportsLess')
+              : t('manage.clients.reportsAll', { count: item.reports.length })}
+          </Text>
+        </Pressable>
+      ) : null}
 
       {invitations.length > 0 ? (
         <>
@@ -153,6 +196,23 @@ export function ClientListItem({
             </Pressable>
           ) : (
             <>
+              {item.kind === 'invitation' ? (
+                <Pressable
+                  testID={`manage-client-resend-invitation-${item.id}`}
+                  accessibilityRole='button'
+                  disabled={busy}
+                  onPress={onResendInvitation}
+                  style={chip}
+                >
+                  {busyAction === `resend-${item.id}` ? (
+                    <ActivityIndicator size='small' color={palette.text} />
+                  ) : (
+                    <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
+                      {t('manage.clients.resendInvitation')}
+                    </Text>
+                  )}
+                </Pressable>
+              ) : null}
               {canAssign ? (
                 <Pressable
                   testID={`manage-client-assign-${item.id}`}

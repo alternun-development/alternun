@@ -2,7 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { hasPermission, type AdminPrincipal } from '../../common/admin-auth/admin-auth.guard';
 import { sendAirsEmail } from '../airs/airs.email';
-import { renderProjectClientInvitationEmail } from './airs-report-emails';
+import {
+  renderProjectClientInvitationEmail,
+  renderProjectClientNoticeEmail,
+} from './airs-report-emails';
 import type { AirsReportEmailContent } from './airs-report-emails.types';
 import { resolveAirsReportAppUrl } from './airs-report-notifier';
 import { AirsReportRepository } from './airs-report.repository';
@@ -26,6 +29,9 @@ import {
   type ProjectClientRecord,
   type ProjectClientReport,
 } from './project-client.types';
+
+/** One resend per report or invitation in this window. */
+const RESEND_INTERVAL_MS = 10 * 60 * 1000;
 
 function projectTitle(project: ProjectRecord): string {
   const content = project.content[project.defaultLocale] ?? Object.values(project.content)[0];
@@ -165,7 +171,85 @@ export class ProjectClientService {
     const clients = await this.compose(projectId);
     const client = clients.find((item) => item.email.toLowerCase() === email);
     if (!client) marketplaceError('CLIENT_NOT_FOUND');
+    // Nothing new (same client, no Airs): nobody needs to hear about it again.
+    if (!alreadyClient || report)
+      await this.noticeAdmins(principal, projectId, client, alreadyClient, report);
     return { client, alreadyClient, invitationSent, reportStatus: report?.status ?? null };
+  }
+
+  /**
+   * Tells Alternun global admins and the project's admins, by email and in the app, that a
+   * client was added or got Airs. Informative: approvals keep their own flow. Best effort, and
+   * whoever made the change is not told about it.
+   */
+  private async noticeAdmins(
+    principal: AdminPrincipal,
+    projectId: string,
+    client: ProjectClientRecord,
+    alreadyClient: boolean,
+    report: AirsReportRecord | null,
+    reminder = false
+  ): Promise<number> {
+    try {
+      const project = await this.adminRepository.findProject(projectId);
+      if (!project) return 0;
+      const actorEmail = principal.email?.trim().toLowerCase() ?? null;
+      const recipients = (
+        await this.repository.listClientNoticeRecipients(projectId, project.enterpriseId)
+      ).filter((recipient) => recipient.email !== actorEmail);
+      if (recipients.length === 0) return 0;
+
+      const projectName = projectTitle(project);
+      const airs = report
+        ? { amount: report.amount, concept: report.concept, status: report.status }
+        : null;
+      const email = renderProjectClientNoticeEmail({
+        projectId,
+        projectName,
+        clientName: client.name || client.email,
+        clientEmail: client.email,
+        clientKind: client.kind,
+        alreadyClient,
+        airs,
+        addedBy: actorEmail,
+        appUrl: resolveAirsReportAppUrl(this.env),
+        reminder,
+      });
+      await this.repository.createNotifications(
+        recipients.map((recipient) => ({
+          userId: recipient.userId,
+          eventType: 'project_client_added',
+          severity: report?.status === 'pending_approval' ? 'warning' : 'info',
+          payload: {
+            projectId,
+            projectName,
+            clientName: client.name || client.email,
+            clientEmail: client.email,
+            clientKind: client.kind,
+            ...(airs
+              ? { amount: airs.amount, concept: airs.concept, reportStatus: airs.status }
+              : {}),
+            link: `/manage/${projectId}`,
+          },
+          // A reminder is a new notice, so it gets its own key.
+          dedupeKey: `project-client:${client.id}:${report?.id ?? 'client'}${
+            reminder ? `:reminder:${Date.now()}` : ''
+          }`,
+        }))
+      );
+      for (const recipient of recipients) {
+        const sent = await this.send(recipient.email, email).catch(() => false);
+        if (!sent) this.logger.warn(`Client notice email not sent (project ${projectId})`);
+      }
+      return recipients.length;
+    } catch (error) {
+      this.logger.warn(
+        `Client notice failed (project ${projectId}): ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      return 0;
+    }
   }
 
   async createProofUpload(
@@ -226,6 +310,111 @@ export class ProjectClientService {
     reason: string
   ): Promise<unknown> {
     return this.participants.remove(principal, requestId, projectId, participantId, reason);
+  }
+
+  /**
+   * Sends the latest email of a pending step again: the invitation (with its Airs) to a person
+   * who has not signed up, or a reminder to the admins for Airs in review. One per item every
+   * 10 minutes, recorded in the audit log.
+   */
+  async resendReport(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    reportId: string
+  ): Promise<{ sentTo: 'client' | 'admins' }> {
+    await this.participants.authorizeProject(
+      principal,
+      'participants:manage',
+      requestId,
+      projectId
+    );
+    const report = await this.reportRepository.find(reportId);
+    if (!report || report.projectId !== projectId) marketplaceError('CLIENT_NOT_FOUND');
+    if (report.status !== 'awaiting_claim' && report.status !== 'pending_approval')
+      marketplaceError('CLIENT_RESEND_NOT_APPLICABLE');
+    await this.guardResend(reportId);
+
+    const clients = await this.compose(projectId);
+    const client = clients.find(
+      (item) => item.email.toLowerCase() === report.recipientEmail.toLowerCase()
+    );
+    let sentTo: 'client' | 'admins';
+    if (report.status === 'awaiting_claim') {
+      const sent = await this.sendInvitation(
+        projectId,
+        report.recipientEmail,
+        client?.name ?? report.recipientName ?? '',
+        { amount: report.amount, concept: report.concept }
+      );
+      if (!sent) marketplaceError('MARKETPLACE_UNAVAILABLE');
+      sentTo = 'client';
+    } else {
+      if (!client) marketplaceError('CLIENT_NOT_FOUND');
+      const notified = await this.noticeAdmins(principal, projectId, client, true, report, true);
+      if (notified === 0) marketplaceError('CLIENT_RESEND_NOT_APPLICABLE');
+      sentTo = 'admins';
+    }
+    await this.recordResend(principal, requestId, projectId, reportId, sentTo);
+    return { sentTo };
+  }
+
+  /** Sends a pending invitation again, with the latest Airs still waiting for the person. */
+  async resendInvitation(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    invitationId: string
+  ): Promise<{ sentTo: 'client' }> {
+    await this.participants.authorizeProject(
+      principal,
+      'participants:manage',
+      requestId,
+      projectId
+    );
+    const invitation = await this.repository.findInvitation(projectId, invitationId);
+    if (!invitation) marketplaceError('CLIENT_NOT_FOUND');
+    if (invitation.status !== 'pending') marketplaceError('CLIENT_INVITATION_NOT_PENDING');
+    await this.guardResend(invitationId);
+    const waiting = (await this.reportRepository.listForProject(projectId)).find(
+      (report) =>
+        report.status === 'awaiting_claim' &&
+        report.recipientEmail.toLowerCase() === invitation.email.toLowerCase()
+    );
+    const sent = await this.sendInvitation(
+      projectId,
+      invitation.email,
+      invitation.name,
+      waiting ? { amount: waiting.amount, concept: waiting.concept } : null
+    );
+    if (!sent) marketplaceError('MARKETPLACE_UNAVAILABLE');
+    await this.recordResend(principal, requestId, projectId, invitationId, 'client');
+    return { sentTo: 'client' };
+  }
+
+  private async guardResend(targetId: string): Promise<void> {
+    const since = new Date(Date.now() - RESEND_INTERVAL_MS).toISOString();
+    if ((await this.repository.countResendsSince(targetId, since)) > 0)
+      marketplaceError('CLIENT_RESEND_TOO_SOON');
+  }
+
+  private recordResend(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    targetId: string,
+    sentTo: 'client' | 'admins'
+  ): Promise<void> {
+    return this.adminRepository.audit({
+      actor: actorFromPrincipal(principal),
+      action: 'client.resend',
+      targetType: 'project_client',
+      targetId,
+      projectId,
+      requestId,
+      result: 'allowed',
+      metadata: { sentTo },
+    });
   }
 
   private async compose(projectId: string): Promise<ProjectClientRecord[]> {
