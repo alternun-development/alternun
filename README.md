@@ -126,10 +126,6 @@ Current version: **1.1.132**
 
 ### Bug Fixes
 
-- **repo:** fix(security): marketplace access regression tests and review evidence
-
-### Bug Fixes
-
 - **security:** marketplace access regression tests and review evidence ([cfe509c](https://github.com/alternun-development/alternun/commit/cfe509c07c50344ab6ece3605c2a84b1a7df5203))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
