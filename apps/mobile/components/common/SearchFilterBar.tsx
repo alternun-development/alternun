@@ -58,6 +58,9 @@ interface SearchFilterBarProps {
   clearLabel?: string;
   /** Test ID prefix: `${testID}-search-input`, `-search-clear`, `-filter-button`, `-filter-<key>`. */
   testID?: string;
+  /** Called on the keyboard's search/enter key. */
+  onSubmitEditing?: () => void;
+  keyboardType?: 'default' | 'email-address';
 }
 
 export default function SearchFilterBar({
@@ -74,6 +77,8 @@ export default function SearchFilterBar({
   searchLabel,
   clearLabel,
   testID,
+  onSubmitEditing,
+  keyboardType = 'default',
 }: SearchFilterBarProps) {
   // A single option filters nothing, so the button only appears with real choices.
   const hasFilters = filters.length > 1;
@@ -143,6 +148,9 @@ export default function SearchFilterBar({
           role='searchbox'
           returnKeyType='search'
           autoCorrect={false}
+          keyboardType={keyboardType}
+          autoCapitalize={keyboardType === 'email-address' ? 'none' : 'sentences'}
+          onSubmitEditing={onSubmitEditing}
           placeholder={placeholder}
           placeholderTextColor={theme.textPlaceholder}
           value={value}

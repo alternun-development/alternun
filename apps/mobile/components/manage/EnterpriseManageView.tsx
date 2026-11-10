@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Building2, RotateCcw } from 'lucide-react-native';
+import { ArrowLeft, RotateCcw } from 'lucide-react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RoleChips } from '../profile/RoleChips';
+import { HEADER_BUTTON_SIZE, PageHeader } from '../common/PageHeader';
 import { EnterpriseImagesSection } from './EnterpriseImagesSection';
 import { EnterpriseInfoSection } from './EnterpriseInfoSection';
 import { EnterpriseProductsSection } from './EnterpriseProductsSection';
+import { ManageClientsSection } from './ManageClientsSection';
 import { ManageTeamSection } from './ManageTeamSection';
 import { manageStyles } from './styles';
 import type { EnterpriseManageTab, EnterpriseManageViewProps } from './types';
@@ -16,12 +18,16 @@ import type {
 } from '../../utils/enterpriseManage';
 
 /** Tabs the person can use, in display order. */
-export function enterpriseTabs(can: EnterpriseManageCapabilities): EnterpriseManageTab[] {
+export function enterpriseTabs(
+  can: EnterpriseManageCapabilities,
+  hasClients = false
+): EnterpriseManageTab[] {
   return [
     ...(can.editInfo ? (['info'] as const) : []),
     ...(can.images ? (['images'] as const) : []),
     ...(can.products ? (['products'] as const) : []),
     ...(can.team ? (['team'] as const) : []),
+    ...(hasClients && can.clients ? (['clients'] as const) : []),
   ];
 }
 
@@ -32,6 +38,7 @@ export function EnterpriseManageView({
   t,
   onBack,
   canPickFiles,
+  clientsClient,
 }: EnterpriseManageViewProps): React.JSX.Element {
   const [overview, setOverview] = useState<EnterpriseManageOverview | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'denied' | 'error'>('loading');
@@ -45,7 +52,7 @@ export function EnterpriseManageView({
       .overview()
       .then((next) => {
         setOverview(next);
-        setTab((current) => current ?? enterpriseTabs(next.can)[0] ?? null);
+        setTab((current) => current ?? enterpriseTabs(next.can, !!clientsClient)[0] ?? null);
         setState('ready');
       })
       .catch((error: unknown) =>
@@ -55,7 +62,7 @@ export function EnterpriseManageView({
             : 'error'
         )
       );
-  }, [client]);
+  }, [client, clientsClient]);
 
   useEffect(load, [load, version]);
 
@@ -63,7 +70,7 @@ export function EnterpriseManageView({
     if (message) setNotice(message);
     setVersion((value) => value + 1);
   };
-  const tabs = overview ? enterpriseTabs(overview.can) : [];
+  const tabs = overview ? enterpriseTabs(overview.can, !!clientsClient) : [];
   // Apply what the server saved right away; the refetch that follows only confirms it.
   const applySaved = (saved: ManagedEnterprise): void =>
     setOverview((current) =>
@@ -79,12 +86,23 @@ export function EnterpriseManageView({
       style={{ backgroundColor: palette.background }}
       contentContainerStyle={styles.content}
     >
-      <Pressable accessibilityRole='button' onPress={onBack} style={styles.back}>
-        <ArrowLeft size={18} color={palette.primaryDeep} />
-        <Text style={[styles.backText, { color: palette.primaryDeep }]}>
-          {t('manage.enterprise.back')}
-        </Text>
-      </Pressable>
+      <PageHeader
+        testID='enterprise-manage-heading'
+        title={overview ? overview.enterprise.displayName : t('manage.enterprise.title')}
+        subtitle={overview ? t('manage.enterprise.title') : undefined}
+        palette={palette}
+        leading={
+          <Pressable
+            testID='enterprise-manage-back'
+            accessibilityRole='button'
+            accessibilityLabel={t('manage.enterprise.back')}
+            onPress={onBack}
+            style={[styles.back, { borderColor: palette.border, backgroundColor: palette.surface }]}
+          >
+            <ArrowLeft size={18} color={palette.primaryDeep} />
+          </Pressable>
+        }
+      />
 
       {state === 'loading' && !overview ? (
         <Text style={[manageStyles.muted, { color: palette.muted }]}>{t('manage.loading')}</Text>
@@ -111,28 +129,12 @@ export function EnterpriseManageView({
 
       {overview && state !== 'denied' ? (
         <>
-          <View
-            style={[
-              manageStyles.card,
-              { borderColor: palette.border, backgroundColor: palette.surface },
-            ]}
-          >
-            <View style={manageStyles.row}>
-              <Building2 size={18} color={palette.primary} />
-              <Text style={[styles.eyebrow, { color: palette.primary }]}>
-                {t('manage.enterprise.title')}
-              </Text>
-            </View>
-            <Text testID='enterprise-manage-title' style={[styles.title, { color: palette.text }]}>
-              {overview.enterprise.displayName}
-            </Text>
-            <RoleChips
-              roles={overview.roles}
-              accent={palette.primary}
-              muted={palette.muted}
-              align='flex-start'
-            />
-          </View>
+          <RoleChips
+            roles={overview.roles}
+            accent={palette.primary}
+            muted={palette.muted}
+            align='flex-start'
+          />
 
           {notice ? (
             <Text
@@ -187,6 +189,16 @@ export function EnterpriseManageView({
               <ManageTeamSection client={client} overview={overview} palette={palette} t={t} />
             </>
           ) : null}
+          {clientsClient && tab === 'clients' ? (
+            <ManageClientsSection
+              client={clientsClient}
+              can={overview.can}
+              palette={palette}
+              t={t}
+              canPickFiles={canPickFiles}
+              multiProject
+            />
+          ) : null}
         </>
       ) : null}
     </ScrollView>
@@ -196,16 +208,14 @@ export function EnterpriseManageView({
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120, gap: 16 },
   back: {
-    minHeight: 44,
-    flexDirection: 'row',
+    width: HEADER_BUTTON_SIZE,
+    height: HEADER_BUTTON_SIZE,
+    borderRadius: 11,
+    borderWidth: 1,
     alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
+    justifyContent: 'center',
   },
-  backText: { fontSize: 14, fontWeight: '800' },
   retry: { flexDirection: 'row', gap: 8 },
-  eyebrow: { fontSize: 12, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
-  title: { fontFamily: 'Sculpin-Bold', fontSize: 26 },
   tabs: {
     flexDirection: 'row',
     flexWrap: 'wrap',

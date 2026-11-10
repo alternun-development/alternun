@@ -8,6 +8,10 @@ export interface ProjectManageCapabilities {
   media: boolean;
   team: boolean;
   comments: boolean;
+  /** See the Clients tab; editClients adds, invites and removes; assignAirs assigns Airs. */
+  clients: boolean;
+  editClients: boolean;
+  assignAirs: boolean;
 }
 
 export interface ProjectManageOverview {
@@ -24,6 +28,9 @@ export interface EnterpriseManageCapabilities {
   images: boolean;
   products: boolean;
   team: boolean;
+  clients: boolean;
+  editClients: boolean;
+  assignAirs: boolean;
 }
 
 export interface EnterpriseManageOverview {

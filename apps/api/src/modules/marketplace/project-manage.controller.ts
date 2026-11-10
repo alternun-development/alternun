@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Headers,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -26,6 +27,14 @@ import {
   RevokeProjectTeamMemberDto,
 } from './project-manage.dto';
 import { manageOverview, ProjectManageAccess } from './project-manage.service';
+import {
+  AddProjectClientDto,
+  ClientProofUploadDto,
+  RemoveProjectClientDto,
+} from './project-client.dto';
+import { ProjectClientService } from './project-client.service';
+import { AirsReportRecipientLookupQueryDto } from './airs-report.dto';
+import { AirsReportService } from './airs-report.service';
 import type { CommentAction } from './project-manage.types';
 import { COMMENT_STATUSES, type CommentStatus } from './marketplace.types';
 
@@ -53,7 +62,9 @@ export class ProjectManageController {
     private readonly access: ProjectManageAccess,
     private readonly projects: MarketplaceAdminService,
     private readonly memberships: MarketplaceMembershipService,
-    private readonly comments: MarketplaceCommentService
+    private readonly comments: MarketplaceCommentService,
+    private readonly clients: ProjectClientService,
+    private readonly reports: AirsReportService
   ) {}
 
   @Get()
@@ -214,5 +225,99 @@ export class ProjectManageController {
       action as CommentAction,
       body?.reason
     );
+  }
+
+  @Get('clients')
+  @ApiOperation({ summary: 'Clients of the project: participants and pending invitations.' })
+  async listClients(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    return this.clients.list(principal, requestId(request), projectId);
+  }
+
+  @Post('clients')
+  @ApiOperation({ summary: 'Add a client (or invite one by email), optionally assigning Airs.' })
+  async addClient(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Body() body: AddProjectClientDto
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    return this.clients.add(principal, requestId(request), projectId, body);
+  }
+
+  @Get('clients/lookup')
+  @ApiOperation({ summary: 'Whether an exact email already has an Airs account (rate limited).' })
+  async lookupClient(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Query() query: AirsReportRecipientLookupQueryDto
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    return this.reports.lookupRecipient(principal, requestId(request), projectId, query.email);
+  }
+
+  @Post('clients/proof-upload-url')
+  @ApiOperation({ summary: 'Signed URL to upload the private supporting file of assigned Airs.' })
+  async clientProofUploadUrl(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Body() body: ClientProofUploadDto
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    return this.clients.createProofUpload(
+      principal,
+      requestId(request),
+      projectId,
+      body.contentType
+    );
+  }
+
+  @Get('clients/reports/:reportId/proof')
+  @ApiOperation({ summary: 'Short-lived URL to read the supporting file of assigned Airs.' })
+  async clientProof(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('reportId', new ParseUUIDPipe({ version: '4' })) reportId: string
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    return this.clients.proofUrl(principal, requestId(request), projectId, reportId);
+  }
+
+  @Post('clients/members/:participantId/remove')
+  async removeClient(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('participantId', new ParseUUIDPipe({ version: '4' })) participantId: string,
+    @Body() body: RemoveProjectClientDto
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    return this.clients.remove(
+      principal,
+      requestId(request),
+      projectId,
+      participantId,
+      body.reason
+    );
+  }
+
+  @Delete('clients/invitations/:invitationId')
+  @HttpCode(204)
+  async cancelClientInvitation(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('invitationId', new ParseUUIDPipe({ version: '4' })) invitationId: string
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    await this.clients.cancelInvitation(principal, requestId(request), projectId, invitationId);
   }
 }

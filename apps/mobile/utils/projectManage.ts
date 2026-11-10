@@ -17,6 +17,9 @@ export interface ManageCapabilities {
   media: boolean;
   team: boolean;
   comments: boolean;
+  clients?: boolean;
+  editClients?: boolean;
+  assignAirs?: boolean;
 }
 
 export interface ManagedContentBlock {
@@ -207,13 +210,14 @@ export function assignableRoles(roles: readonly string[], isGlobalAdmin: boolean
 
 /** Opens the browser file picker (web only) and resolves the chosen file, or null if cancelled. */
 export function pickImageFile(
-  doc: Document | undefined = globalThis.document
+  doc: Document | undefined = globalThis.document,
+  accept: string = UPLOAD_TYPES.join(',')
 ): Promise<File | null> {
   if (!doc) return Promise.resolve(null);
   return new Promise((resolve) => {
     const input = doc.createElement('input');
     input.type = 'file';
-    input.accept = UPLOAD_TYPES.join(',');
+    input.accept = accept;
     input.onchange = () => resolve(input.files?.[0] ?? null);
     input.click();
   });

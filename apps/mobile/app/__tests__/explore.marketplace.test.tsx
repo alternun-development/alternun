@@ -16,11 +16,13 @@ jest.mock('@alternun/ui', () => ({
 }));
 
 const mockPush = jest.fn();
+let mockParams: Record<string, string> = {};
 let mockUser: unknown = null;
 const originalMarketplaceContactEmail = process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL;
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
+  useLocalSearchParams: () => mockParams,
 }));
 
 jest.mock('../../components/i18n/useAppTranslation', () => ({
@@ -453,7 +455,10 @@ describe('Explorer marketplace projects', () => {
     const openUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     const renderer = await renderExplorerScreen();
 
-    expect(renderer.root.findByProps({ children: 'explorer.heroTitle' })).toBeTruthy();
+    expect(renderer.root.findByProps({ testID: 'explorer-heading-title' }).props.children).toBe(
+      'explorer.title'
+    );
+    expect(renderer.root.findAllByProps({ children: 'explorer.heroTitle' })).toHaveLength(0);
     expect(renderer.root.findByProps({ children: 'explorer.cta.project.title' })).toBeTruthy();
     expect(renderer.root.findAllByProps({ testID: 'project-proposal-form' })).toHaveLength(0);
     await openProjectForm(renderer);
@@ -501,6 +506,49 @@ describe('Explorer marketplace projects', () => {
       params: { slug: 'productive-project' },
     });
     expect(openUrl).not.toHaveBeenCalled();
+  });
+
+  it('explains each intent in a guide with its next steps, also from a deep link', async () => {
+    process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL = 'marketplace@example.com';
+    jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [publishedProject] }),
+    } as Response);
+    const openUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    const renderer = await renderExplorerScreen();
+    const guide = (key: string) =>
+      renderer.root.findAllByProps({ testID: `explorer-intent-guide-${key}` });
+
+    expect(guide('collaborate')).toHaveLength(0);
+    await act(() =>
+      renderer.root.findAllByProps({ testID: 'explorer-intent-collaborate' })[0].props.onPress()
+    );
+    expect(guide('collaborate').length).toBeGreaterThan(0);
+    expect(
+      renderer.root.findAllByProps({ children: 'explorer.intents.collaborate.guide.step2' }).length
+    ).toBeGreaterThan(0);
+    await act(() => guide('contact')[0].props.onPress());
+    expect(openUrl).toHaveBeenCalledWith(expect.stringContaining('mailto:marketplace@example.com'));
+    await act(() => guide('projects')[0].props.onPress());
+    expect(guide('collaborate')).toHaveLength(0);
+    openUrl.mockRestore();
+
+    await act(() => {
+      renderer.unmount();
+    });
+    mockParams = { intent: 'propose' };
+    const linked = await renderExplorerScreen();
+    mockParams = {};
+    expect(
+      linked.root.findAllByProps({ testID: 'explorer-intent-guide-propose' }).length
+    ).toBeGreaterThan(0);
+    await act(() =>
+      linked.root.findAllByProps({ testID: 'explorer-intent-guide-form' })[0].props.onPress()
+    );
+    expect(linked.root.findAllByProps({ testID: 'explorer-intent-guide-propose' })).toHaveLength(0);
+    expect(linked.root.findAllByProps({ testID: 'project-proposal-form' }).length).toBeGreaterThan(
+      0
+    );
   });
 
   it('submits a valid project proposal and shows the sent state', async () => {

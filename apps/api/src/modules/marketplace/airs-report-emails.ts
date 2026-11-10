@@ -246,3 +246,53 @@ export function renderAirsReportDecisionEmail(
     ]
   );
 }
+
+/**
+ * Invitation to a client added to a project without an Airs account. Signing up with this
+ * email and confirming it makes the person a client of the project. Spanish first, English below.
+ */
+export function renderProjectClientInvitationEmail(context: {
+  name: string;
+  projectName: string | null;
+  appUrl: string;
+}): AirsReportEmailContent {
+  const name = firstName(context.name);
+  const project = context.projectName ?? 'Un proyecto aliado';
+  const projectEn = context.projectName ?? 'A partner project';
+  const link = `${context.appUrl}/`;
+  const greetingEs = name ? `Hola ${name}` : 'Hola';
+  const greetingEn = name ? `Hi ${name}` : 'Hi';
+  const introEs = `${project} te invitó a Airs, el programa que reconoce tu impacto positivo. Entra con este correo y confirma tu cuenta para unirte.`;
+  const introEn = `${projectEn} invited you to Airs, the program that recognizes your positive impact. Sign in with this email and confirm your account to join.`;
+  const ctaEs = 'Unirme a Airs';
+  const ctaEn = 'Join Airs';
+
+  const button = (label: string): string =>
+    `<p style="margin:16px 0"><a href="${escapeHtml(
+      link
+    )}" style="background:#0fb88a;color:#04120d;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold">${escapeHtml(
+      label
+    )}</a></p>`;
+
+  return {
+    subject: `${project} te invita a Airs / ${projectEn} invites you to Airs`,
+    text: [
+      `${greetingEs}:`,
+      introEs,
+      `${ctaEs}: ${link}`,
+      '',
+      `${greetingEn}:`,
+      introEn,
+      `${ctaEn}: ${link}`,
+    ].join('\n'),
+    html: wrapHtml([
+      `<h2 style="margin:0 0 8px">${escapeHtml(greetingEs)}</h2>`,
+      `<p>${escapeHtml(introEs)}</p>`,
+      button(ctaEs),
+      '<hr style="border:none;border-top:1px solid #d5e3dc;margin:24px 0" />',
+      `<h2 style="margin:0 0 8px">${escapeHtml(greetingEn)}</h2>`,
+      `<p>${escapeHtml(introEn)}</p>`,
+      button(ctaEn),
+    ]),
+  };
+}

@@ -6,13 +6,14 @@ import type {
   ManageRole,
   TeamMember,
 } from '../../utils/projectManage';
+import type { ClientsClient, ProofFile } from '../../utils/projectClients';
 import type {
   EnterpriseManageClient,
   EnterpriseManageOverview,
   ManagedEnterprise,
 } from '../../utils/enterpriseManage';
 
-export type ManageTab = 'info' | 'images' | 'team' | 'comments';
+export type ManageTab = 'info' | 'images' | 'team' | 'clients' | 'comments';
 
 export interface ManageSectionProps {
   client: ManageClient;
@@ -32,6 +33,8 @@ export interface ProjectManageViewProps {
   onBack: () => void;
   /** Whether the browser file picker is available (web). */
   canPickFiles: boolean;
+  /** Clients tab API; the tab shows only when given and the person can see clients. */
+  clientsClient?: ClientsClient;
 }
 
 export interface ManageImagesSectionProps extends ManageSectionProps {
@@ -65,7 +68,7 @@ export interface ManageTeamSectionProps {
   t: Translate;
 }
 
-export type EnterpriseManageTab = 'info' | 'images' | 'products' | 'team';
+export type EnterpriseManageTab = 'info' | 'images' | 'products' | 'team' | 'clients';
 
 export interface EnterpriseSectionProps {
   client: EnterpriseManageClient;
@@ -88,6 +91,32 @@ export interface EnterpriseManageViewProps {
   t: Translate;
   onBack: () => void;
   canPickFiles: boolean;
+  clientsClient?: ClientsClient;
+}
+
+export interface ManageClientsSectionProps {
+  client: ClientsClient;
+  can: { editClients?: boolean; assignAirs?: boolean };
+  palette: DetailPalette;
+  t: Translate;
+  canPickFiles: boolean;
+  /** Opens a file picker for the supporting file; defaults to the browser one. */
+  pickFile?: () => Promise<ProofFile | null>;
+  /** Opens the signed URL of a supporting file; defaults to Linking. */
+  openUrl?: (url: string) => Promise<unknown>;
+  /** Enterprise view: shows each client's project and asks for it when adding. */
+  multiProject?: boolean;
+}
+
+export type ClientFilter = 'all' | 'member' | 'invitation' | 'withAirs';
+
+export interface ClientDraft {
+  email: string;
+  name: string;
+  assign: boolean;
+  amount: string;
+  concept: string;
+  documentNumber: string;
 }
 
 export interface ProductDraft {

@@ -7,6 +7,7 @@ import { useAppTranslation } from '../../../components/i18n/useAppTranslation';
 import { EnterpriseManageView } from '../../../components/manage/EnterpriseManageView';
 import { useManagePalette } from '../../../components/manage/useManagePalette';
 import { createEnterpriseManageClient } from '../../../utils/enterpriseManage';
+import { createClientsClient } from '../../../utils/projectClients';
 import type { ManageScreenAuthContext } from '../[projectId].types';
 
 /** In-app enterprise administration (/manage/enterprise/:enterpriseId). */
@@ -22,6 +23,10 @@ export default function EnterpriseManageScreen(): React.JSX.Element {
     () => createEnterpriseManageClient(enterpriseId, () => client.getSessionToken()),
     [client, enterpriseId]
   );
+  const clientsClient = useMemo(
+    () => createClientsClient({ enterpriseId }, () => client.getSessionToken()),
+    [client, enterpriseId]
+  );
   const palette = useManagePalette();
 
   return (
@@ -33,6 +38,7 @@ export default function EnterpriseManageScreen(): React.JSX.Element {
         t={t}
         onBack={() => router.back()}
         canPickFiles={Platform.OS === 'web'}
+        clientsClient={clientsClient}
       />
     </ScreenShell>
   );
