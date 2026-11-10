@@ -5,15 +5,6 @@ export const manageStyles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 20, padding: 18, gap: 12 },
   sectionTitle: { fontFamily: 'Sculpin-Bold', fontSize: 18 },
   label: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.4 },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-  },
-  multiline: { minHeight: 96, textAlignVertical: 'top' },
-  field: { gap: 6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   primaryButton: {
     minHeight: 44,

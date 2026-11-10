@@ -65,8 +65,42 @@ const listing: ClientsListing = {
       projectId: 'p2',
       email: 'luis@x.test',
       name: 'Luis',
-      since: '',
+      since: '2026-11-10T03:46:58Z',
       reports: [],
+      invitations: [
+        {
+          id: 'i1',
+          status: 'pending',
+          invitedAt: '2026-11-10T03:46:58Z',
+          cancelledAt: null,
+          acceptedAt: null,
+        },
+        {
+          id: 'i0',
+          status: 'cancelled',
+          invitedAt: '2026-11-10T03:23:46Z',
+          cancelledAt: '2026-11-10T03:46:05Z',
+          acceptedAt: null,
+        },
+      ],
+    },
+    {
+      id: 'c1',
+      kind: 'cancelled',
+      projectId: 'p1',
+      email: 'eva@x.test',
+      name: 'Eva',
+      since: '2026-11-09T10:00:00Z',
+      reports: [],
+      invitations: [
+        {
+          id: 'c1',
+          status: 'cancelled',
+          invitedAt: '2026-11-09T10:00:00Z',
+          cancelledAt: '2026-11-09T11:00:00Z',
+          acceptedAt: null,
+        },
+      ],
     },
   ],
 };
@@ -140,7 +174,11 @@ describe('ManageClientsSection', () => {
       <ManageClientsSection client={c} can={{}} palette={palette} t={t} canPickFiles />
     );
     expect(byId(r, 'manage-client-m1').length).toBeGreaterThan(0);
-    expect(texts(r)).toContain('40 Airs · Compra · manage.clients.status.released');
+    expect(texts(r)).toContain('40 Airs · Compra');
+    expect(texts(r)).toContain('manage.clients.status.released · manage.clients.assignedOn');
+    // Each client says when it joined, was invited or was cancelled.
+    expect(byId(r, 'manage-client-date-m1').length).toBeGreaterThan(0);
+    expect(texts(r)).toContain('manage.clients.kind.cancelled');
     expect(byId(r, 'manage-clients-form')).toHaveLength(0);
     expect(byId(r, 'manage-client-remove-m1')).toHaveLength(0);
     expect(texts(r)).toContain('manage.clients.readOnly');
@@ -389,6 +427,38 @@ describe('ManageClientsSection', () => {
     expect(c.remove).toHaveBeenCalledWith('p1', 'm1', 'manage.clients.removeReason');
     await press(r, 'manage-client-remove-i1');
     expect(c.cancelInvitation).toHaveBeenCalledWith('p2', 'i1');
+  });
+
+  it('shows the invitation history and invites a cancelled client again', async () => {
+    const c = clientsClient();
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true, assignAirs: true }}
+        palette={palette}
+        t={t}
+        canPickFiles={false}
+      />
+    );
+    expect(byId(r, 'manage-client-invitation-i0')).toHaveLength(0);
+    await press(r, 'manage-client-history-i1');
+    expect(byId(r, 'manage-client-invitation-i0').length).toBeGreaterThan(0);
+    expect(texts(r)).toContain(
+      'manage.clients.invitationStatus.cancelled · manage.clients.sentOn · manage.clients.cancelledAt'
+    );
+    await press(r, 'manage-client-history-i1');
+    expect(byId(r, 'manage-client-invitation-i0')).toHaveLength(0);
+
+    // A cancelled client cannot be removed again; it can be invited again from the form.
+    expect(byId(r, 'manage-client-remove-c1')).toHaveLength(0);
+    await press(r, 'manage-client-reinvite-c1');
+    expect(input(r, 'manage-clients-email-search-input').props.value).toBe('eva@x.test');
+    expect(input(r, 'manage-clients-name').props.value).toBe('Eva');
+
+    await press(r, 'manage-clients-search-filter-button');
+    await press(r, 'manage-clients-search-filter-cancelled');
+    expect(byId(r, 'manage-client-c1').length).toBeGreaterThan(0);
+    expect(byId(r, 'manage-client-m1')).toHaveLength(0);
   });
 
   it('shows an error when the list cannot load', async () => {

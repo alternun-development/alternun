@@ -1178,7 +1178,8 @@
         "noMatch": "Ningún cliente coincide con la búsqueda.",
         "kind": {
           "member": "Activo",
-          "invitation": "Invitado"
+          "invitation": "Invitado",
+          "cancelled": "Invitación cancelada"
         },
         "status": {
           "draft": "Borrador",
@@ -1241,7 +1242,8 @@
           "all": "Todos",
           "member": "Activos",
           "invitation": "Invitados",
-          "withAirs": "Con Airs"
+          "withAirs": "Con Airs",
+          "cancelled": "Canceladas"
         },
         "conceptCount": "{{count}}/{{min}} caracteres mínimo",
         "lookupFirst": "Busca el correo en Airs para continuar.",
@@ -1257,7 +1259,22 @@
           "lookupErrorTitle": "No se pudo buscar el correo",
           "removedTitle": "Cliente quitado",
           "cancelledTitle": "Invitación cancelada"
-        }
+        },
+        "invitationStatus": {
+          "pending": "Pendiente",
+          "accepted": "Aceptada",
+          "cancelled": "Cancelada"
+        },
+        "since": "Cliente desde el {{date}}",
+        "invitedOn": "Invitación enviada el {{date}}",
+        "cancelledOn": "Invitación cancelada el {{date}}",
+        "assignedOn": "asignados el {{date}}",
+        "history": "Ver historial de invitaciones ({{count}})",
+        "historyHide": "Ocultar historial",
+        "sentOn": "enviada el {{date}}",
+        "cancelledAt": "cancelada el {{date}}",
+        "acceptedAt": "aceptada el {{date}}",
+        "reinvite": "Invitar de nuevo"
       },
       "comments": {
         "empty": "No hay comentarios en este estado.",
@@ -1316,7 +1333,8 @@
         "validationError": "Revisa el campo marcado.",
         "rateLimited": "Recibimos varias inscripciones seguidas. Intenta de nuevo más tarde.",
         "submitError": "No pudimos enviar la inscripción. Intenta de nuevo.",
-        "finePrint": "Guardamos tu inscripción para que el equipo de Alternun la revise y te contacte."
+        "finePrint": "Guardamos tu inscripción para que el equipo de Alternun la revise y te contacte.",
+        "fieldInvalid": "Revisa este campo."
       },
       "tips": {
         "label": "Ideas para sumar en Airs",

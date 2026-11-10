@@ -7,6 +7,13 @@ import { EnterpriseApplicationForm } from '../EnterpriseApplicationForm';
 import { ExpandableCtaCard } from '../ExpandableCtaCard';
 import { TipsSlider, wrapIndex } from '../TipsSlider';
 
+jest.mock('@alternun/ui', () => ({
+  // FormField only reads colors from the theme.
+  useTheme: () => ({
+    theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
+  }),
+}));
+
 const palette = {
   surface: '#111',
   surfaceStrong: '#121',

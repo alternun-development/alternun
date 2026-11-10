@@ -23,15 +23,28 @@ export interface ClientReport {
   hasProof: boolean;
 }
 
+export interface ClientInvitationEntry {
+  id: string;
+  status: 'pending' | 'accepted' | 'cancelled';
+  invitedAt: string;
+  cancelledAt: string | null;
+  acceptedAt: string | null;
+}
+
 export interface ProjectClient {
   id: string;
-  /** `member` has an Airs account; `invitation` is waiting for the person to sign up. */
-  kind: 'member' | 'invitation';
+  /**
+   * `member` has an Airs account; `invitation` is waiting for the person to sign up;
+   * `cancelled` only has cancelled invitations.
+   */
+  kind: 'member' | 'invitation' | 'cancelled';
   projectId: string;
   email: string;
   name: string;
   since: string;
   reports: ClientReport[];
+  /** Invitations sent to this email in the project, newest first. */
+  invitations?: ClientInvitationEntry[];
 }
 
 export interface ClientsListing {
@@ -246,6 +259,20 @@ export function serverFieldProblems(
     else if (/name/.test(message)) problems.name = 'manage.clients.errors.nameLong';
   }
   return problems;
+}
+
+/** Short local date and time for the client list ("10 nov 2026, 10:46 p. m."), or '' if invalid. */
+export function formatClientDate(iso: string | null | undefined, locale?: string): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }
 
 /** Whole positive Airs amount from the form, or null when it is not one. */

@@ -1178,7 +1178,8 @@
         "noMatch": "No client matches your search.",
         "kind": {
           "member": "Active",
-          "invitation": "Invited"
+          "invitation": "Invited",
+          "cancelled": "Invitation cancelled"
         },
         "status": {
           "draft": "Draft",
@@ -1241,7 +1242,8 @@
           "all": "All",
           "member": "Active",
           "invitation": "Invited",
-          "withAirs": "With Airs"
+          "withAirs": "With Airs",
+          "cancelled": "Cancelled"
         },
         "conceptCount": "{{count}}/{{min}} characters minimum",
         "lookupFirst": "Search the email in Airs to continue.",
@@ -1257,7 +1259,22 @@
           "lookupErrorTitle": "Could not search the email",
           "removedTitle": "Client removed",
           "cancelledTitle": "Invitation cancelled"
-        }
+        },
+        "invitationStatus": {
+          "pending": "Pending",
+          "accepted": "Accepted",
+          "cancelled": "Cancelled"
+        },
+        "since": "Client since {{date}}",
+        "invitedOn": "Invitation sent on {{date}}",
+        "cancelledOn": "Invitation cancelled on {{date}}",
+        "assignedOn": "assigned on {{date}}",
+        "history": "See invitation history ({{count}})",
+        "historyHide": "Hide history",
+        "sentOn": "sent on {{date}}",
+        "cancelledAt": "cancelled on {{date}}",
+        "acceptedAt": "accepted on {{date}}",
+        "reinvite": "Invite again"
       },
       "comments": {
         "empty": "No comments with this status.",
@@ -1316,7 +1333,8 @@
         "validationError": "Check the highlighted field.",
         "rateLimited": "We received several applications in a row. Please try again later.",
         "submitError": "We couldn't send your application. Please try again.",
-        "finePrint": "We store your application so the Alternun team can review it and contact you."
+        "finePrint": "We store your application so the Alternun team can review it and contact you.",
+        "fieldInvalid": "Check this field."
       },
       "tips": {
         "label": "Ideas to grow on Airs",

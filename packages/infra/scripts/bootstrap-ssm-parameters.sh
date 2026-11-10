@@ -152,30 +152,6 @@ case "$stage_normalized" in
 esac
 
 SUPABASE_KEY=$(resolve_publishable_key "$stage_key_suffix")
-POSTMARK_SMTP_SERVER_VALUE=$(first_non_empty "${POSTMARK_SMTP_SERVER:-}" "smtp.postmarkapp.com")
-POSTMARK_SMTP_PORT_VALUE=$(first_non_empty "${POSTMARK_SMTP_PORT:-}" "587")
-POSTMARK_SMTP_USERNAME_VALUE=$(first_non_empty \
-  "${POSTMARK_SMTP_USERNAME:-}" \
-  "${POSTMARK_SMTP_ACCESS_KEY:-}" \
-  "${POSTMARK_SERVER_TOKEN:-}" \
-  "${POSTMARK_SERVER_API_TOKEN:-}" \
-  "${POSTMARK_API_TOKEN:-}")
-POSTMARK_SMTP_PASSWORD_VALUE=$(first_non_empty \
-  "${POSTMARK_SMTP_PASSWORD:-}" \
-  "${POSTMARK_SMTP_SECRET_KEY:-}" \
-  "${POSTMARK_SERVER_TOKEN:-}" \
-  "${POSTMARK_SERVER_API_TOKEN:-}" \
-  "${POSTMARK_API_TOKEN:-}")
-POSTMARK_SMTP_ACCESS_KEY_VALUE=$(first_non_empty "${POSTMARK_SMTP_ACCESS_KEY:-}" "${POSTMARK_SMTP_USERNAME:-}")
-POSTMARK_SMTP_SECRET_KEY_VALUE=$(first_non_empty "${POSTMARK_SMTP_SECRET_KEY:-}" "${POSTMARK_SMTP_PASSWORD:-}")
-POSTMARK_SERVER_TOKEN_VALUE=$(first_non_empty \
-  "${POSTMARK_SERVER_TOKEN:-}" \
-  "${POSTMARK_SERVER_API_TOKEN:-}" \
-  "${POSTMARK_API_TOKEN:-}")
-postmark_api_token_value=$(first_non_empty \
-  "${POSTMARK_API_TOKEN:-}" \
-  "${POSTMARK_SERVER_TOKEN:-}" \
-  "${POSTMARK_SERVER_API_TOKEN:-}")
 EMAIL_SENDER_NAME_VALUE=$(first_non_empty "${EMAIL_SENDER_NAME:-}" "Alternun")
 EMAIL_FROM_VALUE=$(first_non_empty "${EMAIL_FROM:-}" "noreply@alternun.co")
 
@@ -199,15 +175,6 @@ declare -A PARAMS=(
   ["expo-public-better-auth-url-prod"]="https://api.alternun.co/auth|Better-auth base URL for prod stage|Standard"
   ["expo-public-auth-exchange-url-prod"]="https://api.alternun.co/auth/exchange|Better-auth exchange URL for prod stage|Standard"
   ["expo-public-enable-social-auth"]="false|Legacy compatibility flag for mobile social auth; Better Auth execution now controls the buttons|Standard"
-  ["postmark-api-token"]="${postmark_api_token_value}|Postmark API token for transactional emails|Standard"
-  ["postmark-smtp-server"]="${POSTMARK_SMTP_SERVER_VALUE}|Postmark SMTP server address|Standard"
-  ["postmark-smtp-port"]="${POSTMARK_SMTP_PORT_VALUE}|Postmark SMTP server port|Standard"
-  ["postmark-smtp-username"]="${POSTMARK_SMTP_USERNAME_VALUE}|Postmark SMTP username|Standard"
-  ["postmark-smtp-password"]="${POSTMARK_SMTP_PASSWORD_VALUE}|Postmark SMTP password|Standard"
-  ["postmark-smtp-access-key"]="${POSTMARK_SMTP_ACCESS_KEY_VALUE}|Postmark SMTP access key alias|Standard"
-  ["postmark-smtp-secret-key"]="${POSTMARK_SMTP_SECRET_KEY_VALUE}|Postmark SMTP secret key alias|Standard"
-  ["postmark-server-token"]="${POSTMARK_SERVER_TOKEN_VALUE}|Postmark server token alias|Standard"
-  ["postmark-server-api-token"]="${POSTMARK_SERVER_TOKEN_VALUE}|Postmark server API token alias|Standard"
   ["email-sender-name"]="${EMAIL_SENDER_NAME_VALUE}|Default sender name for transactional emails|Standard"
   ["email-from"]="${EMAIL_FROM_VALUE}|Default from email address|Standard"
 )

@@ -1,12 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-# Setup Postmark SMTP secret in AWS Secrets Manager
-# Usage: ./setup-postmark-secret.sh [stage]
+# Setup the Tláo Mail SMTP secret (notifications@alternun.co) in AWS Secrets Manager.
+# Postmark is retired: this script refuses any Postmark host.
+# Usage: ./setup-smtp-secret.sh [stage]
 
 STAGE="${1:-${STACK:-${SST_STAGE:-dev}}}"
 REGION="${AWS_REGION:-us-east-1}"
-SECRET_NAME="alternun/postmark/smtp"
+SECRET_NAME="alternun/tlao/smtp"
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/../../.." && pwd)
 
@@ -69,7 +70,7 @@ require_expected_account() {
 
   if [ -z "$expected_account_id" ]; then
     echo "ERROR: INFRA_AWS_ACCOUNT_ID is not set. Refusing to update Secrets Manager." >&2
-    echo "Set INFRA_AWS_ACCOUNT_ID in packages/infra/.env before updating Postmark secrets." >&2
+    echo "Set INFRA_AWS_ACCOUNT_ID in packages/infra/.env before updating SMTP secrets." >&2
     exit 1
   fi
 
@@ -81,64 +82,62 @@ require_expected_account() {
 
   if [ "$current_account_id" != "$expected_account_id" ]; then
     echo "ERROR: AWS account mismatch. Expected ${expected_account_id}, got ${current_account_id}." >&2
-    echo "Refusing to write Postmark secrets in the wrong account." >&2
+    echo "Refusing to write SMTP secrets in the wrong account." >&2
     exit 1
   fi
 }
 
 require_expected_account
 
-echo "Creating/updating Postmark SMTP secret for stage '${STAGE}' in region '${REGION}'..."
+echo "Creating/updating Tláo SMTP secret for stage '${STAGE}' in region '${REGION}'..."
 
-SMTP_HOST=$(first_non_empty "${POSTMARK_SMTP_SERVER:-}" "smtp.postmarkapp.com")
-SMTP_PORT=$(first_non_empty "${POSTMARK_SMTP_PORT:-}" "587")
-SMTP_USERNAME=$(first_non_empty \
-  "${POSTMARK_SMTP_USERNAME:-}" \
-  "${POSTMARK_SMTP_ACCESS_KEY:-}" \
-  "${POSTMARK_SERVER_TOKEN:-}" \
-  "${POSTMARK_SERVER_API_TOKEN:-}" \
-  "${POSTMARK_API_TOKEN:-}")
-SMTP_PASSWORD=$(first_non_empty \
-  "${POSTMARK_SMTP_PASSWORD:-}" \
-  "${POSTMARK_SMTP_SECRET_KEY:-}" \
-  "${POSTMARK_SERVER_TOKEN:-}" \
-  "${POSTMARK_SERVER_API_TOKEN:-}" \
-  "${POSTMARK_API_TOKEN:-}")
-FROM_EMAIL=$(first_non_empty "${EMAIL_FROM:-}" "noreply@alternun.co")
+SMTP_HOST=$(first_non_empty "${ALTERNUN_SMTP_HOST:-}" "${NODEMAILER_HOST_INFO:-}" "mail.xn--tlo-fla.com")
+SMTP_PORT=$(first_non_empty "${ALTERNUN_SMTP_PORT:-}" "${NODEMAILER_PORT_INFO:-}" "587")
+SMTP_USERNAME=$(first_non_empty "${ALTERNUN_NOTIFICATIONS_EMAIL:-}")
+SMTP_PASSWORD=$(first_non_empty "${ALTERNUN_NOTIFICATIONS_PASSWORD:-}")
 SENDER_NAME=$(first_non_empty "${EMAIL_SENDER_NAME:-}" "Alternun")
 
+case "$(printf '%s' "$SMTP_HOST" | tr '[:upper:]' '[:lower:]')" in
+  *postmark*)
+    echo "ERROR: Postmark is retired. Use the Tláo Mail SMTP host (mail.xn--tlo-fla.com)." >&2
+    exit 1
+    ;;
+esac
+
 if [ -z "$SMTP_USERNAME" ] || [ -z "$SMTP_PASSWORD" ]; then
-  echo "ERROR: Missing Postmark SMTP credentials." >&2
-  echo "Set POSTMARK_SMTP_USERNAME/POSTMARK_SMTP_PASSWORD or one of the token aliases before running this script." >&2
+  echo "ERROR: Missing Tláo SMTP credentials." >&2
+  echo "Set ALTERNUN_NOTIFICATIONS_EMAIL and ALTERNUN_NOTIFICATIONS_PASSWORD before running this script." >&2
   exit 1
 fi
 
-# Create the secret JSON payload
-SECRET_PAYLOAD=$(cat <<EOF
-{
-  "host": "${SMTP_HOST}",
-  "port": ${SMTP_PORT},
-  "username": "${SMTP_USERNAME}",
-  "password": "${SMTP_PASSWORD}",
-  "from": "${FROM_EMAIL}",
-  "senderName": "${SENDER_NAME}",
-  "secure": false,
-  "requireTls": true,
-  "useTls": true
-}
-EOF
-)
+# JSON built by Python so passwords with quotes or backslashes stay valid.
+# Tláo only relays mail from the authenticated mailbox, so `from` is that mailbox.
+SECRET_PAYLOAD=$(SMTP_HOST="$SMTP_HOST" SMTP_PORT="$SMTP_PORT" SMTP_USERNAME="$SMTP_USERNAME" \
+  SMTP_PASSWORD="$SMTP_PASSWORD" SENDER_NAME="$SENDER_NAME" python3 -c '
+import json, os
+print(json.dumps({
+  "host": os.environ["SMTP_HOST"],
+  "port": int(os.environ["SMTP_PORT"]),
+  "username": os.environ["SMTP_USERNAME"],
+  "password": os.environ["SMTP_PASSWORD"],
+  "from": os.environ["SMTP_USERNAME"],
+  "senderName": os.environ["SENDER_NAME"],
+  "secure": False,
+  "requireTls": True,
+  "useTls": True,
+}))')
 
 aws secretsmanager create-secret \
   --name "$SECRET_NAME" \
-  --description "Postmark SMTP credentials for transactional emails" \
+  --description "Tláo Mail SMTP credentials (notifications@alternun.co) for Airs emails" \
   --secret-string "$SECRET_PAYLOAD" \
   --region "$REGION" \
-  2>/dev/null || \
+  >/dev/null 2>&1 || \
 aws secretsmanager update-secret \
   --secret-id "$SECRET_NAME" \
   --secret-string "$SECRET_PAYLOAD" \
-  --region "$REGION"
+  --region "$REGION" \
+  >/dev/null
 
 echo "Secret created/updated successfully!"
 echo ""

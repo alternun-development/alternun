@@ -12,7 +12,17 @@ export const AIRS_REPORT_PROOF_TYPES: Readonly<Record<string, string>> = {
 /** Lifetime of a signed URL to read a supporting file. */
 export const AIRS_REPORT_PROOF_URL_SECONDS = 60;
 
-export type ProjectClientKind = 'member' | 'invitation';
+/** `cancelled`: every invitation for the email was cancelled and it has no account here. */
+export type ProjectClientKind = 'member' | 'invitation' | 'cancelled';
+
+/** One invitation sent to a client's email, for the client's history. */
+export interface ProjectClientInvitationEntry {
+  id: string;
+  status: 'pending' | 'accepted' | 'cancelled';
+  invitedAt: string;
+  cancelledAt: string | null;
+  acceptedAt: string | null;
+}
 
 /** Airs assigned to a client (a User Airs Report), without who submitted or approved it. */
 export interface ProjectClientReport {
@@ -33,6 +43,8 @@ export interface ProjectClientRecord {
   name: string;
   since: string;
   reports: ProjectClientReport[];
+  /** Every invitation sent to this email in the project, newest first. */
+  invitations: ProjectClientInvitationEntry[];
 }
 
 export interface ProjectClientInvitationRecord {
@@ -42,6 +54,8 @@ export interface ProjectClientInvitationRecord {
   name: string;
   status: 'pending' | 'accepted' | 'cancelled';
   invitedAt: string;
+  cancelledAt: string | null;
+  acceptedAt: string | null;
 }
 
 export interface ProjectClientProof {
