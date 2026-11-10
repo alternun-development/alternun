@@ -1,3 +1,14 @@
+## [1.1.135](https://github.com/alternun-development/alternun/compare/v1.1.134...v1.1.135) (2026-11-10)
+
+### Bug Fixes
+
+- **repo:** chore: update reentry status
+- **repo:** feat(marketplace): admin notices for new clients, resends and client pagination
+
+### Features
+
+- **marketplace:** admin notices for new clients, resends and client pagination ([e02f936](https://github.com/alternun-development/alternun/commit/e02f936740bfde3f5330320112a874f4f309cd67))
+
 ## [1.1.134](https://github.com/alternun-development/alternun/compare/v1.1.133...v1.1.134) (2026-11-09)
 
 ### Changes
