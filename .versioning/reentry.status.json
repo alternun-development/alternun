@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-10T00:44:09.991Z",
+  "lastUpdated": "2026-11-10T01:50:57.998Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Probar pestaña Clientes en local con sesión real (alta, invitación, Airs con soporte privado); luego commit + release patch/promote",
+      "description": "Equipo prueba marketplace en testnet con cuentas demo; corregir hallazgos; luego merge PR develop→master",
       "id": "next",
       "priority": 1
     }
