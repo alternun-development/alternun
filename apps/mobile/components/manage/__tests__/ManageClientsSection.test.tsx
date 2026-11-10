@@ -12,6 +12,7 @@ jest.mock('@alternun/ui', () => ({
   useTheme: () => ({
     theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
   }),
+  ToastSystem: () => null,
 }));
 
 jest.mock('../../i18n/useAppTranslation', () => ({
@@ -182,6 +183,7 @@ describe('ManageClientsSection', () => {
 
   it('invites a new person with Airs and a supporting file', async () => {
     const c = clientsClient();
+    const onToast = jest.fn();
     const proof = { type: 'application/pdf', size: 100, name: 'factura.pdf' };
     const r = await render(
       <ManageClientsSection
@@ -192,6 +194,7 @@ describe('ManageClientsSection', () => {
         canPickFiles
         pickFile={async () => proof as never}
         multiProject
+        onToast={onToast}
       />
     );
     expect(texts(r)).toContain('ana@x.test · Río');
@@ -223,7 +226,98 @@ describe('ManageClientsSection', () => {
     expect(texts(r)).toContain(
       'manage.clients.notices.invited manage.clients.notices.pendingApproval'
     );
+    expect(onToast).toHaveBeenCalledWith({
+      type: 'success',
+      title: 'manage.clients.toasts.invitedTitle',
+      message: 'manage.clients.notices.invited manage.clients.notices.pendingApproval',
+    });
     expect(c.list).toHaveBeenCalledTimes(2);
+  });
+
+  it('explains why a client cannot be added yet, field by field', async () => {
+    const c = clientsClient();
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true, assignAirs: true }}
+        palette={palette}
+        t={t}
+        canPickFiles={false}
+      />
+    );
+    // A malformed email is explained instead of being looked up.
+    await type(r, 'manage-clients-email-search-input', 'nueva@');
+    expect(texts(r)).toContain('manage.clients.lookupFirst');
+    await press(r, 'manage-clients-lookup');
+    expect(c.lookup).not.toHaveBeenCalled();
+    expect(texts(r)).toContain('manage.clients.errors.email');
+
+    await type(r, 'manage-clients-email-search-input', 'nueva@x.test');
+    await press(r, 'manage-clients-lookup');
+    await press(r, 'manage-clients-assign');
+    await type(r, 'manage-clients-amount', '0');
+    await type(r, 'manage-clients-concept', 'pago');
+    // The concept shows how far it is from the minimum while typing.
+    expect(byId(r, 'manage-clients-concept-count').length).toBeGreaterThan(0);
+    await press(r, 'manage-clients-add');
+    expect(c.add).not.toHaveBeenCalled();
+    for (const field of ['name', 'amount', 'concept'])
+      expect(byId(r, `manage-clients-${field}-error`).length).toBeGreaterThan(0);
+    expect(texts(r)).toContain('manage.clients.errors.conceptShort');
+    expect(texts(r)).toContain('manage.clients.errors.review');
+
+    // Fixing a field clears its message.
+    await type(r, 'manage-clients-amount', '22');
+    expect(byId(r, 'manage-clients-amount-error')).toHaveLength(0);
+  });
+
+  it('shows the API validation on its field, a spinner while adding and an error toast', async () => {
+    let fail: (error: Error) => void = () => undefined;
+    const c = clientsClient({
+      add: jest.fn(
+        () =>
+          new Promise<never>((_resolve, reject) => {
+            fail = reject;
+          })
+      ),
+    });
+    const onToast = jest.fn();
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true, assignAirs: true }}
+        palette={palette}
+        t={t}
+        canPickFiles={false}
+        onToast={onToast}
+      />
+    );
+    await type(r, 'manage-clients-email-search-input', 'nueva@x.test');
+    await press(r, 'manage-clients-lookup');
+    await type(r, 'manage-clients-name', 'Nueva');
+    await press(r, 'manage-clients-assign');
+    await type(r, 'manage-clients-amount', '22');
+    await type(r, 'manage-clients-concept', 'Pago de factura');
+    await press(r, 'manage-clients-add');
+    expect(texts(r)).toContain('manage.clients.busy.add');
+    expect(pressable(r, 'manage-clients-add').props.disabled).toBe(true);
+
+    await act(async () => {
+      fail(
+        new ManageRequestError(400, 'VALIDATION_FAILED', [
+          'airs.concept must be longer than or equal to 10 characters',
+        ])
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(texts(r)).not.toContain('manage.clients.busy.add');
+    expect(byId(r, 'manage-clients-concept-error').length).toBeGreaterThan(0);
+    expect(onToast).toHaveBeenCalledWith({
+      type: 'error',
+      title: 'manage.clients.toasts.errorTitle',
+      message: 'manage.error',
+    });
   });
 
   it('adds an existing account without asking the name, and explains refusals', async () => {
@@ -282,11 +376,11 @@ describe('ManageClientsSection', () => {
     await press(r, 'manage-client-assign-m1');
     expect(input(r, 'manage-clients-email-search-input').props.value).toBe('ana@x.test');
     await type(r, 'manage-clients-amount', '5');
-    await type(r, 'manage-clients-concept', 'Visita');
+    await type(r, 'manage-clients-concept', 'Visita guiada');
     await press(r, 'manage-clients-add');
     expect(c.add).toHaveBeenCalledWith(
       'p1',
-      { email: 'ana@x.test', airs: { amount: 5, concept: 'Visita', documentNumber: '' } },
+      { email: 'ana@x.test', airs: { amount: 5, concept: 'Visita guiada', documentNumber: '' } },
       null
     );
     expect(texts(r)).toContain('manage.clients.notices.airsAdded');

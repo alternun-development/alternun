@@ -80,7 +80,12 @@ export interface ManagedComment {
 }
 
 export class ManageRequestError extends Error {
-  constructor(readonly status: number, readonly code?: string) {
+  /** `fieldErrors` are the API's validation messages, e.g. "airs.concept must be longer ...". */
+  constructor(
+    readonly status: number,
+    readonly code?: string,
+    readonly fieldErrors: readonly string[] = []
+  ) {
     super(code ?? `Manage request failed with ${status}`);
     this.name = 'ManageRequestError';
   }

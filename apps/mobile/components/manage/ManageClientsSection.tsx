@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Mail, Sparkles, UserCheck, Users, type LucideProps } from 'lucide-react-native';
 import SearchFilterBar from '../common/SearchFilterBar';
 import { SectionHeading } from '../common/PageHeader';
@@ -9,8 +9,12 @@ import type { ClientDraft, ClientFilter, ManageClientsSectionProps } from './typ
 import { ManageRequestError, pickImageFile } from '../../utils/projectManage';
 import {
   airsAmount,
+  CLIENT_LIMITS,
+  clientFormProblems,
   PROOF_TYPES,
+  serverFieldProblems,
   type AddClientResult,
+  type ClientField,
   type ClientLookup,
   type ClientsListing,
   type ProjectClient,
@@ -64,6 +68,7 @@ export function ManageClientsSection({
   pickFile = defaultPickProof,
   openUrl = (url) => Linking.openURL(url),
   multiProject = false,
+  onToast,
 }: ManageClientsSectionProps): React.JSX.Element {
   const [listing, setListing] = useState<ClientsListing | null>(null);
   const [query, setQuery] = useState('');
@@ -72,9 +77,16 @@ export function ManageClientsSection({
   const [projectId, setProjectId] = useState<string | null>(null);
   const [lookup, setLookup] = useState<ClientLookup | null>(null);
   const [proof, setProof] = useState<ProofFile | null>(null);
-  const [busy, setBusy] = useState(false);
+  // What is running ('lookup', 'add', 'remove-<id>', 'proof-<id>'), shown on its own button.
+  const [busyAction, setBusyAction] = useState<string | null>(null);
+  const busy = busyAction !== null;
   const [error, setError] = useState<string | null>(null);
+  // Errors of the add form (lookup, validation, add) show next to its button.
+  const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // Field messages show once the person tries to send; the API's own ones until edited.
+  const [attempted, setAttempted] = useState(false);
+  const [serverProblems, setServerProblems] = useState<Partial<Record<ClientField, string>>>({});
 
   const load = useCallback(() => {
     void client
@@ -112,8 +124,14 @@ export function ManageClientsSection({
     [t]
   );
 
-  const update = (patch: Partial<ClientDraft>): void =>
+  const update = (patch: Partial<ClientDraft>): void => {
     setDraft((current) => ({ ...current, ...patch }));
+    setServerProblems((current) => {
+      const next = { ...current };
+      for (const field of Object.keys(patch)) delete next[field as ClientField];
+      return next;
+    });
+  };
   const problem = (failure: unknown): string =>
     t(
       (failure instanceof ManageRequestError && failure.code
@@ -121,51 +139,105 @@ export function ManageClientsSection({
         : undefined) ?? 'manage.error'
     );
 
-  async function run(action: () => Promise<void>): Promise<void> {
-    setBusy(true);
+  async function run(
+    key: string,
+    action: () => Promise<void>,
+    errorTitle = 'manage.clients.toasts.errorTitle'
+  ): Promise<void> {
+    const inForm = key === 'add' || key === 'lookup';
+    setBusyAction(key);
     setError(null);
+    setFormError(null);
     setNotice(null);
     try {
       await action();
     } catch (failure) {
-      setError(problem(failure));
+      const message = problem(failure);
+      if (failure instanceof ManageRequestError && failure.fieldErrors.length > 0) {
+        setServerProblems(serverFieldProblems(failure.fieldErrors));
+        setAttempted(true);
+      }
+      if (inForm) setFormError(message);
+      else setError(message);
+      onToast?.({ type: 'error', title: t(errorTitle), message });
     } finally {
-      setBusy(false);
+      setBusyAction(null);
     }
   }
 
   const email = draft.email.trim();
   const amount = draft.assign ? airsAmount(draft.amount) : null;
   const needsName = lookup ? !lookup.hasAccount : true;
-  const ready =
-    !!projectId &&
-    !!lookup &&
-    lookup.email === email.toLowerCase() &&
-    (!needsName || !!draft.name.trim()) &&
-    (!draft.assign || (amount !== null && draft.concept.trim().length >= 3));
+  const looked = !!projectId && !!lookup && lookup.email === email.toLowerCase();
+  const problems = clientFormProblems(draft, { needsName, assign: draft.assign });
+  const fieldError = (field: ClientField): string | null => {
+    const key = serverProblems[field] ?? (attempted ? problems[field] : undefined);
+    return key
+      ? t(key, {
+          min: CLIENT_LIMITS.conceptMin,
+          max:
+            field === 'name'
+              ? CLIENT_LIMITS.nameMax
+              : field === 'documentNumber'
+              ? CLIENT_LIMITS.documentMax
+              : CLIENT_LIMITS.conceptMax,
+        })
+      : null;
+  };
+  const renderFieldError = (field: ClientField): React.JSX.Element | null => {
+    const message = fieldError(field);
+    return message ? (
+      <Text testID={`manage-clients-${field}-error`} style={manageStyles.error}>
+        {message}
+      </Text>
+    ) : null;
+  };
+  const conceptLength = draft.concept.trim().length;
 
-  const search = (): Promise<void> =>
-    run(async () => {
-      if (!projectId || !email) return;
-      setLookup(await client.lookup(projectId, email));
-    });
+  const search = (): Promise<void> => {
+    if (problems.email) {
+      setAttempted(true);
+      return Promise.resolve();
+    }
+    return run(
+      'lookup',
+      async () => {
+        if (!projectId) return;
+        setLookup(await client.lookup(projectId, email));
+        // A fresh lookup starts the rest of the form without earlier messages.
+        setAttempted(false);
+      },
+      'manage.clients.toasts.lookupErrorTitle'
+    );
+  };
 
   function resultMessage(result: AddClientResult): string {
     const base = result.alreadyClient
-      ? t('manage.clients.notices.airsAdded')
+      ? t(
+          result.reportStatus
+            ? 'manage.clients.notices.airsAdded'
+            : 'manage.clients.notices.alreadyClient'
+        )
       : result.client.kind === 'member'
       ? t('manage.clients.notices.added')
-      : result.invitationSent
-      ? t('manage.clients.notices.invited')
-      : t('manage.clients.notices.invitedWithAirs');
+      : !result.invitationSent
+      ? t('manage.clients.notices.invitedNoEmail')
+      : result.reportStatus === 'awaiting_claim'
+      ? t('manage.clients.notices.invitedWithAirs')
+      : t('manage.clients.notices.invited');
     return result.reportStatus === 'pending_approval'
       ? `${base} ${t('manage.clients.notices.pendingApproval')}`
       : base;
   }
 
-  const add = (): Promise<void> =>
-    run(async () => {
-      if (!projectId || !ready) return;
+  const add = (): Promise<void> => {
+    if (!projectId || !looked) return Promise.resolve();
+    if (Object.keys(problems).length > 0) {
+      setAttempted(true);
+      setFormError(t('manage.clients.errors.review'));
+      return Promise.resolve();
+    }
+    return run('add', async () => {
       const result = await client.add(
         projectId,
         {
@@ -183,23 +255,44 @@ export function ManageClientsSection({
         },
         draft.assign ? proof : null
       );
+      const message = resultMessage(result);
       setDraft(EMPTY_DRAFT);
       setLookup(null);
       setProof(null);
-      setNotice(resultMessage(result));
+      setAttempted(false);
+      setNotice(message);
+      onToast?.({
+        type: 'success',
+        title: t(
+          result.alreadyClient || result.client.kind === 'member'
+            ? 'manage.clients.toasts.addedTitle'
+            : 'manage.clients.toasts.invitedTitle'
+        ),
+        message,
+      });
       load();
     });
+  };
 
   const remove = (item: ProjectClient): Promise<void> =>
-    run(async () => {
+    run(`remove-${item.id}`, async () => {
       if (item.kind === 'member')
         await client.remove(item.projectId, item.id, t('manage.clients.removeReason'));
       else await client.cancelInvitation(item.projectId, item.id);
+      onToast?.({
+        type: 'success',
+        title: t(
+          item.kind === 'member'
+            ? 'manage.clients.toasts.removedTitle'
+            : 'manage.clients.toasts.cancelledTitle'
+        ),
+        message: item.email,
+      });
       load();
     });
 
   const showProof = (item: ProjectClient, reportId: string): Promise<void> =>
-    run(async () => {
+    run(`proof-${reportId}`, async () => {
       await openUrl(await client.proofUrl(item.projectId, reportId));
     });
 
@@ -212,7 +305,16 @@ export function ManageClientsSection({
       displayName: item.name,
     });
     setProof(null);
+    setAttempted(false);
+    setServerProblems({});
   }
+
+  const spinner = (label: string, color: string): React.JSX.Element => (
+    <View style={styles.busyRow}>
+      <ActivityIndicator size='small' color={color} />
+      <Text style={[manageStyles.primaryButtonText, { color }]}>{label}</Text>
+    </View>
+  );
 
   async function attach(): Promise<void> {
     const file = await pickFile();
@@ -309,11 +411,15 @@ export function ManageClientsSection({
                     disabled={busy}
                     onPress={() => void showProof(item, report.id)}
                   >
-                    <Text
-                      style={[manageStyles.secondaryButtonText, { color: palette.primaryDeep }]}
-                    >
-                      {t('manage.clients.viewProof')}
-                    </Text>
+                    {busyAction === `proof-${report.id}` ? (
+                      <ActivityIndicator size='small' color={palette.primaryDeep} />
+                    ) : (
+                      <Text
+                        style={[manageStyles.secondaryButtonText, { color: palette.primaryDeep }]}
+                      >
+                        {t('manage.clients.viewProof')}
+                      </Text>
+                    )}
                   </Pressable>
                 ) : null}
               </View>
@@ -340,13 +446,17 @@ export function ManageClientsSection({
                   onPress={() => void remove(item)}
                   style={chip(false)}
                 >
-                  <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
-                    {t(
-                      item.kind === 'member'
-                        ? 'manage.clients.remove'
-                        : 'manage.clients.cancelInvitation'
-                    )}
-                  </Text>
+                  {busyAction === `remove-${item.id}` ? (
+                    spinner(t('manage.clients.busy.remove'), palette.text)
+                  ) : (
+                    <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
+                      {t(
+                        item.kind === 'member'
+                          ? 'manage.clients.remove'
+                          : 'manage.clients.cancelInvitation'
+                      )}
+                    </Text>
+                  )}
                 </Pressable>
               </View>
             ) : null}
@@ -412,10 +522,15 @@ export function ManageClientsSection({
                   { backgroundColor: palette.fill, opacity: busy || !email ? 0.6 : 1 },
                 ]}
               >
-                <Text style={manageStyles.primaryButtonText}>{t('manage.clients.lookup')}</Text>
+                {busyAction === 'lookup' ? (
+                  spinner(t('manage.clients.busy.lookup'), '#effff7')
+                ) : (
+                  <Text style={manageStyles.primaryButtonText}>{t('manage.clients.lookup')}</Text>
+                )}
               </Pressable>
             }
           />
+          {renderFieldError('email')}
           {lookup ? (
             <Text
               testID='manage-clients-lookup-result'
@@ -435,6 +550,7 @@ export function ManageClientsSection({
               palette={palette}
             />
           ) : null}
+          {lookup && needsName ? renderFieldError('name') : null}
 
           {lookup && can.assignAirs ? (
             <Pressable
@@ -458,6 +574,7 @@ export function ManageClientsSection({
                 onChange={(value) => update({ amount: value })}
                 palette={palette}
               />
+              {renderFieldError('amount')}
               <ManageField
                 testID='manage-clients-concept'
                 label={t('manage.clients.concept')}
@@ -465,6 +582,23 @@ export function ManageClientsSection({
                 onChange={(value) => update({ concept: value })}
                 palette={palette}
               />
+              {renderFieldError('concept') ?? (
+                <Text
+                  testID='manage-clients-concept-count'
+                  style={[
+                    manageStyles.muted,
+                    {
+                      color:
+                        conceptLength >= CLIENT_LIMITS.conceptMin ? palette.muted : palette.text,
+                    },
+                  ]}
+                >
+                  {t('manage.clients.conceptCount', {
+                    count: conceptLength,
+                    min: CLIENT_LIMITS.conceptMin,
+                  })}
+                </Text>
+              )}
               <ManageField
                 testID='manage-clients-document'
                 label={t('manage.clients.documentNumber')}
@@ -472,6 +606,7 @@ export function ManageClientsSection({
                 onChange={(value) => update({ documentNumber: value })}
                 palette={palette}
               />
+              {renderFieldError('documentNumber')}
               {canPickFiles ? (
                 <View style={manageStyles.row}>
                   <Pressable
@@ -498,18 +633,33 @@ export function ManageClientsSection({
             </>
           ) : null}
 
+          {formError ? (
+            <Text testID='manage-clients-form-error' style={manageStyles.error}>
+              {formError}
+            </Text>
+          ) : null}
           <Pressable
             testID='manage-clients-add'
             accessibilityRole='button'
-            disabled={busy || !ready}
+            accessibilityState={{ disabled: busy || !looked, busy: busyAction === 'add' }}
+            disabled={busy || !looked}
             onPress={() => void add()}
             style={[
               manageStyles.primaryButton,
-              { backgroundColor: palette.fill, opacity: busy || !ready ? 0.6 : 1 },
+              { backgroundColor: palette.fill, opacity: busy || !looked ? 0.6 : 1 },
             ]}
           >
-            <Text style={manageStyles.primaryButtonText}>{t('manage.clients.add')}</Text>
+            {busyAction === 'add' ? (
+              spinner(t('manage.clients.busy.add'), '#effff7')
+            ) : (
+              <Text style={manageStyles.primaryButtonText}>{t('manage.clients.add')}</Text>
+            )}
           </Pressable>
+          {!looked && email ? (
+            <Text style={[manageStyles.muted, { color: palette.muted }]}>
+              {t('manage.clients.lookupFirst')}
+            </Text>
+          ) : null}
         </View>
       ) : (
         <Text style={[manageStyles.muted, { color: palette.muted }]}>
@@ -522,6 +672,7 @@ export function ManageClientsSection({
 
 const styles = StyleSheet.create({
   bar: { marginBottom: 0 },
+  busyRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   lookup: {
     borderRadius: 18,
     paddingHorizontal: 16,

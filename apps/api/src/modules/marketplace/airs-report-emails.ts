@@ -255,6 +255,8 @@ export function renderProjectClientInvitationEmail(context: {
   name: string;
   projectName: string | null;
   appUrl: string;
+  /** Airs waiting for the person, received when they confirm their account. */
+  airs?: { amount: number; concept: string } | null;
 }): AirsReportEmailContent {
   const name = firstName(context.name);
   const project = context.projectName ?? 'Un proyecto aliado';
@@ -264,8 +266,36 @@ export function renderProjectClientInvitationEmail(context: {
   const greetingEn = name ? `Hi ${name}` : 'Hi';
   const introEs = `${project} te invitó a Airs, el programa que reconoce tu impacto positivo. Entra con este correo y confirma tu cuenta para unirte.`;
   const introEn = `${projectEn} invited you to Airs, the program that recognizes your positive impact. Sign in with this email and confirm your account to join.`;
-  const ctaEs = 'Unirme a Airs';
-  const ctaEn = 'Join Airs';
+  const airs = context.airs ?? null;
+  const airsEs = airs
+    ? `Además, tienes ${airsLabel(
+        airs.amount
+      )} esperando por ti. Los recibes al confirmar tu cuenta.`
+    : null;
+  const airsEn = airs
+    ? `You also have ${airsLabel(
+        airs.amount
+      )} waiting for you. You receive them when you confirm your account.`
+    : null;
+  const rows = (labels: [string, string, string]): Array<[string, string]> =>
+    airs
+      ? [
+          [labels[0], airsLabel(airs.amount)],
+          [labels[1], airs.concept],
+          ...(context.projectName
+            ? ([[labels[2], context.projectName]] as Array<[string, string]>)
+            : []),
+        ]
+      : [];
+  const detailText = (labels: [string, string, string]): string[] =>
+    rows(labels).map(([label, value]) => `${label}: ${value}`);
+  const detailHtml = (labels: [string, string, string]): string[] =>
+    rows(labels).map(
+      ([label, value]) =>
+        `<p style="margin:4px 0"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`
+    );
+  const ctaEs = airs ? 'Unirme y reclamar mis Airs' : 'Unirme a Airs';
+  const ctaEn = airs ? 'Join and claim my Airs' : 'Join Airs';
 
   const button = (label: string): string =>
     `<p style="margin:16px 0"><a href="${escapeHtml(
@@ -279,19 +309,27 @@ export function renderProjectClientInvitationEmail(context: {
     text: [
       `${greetingEs}:`,
       introEs,
+      ...(airsEs ? [airsEs] : []),
+      ...detailText(['Monto', 'Motivo', 'Proyecto']),
       `${ctaEs}: ${link}`,
       '',
       `${greetingEn}:`,
       introEn,
+      ...(airsEn ? [airsEn] : []),
+      ...detailText(['Amount', 'Reason', 'Project']),
       `${ctaEn}: ${link}`,
     ].join('\n'),
     html: wrapHtml([
       `<h2 style="margin:0 0 8px">${escapeHtml(greetingEs)}</h2>`,
       `<p>${escapeHtml(introEs)}</p>`,
+      ...(airsEs ? [`<p>${escapeHtml(airsEs)}</p>`] : []),
+      ...detailHtml(['Monto', 'Motivo', 'Proyecto']),
       button(ctaEs),
       '<hr style="border:none;border-top:1px solid #d5e3dc;margin:24px 0" />',
       `<h2 style="margin:0 0 8px">${escapeHtml(greetingEn)}</h2>`,
       `<p>${escapeHtml(introEn)}</p>`,
+      ...(airsEn ? [`<p>${escapeHtml(airsEn)}</p>`] : []),
+      ...detailHtml(['Amount', 'Reason', 'Project']),
       button(ctaEn),
     ]),
   };

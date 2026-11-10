@@ -24,7 +24,16 @@ export interface AirsSmtpConfig {
 export interface AirsWelcomeEmailSendInput {
   to: string;
   replyTo?: string;
+  /** Sender address for this email; defaults to the SMTP secret's `from`. */
+  from?: string;
   email: AirsTransactionalEmail;
+}
+
+const DEFAULT_NOTIFICATIONS_FROM = 'notifications@alternun.co';
+
+/** Sender of marketplace notifications (Airs reports, client invitations). */
+export function resolveAirsNotificationsFrom(env: Record<string, string | undefined>): string {
+  return (env.AIRS_NOTIFICATIONS_EMAIL_FROM ?? '').trim() || DEFAULT_NOTIFICATIONS_FROM;
 }
 
 export interface AirsWelcomeEmailSendResult {
@@ -186,8 +195,9 @@ export async function sendAirsEmail(
     allowedAttributes: false,
   });
 
+  const fromAddress = firstNonEmptyTrimmed([input.from, config.from]) ?? config.from;
   await transporter.sendMail({
-    from: `"${config.senderName}" <${config.from}>`,
+    from: `"${config.senderName}" <${fromAddress}>`,
     to: input.to,
     ...(input.replyTo ? { replyTo: input.replyTo } : {}),
     subject: input.email.subject,
