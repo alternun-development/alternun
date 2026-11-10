@@ -77,7 +77,8 @@ export interface ClientsClient {
   list(): Promise<ClientsListing>;
   lookup(projectId: string, email: string): Promise<ClientLookup>;
   add(projectId: string, input: AddClientInput, proof?: ProofFile | null): Promise<AddClientResult>;
-  cancelInvitation(projectId: string, invitationId: string): Promise<void>;
+  /** Also cancels the Airs still waiting for that person; returns how many. */
+  cancelInvitation(projectId: string, invitationId: string): Promise<{ cancelledAirs: number }>;
   remove(projectId: string, participantId: string, reason: string): Promise<void>;
   /** Sends again the invitation (Airs waiting for sign-up) or a reminder to admins (in review). */
   resendReport(projectId: string, reportId: string): Promise<{ sentTo: 'client' | 'admins' }>;
@@ -191,9 +192,10 @@ export function createClientsClient(
       });
     },
     cancelInvitation: (projectId, invitationId) =>
-      request<void>(`${projectBase(projectId)}/invitations/${encodeURIComponent(invitationId)}`, {
-        method: 'DELETE',
-      }),
+      request<{ cancelledAirs: number }>(
+        `${projectBase(projectId)}/invitations/${encodeURIComponent(invitationId)}`,
+        { method: 'DELETE' }
+      ),
     async remove(projectId, participantId, reason) {
       await request<unknown>(
         `${projectBase(projectId)}/members/${encodeURIComponent(participantId)}/remove`,

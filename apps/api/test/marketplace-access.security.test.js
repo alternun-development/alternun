@@ -11,13 +11,14 @@ const read = (name) =>
 
 const clients = read('20261110_0003_project_clients.sql');
 const domains = read('20261110_0004_domain_project_admins.sql');
+const cancelAirs = read('20261110_0006_cancel_invitation_cancels_airs.sql');
 
 function functionNames(sql) {
   return [...sql.matchAll(/create or replace function public\.(\w+)\(/g)].map((match) => match[1]);
 }
 
 test('every new function runs as definer with a fixed search_path and only for service_role', () => {
-  for (const sql of [clients, domains]) {
+  for (const sql of [clients, domains, cancelAirs]) {
     const names = functionNames(sql);
     assert.ok(names.length > 0);
     const definers = sql.match(/security definer\s+set search_path = pg_catalog, public/g) ?? [];
@@ -29,10 +30,12 @@ test('every new function runs as definer with a fixed search_path and only for s
           `revoke all on function public\\.${name}\\([^)]*\\)\\s+from public, anon, authenticated`
         )
       );
-      assert.match(
-        sql,
-        new RegExp(`grant execute on function public\\.${name}\\([^)]*\\)\\s+to service_role`)
+      // RPCs run for the API only; internal helpers are callable by no role at all.
+      const granted = new RegExp(
+        `grant execute on function public\\.${name}\\([^)]*\\)\\s+to service_role`
       );
+      if (name.startsWith('marketplace_')) assert.match(sql, granted);
+      else assert.doesNotMatch(sql, granted);
       assert.doesNotMatch(
         sql,
         new RegExp(
@@ -105,4 +108,14 @@ test('domain admins need a verified email, never get global roles and keep revoc
     domains,
     /values \('alternun\.io', array\['alternun'\], 'partner_operator', 'project_moderator'\)/
   );
+});
+
+test('cancelling an invitation cancels only the Airs still waiting for that person', () => {
+  assert.match(cancelAirs, /report\.status in \('awaiting_claim', 'pending_approval'\)/);
+  assert.match(cancelAirs, /lower\(report\.recipient_email\) = lower\(btrim\(p_email\)\)/);
+  assert.match(cancelAirs, /report\.project_id = p_project_id/);
+  // Only Airs assigned up to the cancellation; a later invitation keeps its own.
+  assert.match(cancelAirs, /report\.submitted_at <= p_before/);
+  assert.match(cancelAirs, /'airs_report\.cancelled'/);
+  assert.match(cancelAirs, /p_actor_roles && array\['partner_operator', 'sub_admin'\]/);
 });
