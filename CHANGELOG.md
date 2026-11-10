@@ -1,3 +1,14 @@
+## [1.1.136](https://github.com/alternun-development/alternun/compare/v1.1.135...v1.1.136) (2026-11-10)
+
+### Bug Fixes
+
+- **repo:** chore: update reentry status
+- **repo:** feat(marketplace): cancelled invitations cancel their waiting Airs
+
+### Features
+
+- **marketplace:** cancelled invitations cancel their waiting Airs ([3bfab51](https://github.com/alternun-development/alternun/commit/3bfab51999f51df68feea4e0f361e40f134a1347))
+
 ## [1.1.135](https://github.com/alternun-development/alternun/compare/v1.1.134...v1.1.135) (2026-11-10)
 
 ### Changes
