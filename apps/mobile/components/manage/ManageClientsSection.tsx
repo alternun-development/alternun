@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { Mail, MailX, Sparkles, UserCheck, Users, type LucideProps } from 'lucide-react-native';
 import SearchFilterBar from '../common/SearchFilterBar';
 import { SectionHeading } from '../common/PageHeader';
+import { DirectoryPagination } from '../marketplace/DirectoryControls';
 import { ClientListItem } from './ClientListItem';
 import { ProofViewer } from './ProofViewer';
 import { ManageField } from './ManageField';
@@ -45,8 +46,12 @@ const ERROR_KEYS: Readonly<Record<string, string>> = {
   UPLOAD_TYPE: 'manage.clients.errors.proof',
   UPLOAD_SIZE: 'manage.clients.errors.proof',
   CLIENT_INVITE_RATE_LIMITED: 'manage.clients.errors.rateLimited',
+  CLIENT_RESEND_TOO_SOON: 'manage.clients.errors.resendTooSoon',
+  CLIENT_RESEND_NOT_APPLICABLE: 'manage.clients.errors.resendNotApplicable',
   AIRS_REPORT_LOOKUP_RATE_LIMITED: 'manage.clients.errors.rateLimited',
 };
+
+const CLIENTS_PAGE_SIZE = 10;
 
 const CLIENT_FILTERS: readonly ClientFilter[] = [
   'all',
@@ -149,6 +154,15 @@ export function ManageClientsSection({
           item.name.toLowerCase().includes(needle))
     );
   }, [listing, query, filter]);
+  // Pages of clients; going back to the first page whenever the search or filter changes.
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [query, filter]);
+  const pageCount = Math.max(1, Math.ceil(visible.length / CLIENTS_PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageItems = visible.slice(
+    (currentPage - 1) * CLIENTS_PAGE_SIZE,
+    currentPage * CLIENTS_PAGE_SIZE
+  );
   const filters = useMemo(
     () =>
       CLIENT_FILTERS.map((key) => ({
@@ -342,6 +356,30 @@ export function ManageClientsSection({
     });
   };
 
+  const resendReport = (item: ProjectClient, reportId: string): Promise<void> =>
+    run(`resend-${reportId}`, async () => {
+      const { sentTo } = await client.resendReport(item.projectId, reportId);
+      onToast?.({
+        type: 'success',
+        title: t(
+          sentTo === 'admins'
+            ? 'manage.clients.toasts.remindedTitle'
+            : 'manage.clients.toasts.resentTitle'
+        ),
+        message: sentTo === 'admins' ? t('manage.clients.toasts.remindedBody') : item.email,
+      });
+    });
+
+  const resendInvitation = (item: ProjectClient): Promise<void> =>
+    run(`resend-${item.id}`, async () => {
+      await client.resendInvitation(item.projectId, item.id);
+      onToast?.({
+        type: 'success',
+        title: t('manage.clients.toasts.resentTitle'),
+        message: item.email,
+      });
+    });
+
   const closeViewer = (): void => {
     releaseLocalUrl(viewerUri.current);
     viewerUri.current = undefined;
@@ -430,7 +468,7 @@ export function ManageClientsSection({
             {t(listing.clients.length === 0 ? 'manage.clients.empty' : 'manage.clients.noMatch')}
           </Text>
         ) : null}
-        {visible.map((item) => (
+        {pageItems.map((item) => (
           <ClientListItem
             key={`${item.kind}-${item.id}`}
             item={item}
@@ -444,8 +482,19 @@ export function ManageClientsSection({
             onReinvite={() => reinvite(item)}
             onRemove={() => void remove(item)}
             onShowProof={(reportId) => void showProof(item, reportId)}
+            onResendReport={(reportId) => void resendReport(item, reportId)}
+            onResendInvitation={() => void resendInvitation(item)}
           />
         ))}
+        <DirectoryPagination
+          idPrefix='manage-clients'
+          label={t('manage.clients.pagination')}
+          page={currentPage}
+          pageCount={pageCount}
+          palette={palette}
+          t={t}
+          onChange={setPage}
+        />
       </View>
 
       {can.editClients ? (

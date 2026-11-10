@@ -406,6 +406,12 @@
         "generic": {
           "title": "Actualización de cuenta",
           "body": "Hay una nueva actualización en tu cuenta de AIRS."
+        },
+        "project_client_added": {
+          "title": "Nuevo cliente en {{project}}",
+          "titlePending": "Airs en revisión en {{project}}",
+          "body": "{{client}} ({{email}}) ahora es cliente del proyecto.",
+          "bodyAirs": "{{client}} ({{email}}): {{amount}} Airs por {{concept}}."
         }
       }
     },
@@ -1234,7 +1240,9 @@
           "conceptShort": "El concepto necesita al menos {{min}} caracteres para entender la asignación.",
           "conceptLong": "El concepto puede tener hasta {{max}} caracteres.",
           "documentLong": "El número de documento puede tener hasta {{max}} caracteres.",
-          "review": "Revisa los campos marcados para poder agregar el cliente."
+          "review": "Revisa los campos marcados para poder agregar el cliente.",
+          "resendTooSoon": "Ya se envió hace poco. Puedes volver a enviarlo en unos minutos.",
+          "resendNotApplicable": "Esta asignación no tiene nada pendiente por enviar."
         },
         "clear": "Borrar búsqueda",
         "filterLabel": "Mostrar",
@@ -1258,7 +1266,10 @@
           "errorTitle": "No se pudo completar",
           "lookupErrorTitle": "No se pudo buscar el correo",
           "removedTitle": "Cliente quitado",
-          "cancelledTitle": "Invitación cancelada"
+          "cancelledTitle": "Invitación cancelada",
+          "resentTitle": "Correo reenviado",
+          "remindedTitle": "Recordatorio enviado",
+          "remindedBody": "Los admins recibieron de nuevo la solicitud por correo y en la app."
         },
         "invitationStatus": {
           "pending": "Pendiente",
@@ -1282,7 +1293,13 @@
           "error": "No se pudo cargar el soporte.",
           "close": "Cerrar",
           "webOnly": "Los PDF se ven desde la versión web de Airs."
-        }
+        },
+        "resendEmail": "Reenviar correo",
+        "remindAdmins": "Recordar a los admins",
+        "resendInvitation": "Reenviar invitación",
+        "reportsAll": "Ver todas las asignaciones ({{count}})",
+        "reportsLess": "Ver solo las más recientes",
+        "pagination": "Páginas de clientes"
       },
       "comments": {
         "empty": "No hay comentarios en este estado.",

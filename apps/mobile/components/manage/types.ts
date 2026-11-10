@@ -140,6 +140,9 @@ export interface ClientListItemProps {
   onReinvite: () => void;
   onRemove: () => void;
   onShowProof: (reportId: string) => void;
+  /** Sends a pending step again (invitation with Airs, or a reminder to admins). */
+  onResendReport: (reportId: string) => void;
+  onResendInvitation: () => void;
 }
 
 export interface ClientDraft {

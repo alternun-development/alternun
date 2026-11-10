@@ -302,6 +302,33 @@ export class ProjectManageController {
       .send(file.bytes);
   }
 
+  @Post('clients/reports/:reportId/resend')
+  @ApiOperation({
+    summary:
+      'Send again: the invitation for Airs waiting for sign-up, or a reminder to admins for Airs in review.',
+  })
+  async resendClientReport(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('reportId', new ParseUUIDPipe({ version: '4' })) reportId: string
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    return this.clients.resendReport(principal, requestId(request), projectId, reportId);
+  }
+
+  @Post('clients/invitations/:invitationId/resend')
+  @ApiOperation({ summary: 'Send a pending client invitation again.' })
+  async resendClientInvitation(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Param('invitationId', new ParseUUIDPipe({ version: '4' })) invitationId: string
+  ) {
+    const { principal } = await this.access.resolve(bearer(authorization), projectId);
+    return this.clients.resendInvitation(principal, requestId(request), projectId, invitationId);
+  }
+
   @Post('clients/members/:participantId/remove')
   async removeClient(
     @Req() request: FastifyRequest,

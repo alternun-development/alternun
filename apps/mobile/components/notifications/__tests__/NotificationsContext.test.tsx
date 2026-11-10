@@ -102,6 +102,75 @@ describe('NotificationsProvider', () => {
     await act(async () => renderer.unmount());
   });
 
+  it('describes new clients to admins, flagging Airs waiting for approval', async () => {
+    mockAuth.user = { id: 'app-user-123' };
+    mockAuth.client.getSessionToken.mockResolvedValue('session-token');
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        notifications: [
+          {
+            id: 'n-pending',
+            eventType: 'project_client_added',
+            severity: 'warning',
+            payload: {
+              projectName: 'Fundación Batis',
+              clientName: 'Ana',
+              clientEmail: 'ana@x.test',
+              amount: 500,
+              concept: 'Compra grande',
+              reportStatus: 'pending_approval',
+            },
+            read: false,
+            archived: false,
+            createdAt: '2026-11-10T12:00:00.000Z',
+          },
+          {
+            id: 'n-client',
+            eventType: 'project_client_added',
+            severity: 'info',
+            payload: {
+              projectName: 'Fundación Batis',
+              clientName: 'Luis',
+              clientEmail: 'l@x.test',
+            },
+            read: false,
+            archived: false,
+            createdAt: '2026-11-10T12:00:00.000Z',
+          },
+        ],
+      }),
+    } as Response);
+    let items: ReturnType<typeof useNotifications>['items'] = [];
+    let renderer: ReturnType<typeof create>;
+    function Probe(): null {
+      items = useNotifications().items;
+      return null;
+    }
+    await act(async () => {
+      renderer = create(
+        <NotificationsProvider>
+          <Probe />
+        </NotificationsProvider>
+      );
+      await Promise.resolve();
+    });
+    expect(items).toEqual([
+      expect.objectContaining({
+        id: 'n-pending',
+        type: 'warning',
+        title: 'notifications.events.project_client_added.titlePending:500',
+        body: 'notifications.events.project_client_added.bodyAirs:500',
+      }),
+      expect.objectContaining({
+        id: 'n-client',
+        title: 'notifications.events.project_client_added.title',
+        body: 'notifications.events.project_client_added.body',
+      }),
+    ]);
+    await act(async () => renderer.unmount());
+  });
+
   it('discards a prior account response that completes after logout', async () => {
     mockAuth.user = { id: 'account-a' };
     mockAuth.client.getSessionToken.mockResolvedValue('account-a-token');
