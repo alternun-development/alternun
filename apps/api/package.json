@@ -1,6 +1,6 @@
 {
   "name": "@alternun/api",
-  "version": "1.1.128",
+  "version": "1.1.129",
   "private": true,
   "scripts": {
     "dev": "nodemon --watch src --ext ts --signal SIGTERM --exec \"node -r ts-node/register/transpile-only src/main.ts\"",
