@@ -23,4 +23,6 @@ export interface AdminAccessRepositoryPort {
   findVerifiedEmail(userId: string): Promise<string | null>;
   findGlobalRole(email: string): Promise<string | null>;
   listActiveMemberships(userId: string): Promise<AdminAccessScope[]>;
+  /** Adds the memberships the user's email domain grants; returns how many were added. */
+  syncDomainMemberships(userId: string, memberIssuer: string): Promise<number>;
 }

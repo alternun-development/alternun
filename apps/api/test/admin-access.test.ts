@@ -32,8 +32,16 @@ function service(options: {
       calls.push(`global:${email}`);
       return options.globalRole ?? null;
     },
-    listActiveMemberships: async () => (options.scopes ?? []) as any,
+    listActiveMemberships: async () => {
+      calls.push('memberships');
+      return (options.scopes ?? []) as any;
+    },
+    syncDomainMemberships: async (userId: string, issuer: string) => {
+      calls.push(`sync:${userId}:${issuer}`);
+      return 0;
+    },
   });
+  instance.env = { ADMIN_AUTH_ISSUER: 'https://sso.example/admin/' };
   instance.resolveUser = async (token: string) =>
     token === 'Bearer good' ? 'user-1' : Promise.reject(new UnauthorizedException());
   return { instance, calls };
@@ -51,7 +59,12 @@ test('a verified Alternun global admin gets the global role', async () => {
     scopes: [],
     roles: ['platform_owner'],
   });
-  assert.deepEqual(calls, ['email:user-1', 'global:edward@alternun.io']);
+  assert.deepEqual(calls, [
+    'sync:user-1:https://sso.example/admin/',
+    'email:user-1',
+    'memberships',
+    'global:edward@alternun.io',
+  ]);
 });
 
 test('without a verified email no global role is looked up', async () => {
@@ -65,7 +78,12 @@ test('without a verified email no global role is looked up', async () => {
   assert.equal(access.globalRole, null);
   assert.deepEqual(access.scopes, [scope]);
   assert.deepEqual(access.roles, ['partner_operator']);
-  assert.deepEqual(calls, ['email:user-1']);
+  // Domain memberships are synced before the memberships are read.
+  assert.deepEqual(calls, [
+    'sync:user-1:https://sso.example/admin/',
+    'email:user-1',
+    'memberships',
+  ]);
 });
 
 test('project and enterprise memberships are returned as scopes', () => {
@@ -143,4 +161,27 @@ test('memberships resolve project slugs without embedding projects (no foreign k
     },
   ]);
   assert.ok(selects.every((select) => !select.includes('projects(')));
+});
+
+test('the domain sync calls its RPC and never blocks access when it fails', async () => {
+  const { AdminAccessRepository, memberIssuer } = await import(
+    '../src/modules/marketplace/admin-access.service'
+  );
+  const calls: unknown[] = [];
+  const ok = new AdminAccessRepository({
+    rpc: async (name: string, params: unknown) => {
+      calls.push([name, params]);
+      return { data: { ok: true, granted: 2 }, error: null };
+    },
+  } as any);
+  assert.equal(await ok.syncDomainMemberships('user-1', 'iss'), 2);
+  assert.deepEqual(calls, [
+    ['marketplace_sync_domain_memberships', { p_user_id: 'user-1', p_member_issuer: 'iss' }],
+  ]);
+  const failing = new AdminAccessRepository({
+    rpc: async () => ({ data: null, error: { message: 'missing function' } }),
+  } as any);
+  assert.equal(await failing.syncDomainMemberships('user-1', 'iss'), 0);
+  assert.equal(memberIssuer({}), 'airs-app');
+  assert.equal(memberIssuer({ ADMIN_AUTH_ISSUER: ' https://sso/ ' }), 'https://sso/');
 });

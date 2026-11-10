@@ -16,6 +16,11 @@ function text(value: unknown): string | null {
   return typeof value === 'string' && value ? value : null;
 }
 
+/** Issuer stored on memberships the app grants: the console's, so they also work there. */
+export function memberIssuer(env: Record<string, string | undefined>): string {
+  return (env.ADMIN_AUTH_ISSUER ?? '').trim() || 'airs-app';
+}
+
 function single(value: unknown): Row {
   const row = Array.isArray(value) ? (value[0] as unknown) : value;
   return row && typeof row === 'object' ? (row as Row) : {};
@@ -50,6 +55,17 @@ export class AdminAccessRepository implements AdminAccessRepositoryPort {
       .maybeSingle();
     if (error) this.unavailable();
     return text((data as Row | null)?.role);
+  }
+
+  // Best effort: when the sync fails the person keeps the memberships they already have.
+  async syncDomainMemberships(userId: string, issuer: string): Promise<number> {
+    const result = await this.client.rpc('marketplace_sync_domain_memberships', {
+      p_user_id: userId,
+      p_member_issuer: issuer,
+    });
+    if (result.error) return 0;
+    const granted = (result.data as Row | null)?.granted;
+    return typeof granted === 'number' ? granted : 0;
   }
 
   async listActiveMemberships(userId: string): Promise<AdminAccessScope[]> {
@@ -138,6 +154,8 @@ export function buildAdminAccess(
 export class AdminAccessService {
   /** Bearer token -> app user id; replaceable in tests. */
   resolveUser: (token: string) => Promise<string> = (token) => resolveUserId(token);
+  /** Environment (ADMIN_AUTH_ISSUER); replaceable in tests. */
+  env: Record<string, string | undefined> = process.env;
 
   constructor(
     @Inject(AdminAccessRepository) private readonly repository: AdminAccessRepositoryPort
@@ -145,6 +163,8 @@ export class AdminAccessService {
 
   async forToken(token: string): Promise<AdminAccess> {
     const userId = await this.resolveUser(token);
+    // Domain admins (e.g. @alternun.io) get their memberships before they are listed.
+    await this.repository.syncDomainMemberships(userId, memberIssuer(this.env));
     const [email, scopes] = await Promise.all([
       this.repository.findVerifiedEmail(userId),
       this.repository.listActiveMemberships(userId),
