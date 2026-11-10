@@ -126,10 +126,6 @@ Current version: **1.1.130**
 
 ### Bug Fixes
 
-- **repo:** fix(mobile): size the top bar pill and controls to the Airs logo mark
-
-### Bug Fixes
-
 - **mobile:** size the top bar pill and controls to the Airs logo mark ([c6f3669](https://github.com/alternun-development/alternun/commit/c6f36698b19006c1831325553779776558c79781))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
