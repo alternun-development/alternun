@@ -28,6 +28,10 @@ function access(options: {
       findVerifiedEmail: async () => options.email ?? null,
       findGlobalRole: async () => options.globalRole ?? null,
       listProjectMembershipIdentities: async () => options.identities ?? [],
+      syncDomainMemberships: async (userId: string, issuer: string) => {
+        synced.push(`${userId}:${issuer}`);
+        return 0;
+      },
     } as any,
     { findProject: async () => (options.project === undefined ? project : options.project) } as any
   );
@@ -35,6 +39,8 @@ function access(options: {
   instance.env = { ADMIN_AUTH_ISSUER: 'https://sso.example/application/o/alternun-admin/' };
   return instance;
 }
+
+const synced: string[] = [];
 
 const isError = (code: string) => (error: unknown) =>
   error instanceof MarketplaceApiError && error.code === code;
@@ -48,6 +54,15 @@ test('Alternun global admins act with their global role and the console issuer',
   assert.deepEqual(principal.roles, ['platform_owner']);
   assert.equal(principal.iss, 'https://sso.example/application/o/alternun-admin/');
   assert.equal(principal.sub, 'airs-user:user-1');
+});
+
+test('non-global users get their domain memberships before their roles are read', async () => {
+  synced.length = 0;
+  await assert.rejects(
+    access({ email: 'ana@alternun.io', identities: [] }).resolve('Bearer t', 'p1'),
+    isError('PROJECT_SCOPE_DENIED')
+  );
+  assert.deepEqual(synced, ['user-1:https://sso.example/application/o/alternun-admin/']);
 });
 
 test('project members act with the roles and identity stored on their memberships', async () => {
@@ -148,6 +163,7 @@ test('enterprise management needs a global role or an enterprise-wide membership
         requestedProject = projectId;
         return [{ role: 'partner_operator', issuer: 'iss', subject: 'sub' }];
       },
+      syncDomainMemberships: async () => 0,
     } as any,
     { findEnterprise: async (id: string) => (id === 'e1' ? enterprise : null) } as any
   );
@@ -180,6 +196,7 @@ test('enterprise management needs a global role or an enterprise-wide membership
       findVerifiedEmail: async () => null,
       findGlobalRole: async () => null,
       listProjectMembershipIdentities: async () => [],
+      syncDomainMemberships: async () => 0,
     } as any,
     { findEnterprise: async () => enterprise } as any
   );

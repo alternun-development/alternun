@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { resolveUserId } from '../../common/auth/resolve-user-id';
 import { hasPermission, type AdminPrincipal } from '../../common/admin-auth/admin-auth.guard';
-import { AdminAccessRepository } from './admin-access.service';
+import { AdminAccessRepository, memberIssuer } from './admin-access.service';
 import { GLOBAL_ADMIN_ROLES } from './admin-access.types';
 import { marketplaceError } from './marketplace.errors';
 import { MarketplaceAdminRepository } from './marketplace.repository';
@@ -70,7 +70,7 @@ export class ProjectManageAccess {
         isGlobalAdmin: true,
         principal: {
           // The console's issuer, so memberships granted from the app also work there.
-          iss: (this.env.ADMIN_AUTH_ISSUER ?? '').trim() || APP_AUDIENCE,
+          iss: memberIssuer(this.env),
           aud: APP_AUDIENCE,
           sub: `airs-user:${userId}`,
           roles: [globalRole],
@@ -81,6 +81,7 @@ export class ProjectManageAccess {
       };
     }
 
+    await this.access.syncDomainMemberships(userId, memberIssuer(this.env));
     const identities = await this.access.listProjectMembershipIdentities(
       userId,
       enterpriseId,
