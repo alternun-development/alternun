@@ -8,6 +8,13 @@ import {
 } from '../../components/marketplace/directoryPaging';
 import type { MarketProject } from '../explore.types';
 
+jest.mock('@alternun/ui', () => ({
+  // SearchFilterBar only reads colors from the theme.
+  useTheme: () => ({
+    theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
+  }),
+}));
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
@@ -215,7 +222,9 @@ describe('Explorer project views and pagination', () => {
   it('keeps the category filters and returns to the first page when one changes', async () => {
     const { renderer } = await renderProjects(13);
     await press(renderer, 'project-page-next');
-    await press(renderer, 'explorer-filter-productive_enterprise');
+    // Categories now live in the search bar's filter menu.
+    await press(renderer, 'project-filter-button');
+    await press(renderer, 'project-filter-productive_enterprise');
 
     expect(visibleCards(renderer)).toEqual([
       'explorer-project-project-2',

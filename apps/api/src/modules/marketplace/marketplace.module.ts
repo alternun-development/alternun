@@ -70,11 +70,19 @@ import { ProjectTypeRepository } from './project-type.repository';
 import { ProjectTypeService } from './project-type.service';
 import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-group-sync';
 import { AdminAccessController } from './admin-access.controller';
+import { EnterpriseApplicationController } from './enterprise-application.controller';
+import { EnterpriseApplicationRepository } from './enterprise-application.repository';
+import { EnterpriseApplicationService } from './enterprise-application.service';
+import { ProjectManageController } from './project-manage.controller';
+import { EnterpriseManageController } from './enterprise-manage.controller';
+import { ProjectManageAccess } from './project-manage.service';
 import { AdminAccessRepository, AdminAccessService } from './admin-access.service';
 
 @Module({
   controllers: [
     AdminAccessController,
+    ProjectManageController,
+    EnterpriseManageController,
     MarketplacePublicController,
     MarketplaceEnterprisePublicController,
     MarketplaceEnterpriseAdminController,
@@ -88,6 +96,7 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     MarketplaceProjectAuditAdminController,
     MarketplaceEnterpriseAuditAdminController,
     ProjectProposalController,
+    EnterpriseApplicationController,
     AirsReportProjectAdminController,
     AirsReportAdminController,
     ProjectTypeAdminController,
@@ -101,6 +110,7 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     MarketplacePublicRepository,
     AdminAccessRepository,
     AdminAccessService,
+    ProjectManageAccess,
     MarketplaceAdminRepository,
     MarketplaceActivityRepository,
     MarketplaceMembershipRepository,
@@ -108,6 +118,7 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     MarketplaceParticipantRepository,
     MarketplaceAuditRepository,
     ProjectProposalRepository,
+    EnterpriseApplicationRepository,
     MarketplacePublicService,
     MarketplaceAdminService,
     MarketplaceActivityService,
@@ -116,6 +127,7 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     MarketplaceParticipantService,
     MarketplaceAuditService,
     ProjectProposalService,
+    EnterpriseApplicationService,
     AirsReportRepository,
     AirsReportService,
     ProjectTypeRepository,

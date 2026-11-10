@@ -214,3 +214,47 @@ void test('project profile patch and the allied enterprise list', () => {
     [{ enterprise, relation: 'sponsor' }]
   );
 });
+
+void test('saving an untouched event keeps venue and location fields the form does not show', () => {
+  const event = {
+    ...enterprise,
+    kind: 'event',
+    location: { municipality: 'Cajicá', note: 'Sede por confirmar' },
+    publicContact: { web: 'POR CONFIRMAR' },
+    eventDetails: {
+      date: 'POR CONFIRMAR',
+      venue: {
+        name: 'Club El Rincón de Cajicá',
+        municipality: 'Cajicá',
+        department: 'Cundinamarca',
+        web: 'https://clubelrincon.com',
+      },
+    },
+    sites: [{ name: 'Sede', web: 'https://sede.test' }],
+  };
+  const untouched = enterpriseProfile.enterpriseProfileDraft(event);
+  assert.deepEqual(enterpriseProfile.enterpriseProfilePatch(event, untouched, true), {});
+
+  const edited = { ...untouched, venueName: 'Club El Rincón', eventDate: '' };
+  const patch = enterpriseProfile.enterpriseProfilePatch(event, edited, true);
+  assert.deepEqual(patch.eventDetails, {
+    venue: {
+      name: 'Club El Rincón',
+      municipality: 'Cajicá',
+      department: 'Cundinamarca',
+      web: 'https://clubelrincon.com',
+    },
+  });
+  assert.equal(patch.location, undefined);
+  assert.equal(patch.sites, undefined);
+});
+
+void test('mergeEdited sets, clears and keeps fields', () => {
+  assert.deepEqual(profile.mergeEdited({ a: 'x', keep: 'y' }, { a: ' z ', b: '', c: 'n' }), {
+    a: 'z',
+    keep: 'y',
+    c: 'n',
+  });
+  assert.deepEqual(profile.mergeEdited({ a: 'x' }, { a: '  ' }), {});
+  assert.deepEqual(profile.mergeEdited(null, { a: 'v' }), { a: 'v' });
+});

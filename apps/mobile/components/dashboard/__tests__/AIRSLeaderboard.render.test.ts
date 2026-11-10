@@ -26,6 +26,19 @@ jest.mock('react-native', () => {
   };
 });
 
+jest.mock('@alternun/ui', () => ({
+  resolveTier: (score: number): string =>
+    score >= 20_000 ? 'platinum' : score >= 5_000 ? 'gold' : score >= 1_000 ? 'silver' : 'bronze',
+  TIERS: {
+    bronze: { label: 'Bronze', color: '#cd7f32' },
+    silver: { label: 'Silver', color: '#a8b8cc' },
+    gold: { label: 'Gold', color: '#d4b96a' },
+    platinum: { label: 'Platinum', color: '#9ba9c4' },
+  },
+}));
+
+jest.mock('../../profile/badgeAssets', () => ({ STATUS_BADGES: {} }));
+
 jest.mock('../../../utils/runtimeConfig', () => ({
   resolveMobileApiBaseUrl: (): string => 'http://127.0.0.1:3000',
 }));

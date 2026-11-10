@@ -559,7 +559,6 @@ function ATNCard({
 }): React.JSX.Element {
   const useDenseLayout = dense;
   const t = useAppTranslation();
-  const comingSoonLabel = t.t('dashboard.summaryCards.comingSoon');
   const primaryWalletLabel = t.t('dashboard.summaryCards.atn.primaryWalletLabel');
   const primaryWalletMeta = t.t('dashboard.summaryCards.atn.primaryWalletMeta');
   const walletSummaryState = resolveWalletSummaryState(walletAccount ?? null);
@@ -575,7 +574,6 @@ function ATNCard({
     suppliedAtn ?? defaultAtnAsset,
     ...suppliedAssets.filter((asset) => asset.id.toLowerCase() !== 'atn'),
   ];
-  const redeemActionLabel = t.t('dashboard.summaryCards.atn.redeemAction');
   const metricInfoCloseLabel = t.t('dashboard.summaryCards.metricInfo.closeLabel');
 
   return (
@@ -590,23 +588,6 @@ function ATNCard({
             mobile={mobile}
           />
         </View>
-        <TouchableOpacity
-          testID='dashboard-atn-redeem-action'
-          accessibilityRole='button'
-          accessibilityLabel={`${redeemActionLabel}. ${comingSoonLabel}`}
-          accessibilityState={{ disabled: true }}
-          disabled
-          style={[
-            styles.redeemAction,
-            compact && styles.redeemActionCompact,
-            { backgroundColor: p.panelBg, borderColor: p.panelBorder },
-          ]}
-        >
-          <Text style={[styles.redeemActionText, { color: p.copy }]}>{redeemActionLabel}</Text>
-          <Text style={[styles.redeemActionStatus, { color: p.factorText }]}>
-            {comingSoonLabel}
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <View style={[styles.assetList, compact && styles.assetListCompact]}>
@@ -664,7 +645,7 @@ function ATNCard({
               >
                 {typeof asset.value === 'number'
                   ? asset.value.toLocaleString()
-                  : asset.value ?? comingSoonLabel}
+                  : asset.value ?? '—'}
               </Text>
             </View>
             {index < orderedAssets.length - 1 && <Divider p={p} compact={compact} />}
@@ -1479,35 +1460,5 @@ const styles = StyleSheet.create({
   walletLinkTextCompact: {
     fontFamily: ANEK_EXPANDED_FAMILY,
     fontSize: 13,
-  },
-  redeemAction: {
-    maxWidth: 160,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 11,
-    paddingVertical: 9,
-    alignItems: 'flex-end',
-    gap: 3,
-    opacity: 0.78,
-    flexShrink: 1,
-  },
-  redeemActionCompact: {
-    maxWidth: 132,
-    paddingHorizontal: 9,
-    paddingVertical: 8,
-  },
-  redeemActionText: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 14,
-    fontWeight: '800',
-    flexShrink: 1,
-    textAlign: 'right',
-  },
-  redeemActionStatus: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 12,
-    fontWeight: '700',
-    flexShrink: 0,
-    textAlign: 'right',
   },
 });

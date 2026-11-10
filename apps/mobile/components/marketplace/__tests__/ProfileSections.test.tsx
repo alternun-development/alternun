@@ -158,4 +158,27 @@ describe('profile sections', () => {
     expect(content).toContain('Podio');
     expect(content).toContain('explorer.profile.partnership.postponed');
   });
+
+  it('handles partial data: coverage only, date-only events, bare sites and products', () => {
+    const renderer = render(
+      <>
+        <LocationSection location={{ coverage: 'Valle de Aburrá' }} palette={palette} t={t} />
+        <EventSection event={{ date: '30 oct' }} palette={palette} t={t} />
+        <EventSection event={{ venue: { name: 'Club' } }} palette={palette} t={t} />
+        <SitesSection sites={[{ name: 'Sede sin datos' }]} palette={palette} t={t} />
+        <ProductsSection
+          products={[product({ name: 'Solo nombre', airsMax: 10 })]}
+          palette={palette}
+          t={t}
+        />
+      </>
+    );
+    const content = texts(renderer);
+    expect(content).toContain('Valle de Aburrá');
+    expect(content).toContain('30 oct');
+    expect(content).toContain('Club');
+    expect(content).toContain('Sede sin datos');
+    // Only a maximum: shown as an exact amount.
+    expect(content).toContain('explorer.profile.airsExact:{"min":10}');
+  });
 });

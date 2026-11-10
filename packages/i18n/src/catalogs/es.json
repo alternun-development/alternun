@@ -1079,7 +1079,198 @@
         "downloadError": "No se pudo guardar la imagen. Prueba Compartir con apps."
       }
     },
+    "manage": {
+      "enterprise": {
+        "title": "Administrar empresa",
+        "back": "Volver a la empresa",
+        "tabs": {
+          "info": "Información",
+          "images": "Imágenes",
+          "products": "Productos y Airs",
+          "team": "Equipo"
+        },
+        "info": {
+          "name": "Nombre",
+          "sector": "Sector",
+          "description": "Descripción"
+        },
+        "images": {
+          "logo": "Logo",
+          "banner": "Banner"
+        },
+        "products": {
+          "intro": "Lo que tus clientes suman en Airs con cada producto o servicio.",
+          "name": "Producto o servicio",
+          "description": "Descripción",
+          "airsMin": "Airs desde",
+          "airsMax": "Airs hasta",
+          "airsNote": "Nota (ej. por noche)",
+          "add": "Agregar producto",
+          "save": "Guardar",
+          "delete": "Eliminar",
+          "empty": "Aún no hay productos.",
+          "invalid": "Escribe un nombre y usa números enteros; \"hasta\" no puede ser menor que \"desde\"."
+        },
+        "team": {
+          "intro": "Personas que administran toda la empresa y todos sus proyectos. Deben haber iniciado sesión en Airs al menos una vez."
+        }
+      },
+      "title": "Administrar proyecto",
+      "back": "Volver al proyecto",
+      "loading": "Cargando…",
+      "denied": "No tienes permisos para administrar este proyecto.",
+      "error": "No se pudo cargar. Intenta de nuevo.",
+      "retry": "Reintentar",
+      "saved": "Cambios guardados.",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "tabs": {
+        "info": "Información",
+        "images": "Imágenes",
+        "team": "Equipo",
+        "comments": "Comentarios"
+      },
+      "info": {
+        "title": "Nombre",
+        "theme": "Tema",
+        "location": "Ubicación (resumen)",
+        "description": "Descripción",
+        "ways": "Formas de participar (una por línea)",
+        "alternateName": "Nombre alterno",
+        "municipality": "Municipio",
+        "department": "Departamento",
+        "address": "Dirección",
+        "coverage": "Cobertura",
+        "contact": "Contacto público",
+        "contentOnly": "Tu rol puede editar el contenido; la ubicación y el contacto los edita el admin del proyecto."
+      },
+      "images": {
+        "logo": "Logo",
+        "cover": "Banner",
+        "gallery": "Galería",
+        "upload": "Subir imagen",
+        "uploading": "Subiendo…",
+        "remove": "Quitar",
+        "empty": "Sin imagen.",
+        "alt": "Descripción de la imagen",
+        "altRequired": "Escribe una descripción corta de la imagen.",
+        "webOnly": "La subida de imágenes está disponible en la versión web de Airs.",
+        "hint": "JPG, PNG o WebP de hasta 5 MB.",
+        "type": "Sube una imagen JPG, PNG o WebP.",
+        "size": "La imagen debe pesar 5 MB o menos."
+      },
+      "team": {
+        "intro": "Personas que te ayudan a administrar este proyecto. Deben haber iniciado sesión en Airs al menos una vez.",
+        "email": "Correo",
+        "role": "Rol",
+        "add": "Agregar",
+        "remove": "Quitar",
+        "removeReason": "Quitado desde Airs",
+        "empty": "Aún no hay más personas en el equipo.",
+        "notFound": "No encontramos una cuenta de Airs verificada con ese correo.",
+        "readOnly": "Solo el admin del proyecto puede cambiar el equipo."
+      },
+      "comments": {
+        "empty": "No hay comentarios en este estado.",
+        "approve": "Aprobar",
+        "reject": "Rechazar",
+        "hide": "Ocultar",
+        "restore": "Restaurar",
+        "reasonPrompt": "Motivo (obligatorio para rechazar u ocultar)",
+        "status": {
+          "pending": "Pendientes",
+          "visible": "Visibles",
+          "hidden": "Ocultos",
+          "rejected": "Rechazados"
+        }
+      }
+    },
     "explorer": {
+      "seeProject": "Ver proyecto",
+      "cta": {
+        "project": {
+          "title": "¿Lideras un proyecto de impacto positivo?",
+          "description": "Propón tu iniciativa productiva o de conservación. El equipo de Alternun revisa cada propuesta.",
+          "action": "Proponer proyecto"
+        },
+        "enterprise": {
+          "title": "¿Tienes una empresa?",
+          "description": "Tus clientes suman Airs con tus productos y tus aportes llegan, a nombre de tu empresa, a proyectos de impacto positivo.",
+          "action": "Inscribir mi empresa"
+        },
+        "close": "Cerrar"
+      },
+      "enterpriseForm": {
+        "title": "Suma tu empresa a Airs",
+        "subtitle": "El equipo de Alternun revisa cada inscripción y te contacta.",
+        "companyName": "Nombre de la empresa",
+        "legalName": "Razón social (opcional)",
+        "sector": "Sector (ej. hotelería, alimentos)",
+        "location": "Ciudad y país",
+        "websiteUrl": "Sitio web (opcional)",
+        "sizeLabel": "Tamaño de la empresa (opcional)",
+        "sizes": {
+          "1-10": "1–10 personas",
+          "11-50": "11–50",
+          "51-200": "51–200",
+          "201+": "Más de 200"
+        },
+        "offer": "¿Con qué productos o servicios sumarían Airs tus clientes?",
+        "interest": "Causa o proyecto que te gustaría apoyar (opcional)",
+        "contactName": "Nombre de contacto",
+        "contactRole": "Cargo (opcional)",
+        "contactEmail": "Correo de contacto",
+        "contactPhone": "Teléfono o WhatsApp (opcional)",
+        "submit": "Enviar inscripción",
+        "submitting": "Enviando…",
+        "sent": "¡Recibimos tu inscripción! El equipo de Alternun te contactará pronto.",
+        "validationError": "Revisa el campo marcado.",
+        "rateLimited": "Recibimos varias inscripciones seguidas. Intenta de nuevo más tarde.",
+        "submitError": "No pudimos enviar la inscripción. Intenta de nuevo.",
+        "finePrint": "Guardamos tu inscripción para que el equipo de Alternun la revise y te contacte."
+      },
+      "tips": {
+        "label": "Ideas para sumar en Airs",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "items": {
+          "reputation": {
+            "title": "Tu trayectoria cuenta",
+            "text": "Cada acción de impacto positivo suma Airs a tu reputación.",
+            "action": "Ver mi perfil"
+          },
+          "projects": {
+            "title": "Conoce los proyectos",
+            "text": "Explora los proyectos de impacto positivo y las formas de participar en cada uno.",
+            "action": "Ver proyectos"
+          },
+          "enterprises": {
+            "title": "Suma Airs con empresas",
+            "text": "En las empresas del directorio sumas Airs con sus productos y servicios.",
+            "action": "Ver empresas"
+          },
+          "invite": {
+            "title": "Invita a tu comunidad",
+            "text": "Comparte Airs con tus amigos desde tu perfil y construyan juntos su trayectoria.",
+            "action": "Invitar"
+          },
+          "propose": {
+            "title": "¿Lideras un proyecto?",
+            "text": "Propón tu iniciativa productiva o de conservación para que el equipo de Alternun la revise.",
+            "action": "Proponer proyecto"
+          },
+          "enroll": {
+            "title": "¿Tienes una empresa?",
+            "text": "Inscríbela: tus clientes suman Airs y tus aportes llegan, a nombre de tu empresa, a proyectos de impacto positivo.",
+            "action": "Inscribir empresa"
+          },
+          "together": {
+            "title": "La colaboración impulsa",
+            "text": "Las oportunidades de Airs se coordinan con cada proyecto y con la comunidad."
+          }
+        }
+      },
+      "reload": "Recargar proyectos",
       "admin": {
         "openPanel": "Panel admin de Alternun",
         "manageProject": "Administrar proyecto",
@@ -1176,6 +1367,12 @@
         "noMatches": "Ninguna empresa coincide con tu búsqueda.",
         "error": "No se pudieron cargar las empresas.",
         "retry": "Reintentar",
+        "filters": {
+          "heading": "Filtrar por tipo",
+          "all": "Todas",
+          "company": "Empresas",
+          "event": "Eventos"
+        },
         "detail": {
           "back": "Volver a empresas",
           "loading": "Cargando empresa…",
@@ -1186,6 +1383,7 @@
         }
       },
       "filters": {
+        "heading": "Filtrar por categoría",
         "all": "Todos",
         "active": "Activos"
       },
@@ -1251,7 +1449,7 @@
         },
         "donate": {
           "label": "Quiero donar",
-          "description": "Impulsa una causa y conecta tu apoyo con impacto verificable."
+          "description": "Impulsa una causa y conecta tu apoyo con impacto positivo."
         }
       },
       "submitBanner": {

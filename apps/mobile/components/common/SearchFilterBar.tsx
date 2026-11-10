@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Search,
   SlidersHorizontal,
+  X,
   type LucideProps,
 } from 'lucide-react-native';
 import { useTheme } from '@alternun/ui';
@@ -24,6 +25,7 @@ const SearchIcon = Search as React.FC<LucideProps>;
 const FilterIcon = SlidersHorizontal as React.FC<LucideProps>;
 const ChevronDownIcon = ChevronDown as React.FC<LucideProps>;
 const CheckIcon = Check as React.FC<LucideProps>;
+const ClearIcon = X as React.FC<LucideProps>;
 
 export interface SearchFilterOption {
   key: string;
@@ -48,6 +50,14 @@ interface SearchFilterBarProps {
   onChangeFilter: (filterKey: string) => void;
   style?: ViewStyle;
   dropdownWidth?: number;
+  /** Shown on the same line, right of the search box (e.g. a view-mode tray). */
+  trailing?: React.ReactNode;
+  /** Accessible name of the search input; defaults to the placeholder. */
+  searchLabel?: string;
+  /** Shows a clear button while there is text; its accessible name. */
+  clearLabel?: string;
+  /** Test ID prefix: `${testID}-search-input`, `-search-clear`, `-filter-button`, `-filter-<key>`. */
+  testID?: string;
 }
 
 export default function SearchFilterBar({
@@ -60,7 +70,13 @@ export default function SearchFilterBar({
   onChangeFilter,
   style,
   dropdownWidth = 208,
+  trailing,
+  searchLabel,
+  clearLabel,
+  testID,
 }: SearchFilterBarProps) {
+  // A single option filters nothing, so the button only appears with real choices.
+  const hasFilters = filters.length > 1;
   const { theme } = useTheme();
   const { width: windowWidth } = useWindowDimensions();
   const filterButtonRef = useRef<View>(null);
@@ -105,10 +121,14 @@ export default function SearchFilterBar({
   const dropdownTop = anchorRect ? anchorRect.y + anchorRect.height + 8 : 58;
 
   return (
-    <View style={[styles.root, style, isOpen && styles.rootOpen]}>
+    <View
+      testID={testID}
+      style={[styles.root, trailing ? styles.rootRow : null, style, isOpen && styles.rootOpen]}
+    >
       <View
         style={[
           styles.bar,
+          trailing ? styles.barFlex : null,
           {
             backgroundColor: theme.inputBg,
             borderColor: isOpen ? theme.inputBorderFocus : theme.inputBorder,
@@ -117,48 +137,68 @@ export default function SearchFilterBar({
       >
         <SearchIcon size={16} color={theme.iconMuted} />
         <TextInput
+          testID={testID ? `${testID}-search-input` : undefined}
           style={[styles.input, { color: theme.textPrimary }]}
-          accessibilityLabel={placeholder}
+          accessibilityLabel={searchLabel ?? placeholder}
+          role='searchbox'
+          returnKeyType='search'
+          autoCorrect={false}
           placeholder={placeholder}
           placeholderTextColor={theme.textPlaceholder}
           value={value}
           onChangeText={onChangeText}
           onFocus={() => setIsOpen(false)}
         />
-        <View ref={filterButtonRef} collapsable={false} style={styles.filterButtonAnchor}>
-          <TouchableOpacity
-            activeOpacity={0.8}
+        {clearLabel && value ? (
+          <Pressable
+            testID={testID ? `${testID}-search-clear` : undefined}
             accessibilityRole='button'
-            accessibilityLabel={activeOption?.label}
-            accessibilityState={{ expanded: isOpen }}
-            onPress={() => setIsOpen((open) => !open)}
-            style={[
-              styles.filterButton,
-              {
-                backgroundColor:
-                  activeOption?.key !== filters[0]?.key || isOpen
-                    ? theme.accentMuted
-                    : 'transparent',
-                borderColor: isOpen ? theme.inputBorderFocus : theme.inputBorder,
-              },
-            ]}
+            accessibilityLabel={clearLabel}
+            hitSlop={8}
+            onPress={() => onChangeText('')}
           >
-            <ActiveFilterIcon size={14} color={isOpen ? theme.accent : theme.iconDefault} />
-            <Text
-              numberOfLines={1}
+            <ClearIcon size={15} color={theme.iconMuted} />
+          </Pressable>
+        ) : null}
+        {hasFilters ? (
+          <View ref={filterButtonRef} collapsable={false} style={styles.filterButtonAnchor}>
+            <TouchableOpacity
+              testID={testID ? `${testID}-filter-button` : undefined}
+              activeOpacity={0.8}
+              accessibilityRole='button'
+              accessibilityLabel={activeOption?.label}
+              accessibilityState={{ expanded: isOpen }}
+              onPress={() => setIsOpen((open) => !open)}
               style={[
-                styles.filterLabel,
+                styles.filterButton,
                 {
-                  color: activeOption?.key !== filters[0]?.key ? theme.accent : theme.textSecondary,
+                  backgroundColor:
+                    activeOption?.key !== filters[0]?.key || isOpen
+                      ? theme.accentMuted
+                      : 'transparent',
+                  borderColor: isOpen ? theme.inputBorderFocus : theme.inputBorder,
                 },
               ]}
             >
-              {activeOption?.label ?? 'Filtro'}
-            </Text>
-            <ChevronDownIcon size={14} color={theme.iconMuted} />
-          </TouchableOpacity>
-        </View>
+              <ActiveFilterIcon size={14} color={isOpen ? theme.accent : theme.iconDefault} />
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.filterLabel,
+                  {
+                    color:
+                      activeOption?.key !== filters[0]?.key ? theme.accent : theme.textSecondary,
+                  },
+                ]}
+              >
+                {activeOption?.label ?? 'Filtro'}
+              </Text>
+              <ChevronDownIcon size={14} color={theme.iconMuted} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
+      {trailing}
 
       <Modal
         transparent
@@ -192,6 +232,7 @@ export default function SearchFilterBar({
               return (
                 <TouchableOpacity
                   key={option.key}
+                  testID={testID ? `${testID}-filter-${option.key}` : undefined}
                   accessibilityRole='button'
                   accessibilityLabel={option.label}
                   accessibilityState={{ selected: active }}
@@ -244,6 +285,16 @@ const styles = StyleSheet.create({
   },
   rootOpen: {
     zIndex: 40,
+  },
+  rootRow: {
+    flexDirection: 'row',
+    // Trailing controls stretch to the search bar's height so the row reads as one unit.
+    alignItems: 'stretch',
+    gap: 10,
+  },
+  barFlex: {
+    flex: 1,
+    minWidth: 0,
   },
   modalRoot: {
     flex: 1,

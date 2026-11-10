@@ -1079,7 +1079,198 @@
         "downloadError": "Unable to save the image. Try Share with apps instead."
       }
     },
+    "manage": {
+      "enterprise": {
+        "title": "Manage enterprise",
+        "back": "Back to the enterprise",
+        "tabs": {
+          "info": "Information",
+          "images": "Images",
+          "products": "Products and Airs",
+          "team": "Team"
+        },
+        "info": {
+          "name": "Name",
+          "sector": "Sector",
+          "description": "Description"
+        },
+        "images": {
+          "logo": "Logo",
+          "banner": "Banner"
+        },
+        "products": {
+          "intro": "What your customers earn in Airs with each product or service.",
+          "name": "Product or service",
+          "description": "Description",
+          "airsMin": "Airs from",
+          "airsMax": "Airs up to",
+          "airsNote": "Note (e.g. per night)",
+          "add": "Add product",
+          "save": "Save",
+          "delete": "Delete",
+          "empty": "No products yet.",
+          "invalid": "Enter a name and use whole numbers; \"up to\" cannot be lower than \"from\"."
+        },
+        "team": {
+          "intro": "People who manage the whole enterprise and all its projects. They must have signed in to Airs at least once."
+        }
+      },
+      "title": "Manage project",
+      "back": "Back to project",
+      "loading": "Loading…",
+      "denied": "You don't have permission to manage this project.",
+      "error": "It could not be loaded. Please try again.",
+      "retry": "Retry",
+      "saved": "Changes saved.",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "tabs": {
+        "info": "Information",
+        "images": "Images",
+        "team": "Team",
+        "comments": "Comments"
+      },
+      "info": {
+        "title": "Name",
+        "theme": "Theme",
+        "location": "Location (summary)",
+        "description": "Description",
+        "ways": "Ways to take part (one per line)",
+        "alternateName": "Alternate name",
+        "municipality": "Municipality",
+        "department": "Department",
+        "address": "Address",
+        "coverage": "Coverage",
+        "contact": "Public contact",
+        "contentOnly": "Your role can edit the content; the project admin edits location and contact."
+      },
+      "images": {
+        "logo": "Logo",
+        "cover": "Banner",
+        "gallery": "Gallery",
+        "upload": "Upload image",
+        "uploading": "Uploading…",
+        "remove": "Remove",
+        "empty": "No image.",
+        "alt": "Image description",
+        "altRequired": "Write a short description of the image.",
+        "webOnly": "Image upload is available in the Airs web app.",
+        "hint": "JPG, PNG or WebP up to 5 MB.",
+        "type": "Upload a JPG, PNG or WebP image.",
+        "size": "The image must be 5 MB or smaller."
+      },
+      "team": {
+        "intro": "People who help you manage this project. They must have signed in to Airs at least once.",
+        "email": "Email",
+        "role": "Role",
+        "add": "Add",
+        "remove": "Remove",
+        "removeReason": "Removed from Airs",
+        "empty": "No one else is on the team yet.",
+        "notFound": "No verified Airs account uses that email.",
+        "readOnly": "Only the project admin can change the team."
+      },
+      "comments": {
+        "empty": "No comments with this status.",
+        "approve": "Approve",
+        "reject": "Reject",
+        "hide": "Hide",
+        "restore": "Restore",
+        "reasonPrompt": "Reason (required to reject or hide)",
+        "status": {
+          "pending": "Pending",
+          "visible": "Visible",
+          "hidden": "Hidden",
+          "rejected": "Rejected"
+        }
+      }
+    },
     "explorer": {
+      "seeProject": "See project",
+      "cta": {
+        "project": {
+          "title": "Do you lead a positive-impact project?",
+          "description": "Propose your productive or conservation initiative. The Alternun team reviews every proposal.",
+          "action": "Propose a project"
+        },
+        "enterprise": {
+          "title": "Do you have a company?",
+          "description": "Your customers earn Airs with your products, and your contributions go, in your company's name, to positive-impact projects.",
+          "action": "Enroll my company"
+        },
+        "close": "Close"
+      },
+      "enterpriseForm": {
+        "title": "Add your company to Airs",
+        "subtitle": "The Alternun team reviews every application and gets in touch.",
+        "companyName": "Company name",
+        "legalName": "Legal name (optional)",
+        "sector": "Sector (e.g. hospitality, food)",
+        "location": "City and country",
+        "websiteUrl": "Website (optional)",
+        "sizeLabel": "Company size (optional)",
+        "sizes": {
+          "1-10": "1–10 people",
+          "11-50": "11–50",
+          "51-200": "51–200",
+          "201+": "More than 200"
+        },
+        "offer": "With which products or services would your customers earn Airs?",
+        "interest": "Cause or project you'd like to support (optional)",
+        "contactName": "Contact name",
+        "contactRole": "Role (optional)",
+        "contactEmail": "Contact email",
+        "contactPhone": "Phone or WhatsApp (optional)",
+        "submit": "Send application",
+        "submitting": "Sending…",
+        "sent": "We received your application! The Alternun team will contact you soon.",
+        "validationError": "Check the highlighted field.",
+        "rateLimited": "We received several applications in a row. Please try again later.",
+        "submitError": "We couldn't send your application. Please try again.",
+        "finePrint": "We store your application so the Alternun team can review it and contact you."
+      },
+      "tips": {
+        "label": "Ideas to grow on Airs",
+        "previous": "Previous",
+        "next": "Next",
+        "items": {
+          "reputation": {
+            "title": "Your track record counts",
+            "text": "Every positive-impact action adds Airs to your reputation.",
+            "action": "View my profile"
+          },
+          "projects": {
+            "title": "Get to know the projects",
+            "text": "Explore positive-impact projects and the ways to take part in each one.",
+            "action": "See projects"
+          },
+          "enterprises": {
+            "title": "Earn Airs with companies",
+            "text": "At companies in the directory you earn Airs with their products and services.",
+            "action": "See companies"
+          },
+          "invite": {
+            "title": "Invite your community",
+            "text": "Share Airs with your friends from your profile and build your track record together.",
+            "action": "Invite"
+          },
+          "propose": {
+            "title": "Do you lead a project?",
+            "text": "Propose your productive or conservation initiative for the Alternun team to review.",
+            "action": "Propose a project"
+          },
+          "enroll": {
+            "title": "Do you have a company?",
+            "text": "Enroll it: your customers earn Airs and your contributions go, in your company's name, to positive-impact projects.",
+            "action": "Enroll a company"
+          },
+          "together": {
+            "title": "Collaboration creates momentum",
+            "text": "Airs opportunities are coordinated with each project and the community."
+          }
+        }
+      },
+      "reload": "Reload projects",
       "admin": {
         "openPanel": "Alternun admin panel",
         "manageProject": "Manage project",
@@ -1176,6 +1367,12 @@
         "noMatches": "No enterprises match your search.",
         "error": "Enterprises could not be loaded.",
         "retry": "Try again",
+        "filters": {
+          "heading": "Filter by type",
+          "all": "All",
+          "company": "Companies",
+          "event": "Events"
+        },
         "detail": {
           "back": "Back to enterprises",
           "loading": "Loading enterprise…",
@@ -1186,6 +1383,7 @@
         }
       },
       "filters": {
+        "heading": "Filter by category",
         "all": "All",
         "active": "Active"
       },
@@ -1251,7 +1449,7 @@
         },
         "donate": {
           "label": "I want to donate",
-          "description": "Boost a cause and connect your support with verifiable impact."
+          "description": "Boost a cause and connect your support with positive impact."
         }
       },
       "submitBanner": {

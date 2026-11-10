@@ -10,7 +10,7 @@ import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/c
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import {
   changedFields,
-  compactRecord,
+  mergeEdited,
   formatInternalContacts,
   formatLines,
   parseInternalContacts,
@@ -59,13 +59,15 @@ export function projectProfilePatch(
 ): Record<string, unknown> {
   const next: Record<string, unknown> = {
     alternateName: draft.alternateName.trim(),
-    locationDetails: compactRecord({
+    // Merged onto what is stored, so fields the form does not show survive.
+    locationDetails: mergeEdited(project.locationDetails, {
       municipality: draft.municipality,
       department: draft.department,
       address: draft.address,
       coverage: draft.coverage,
     }),
-    publicContact: compactRecord(
+    publicContact: mergeEdited(
+      project.publicContact,
       Object.fromEntries(contactFields.map((field) => [field, draft[field]]))
     ),
     partnershipStatus: draft.partnershipStatus,

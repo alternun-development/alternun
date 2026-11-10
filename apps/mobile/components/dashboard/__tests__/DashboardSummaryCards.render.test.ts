@@ -425,7 +425,7 @@ describe('DashboardSummaryCards render', () => {
     }
   });
 
-  it('renders ATN first, appends reward assets, and keeps future actions disabled', () => {
+  it('renders ATN first, appends reward assets, and shows no coming-soon placeholders', () => {
     mockWindowDimensions(1024);
 
     renderState = renderDashboardSummaryCards(
@@ -457,7 +457,8 @@ describe('DashboardSummaryCards render', () => {
       'dashboard-atn-asset-atn',
       'dashboard-atn-asset-future-reward',
     ]);
-    expect(assetRows[0]?.textContent).toContain('Próximamente');
+    // An ATN balance not yet available shows a dash, never a "coming soon" label.
+    expect(assetRows[0]?.textContent).toContain('—');
     expect(renderState.container.textContent).toContain('Recompensa futura');
     expect(renderState.container.textContent).toContain('Mis ATN y recompensas regenerativas');
     expect(
@@ -469,12 +470,11 @@ describe('DashboardSummaryCards render', () => {
     );
     expect(assetRows[0]?.querySelector('[role="img"][aria-label="ATN"]')).not.toBeNull();
 
-    const redeemAction = getElementByTestId(renderState.container, 'dashboard-atn-redeem-action');
-    const atnHeader = getElementByTestId(renderState.container, 'dashboard-atn-header');
-    expect(redeemAction.getAttribute('aria-disabled')).toBe('true');
-    expect(atnHeader.contains(redeemAction)).toBe(true);
-    expect(redeemAction.textContent).toContain('Redimir y operar');
-    expect(redeemAction.textContent).toContain('Próximamente');
+    // No "coming soon" placeholders on the dashboard.
+    expect(
+      renderState.container.querySelector('[data-testid="dashboard-atn-redeem-action"]')
+    ).toBeNull();
+    expect(renderState.container.textContent).not.toContain('Próximamente');
     expect(renderState.container.textContent).toContain('Billetera de recompensas principal');
     expect(renderState.container.textContent).toContain('Crear billetera de recompensas');
     expect(renderState.container.textContent?.toLowerCase()).not.toContain('wallet');

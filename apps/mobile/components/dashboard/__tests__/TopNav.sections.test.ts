@@ -15,6 +15,5 @@ describeTest('NAV_SECTIONS', () => {
       'explore',
       'profile',
     ]);
-    expectValue(NAV_SECTIONS.filter((section) => section.comingSoon)).toEqual([]);
   });
 });

@@ -9,7 +9,7 @@ import { marketplaceCopy, marketplaceErrorMessage } from '../../../marketplace/c
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import {
   changedFields,
-  compactRecord,
+  mergeEdited,
   formatInternalContacts,
   formatLines,
   formatSites,
@@ -66,7 +66,10 @@ export function enterpriseProfilePatch(
   draft: EnterpriseProfileDraft,
   canEditInternal: boolean
 ): Record<string, unknown> {
-  const venue = compactRecord({
+  // Merge onto what is stored, so fields the form does not show (venue department/web,
+  // location note, ...) survive an unrelated edit.
+  const stored = enterprise.eventDetails ?? {};
+  const venue = mergeEdited(stored.venue, {
     name: draft.venueName,
     municipality: draft.venueMunicipality,
     address: draft.venueAddress,
@@ -75,22 +78,24 @@ export function enterpriseProfilePatch(
     kind: draft.kind,
     sector: draft.sector.trim(),
     description: draft.description.trim(),
-    location: compactRecord({
+    location: mergeEdited(enterprise.location, {
       municipality: draft.municipality,
       department: draft.department,
       address: draft.address,
       coverage: draft.coverage,
     }),
-    publicContact: compactRecord(
+    publicContact: mergeEdited(
+      enterprise.publicContact,
       Object.fromEntries(contactFields.map((field) => [field, draft[field]]))
     ),
     eventDetails:
       draft.kind === 'event'
-        ? {
-            ...compactRecord({ date: draft.eventDate }),
-            ...(Object.keys(venue).length ? { venue } : {}),
-          }
-        : enterprise.eventDetails ?? {},
+        ? (() => {
+            const details = mergeEdited(stored, { date: draft.eventDate });
+            delete details.venue;
+            return Object.keys(venue).length ? { ...details, venue } : details;
+          })()
+        : stored,
     sites: parseSites(draft.sites),
     logoUrl: draft.logoUrl.trim(),
     bannerUrl: draft.bannerUrl.trim(),

@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 import {
   ArrowUpRight,
-  BadgeDollarSign,
+  Award,
+  Building2,
   ChevronRight,
   CircleDollarSign,
   Compass,
@@ -25,9 +26,12 @@ import {
   Lightbulb,
   MapPin,
   Play,
+  RefreshCw,
   Send,
+  ShieldCheck,
   Sparkles,
   Sprout,
+  UserPlus,
   Users,
   type LucideProps,
 } from 'lucide-react-native';
@@ -59,11 +63,16 @@ import type {
   Palette,
   ProjectFilter,
   Translate,
+  ProjectMarkProps,
 } from './explore.types';
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 import { resolveAdminPanelUrl } from '../utils/adminAccess';
 import { useAdminAccess } from '../hooks/useAdminAccess';
-import { AdminEntryButton } from '../components/marketplace/AdminEntryButton';
+import { useTheme } from '@alternun/ui';
+import { ExpandableCtaCard } from '../components/explore/ExpandableCtaCard';
+import { EnterpriseApplicationForm } from '../components/explore/EnterpriseApplicationForm';
+import { TipsSlider } from '../components/explore/TipsSlider';
+import type { Tip } from '../components/explore/types';
 import { getContentGutter } from '../utils/layout';
 import {
   resolveMarketplaceContactMailto,
@@ -82,13 +91,19 @@ const ArrowUpRightIcon = ArrowUpRight as React.FC<LucideProps>;
 const PlayIcon = Play as React.FC<LucideProps>;
 const SproutIcon = Sprout as React.FC<LucideProps>;
 const CircleDollarSignIcon = CircleDollarSign as React.FC<LucideProps>;
-const BadgeDollarSignIcon = BadgeDollarSign as React.FC<LucideProps>;
 const HandHeartIcon = HandHeart as React.FC<LucideProps>;
 const LightbulbIcon = Lightbulb as React.FC<LucideProps>;
 const GiftIcon = Gift as React.FC<LucideProps>;
+const AwardIcon = Award as React.FC<LucideProps>;
+const Building2Icon = Building2 as React.FC<LucideProps>;
+const UserPlusIcon = UserPlus as React.FC<LucideProps>;
+const RefreshIcon = RefreshCw as React.FC<LucideProps>;
+const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
 
-function safeImageUrl(media: MarketplaceMedia[]): string | null {
-  const preferredKinds = ['cover', 'gallery_image', 'logo'];
+function safeImageUrl(
+  media: MarketplaceMedia[],
+  preferredKinds: readonly string[] = ['cover', 'gallery_image']
+): string | null {
   for (const kind of preferredKinds) {
     const item = media.find((candidate) => candidate.isActive && candidate.kind === kind);
     if (!item) continue;
@@ -100,6 +115,25 @@ function safeImageUrl(media: MarketplaceMedia[]): string | null {
     }
   }
   return null;
+}
+
+/** Card icon: the project's logo when it has one, the leaf otherwise. */
+function ProjectMark({ logoUrl, size, color, style }: ProjectMarkProps): React.JSX.Element {
+  const [failed, setFailed] = useState(false);
+  const content =
+    logoUrl && !failed ? (
+      <Image
+        testID='explorer-project-logo'
+        source={{ uri: logoUrl }}
+        accessibilityIgnoresInvertColors
+        onError={() => setFailed(true)}
+        style={{ width: size * 1.9, height: size * 1.9, borderRadius: 10 }}
+        resizeMode='contain'
+      />
+    ) : (
+      <LeafIcon size={size} color={color} strokeWidth={1.8} />
+    );
+  return style ? <View style={style}>{content}</View> : content;
 }
 
 /** Resolves the project's active canva and direct-video media for the featured banner. */
@@ -158,6 +192,7 @@ export const loadMarketplaceProjects: LoadMarketplaceProjects = async (locale, s
     description: project.description,
     waysToContribute: project.waysToContribute,
     imageUrl: safeImageUrl(project.media),
+    logoUrl: safeImageUrl(project.media, ['logo']),
     ...presentationUrls(project.media),
   }));
 };
@@ -223,10 +258,13 @@ function IntentRotator({
   palette,
   onProposeProject,
   t,
+  embedded = false,
 }: {
   palette: Palette;
   onProposeProject: () => void;
   t: Translate;
+  /** Inside the hero card: no card chrome of its own, just a divider on top. */
+  embedded?: boolean;
 }): React.JSX.Element {
   const [activeIntent, setActiveIntent] = useState(0);
   const transition = useRef(new Animated.Value(1)).current;
@@ -255,7 +293,12 @@ function IntentRotator({
 
   return (
     <View
-      style={[styles.intentCard, { backgroundColor: palette.surface, borderColor: palette.border }]}
+      testID='explorer-intents'
+      style={
+        embedded
+          ? [styles.intentEmbedded, { borderTopColor: palette.border }]
+          : [styles.intentCard, { backgroundColor: palette.surface, borderColor: palette.border }]
+      }
     >
       <View style={styles.intentQuestionRow}>
         <Text style={[styles.intentQuestion, { color: palette.text }]}>
@@ -306,31 +349,111 @@ function IntentRotator({
   );
 }
 
+/** Projects with something to show (presentation, video or banner), in random order. */
+export function buildShowcase(
+  projects: readonly MarketProject[],
+  random: () => number = Math.random
+): MarketProject[] {
+  const withMedia = projects.filter(
+    (project) => project.canvaUrl ?? project.videoUrl ?? project.imageUrl
+  );
+  // Fisher–Yates shuffle.
+  const shuffled = [...withMedia];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swap]] = [shuffled[swap], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function HeroSlideMedia({
+  project,
+  active,
+  palette,
+}: {
+  project: MarketProject | null;
+  active: boolean;
+  palette: Palette;
+}): React.JSX.Element {
+  // Only the visible slide embeds a presentation or video; the others show their banner.
+  if (Platform.OS === 'web' && active && project?.canvaUrl) {
+    return React.createElement('iframe', {
+      src: project.canvaUrl,
+      title: project.title,
+      loading: 'lazy',
+      sandbox: 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox',
+      allow: 'fullscreen',
+      allowFullScreen: true,
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      style: { border: 0, display: 'block', width: '100%', height: '100%' },
+    });
+  }
+  if (Platform.OS === 'web' && active && project?.videoUrl) {
+    return React.createElement('video', {
+      src: project.videoUrl,
+      autoPlay: true,
+      muted: true,
+      loop: true,
+      playsInline: true,
+      'aria-label': project.title,
+      style: {
+        display: 'block',
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        backgroundColor: '#000',
+      },
+    });
+  }
+  const image = project?.imageUrl ?? project?.logoUrl;
+  return image ? (
+    <Image source={{ uri: image }} style={styles.projectImage} resizeMode='cover' />
+  ) : (
+    <View style={[styles.heroMediaFallback, { backgroundColor: palette.mist }]}>
+      <LeafIcon size={42} color={palette.primary} strokeWidth={1.5} />
+    </View>
+  );
+}
+
 function HeroCarousel({
   palette,
   onProposeProject,
+  onOpenProject,
   t,
   isDark,
-  featuredProject,
+  showcase,
 }: {
   palette: Palette;
   onProposeProject: () => void;
+  onOpenProject: (slug: string) => void;
   t: Translate;
   isDark: boolean;
-  featuredProject: MarketProject | null;
+  /** Projects to feature, already in display order; empty shows the marketplace intro. */
+  showcase: readonly MarketProject[];
 }): React.JSX.Element {
   const { width } = useWindowDimensions();
   const [activeSlide, setActiveSlide] = useState(0);
-  const slideWidth = Math.max(width - getContentGutter(width) * 2 - 32, 290);
-  const mediaHeight = Math.min(Math.max(slideWidth * 0.56, 208), 316);
+  // Measured from the card itself: the screen width overestimates it when the content is capped.
+  const [trackWidth, setTrackWidth] = useState(0);
+  const slideWidth = trackWidth || Math.max(width - getContentGutter(width) * 2 - 26, 260);
+  const mediaHeight = Math.min(Math.max(slideWidth * 0.56, 180), 316);
   const launchKickerColor = isDark ? '#a6f7d6' : '#087f63';
   const launchTitleColor = isDark ? '#f0fff6' : '#073f32';
   const launchDescriptionColor = isDark ? 'rgba(240,255,246,0.7)' : '#315f52';
+  const slides: Array<MarketProject | null> = showcase.length ? [...showcase] : [null];
+  const current = Math.min(activeSlide, slides.length - 1);
 
   return (
-    <View style={styles.heroBlock}>
+    <View
+      testID='explorer-hero'
+      style={[
+        styles.heroBlock,
+        styles.cardShadow,
+        { backgroundColor: palette.surface, borderColor: palette.border },
+      ]}
+    >
       <View style={styles.heroHeading}>
-        <View>
+        <View style={styles.heroHeadingCopy}>
           <Text style={[styles.overline, { color: palette.primary }]}>
             {t('explorer.marketplace')}
           </Text>
@@ -346,125 +469,88 @@ function HeroCarousel({
         </View>
       </View>
 
-      <IntentRotator palette={palette} onProposeProject={onProposeProject} t={t} />
-
-      <ScrollView
-        horizontal
-        pagingEnabled
-        decelerationRate='fast'
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(event) => {
-          setActiveSlide(Math.round(event.nativeEvent.contentOffset.x / slideWidth));
-        }}
+      <View
+        testID='explorer-hero-track'
+        onLayout={(event) => setTrackWidth(Math.floor(event.nativeEvent.layout.width))}
       >
-        <View style={[styles.heroSlide, { width: slideWidth, backgroundColor: palette.hero }]}>
-          <View
-            style={[styles.heroMediaFrame, { height: mediaHeight, borderColor: palette.border }]}
-          >
-            {Platform.OS === 'web' && featuredProject?.canvaUrl ? (
-              React.createElement('iframe', {
-                src: featuredProject.canvaUrl,
-                title: featuredProject.title,
-                loading: 'lazy',
-                sandbox:
-                  'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox',
-                allow: 'fullscreen',
-                allowFullScreen: true,
-                referrerPolicy: 'strict-origin-when-cross-origin',
-                style: {
-                  border: 0,
-                  display: 'block',
-                  width: '100%',
-                  height: '100%',
-                },
-              })
-            ) : Platform.OS === 'web' && featuredProject?.videoUrl ? (
-              React.createElement('video', {
-                src: featuredProject.videoUrl,
-                autoPlay: true,
-                muted: true,
-                loop: true,
-                playsInline: true,
-                'aria-label': featuredProject.title,
-                style: {
-                  display: 'block',
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  backgroundColor: '#000',
-                },
-              })
-            ) : featuredProject?.imageUrl ? (
-              <Image
-                source={{ uri: featuredProject.imageUrl }}
-                style={styles.projectImage}
-                resizeMode='cover'
-              />
-            ) : (
-              <View style={[styles.heroMediaFallback, { backgroundColor: palette.mist }]}>
-                <LeafIcon size={42} color={palette.primary} strokeWidth={1.5} />
-              </View>
-            )}
-            <View style={styles.heroMediaShade} pointerEvents='none' />
-            <View style={styles.heroMediaLabel} pointerEvents='none'>
-              <PlayIcon size={12} color='#edfff5' fill='#edfff5' />
-              <Text style={styles.heroMediaLabelText}>{t('explorer.featured')}</Text>
-            </View>
-          </View>
-          <View style={styles.heroCopy}>
-            <Text style={[styles.heroKicker, { color: launchKickerColor }]}>
-              {featuredProject ? t('explorer.featuredProject') : t('explorer.globalMarket')}
-            </Text>
-            <Text style={[styles.heroProjectTitle, { color: launchTitleColor }]}>
-              {featuredProject?.title ?? t('explorer.projectsToActivate')}
-            </Text>
-            <Text style={[styles.heroDescription, { color: launchDescriptionColor }]}>
-              {featuredProject?.description ?? t('explorer.heroDescription')}
-            </Text>
-            <Pressable style={styles.heroAction} onPress={openMarketplaceContact}>
-              <Text style={styles.heroActionText}>{t('explorer.collaborate')}</Text>
-              <ArrowUpRightIcon size={16} color='#063c32' strokeWidth={2.6} />
-            </Pressable>
-          </View>
-        </View>
-
-        <View
-          style={[
-            styles.heroSlide,
-            styles.submitSlide,
-            { width: slideWidth, backgroundColor: palette.fill },
-          ]}
+        <ScrollView
+          horizontal
+          pagingEnabled
+          decelerationRate='fast'
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={(event) => {
+            setActiveSlide(Math.round(event.nativeEvent.contentOffset.x / slideWidth));
+          }}
         >
-          <View style={styles.submitOrbitOne} />
-          <View style={styles.submitOrbitTwo} />
-          <View style={styles.submitSlideIcon}>
-            <SproutIcon size={30} color='#1ee6b5' strokeWidth={1.6} />
-          </View>
-          <Text style={styles.heroKicker}>{t('explorer.openMap')}</Text>
-          <Text style={styles.submitTitle}>{t('explorer.submitBanner.title')}</Text>
-          <Text style={styles.submitDescription}>{t('explorer.submitBanner.description')}</Text>
-          <Pressable style={styles.submitAction} onPress={openMarketplaceContact}>
-            <Text style={styles.submitActionText}>{t('explorer.submitProject')}</Text>
-            <SendIcon size={15} color='#eafff4' />
-          </Pressable>
-        </View>
-      </ScrollView>
-
-      <View style={styles.sliderFooter}>
-        <View style={styles.dots}>
-          {[0, 1].map((index) => (
+          {slides.map((project, index) => (
             <View
-              key={index}
-              style={[
-                styles.dot,
-                { backgroundColor: index === activeSlide ? palette.primary : palette.border },
-                index === activeSlide && styles.dotActive,
-              ]}
-            />
+              key={project?.id ?? 'intro'}
+              testID={project ? `explorer-hero-slide-${project.id}` : 'explorer-hero-slide-intro'}
+              style={[styles.heroSlide, { width: slideWidth, backgroundColor: palette.hero }]}
+            >
+              <View
+                style={[
+                  styles.heroMediaFrame,
+                  { height: mediaHeight, borderColor: palette.border },
+                ]}
+              >
+                <HeroSlideMedia project={project} active={index === current} palette={palette} />
+                <View style={styles.heroMediaShade} pointerEvents='none' />
+                <View style={styles.heroMediaLabel} pointerEvents='none'>
+                  <PlayIcon size={12} color='#edfff5' fill='#edfff5' />
+                  <Text style={styles.heroMediaLabelText}>{t('explorer.featured')}</Text>
+                </View>
+              </View>
+              <View style={styles.heroCopy}>
+                <Text style={[styles.heroKicker, { color: launchKickerColor }]}>
+                  {project ? t('explorer.featuredProject') : t('explorer.globalMarket')}
+                </Text>
+                <Text style={[styles.heroProjectTitle, { color: launchTitleColor }]}>
+                  {project?.title ?? t('explorer.projectsToActivate')}
+                </Text>
+                <Text
+                  numberOfLines={3}
+                  style={[styles.heroDescription, { color: launchDescriptionColor }]}
+                >
+                  {project?.description ?? t('explorer.heroDescription')}
+                </Text>
+                <Pressable
+                  testID={project ? `explorer-hero-open-${project.id}` : 'explorer-hero-propose'}
+                  style={styles.heroAction}
+                  onPress={() => (project ? onOpenProject(project.slug) : onProposeProject())}
+                >
+                  <Text style={styles.heroActionText}>
+                    {project ? t('explorer.seeProject') : t('explorer.cta.project.action')}
+                  </Text>
+                  <ArrowUpRightIcon size={16} color='#063c32' strokeWidth={2.6} />
+                </Pressable>
+              </View>
+            </View>
           ))}
-        </View>
-        <Text style={[styles.sliderHint, { color: palette.muted }]}>{t('explorer.swipeHint')}</Text>
+        </ScrollView>
       </View>
+
+      {slides.length > 1 ? (
+        <View style={styles.sliderFooter}>
+          <View style={styles.dots}>
+            {slides.map((project, index) => (
+              <View
+                key={project?.id ?? index}
+                style={[
+                  styles.dot,
+                  { backgroundColor: index === current ? palette.primary : palette.border },
+                  index === current && styles.dotActive,
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={[styles.sliderHint, { color: palette.muted }]}>
+            {t('explorer.swipeHint')}
+          </Text>
+        </View>
+      ) : null}
+
+      <IntentRotator palette={palette} onProposeProject={onProposeProject} t={t} embedded />
     </View>
   );
 }
@@ -498,9 +584,12 @@ function ProjectCard({
         />
       ) : null}
       <View style={styles.projectTopline}>
-        <View style={[styles.projectMark, { backgroundColor: palette.mist }]}>
-          <LeafIcon size={22} color={palette.primary} strokeWidth={1.8} />
-        </View>
+        <ProjectMark
+          logoUrl={project.logoUrl}
+          size={22}
+          style={[styles.projectMark, { backgroundColor: palette.mist }]}
+          color={palette.primary}
+        />
         <View style={styles.projectBadges}>
           <View style={[styles.statusPill, { backgroundColor: palette.mist }]}>
             <View style={[styles.statusDot, { backgroundColor: palette.primary }]} />
@@ -588,7 +677,7 @@ function ProjectGridCard({
             { backgroundColor: palette.mist },
           ]}
         >
-          <LeafIcon size={22} color={palette.primary} strokeWidth={1.8} />
+          <ProjectMark logoUrl={project.logoUrl} size={22} color={palette.primary} />
         </View>
       )}
       <View style={[styles.typePill, styles.projectGridPill, { borderColor: palette.border }]}>
@@ -631,9 +720,12 @@ function ProjectCompactRow({
         { backgroundColor: palette.surface, borderColor: palette.border },
       ]}
     >
-      <View style={[styles.projectCompactMark, { backgroundColor: palette.mist }]}>
-        <LeafIcon size={16} color={palette.primary} strokeWidth={1.8} />
-      </View>
+      <ProjectMark
+        logoUrl={project.logoUrl}
+        size={16}
+        style={[styles.projectCompactMark, { backgroundColor: palette.mist }]}
+        color={palette.primary}
+      />
       <View style={styles.projectCompactCopy}>
         <Text numberOfLines={1} style={[styles.projectCompactTitle, { color: palette.text }]}>
           {project.title}
@@ -652,15 +744,19 @@ export function MarketplaceProjectBrowser({
   palette,
   t,
   loader = loadMarketplaceProjects,
-  onFeaturedProjectChange,
+  onProjectsLoaded,
   onOpenProject = () => undefined,
   onListNavigate = () => undefined,
+  refreshKey = 0,
 }: {
   locale: string;
   palette: Palette;
   t: Translate;
+  /** Changing it reloads the projects (the screen's reload button). */
+  refreshKey?: number;
   loader?: LoadMarketplaceProjects;
-  onFeaturedProjectChange?: (project: MarketProject | null) => void;
+  /** Every loaded project (empty after an error), e.g. to build the hero showcase. */
+  onProjectsLoaded?: (projects: MarketProject[]) => void;
   onOpenProject?: (slug: string) => void;
   /** Called after the page or the view changes, so the screen can scroll back to the list. */
   onListNavigate?: () => void;
@@ -683,16 +779,16 @@ export function MarketplaceProjectBrowser({
         if (controller.signal.aborted) return;
         setProjects(loadedProjects);
         setState('success');
-        onFeaturedProjectChange?.(loadedProjects[0] ?? null);
+        onProjectsLoaded?.(loadedProjects);
       })
       .catch(() => {
         if (controller.signal.aborted) return;
         setProjects([]);
         setState('error');
-        onFeaturedProjectChange?.(null);
+        onProjectsLoaded?.([]);
       });
     return () => controller.abort();
-  }, [loader, locale, onFeaturedProjectChange, requestVersion]);
+  }, [loader, locale, onProjectsLoaded, requestVersion, refreshKey]);
 
   const filters = useMemo(() => getFilters(t, projects), [projects, t]);
   React.useEffect(() => {
@@ -765,35 +861,11 @@ export function MarketplaceProjectBrowser({
         onViewChange={changeView}
         palette={palette}
         t={t}
+        filters={filters}
+        activeFilter={filter}
+        onFilterChange={changeFilter}
+        filterLabel={t('explorer.filters.heading')}
       />
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-      >
-        {filters.map((item) => {
-          const selected = filter === item.key;
-          return (
-            <Pressable
-              key={item.key}
-              testID={`explorer-filter-${item.key}`}
-              style={[
-                styles.filterChip,
-                { borderColor: selected ? palette.primary : palette.border },
-                selected && { backgroundColor: palette.fill },
-              ]}
-              onPress={() => changeFilter(item.key)}
-            >
-              <Text
-                style={[styles.filterChipText, { color: selected ? '#e9fff5' : palette.muted }]}
-              >
-                {item.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
 
       <View style={styles.projectList}>
         {state === 'loading' ? (
@@ -888,10 +960,13 @@ function SubmitProject({
   language,
   palette,
   t,
+  embedded = false,
 }: {
   language: string;
   palette: Palette;
   t: Translate;
+  /** Inside the expandable CTA card, which already shows the title and the card chrome. */
+  embedded?: boolean;
 }): React.JSX.Element {
   const [projectName, setProjectName] = useState('');
   const [projectType, setProjectType] = useState<'productive' | 'conservation'>('productive');
@@ -941,24 +1016,31 @@ function SubmitProject({
 
   return (
     <View
-      style={[
-        styles.submitForm,
-        { backgroundColor: palette.surfaceStrong, borderColor: palette.border },
-      ]}
+      testID='project-proposal-form'
+      style={
+        embedded
+          ? styles.submitFormEmbedded
+          : [
+              styles.submitForm,
+              { backgroundColor: palette.surfaceStrong, borderColor: palette.border },
+            ]
+      }
     >
-      <View style={styles.formHeader}>
-        <View style={[styles.formIcon, { backgroundColor: palette.mist }]}>
-          <CircleDollarSignIcon size={20} color={palette.primary} />
+      {embedded ? null : (
+        <View style={styles.formHeader}>
+          <View style={[styles.formIcon, { backgroundColor: palette.mist }]}>
+            <CircleDollarSignIcon size={20} color={palette.primary} />
+          </View>
+          <View style={styles.formHeaderCopy}>
+            <Text style={[styles.formTitle, { color: palette.text }]}>
+              {t('explorer.form.title')}
+            </Text>
+            <Text style={[styles.formSubtitle, { color: palette.muted }]}>
+              {t('explorer.form.subtitle')}
+            </Text>
+          </View>
         </View>
-        <View style={styles.formHeaderCopy}>
-          <Text style={[styles.formTitle, { color: palette.text }]}>
-            {t('explorer.form.title')}
-          </Text>
-          <Text style={[styles.formSubtitle, { color: palette.muted }]}>
-            {t('explorer.form.subtitle')}
-          </Text>
-        </View>
-      </View>
+      )}
       <TextInput
         value={projectName}
         onChangeText={setProjectName}
@@ -1083,16 +1165,27 @@ export default function ExplorarScreen(): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const router = useRouter();
   const isGlobalAdmin = useAdminAccess()?.isGlobalAdmin === true;
+  // Bumped by the header reload button; the directories reload when it changes.
+  const [refreshKey, setRefreshKey] = useState(0);
   const isDark = themeMode === 'dark';
-  const [featuredProject, setFeaturedProject] = useState<MarketProject | null>(null);
+  const [showcase, setShowcase] = useState<MarketProject[]>([]);
+  // Shuffled once per load, so the hero order changes between visits but not while browsing.
+  const handleProjectsLoaded = React.useCallback(
+    (projects: MarketProject[]) => setShowcase(buildShowcase(projects)),
+    []
+  );
   const [directory, setDirectory] = useState<'projects' | 'enterprises'>('projects');
   const [projectFormOffset, setProjectFormOffset] = useState(0);
+  const [enterpriseFormOffset, setEnterpriseFormOffset] = useState(0);
+  // Which call-to-action card is open; only one form at a time.
+  const [openForm, setOpenForm] = useState<'project' | 'enterprise' | null>(null);
   const [enterpriseListOffset, setEnterpriseListOffset] = useState(0);
   const [projectListOffset, setProjectListOffset] = useState(0);
   const entrance = useRef(new Animated.Value(0)).current;
   const explorerScrollRef = useRef<ScrollView>(null);
 
-  const palette: Palette = isDark
+  const { theme } = useTheme();
+  const basePalette: Palette = isDark
     ? {
         background: '#050f0c',
         surface: 'rgba(255, 255, 255, 0.04)',
@@ -1119,6 +1212,13 @@ export default function ExplorarScreen(): React.JSX.Element {
         mist: 'rgba(8, 127, 99, 0.11)',
         hero: '#dff5ef',
       };
+  // Cards use the shared theme surfaces, like the profile and dashboard sections.
+  const palette: Palette = {
+    ...basePalette,
+    surface: theme.cardBg,
+    surfaceStrong: theme.cardBg,
+    border: theme.cardBorder,
+  };
 
   React.useEffect(() => {
     Animated.timing(entrance, { toValue: 1, duration: 520, useNativeDriver: true }).start();
@@ -1138,12 +1238,83 @@ export default function ExplorarScreen(): React.JSX.Element {
     });
   };
 
-  const handleProposeProject = (): void => {
-    explorerScrollRef.current?.scrollTo({
-      y: Math.max(projectFormOffset - 20, 0),
-      animated: true,
-    });
+  // Each tab ends with its own enrolment card; opening one may switch tabs first, so the scroll
+  // waits for the card's layout instead of using an offset from the other tab.
+  const pendingFormScroll = useRef<'project' | 'enterprise' | null>(null);
+  const scrollToPendingForm = (form: 'project' | 'enterprise', y: number): void => {
+    if (pendingFormScroll.current !== form) return;
+    pendingFormScroll.current = null;
+    explorerScrollRef.current?.scrollTo({ y: Math.max(y - 20, 0), animated: true });
   };
+
+  const openFormCard = (form: 'project' | 'enterprise'): void => {
+    const sameTab = directory === (form === 'project' ? 'projects' : 'enterprises');
+    setOpenForm(form);
+    setDirectory(form === 'project' ? 'projects' : 'enterprises');
+    if (sameTab) {
+      const offset = form === 'project' ? projectFormOffset : enterpriseFormOffset;
+      explorerScrollRef.current?.scrollTo({ y: Math.max(offset - 20, 0), animated: true });
+    } else {
+      pendingFormScroll.current = form;
+    }
+  };
+
+  const handleProposeProject = (): void => openFormCard('project');
+
+  const tips: Tip[] = [
+    {
+      key: 'reputation',
+      icon: AwardIcon,
+      title: t('explorer.tips.items.reputation.title'),
+      text: t('explorer.tips.items.reputation.text'),
+      action: {
+        label: t('explorer.tips.items.reputation.action'),
+        onPress: () => router.push('/profile'),
+      },
+    },
+    {
+      key: 'projects',
+      icon: LeafIcon,
+      title: t('explorer.tips.items.projects.title'),
+      text: t('explorer.tips.items.projects.text'),
+      action: {
+        label: t('explorer.tips.items.projects.action'),
+        onPress: () => {
+          setDirectory('projects');
+          scrollToProjectList();
+        },
+      },
+    },
+    {
+      key: 'enterprises',
+      icon: Building2Icon,
+      title: t('explorer.tips.items.enterprises.title'),
+      text: t('explorer.tips.items.enterprises.text'),
+      action: {
+        label: t('explorer.tips.items.enterprises.action'),
+        onPress: () => {
+          setDirectory('enterprises');
+          scrollToEnterpriseList();
+        },
+      },
+    },
+    {
+      key: 'invite',
+      icon: UserPlusIcon,
+      title: t('explorer.tips.items.invite.title'),
+      text: t('explorer.tips.items.invite.text'),
+      action: {
+        label: t('explorer.tips.items.invite.action'),
+        onPress: () => router.push('/profile'),
+      },
+    },
+    {
+      key: 'together',
+      icon: SproutIcon,
+      title: t('explorer.tips.items.together.title'),
+      text: t('explorer.tips.items.together.text'),
+    },
+  ];
 
   return (
     <ScreenShell activeSection='explore' backgroundColor={palette.background}>
@@ -1176,23 +1347,43 @@ export default function ExplorarScreen(): React.JSX.Element {
                 {t('explorer.subtitle')}
               </Text>
             </View>
+            <View style={styles.headerActions}>
+              {isGlobalAdmin ? (
+                <Pressable
+                  testID='explorer-admin-panel'
+                  accessibilityRole='link'
+                  accessibilityLabel={t('explorer.admin.openPanel')}
+                  onPress={() => void Linking.openURL(`${resolveAdminPanelUrl()}/marketplace`)}
+                  style={[
+                    styles.headerIconButton,
+                    { borderColor: palette.border, backgroundColor: palette.surface },
+                  ]}
+                >
+                  <ShieldCheckIcon size={18} color={palette.primaryDeep} />
+                </Pressable>
+              ) : null}
+              <Pressable
+                testID='explorer-reload'
+                accessibilityRole='button'
+                accessibilityLabel={t('explorer.reload')}
+                onPress={() => setRefreshKey((value) => value + 1)}
+                style={[
+                  styles.headerIconButton,
+                  { borderColor: palette.border, backgroundColor: palette.surface },
+                ]}
+              >
+                <RefreshIcon size={18} color={palette.primaryDeep} />
+              </Pressable>
+            </View>
           </View>
-          {isGlobalAdmin ? (
-            <AdminEntryButton
-              testID='explorer-admin-panel'
-              label={t('explorer.admin.openPanel')}
-              url={`${resolveAdminPanelUrl()}/marketplace`}
-              color={palette.primaryDeep}
-              borderColor={palette.border}
-            />
-          ) : null}
 
           <HeroCarousel
             palette={palette}
             onProposeProject={handleProposeProject}
             t={t}
             isDark={isDark}
-            featuredProject={featuredProject}
+            showcase={showcase}
+            onOpenProject={(slug) => router.push({ pathname: '/explore/[slug]', params: { slug } })}
           />
 
           <View
@@ -1237,8 +1428,9 @@ export default function ExplorarScreen(): React.JSX.Element {
                 locale={language}
                 palette={palette}
                 t={t}
-                onFeaturedProjectChange={setFeaturedProject}
+                onProjectsLoaded={handleProjectsLoaded}
                 onListNavigate={scrollToProjectList}
+                refreshKey={refreshKey}
                 onOpenProject={(slug) =>
                   router.push({
                     pathname: '/explore/[slug]',
@@ -1257,6 +1449,7 @@ export default function ExplorarScreen(): React.JSX.Element {
                 palette={palette}
                 t={t}
                 onListNavigate={scrollToEnterpriseList}
+                refreshKey={refreshKey}
                 onOpenEnterprise={(slug) =>
                   router.push({
                     pathname: '/explore/enterprise/[slug]',
@@ -1267,26 +1460,65 @@ export default function ExplorarScreen(): React.JSX.Element {
             </View>
           )}
 
-          <View style={[styles.earnBanner, { backgroundColor: palette.fill }]}>
-            <BadgeDollarSignIcon size={24} color='#1ee6b5' />
-            <View style={styles.earnCopy}>
-              <Text style={styles.earnTitle}>{t('explorer.earn.title')}</Text>
-              <Text style={styles.earnText}>{t('explorer.earn.description')}</Text>
-            </View>
-          </View>
+          <TipsSlider tips={tips} palette={palette} t={t} />
 
-          <View
-            onLayout={(event) => {
-              setProjectFormOffset(event.nativeEvent.layout.y);
-            }}
-          >
-            <SubmitProject language={language} palette={palette} t={t} />
-          </View>
+          {directory === 'projects' ? (
+            <View
+              onLayout={(event) => {
+                setProjectFormOffset(event.nativeEvent.layout.y);
+                scrollToPendingForm('project', event.nativeEvent.layout.y);
+              }}
+            >
+              <ExpandableCtaCard
+                testID='explorer-project-cta'
+                title={t('explorer.cta.project.title')}
+                description={t('explorer.cta.project.description')}
+                actionLabel={t('explorer.cta.project.action')}
+                closeLabel={t('explorer.cta.close')}
+                icon={LightbulbIcon}
+                palette={palette}
+                expanded={openForm === 'project'}
+                onExpandedChange={(open) => setOpenForm(open ? 'project' : null)}
+              >
+                <SubmitProject language={language} palette={palette} t={t} embedded />
+              </ExpandableCtaCard>
+            </View>
+          ) : (
+            <View
+              onLayout={(event) => {
+                setEnterpriseFormOffset(event.nativeEvent.layout.y);
+                scrollToPendingForm('enterprise', event.nativeEvent.layout.y);
+              }}
+            >
+              <ExpandableCtaCard
+                testID='explorer-enterprise-cta'
+                title={t('explorer.cta.enterprise.title')}
+                description={t('explorer.cta.enterprise.description')}
+                actionLabel={t('explorer.cta.enterprise.action')}
+                closeLabel={t('explorer.cta.close')}
+                icon={Building2Icon}
+                palette={palette}
+                expanded={openForm === 'enterprise'}
+                onExpandedChange={(open) => setOpenForm(open ? 'enterprise' : null)}
+              >
+                <EnterpriseApplicationForm language={language} palette={palette} t={t} />
+              </ExpandableCtaCard>
+            </View>
+          )}
         </ScrollView>
       </Animated.View>
     </ScreenShell>
   );
 }
+
+// Same lift as the profile and dashboard section cards.
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.18,
+  shadowRadius: 10,
+  elevation: 3,
+} as const;
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
@@ -1311,7 +1543,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   directoryTabText: { fontSize: 14, fontWeight: '900' },
-  heroBlock: { gap: 12 },
+  heroBlock: { gap: 12, borderWidth: 1, borderRadius: 26, padding: 12 },
+  heroHeadingCopy: { flex: 1, minWidth: 0 },
+  cardShadow: CARD_SHADOW,
   heroHeading: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -1339,6 +1573,16 @@ const styles = StyleSheet.create({
   liveDot: { width: 6, height: 6, borderRadius: 3 },
   livePillText: { fontSize: 9, letterSpacing: 0.65, fontWeight: '800' },
   intentCard: { borderWidth: 1, borderRadius: 19, padding: 15 },
+  intentEmbedded: { borderTopWidth: 1, paddingTop: 14, paddingHorizontal: 4 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 'auto' },
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   intentQuestionRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
@@ -1433,64 +1677,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   heroActionText: { color: '#063c32', fontSize: 12, fontWeight: '800' },
-  submitSlide: { minHeight: 360, padding: 28, justifyContent: 'flex-end', position: 'relative' },
-  submitOrbitOne: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    borderWidth: 1,
-    borderColor: 'rgba(30,230,181,0.18)',
-    top: -105,
-    right: -78,
-  },
-  submitOrbitTwo: {
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    borderRadius: 105,
-    borderWidth: 1,
-    borderColor: 'rgba(30,230,181,0.12)',
-    top: -60,
-    right: -30,
-  },
-  submitSlideIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(30,230,181,0.12)',
-    marginBottom: 'auto',
-  },
-  submitTitle: {
-    color: '#ecfff4',
-    fontFamily: 'Sculpin-Bold',
-    fontSize: 30,
-    letterSpacing: -0.8,
-    lineHeight: 34,
-    maxWidth: 360,
-  },
-  submitDescription: {
-    color: 'rgba(236,255,244,0.7)',
-    fontSize: 13,
-    lineHeight: 20,
-    marginTop: 9,
-    maxWidth: 360,
-  },
-  submitAction: {
-    marginTop: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: 'rgba(234,255,244,0.42)',
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  submitActionText: { color: '#eafff4', fontSize: 12, fontWeight: '800' },
   sliderFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   dots: { flexDirection: 'row', gap: 5 },
   dot: { width: 6, height: 6, borderRadius: 3 },
@@ -1509,9 +1695,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   marketCountText: { fontSize: 10, fontWeight: '700' },
-  filterRow: { gap: 8, paddingRight: 16 },
-  filterChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8 },
-  filterChipText: { fontSize: 11, fontWeight: '700' },
   projectList: { gap: 12 },
   projectGridLayout: {
     flexDirection: 'row',
@@ -1519,7 +1702,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     rowGap: 12,
   },
-  projectGridCard: { width: '48.5%', borderWidth: 1, borderRadius: 20, padding: 12, gap: 7 },
+  projectGridCard: {
+    ...CARD_SHADOW,
+    width: '48.5%',
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 12,
+    gap: 7,
+  },
   projectGridImage: { width: '100%', height: 96, borderRadius: 12 },
   projectGridMark: { alignItems: 'center', justifyContent: 'center' },
   projectGridPill: { alignSelf: 'flex-start' },
@@ -1545,7 +1735,7 @@ const styles = StyleSheet.create({
   projectCompactCopy: { flex: 1, gap: 3 },
   projectCompactTitle: { fontFamily: 'Sculpin-Bold', fontSize: 15 },
   projectCompactMeta: { fontSize: 12, fontWeight: '800' },
-  projectCard: { borderWidth: 1, borderRadius: 21, padding: 18 },
+  projectCard: { borderWidth: 1, borderRadius: 21, padding: 18, ...CARD_SHADOW },
   projectCardImage: { width: '100%', height: 180, borderRadius: 14, marginBottom: 14 },
   projectTopline: {
     flexDirection: 'row',
@@ -1608,16 +1798,7 @@ const styles = StyleSheet.create({
   loadingLineShort: { height: 12, width: '48%', borderRadius: 6 },
   retryButton: { marginTop: 4, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9 },
   retryButtonText: { color: '#effff6', fontSize: 12, fontWeight: '800' },
-  earnBanner: {
-    flexDirection: 'row',
-    gap: 13,
-    borderRadius: 18,
-    padding: 17,
-    alignItems: 'flex-start',
-  },
-  earnCopy: { flex: 1 },
-  earnTitle: { color: '#effff6', fontSize: 14, fontWeight: '800' },
-  earnText: { color: 'rgba(239,255,246,0.68)', fontSize: 12, lineHeight: 17, marginTop: 3 },
+  submitFormEmbedded: { gap: 12 },
   submitForm: { borderWidth: 1, borderRadius: 21, padding: 18 },
   formHeader: { flexDirection: 'row', gap: 11, alignItems: 'center', marginBottom: 17 },
   formIcon: {

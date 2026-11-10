@@ -11,6 +11,13 @@ import {
 } from '../../components/marketplace/directoryPaging';
 import type { MarketplaceEnterprise } from '../../components/marketplace/types';
 
+jest.mock('@alternun/ui', () => ({
+  // SearchFilterBar only reads colors from the theme.
+  useTheme: () => ({
+    theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
+  }),
+}));
+
 const palette = {
   background: '#fff',
   surface: '#fff',
