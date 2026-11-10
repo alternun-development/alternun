@@ -124,10 +124,9 @@ Current version: **1.1.133**
 
 ## 📋 Latest Changes (v1.1.133)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: update reentry status
-- **repo:** feat(email,marketplace): send through Tláo only, auth-style form fields, client history
+- **repo:** update reentry status ([3bf2d41](https://github.com/alternun-development/alternun/commit/3bf2d410cb54dd055346d2997df0c903599bf37e))
 
 ### Features
 
