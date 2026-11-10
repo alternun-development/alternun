@@ -1,3 +1,17 @@
+## [1.1.128](https://github.com/alternun-development/alternun/compare/v1.1.127...v1.1.128) (2026-11-10)
+
+### Bug Fixes
+
+- **repo:** feat(marketplace): domain project admins and demo role accounts
+- **repo:** feat(marketplace): clients tab, intent guides and compact page headers
+- **repo:** feat(marketplace): in-app project and enterprise management, enrolment and explorer refresh
+
+### Features
+
+- **marketplace:** clients tab, intent guides and compact page headers ([1c4c073](https://github.com/alternun-development/alternun/commit/1c4c073592b9ca2fbda0f4106669338d751e59d7))
+- **marketplace:** domain project admins and demo role accounts ([3a358de](https://github.com/alternun-development/alternun/commit/3a358de2a3dabb2ebef7f493df96d85c6ffa42e8))
+- **marketplace:** in-app project and enterprise management, enrolment and explorer refresh ([546678f](https://github.com/alternun-development/alternun/commit/546678fd6fc60514d062b57c82126ff46b3fbe4c))
+
 ## [1.1.127](https://github.com/alternun-development/alternun/compare/v1.1.124...v1.1.127) (2026-11-09)
 
 ### Changes
