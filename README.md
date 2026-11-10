@@ -124,10 +124,9 @@ Current version: **1.1.131**
 
 ## 📋 Latest Changes (v1.1.131)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: update reentry status
-- **repo:** feat(marketplace): client form feedback and invitation emails with Airs details
+- **repo:** update reentry status ([fc905b6](https://github.com/alternun-development/alternun/commit/fc905b6fd21a07d6f3914bc17cb273b1a5035b02))
 
 ### Features
 
