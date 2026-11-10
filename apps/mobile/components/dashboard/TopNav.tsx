@@ -900,7 +900,10 @@ export default function TopNav({
                 <CloseIcon size={20} color={p.pillText} />
               </TouchableOpacity>
             </View>
-            <ScrollView contentContainerStyle={styles.fullMenuBody}>
+            <ScrollView
+              contentContainerStyle={styles.fullMenuBody}
+              showsVerticalScrollIndicator={false}
+            >
               {signedIn && (
                 <TouchableOpacity
                   testID='fullscreen-menu-notifications'

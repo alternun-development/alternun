@@ -38,7 +38,7 @@ export function IntentGuideModal({
               { backgroundColor: palette.surface, borderColor: palette.border },
             ]}
           >
-            <ScrollView contentContainerStyle={styles.content}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
               <View style={styles.header}>
                 {Icon ? (
                   <View style={[styles.mark, { backgroundColor: palette.fill }]}>

@@ -82,6 +82,7 @@ export function EnterpriseManageView({
 
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       testID='enterprise-manage'
       style={{ backgroundColor: palette.background }}
       contentContainerStyle={styles.content}
