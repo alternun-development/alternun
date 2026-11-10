@@ -120,17 +120,18 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.135**
+Current version: **1.1.136**
 
-## 📋 Latest Changes (v1.1.135)
+## 📋 Latest Changes (v1.1.136)
 
-### Changes
+### Bug Fixes
 
-- **repo:** update reentry status ([760249f](https://github.com/alternun-development/alternun/commit/760249f6fb85d7dbc09c1ec5604096caf22ae2ab))
+- **repo:** chore: update reentry status
+- **repo:** feat(marketplace): cancelled invitations cancel their waiting Airs
 
 ### Features
 
-- **marketplace:** admin notices for new clients, resends and client pagination ([e02f936](https://github.com/alternun-development/alternun/commit/e02f936740bfde3f5330320112a874f4f309cd67))
+- **marketplace:** cancelled invitations cancel their waiting Airs ([3bfab51](https://github.com/alternun-development/alternun/commit/3bfab51999f51df68feea4e0f361e40f134a1347))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
