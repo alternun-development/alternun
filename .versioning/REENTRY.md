@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Probar en testnet: invitación de cliente desde notifications@alternun.co con detalle de Airs; validación del formulario de clientes
+Next micro-step: Probar en testnet que la invitación de cliente llega desde notifications@alternun.co (Tláo); revisar formularios con FormField
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
