@@ -222,6 +222,7 @@ export function MarketplaceProjectDetailView({
 
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       testID='project-detail'
       style={{ backgroundColor: palette.background }}
       contentContainerStyle={styles.content}

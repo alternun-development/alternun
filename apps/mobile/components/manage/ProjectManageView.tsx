@@ -86,6 +86,7 @@ export function ProjectManageView({
 
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       testID='project-manage'
       style={{ backgroundColor: palette.background }}
       contentContainerStyle={styles.content}
