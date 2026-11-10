@@ -39,7 +39,12 @@ export type MarketplacePermission =
 const permissionsByRole: Readonly<Record<AdminRole, readonly MarketplacePermission[]>> = {
   partner_readonly: [],
   // Scoped moderation; the API limits it to the projects of the membership.
-  project_moderator: ['project_media:moderate', 'comments:read', 'comments:moderate'],
+  project_moderator: [
+    'project_media:moderate',
+    'comments:read',
+    'comments:moderate',
+    'participants:read',
+  ],
   sub_admin: [
     'projects:update',
     'project_media:write',
