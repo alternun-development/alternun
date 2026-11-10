@@ -1,3 +1,14 @@
+## [1.1.134](https://github.com/alternun-development/alternun/compare/v1.1.133...v1.1.134) (2026-11-10)
+
+### Bug Fixes
+
+- **repo:** chore: update reentry status
+- **repo:** feat(marketplace): private in-app proof viewer, visible labels, discard changes
+
+### Features
+
+- **marketplace:** private in-app proof viewer, visible labels, discard changes ([7c575be](https://github.com/alternun-development/alternun/commit/7c575be3b0d8e73403ede55c674413ee3e6f854a))
+
 ## [1.1.133](https://github.com/alternun-development/alternun/compare/v1.1.132...v1.1.133) (2026-11-09)
 
 ### Changes
