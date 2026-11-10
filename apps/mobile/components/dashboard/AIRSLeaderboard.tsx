@@ -14,6 +14,7 @@ import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { type RankScope, changeLeaderboardScope } from './leaderboardTransitions';
+import { LeaderboardTierBadge } from './LeaderboardTierBadge';
 
 interface LeaderboardEntry {
   rank: number;
@@ -328,6 +329,14 @@ export default function AIRSLeaderboard({
                       >
                         {entry.displayName}
                       </Text>
+                      <LeaderboardTierBadge
+                        testID={`airs-leaderboard-tier-${entry.rank}`}
+                        score={
+                          entry.isMe
+                            ? currentUserAirsBalance ?? entry.airsBalance
+                            : entry.airsBalance
+                        }
+                      />
                       {entry.isMe && <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>}
                     </View>
                     <Text style={[styles.balanceText, { color: entry.isMe ? accent : textColor }]}>
@@ -358,6 +367,7 @@ export default function AIRSLeaderboard({
                       <Text style={[styles.nameText, { color: accent }]} numberOfLines={1}>
                         {myEntry.displayName}
                       </Text>
+                      <LeaderboardTierBadge score={currentUserAirsBalance ?? myEntry.airsBalance} />
                       <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>
                     </View>
                     <Text style={[styles.balanceText, { color: accent }]}>

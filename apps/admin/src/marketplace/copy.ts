@@ -77,7 +77,7 @@ export const marketplaceCopy = {
     eventDate: 'Date',
     venueName: 'Venue',
     sitesHeading: 'Locations',
-    sitesHint: 'One per line: name | address | rooms',
+    sitesHint: 'One per line: name | address | rooms | website',
     imagesHeading: 'Logo and banner',
     logo: 'Logo',
     banner: 'Banner',

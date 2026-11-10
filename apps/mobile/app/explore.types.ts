@@ -1,3 +1,4 @@
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { Translator } from '@alternun/i18n';
 
 export type ProjectFilter = string;
@@ -27,7 +28,10 @@ export interface MarketProject {
   theme: string;
   description: string;
   waysToContribute: string[];
+  /** Banner or gallery image for the card; never the logo. */
   imageUrl: string | null;
+  /** Project logo, shown in the card's icon mark (the leaf when there is none). */
+  logoUrl?: string | null;
   /** Direct playable video URL from the project's active video media, when present. */
   videoUrl: string | null;
   /** Validated Canva embed URL from the project's active canva media, when present. */
@@ -58,3 +62,10 @@ export type LoadMarketplaceProjects = (
   locale: string,
   signal?: AbortSignal
 ) => Promise<MarketProject[]>;
+
+export interface ProjectMarkProps {
+  logoUrl?: string | null;
+  size: number;
+  color: string;
+  style?: StyleProp<ViewStyle>;
+}

@@ -1,11 +1,11 @@
 import React from 'react';
+import { useTheme } from '@alternun/ui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ScreenShell from '../../../components/common/ScreenShell';
 import { useAppTranslation } from '../../../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../../../components/settings/AppPreferencesProvider';
 import { MarketplaceEnterpriseDetailView } from '../../../components/marketplace/MarketplaceEnterpriseDetail';
 import type { DetailPalette } from '../../../components/marketplace/types';
-import { resolveAdminPanelUrl } from '../../../utils/adminAccess';
 import { useAdminAccess } from '../../../hooks/useAdminAccess';
 
 export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
@@ -15,7 +15,8 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
   const { language, themeMode } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const slug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
-  const palette: DetailPalette =
+  const { theme } = useTheme();
+  const basePalette: DetailPalette =
     themeMode === 'dark'
       ? {
           background: '#050f0c',
@@ -39,6 +40,12 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
           fill: '#0f766e',
           mist: 'rgba(8, 127, 99, 0.11)',
         };
+  // Cards use the shared theme surfaces, like the profile and dashboard sections.
+  const palette: DetailPalette = {
+    ...basePalette,
+    surface: theme.cardBg,
+    border: theme.cardBorder,
+  };
 
   return (
     <ScreenShell activeSection='explore' backgroundColor={palette.background}>
@@ -48,8 +55,10 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
         palette={palette}
         t={t}
         onBack={() => router.back()}
-        adminUrl={resolveAdminPanelUrl()}
         adminAccess={adminAccess}
+        onManageEnterprise={(enterpriseId) =>
+          router.push({ pathname: '/manage/enterprise/[enterpriseId]', params: { enterpriseId } })
+        }
         onOpenProject={(projectSlug) =>
           router.push({ pathname: '/explore/[slug]', params: { slug: projectSlug } })
         }

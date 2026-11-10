@@ -7,7 +7,6 @@ import { getLocaleLabel } from '@alternun/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Animated,
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -300,12 +299,6 @@ export default function TopNav({
 
   const handleNavSectionPress = (section: NavSection): void => {
     setMenuVisible(false);
-
-    if (section.comingSoon) {
-      Alert.alert('Coming soon', `${section.label} will be available soon.`);
-      return;
-    }
-
     onNavigate?.(section.key);
   };
 
@@ -391,7 +384,6 @@ export default function TopNav({
         <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
           {NAV_SECTIONS.map((section) => {
             const isActive = activeSection === section.key;
-            const isComingSoon = Boolean(section.comingSoon);
             const IconComp = section.icon;
             return (
               <TouchableOpacity
@@ -400,45 +392,27 @@ export default function TopNav({
                   styles.navItem,
                   isExtraSmall && styles.navItemExtraSmall,
                   {
-                    backgroundColor: isActive
-                      ? p.navActive
-                      : isComingSoon
-                      ? isDark
-                        ? 'rgba(255,255,255,0.03)'
-                        : 'rgba(15,23,42,0.03)'
-                      : 'transparent',
-                    borderWidth: isActive || isComingSoon ? 1 : 0,
-                    borderColor: isActive
-                      ? p.navActiveBorder
-                      : isComingSoon
-                      ? p.dropDivider
-                      : 'transparent',
-                    opacity: isComingSoon ? 0.74 : 1,
+                    backgroundColor: isActive ? p.navActive : 'transparent',
+                    borderWidth: isActive ? 1 : 0,
+                    borderColor: isActive ? p.navActiveBorder : 'transparent',
                   },
                 ]}
                 onPress={() => handleNavSectionPress(section)}
                 activeOpacity={0.8}
               >
-                <IconComp
-                  size={15}
-                  color={isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle}
-                />
+                <IconComp size={15} color={isActive ? p.navActiveText : p.iconIdle} />
                 <Text
                   style={[
                     styles.navItemText,
                     {
-                      color: isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.dropText,
+                      color: isActive ? p.navActiveText : p.dropText,
                     },
                     isActive && styles.navItemTextActive,
                   ]}
                 >
                   {section.label}
                 </Text>
-                {isComingSoon ? (
-                  <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
-                    <Text style={[styles.comingSoonText, { color: p.dropSub }]}>Coming soon</Text>
-                  </View>
-                ) : isActive ? (
+                {isActive ? (
                   <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
                 ) : null}
               </TouchableOpacity>
@@ -1382,20 +1356,6 @@ const styles = StyleSheet.create({
   navItemTextActive: {
     fontWeight: '700',
     fontFamily: 'Sculpin-Bold',
-  },
-  comingSoonPill: {
-    marginLeft: 'auto',
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  comingSoonText: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-    textTransform: 'uppercase',
   },
   activeIndicator: {
     position: 'absolute',

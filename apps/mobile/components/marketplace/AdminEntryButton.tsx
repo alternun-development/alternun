@@ -11,13 +11,20 @@ export function AdminEntryButton({
   borderColor,
   testID,
   openUrl = async (target) => Linking.openURL(target),
+  floating = false,
+  backgroundColor,
 }: AdminEntryButtonProps): React.JSX.Element {
   return (
     <Pressable
       testID={testID}
       accessibilityRole='link'
       onPress={() => void openUrl(url)}
-      style={[styles.button, { borderColor }]}
+      style={[
+        styles.button,
+        floating && styles.floating,
+        { borderColor },
+        backgroundColor ? { backgroundColor } : null,
+      ]}
     >
       <ShieldCheck size={16} color={color} />
       <Text style={[styles.label, { color }]}>{label}</Text>
@@ -36,5 +43,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 14,
   },
+  floating: { position: 'absolute', top: 14, right: 14, zIndex: 2 },
   label: { fontSize: 13, fontWeight: '800' },
 });

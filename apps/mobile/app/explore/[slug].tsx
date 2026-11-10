@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '@alternun/ui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ScreenShell from '../../components/common/ScreenShell';
 import { useAuth } from '../../components/auth/AppAuthProvider';
@@ -7,7 +8,6 @@ import { useAppPreferences } from '../../components/settings/AppPreferencesProvi
 import { MarketplaceProjectDetailView } from '../../components/marketplace/MarketplaceProjectDetail';
 import type { DetailPalette } from '../../components/marketplace/types';
 import type { MarketplaceAuthContext } from './[slug].types';
-import { resolveAdminPanelUrl } from '../../utils/adminAccess';
 import { useAdminAccess } from '../../hooks/useAdminAccess';
 
 export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
@@ -18,7 +18,8 @@ export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
   const { language, themeMode } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const slug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
-  const palette: DetailPalette =
+  const { theme } = useTheme();
+  const basePalette: DetailPalette =
     themeMode === 'dark'
       ? {
           background: '#050f0c',
@@ -42,6 +43,12 @@ export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
           fill: '#0f766e',
           mist: 'rgba(8, 127, 99, 0.11)',
         };
+  // Cards use the shared theme surfaces, like the profile and dashboard sections.
+  const palette: DetailPalette = {
+    ...basePalette,
+    surface: theme.cardBg,
+    border: theme.cardBorder,
+  };
 
   return (
     <ScreenShell activeSection='explore' backgroundColor={palette.background}>
@@ -57,8 +64,10 @@ export default function MarketplaceProjectDetailScreen(): React.JSX.Element {
             params: { slug: enterpriseSlug },
           })
         }
-        adminUrl={resolveAdminPanelUrl()}
         adminAccess={adminAccess}
+        onManageProject={(projectId) =>
+          router.push({ pathname: '/manage/[projectId]', params: { projectId } })
+        }
         signedIn={Boolean(user)}
         getSessionToken={() => client.getSessionToken()}
         onSignIn={() =>

@@ -17,6 +17,7 @@ const ALLOWED_ROUTE_SEGMENTS = new Set([
   'enterprise',
   'explore',
   'index',
+  'manage',
   'notifications',
   'portfolio',
   'privacy',

@@ -32,3 +32,23 @@ test('the RPCs stay security definer, pinned search_path and service_role only',
   assert.match(migration, /from public, anon, authenticated;/);
   assert.match(migration, /to service_role;/);
 });
+
+test('project moderators pass the comment moderation RPC, scoped to their projects', () => {
+  const fix = fs.readFileSync(
+    path.resolve(
+      __dirname,
+      '../../../supabase/migrations/20261110_0002_project_moderator_comment_moderation.sql'
+    ),
+    'utf8'
+  );
+  // Both the role gate and the required scope roles include the project moderator.
+  assert.match(fix, /&& array\['partner_operator', 'sub_admin', 'project_moderator'\]/);
+  assert.match(
+    fix,
+    /marketplace_actor_has_scope\([\s\S]*?array\['partner_operator', 'sub_admin', 'project_moderator'\]/
+  );
+  // Global moderation stays limited to global roles.
+  assert.match(fix, /array\['platform_owner', 'internal_admin', 'moderator'\]/);
+  assert.match(fix, /security definer\s+set search_path = pg_catalog, public/);
+  assert.match(fix, /to service_role;/);
+});

@@ -9,7 +9,6 @@ export interface NavSection {
   key: string;
   label: string;
   icon: FC<LucideProps>;
-  comingSoon?: boolean;
 }
 
 export const NAV_SECTIONS: NavSection[] = [
