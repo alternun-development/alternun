@@ -1,8 +1,4 @@
-## [1.1.130](https://github.com/alternun-development/alternun/compare/v1.1.129...v1.1.130) (2026-11-10)
-
-### Bug Fixes
-
-- **repo:** fix(mobile): size the top bar pill and controls to the Airs logo mark
+## [1.1.130](https://github.com/alternun-development/alternun/compare/v1.1.129...v1.1.130) (2026-11-09)
 
 ### Bug Fixes
 
