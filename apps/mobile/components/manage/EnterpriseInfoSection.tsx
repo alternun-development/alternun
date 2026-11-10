@@ -52,7 +52,9 @@ export function EnterpriseInfoSection({
   onChanged,
   onEnterpriseSaved,
 }: EnterpriseSectionProps): React.JSX.Element {
-  const [draft, setDraft] = useState(() => initial(overview.enterprise));
+  // The section is keyed by the saved record, so this stays the last saved state.
+  const [savedDraft] = useState(() => initial(overview.enterprise));
+  const [draft, setDraft] = useState(savedDraft);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,6 +77,12 @@ export function EnterpriseInfoSection({
     manageStyles.card,
     { borderColor: palette.border, backgroundColor: palette.surface },
   ];
+  const dirty = JSON.stringify(draft) !== JSON.stringify(savedDraft);
+  const discard = (): void => {
+    setDraft(savedDraft);
+    setError(null);
+  };
+
   return (
     <View testID='enterprise-manage-info' style={{ gap: 14 }}>
       <View style={card}>
@@ -130,20 +138,35 @@ export function EnterpriseInfoSection({
         ))}
       </View>
       {error ? <Text style={manageStyles.error}>{error}</Text> : null}
-      <Pressable
-        testID='enterprise-manage-save'
-        accessibilityRole='button'
-        disabled={saving}
-        onPress={() => void save()}
-        style={[
-          manageStyles.primaryButton,
-          { backgroundColor: palette.fill, opacity: saving ? 0.6 : 1 },
-        ]}
-      >
-        <Text style={manageStyles.primaryButtonText}>
-          {saving ? t('manage.saving') : t('manage.save')}
-        </Text>
-      </Pressable>
+      <View style={manageStyles.row}>
+        <Pressable
+          testID='enterprise-manage-save'
+          accessibilityRole='button'
+          disabled={saving}
+          onPress={() => void save()}
+          style={[
+            manageStyles.primaryButton,
+            { backgroundColor: palette.fill, opacity: saving ? 0.6 : 1 },
+          ]}
+        >
+          <Text style={manageStyles.primaryButtonText}>
+            {saving ? t('manage.saving') : t('manage.save')}
+          </Text>
+        </Pressable>
+        {dirty ? (
+          <Pressable
+            testID='enterprise-manage-discard'
+            accessibilityRole='button'
+            disabled={saving}
+            onPress={discard}
+            style={[manageStyles.secondaryButton, { borderColor: palette.border }]}
+          >
+            <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
+              {t('manage.discard')}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }

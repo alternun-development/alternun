@@ -117,6 +117,16 @@ it('shows a skeleton until auth and the initial balance settle, then retains the
     tree = renderer.create(<TopNav {...props} signedIn={false} />);
   });
   expect(tree.root.findAllByProps({ testID: 'account-badge-skeleton' }).length).toBeGreaterThan(0);
+  // The skeleton has the loaded pill's inset and its three round controls at the same size.
+  const skeleton = tree.root.findAllByProps({ testID: 'account-badge-skeleton' })[0];
+  const skeletonStyle = StyleSheet.flatten(skeleton.props.style);
+  expect([skeletonStyle.height, skeletonStyle.paddingLeft, skeletonStyle.paddingRight]).toEqual([
+    62, 5, 5,
+  ]);
+  const circles = skeleton.findAll(
+    (node) => typeof node.type === 'string' && StyleSheet.flatten(node.props.style)?.width === 50
+  );
+  expect(circles.length).toBeGreaterThanOrEqual(3);
   mockAuthLoading = false;
   act(() => {
     tree.update(<TopNav {...props} />);

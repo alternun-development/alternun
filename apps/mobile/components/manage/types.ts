@@ -102,8 +102,8 @@ export interface ManageClientsSectionProps {
   canPickFiles: boolean;
   /** Opens a file picker for the supporting file; defaults to the browser one. */
   pickFile?: () => Promise<ProofFile | null>;
-  /** Opens the signed URL of a supporting file; defaults to Linking. */
-  openUrl?: (url: string) => Promise<unknown>;
+  /** Local URL to show a downloaded supporting file (blob: on web, data: on native). */
+  toLocalUrl?: (file: Blob) => Promise<string>;
   /** Enterprise view: shows each client's project and asks for it when adding. */
   multiProject?: boolean;
   /** Shows a toast for a finished action (success or error). */
@@ -111,6 +111,20 @@ export interface ManageClientsSectionProps {
 }
 
 export type ClientFilter = 'all' | 'member' | 'invitation' | 'cancelled' | 'withAirs';
+
+export interface ProofViewerState {
+  status: 'loading' | 'ready' | 'error';
+  /** Local URL of the file, only while it is shown. */
+  uri?: string;
+  type?: string;
+}
+
+export interface ProofViewerProps {
+  viewer: ProofViewerState | null;
+  palette: DetailPalette;
+  t: Translate;
+  onClose: () => void;
+}
 
 export interface ClientListItemProps {
   item: ProjectClient;

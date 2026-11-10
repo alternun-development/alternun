@@ -1274,7 +1274,15 @@
         "sentOn": "sent on {{date}}",
         "cancelledAt": "cancelled on {{date}}",
         "acceptedAt": "accepted on {{date}}",
-        "reinvite": "Invite again"
+        "reinvite": "Invite again",
+        "proof": {
+          "title": "Supporting file",
+          "private": "Private file: only the project team and approvers see it.",
+          "loading": "Loading file…",
+          "error": "The file could not be loaded.",
+          "close": "Close",
+          "webOnly": "PDF files open in the web version of Airs."
+        }
       },
       "comments": {
         "empty": "No comments with this status.",
@@ -1289,7 +1297,8 @@
           "hidden": "Hidden",
           "rejected": "Rejected"
         }
-      }
+      },
+      "discard": "Discard changes"
     },
     "explorer": {
       "seeProject": "See project",

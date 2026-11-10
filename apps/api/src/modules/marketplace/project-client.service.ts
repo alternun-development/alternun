@@ -21,6 +21,7 @@ import {
   type AddProjectClientResponse,
   type ProjectClientInvitationRecord,
   type ProjectClientProof,
+  type ProjectClientProofFile,
   type ProjectClientProofUploadResponse,
   type ProjectClientRecord,
   type ProjectClientReport,
@@ -185,18 +186,19 @@ export class ProjectClientService {
     return this.repository.createProofUpload(`${projectId}/${randomUUID()}.${extension}`);
   }
 
-  async proofUrl(
+  /** The supporting file, only for people who can read the project's clients. */
+  async proofFile(
     principal: AdminPrincipal,
     requestId: string,
     projectId: string,
     reportId: string
-  ): Promise<{ url: string }> {
+  ): Promise<ProjectClientProofFile> {
     await this.participants.authorizeProject(principal, 'participants:read', requestId, projectId);
     const report = await this.reportRepository.find(reportId);
     if (!report || report.projectId !== projectId) marketplaceError('CLIENT_NOT_FOUND');
-    const url = await this.repository.proofUrl(reportId);
-    if (!url) marketplaceError('CLIENT_NOT_FOUND');
-    return { url };
+    const file = await this.repository.readProof(reportId);
+    if (!file) marketplaceError('CLIENT_NOT_FOUND');
+    return file;
   }
 
   async cancelInvitation(

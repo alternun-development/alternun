@@ -1,12 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Mail, MailX, Sparkles, UserCheck, Users, type LucideProps } from 'lucide-react-native';
 import SearchFilterBar from '../common/SearchFilterBar';
 import { SectionHeading } from '../common/PageHeader';
 import { ClientListItem } from './ClientListItem';
+import { ProofViewer } from './ProofViewer';
 import { ManageField } from './ManageField';
 import { manageStyles } from './styles';
-import type { ClientDraft, ClientFilter, ManageClientsSectionProps } from './types';
+import type {
+  ClientDraft,
+  ClientFilter,
+  ManageClientsSectionProps,
+  ProofViewerState,
+} from './types';
 import { ManageRequestError, pickImageFile } from '../../utils/projectManage';
 import {
   airsAmount,
@@ -63,6 +69,23 @@ export function matchesClientFilter(item: ProjectClient, filter: ClientFilter): 
   return filter === 'all' || item.kind === filter;
 }
 
+/** blob: URL on web; a data: URL where object URLs are not available (native). */
+function defaultLocalUrl(file: Blob): Promise<string> {
+  if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function')
+    return Promise.resolve(URL.createObjectURL(file));
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error ?? new Error('read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function releaseLocalUrl(uri: string | undefined): void {
+  if (uri?.startsWith('blob:') && typeof URL.revokeObjectURL === 'function')
+    URL.revokeObjectURL(uri);
+}
+
 const defaultPickProof = (): Promise<ProofFile | null> =>
   pickImageFile(globalThis.document, PROOF_TYPES.join(','));
 
@@ -74,7 +97,7 @@ export function ManageClientsSection({
   t,
   canPickFiles,
   pickFile = defaultPickProof,
-  openUrl = (url) => Linking.openURL(url),
+  toLocalUrl = defaultLocalUrl,
   multiProject = false,
   onToast,
 }: ManageClientsSectionProps): React.JSX.Element {
@@ -92,6 +115,10 @@ export function ManageClientsSection({
   // Errors of the add form (lookup, validation, add) show next to its button.
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // The supporting file being shown; its local URL is released when the viewer closes.
+  const [viewer, setViewer] = useState<ProofViewerState | null>(null);
+  const viewerUri = useRef<string | undefined>(undefined);
+  useEffect(() => () => releaseLocalUrl(viewerUri.current), []);
   // Field messages show once the person tries to send; the API's own ones until edited.
   const [attempted, setAttempted] = useState(false);
   const [serverProblems, setServerProblems] = useState<Partial<Record<ClientField, string>>>({});
@@ -299,10 +326,27 @@ export function ManageClientsSection({
       load();
     });
 
-  const showProof = (item: ProjectClient, reportId: string): Promise<void> =>
-    run(`proof-${reportId}`, async () => {
-      await openUrl(await client.proofUrl(item.projectId, reportId));
+  const showProof = (item: ProjectClient, reportId: string): Promise<void> => {
+    setViewer({ status: 'loading' });
+    return run(`proof-${reportId}`, async () => {
+      try {
+        const file = await client.proofFile(item.projectId, reportId);
+        const uri = await toLocalUrl(file);
+        releaseLocalUrl(viewerUri.current);
+        viewerUri.current = uri;
+        setViewer({ status: 'ready', uri, type: file.type });
+      } catch (failure) {
+        setViewer({ status: 'error' });
+        throw failure;
+      }
     });
+  };
+
+  const closeViewer = (): void => {
+    releaseLocalUrl(viewerUri.current);
+    viewerUri.current = undefined;
+    setViewer(null);
+  };
 
   function assignTo(item: ProjectClient): void {
     setProjectId(item.projectId);
@@ -606,6 +650,7 @@ export function ManageClientsSection({
           {t('manage.clients.readOnly')}
         </Text>
       )}
+      <ProofViewer viewer={viewer} palette={palette} t={t} onClose={closeViewer} />
     </View>
   );
 }

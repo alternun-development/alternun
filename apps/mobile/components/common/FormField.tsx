@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTheme } from '@alternun/ui';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import type { FormFieldProps } from './FormField.types';
@@ -7,8 +7,8 @@ import type { FormFieldProps } from './FormField.types';
 const ERROR_COLOR = '#f87171';
 
 /**
- * Text field with the sign-in look: rounded filled input, the label as placeholder that moves
- * above the text once something is typed, focus border, and an error or hint underneath.
+ * Text field with the sign-in look: a label always visible above a rounded filled input
+ * (accent while focused or filled), focus border, and an error or hint underneath.
  */
 export function FormField({
   label,
@@ -29,36 +29,18 @@ export function FormField({
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
   const filled = value.length > 0;
-  const labelAnim = useRef(new Animated.Value(filled ? 1 : 0)).current;
-
-  useEffect(() => {
-    Animated.timing(labelAnim, {
-      toValue: filled ? 1 : 0,
-      duration: 160,
-      useNativeDriver: true,
-    }).start();
-  }, [filled, labelAnim]);
-
   const borderColor = error ? ERROR_COLOR : focused ? theme.inputBorderFocus : theme.inputBorder;
+  const labelColor = error ? ERROR_COLOR : focused || filled ? theme.accent : theme.textSecondary;
 
   return (
     <View style={styles.group}>
-      <Animated.Text
+      <Text
         accessibilityElementsHidden
         importantForAccessibility='no'
-        style={[
-          styles.label,
-          { color: error ? ERROR_COLOR : theme.accent },
-          {
-            opacity: labelAnim,
-            transform: [
-              { translateY: labelAnim.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) },
-            ],
-          },
-        ]}
+        style={[styles.label, { color: labelColor }]}
       >
         {label}
-      </Animated.Text>
+      </Text>
       <View
         style={[
           styles.wrapper,
@@ -85,7 +67,6 @@ export function FormField({
             autoCapitalize ??
             (keyboardType === 'email-address' || keyboardType === 'url' ? 'none' : 'sentences')
           }
-          placeholder={label}
           placeholderTextColor={theme.textPlaceholder}
           style={[styles.input, multiline && styles.inputMultiline, { color: theme.textPrimary }]}
         />

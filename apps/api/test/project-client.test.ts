@@ -68,7 +68,10 @@ function setup(
         : options.stored,
     saveProof: async (reportId: string, proof: any) => calls.saveProof.push({ reportId, proof }),
     proofReportIds: async () => new Set(['rep-1']),
-    proofUrl: async (reportId: string) => (reportId === 'rep-1' ? 'https://signed/rep-1' : null),
+    readProof: async (reportId: string) =>
+      reportId === 'rep-1'
+        ? { bytes: Buffer.from('%PDF'), contentType: 'application/pdf', fileName: 'soporte.pdf' }
+        : null,
   };
   const participants = {
     authorizeProject: async (_p: any, permission: string, _r: string, projectId: string) => {
@@ -329,14 +332,16 @@ test('proof uploads go to the project folder and need the right to assign Airs',
   );
 });
 
-test('a proof is read only through a signed URL of a report of the same project', async () => {
+test('a proof is only handed to the project team, as bytes and never as a URL', async () => {
   const { service, calls } = setup();
-  assert.deepEqual(await service.proofUrl(principal(), 'req', PROJECT, 'rep-1'), {
-    url: 'https://signed/rep-1',
-  });
+  const file = await service.proofFile(principal(), 'req', PROJECT, 'rep-1');
+  assert.equal(file.contentType, 'application/pdf');
+  assert.equal(file.fileName, 'soporte.pdf');
+  assert.equal(file.bytes.toString(), '%PDF');
   assert.equal(calls.authorize[0].permission, 'participants:read');
+  // A report of another project is not found from this project.
   await assert.rejects(
-    service.proofUrl(principal(), 'req', PROJECT, 'rep-2'),
+    service.proofFile(principal(), 'req', PROJECT, 'rep-2'),
     isError('CLIENT_NOT_FOUND')
   );
 });
