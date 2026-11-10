@@ -97,6 +97,9 @@ test('capabilities follow the role and team-only fields stay hidden from project
     media: true,
     team: true,
     comments: true,
+    clients: true,
+    editClients: true,
+    assignAirs: true,
   });
   assert.equal('internalNotes' in operator.project, false);
   assert.equal('pendingItems' in operator.project, false);
@@ -106,6 +109,8 @@ test('capabilities follow the role and team-only fields stay hidden from project
   assert.equal(subAdmin.can.editContent, true);
   assert.equal(subAdmin.can.editProfile, false);
   assert.equal(subAdmin.can.team, false);
+  assert.equal(subAdmin.can.editClients, true);
+  assert.equal(subAdmin.can.assignAirs, true);
 
   const moderator = manageOverview(principal(['project_moderator']), project, false);
   assert.deepEqual(moderator.can, {
@@ -114,6 +119,9 @@ test('capabilities follow the role and team-only fields stay hidden from project
     media: true,
     team: false,
     comments: true,
+    clients: true,
+    editClients: false,
+    assignAirs: false,
   });
 
   const global = manageOverview(principal(['platform_owner']), project, true);
@@ -155,7 +163,15 @@ test('enterprise management needs a global role or an enterprise-wide membership
   );
 
   const overview = enterpriseManageOverview(principal, enterprise, false);
-  assert.deepEqual(overview.can, { editInfo: true, images: true, products: true, team: true });
+  assert.deepEqual(overview.can, {
+    editInfo: true,
+    images: true,
+    products: true,
+    team: true,
+    clients: true,
+    editClients: true,
+    assignAirs: true,
+  });
   assert.equal('internalNotes' in overview.enterprise, false);
   assert.equal('pendingItems' in overview.enterprise, false);
 

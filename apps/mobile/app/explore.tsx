@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   Animated,
   Image,
@@ -72,6 +72,9 @@ import { useTheme } from '@alternun/ui';
 import { ExpandableCtaCard } from '../components/explore/ExpandableCtaCard';
 import { EnterpriseApplicationForm } from '../components/explore/EnterpriseApplicationForm';
 import { TipsSlider } from '../components/explore/TipsSlider';
+import { INTENT_KEYS, IntentGuideModal, isIntentKey } from '../components/explore/IntentGuideModal';
+import type { IntentGuideAction, IntentKey } from '../components/explore/types';
+import { HEADER_BUTTON_SIZE, PageHeader, SectionHeading } from '../components/common/PageHeader';
 import type { Tip } from '../components/explore/types';
 import { getContentGutter } from '../utils/layout';
 import {
@@ -221,32 +224,24 @@ function categoryLabel(t: Translate, categoryCode: string): string {
     : translated;
 }
 
+const INTENT_ICONS: Record<IntentKey, React.FC<LucideProps>> = {
+  collaborate: HandHeartIcon,
+  propose: LightbulbIcon,
+  donate: GiftIcon,
+};
+
 function getIntentActions(t: Translate): {
+  key: IntentKey;
   label: string;
   description: string;
   icon: React.FC<LucideProps>;
-  action: 'email' | 'form';
 }[] {
-  return [
-    {
-      label: t('explorer.intents.collaborate.label'),
-      description: t('explorer.intents.collaborate.description'),
-      icon: HandHeartIcon,
-      action: 'email',
-    },
-    {
-      label: t('explorer.intents.propose.label'),
-      description: t('explorer.intents.propose.description'),
-      icon: LightbulbIcon,
-      action: 'form',
-    },
-    {
-      label: t('explorer.intents.donate.label'),
-      description: t('explorer.intents.donate.description'),
-      icon: GiftIcon,
-      action: 'email',
-    },
-  ];
+  return INTENT_KEYS.map((key) => ({
+    key,
+    label: t(`explorer.intents.${key}.label`),
+    description: t(`explorer.intents.${key}.description`),
+    icon: INTENT_ICONS[key],
+  }));
 }
 
 function openMarketplaceContact(): void {
@@ -256,12 +251,12 @@ function openMarketplaceContact(): void {
 
 function IntentRotator({
   palette,
-  onProposeProject,
+  onOpenIntent,
   t,
   embedded = false,
 }: {
   palette: Palette;
-  onProposeProject: () => void;
+  onOpenIntent: (intent: IntentKey) => void;
   t: Translate;
   /** Inside the hero card: no card chrome of its own, just a divider on top. */
   embedded?: boolean;
@@ -300,13 +295,8 @@ function IntentRotator({
           : [styles.intentCard, { backgroundColor: palette.surface, borderColor: palette.border }]
       }
     >
-      <View style={styles.intentQuestionRow}>
-        <Text style={[styles.intentQuestion, { color: palette.text }]}>
-          {t('explorer.intents.question')}
-        </Text>
-        <Text style={[styles.intentPrompt, { color: palette.muted }]}>
-          {t('explorer.intents.prompt')}
-        </Text>
+      <View style={styles.intentHeading}>
+        <SectionHeading title={t('explorer.intents.question')} color={palette.text} />
       </View>
       <Animated.View
         style={{
@@ -319,8 +309,10 @@ function IntentRotator({
         }}
       >
         <Pressable
+          testID={`explorer-intent-${intent.key}`}
+          accessibilityRole='button'
           style={[styles.intentAction, { backgroundColor: palette.fill }]}
-          onPress={intent.action === 'form' ? onProposeProject : openMarketplaceContact}
+          onPress={() => onOpenIntent(intent.key)}
           accessibilityLabel={intent.label}
         >
           <View style={styles.intentIconWrap}>
@@ -418,6 +410,7 @@ function HeroSlideMedia({
 function HeroCarousel({
   palette,
   onProposeProject,
+  onOpenIntent,
   onOpenProject,
   t,
   isDark,
@@ -425,6 +418,7 @@ function HeroCarousel({
 }: {
   palette: Palette;
   onProposeProject: () => void;
+  onOpenIntent: (intent: IntentKey) => void;
   onOpenProject: (slug: string) => void;
   t: Translate;
   isDark: boolean;
@@ -452,23 +446,6 @@ function HeroCarousel({
         { backgroundColor: palette.surface, borderColor: palette.border },
       ]}
     >
-      <View style={styles.heroHeading}>
-        <View style={styles.heroHeadingCopy}>
-          <Text style={[styles.overline, { color: palette.primary }]}>
-            {t('explorer.marketplace')}
-          </Text>
-          <Text style={[styles.heroTitle, { color: palette.text }]}>{t('explorer.heroTitle')}</Text>
-        </View>
-        <View
-          style={[styles.livePill, { backgroundColor: palette.mist, borderColor: palette.border }]}
-        >
-          <View style={[styles.liveDot, { backgroundColor: palette.primary }]} />
-          <Text style={[styles.livePillText, { color: palette.primaryDeep }]}>
-            {t('explorer.live')}
-          </Text>
-        </View>
-      </View>
-
       <View
         testID='explorer-hero-track'
         onLayout={(event) => setTrackWidth(Math.floor(event.nativeEvent.layout.width))}
@@ -550,7 +527,7 @@ function HeroCarousel({
         </View>
       ) : null}
 
-      <IntentRotator palette={palette} onProposeProject={onProposeProject} t={t} embedded />
+      <IntentRotator palette={palette} onOpenIntent={onOpenIntent} t={t} embedded />
     </View>
   );
 }
@@ -1175,6 +1152,12 @@ export default function ExplorarScreen(): React.JSX.Element {
     []
   );
   const [directory, setDirectory] = useState<'projects' | 'enterprises'>('projects');
+  // `/explore?intent=propose` opens that guide directly, so it can be shared as a link.
+  const params = useLocalSearchParams<{ intent?: string | string[] }>();
+  const linkedIntent = Array.isArray(params.intent) ? params.intent[0] : params.intent;
+  const [intent, setIntent] = useState<IntentKey | null>(() =>
+    isIntentKey(linkedIntent) ? linkedIntent : null
+  );
   const [projectFormOffset, setProjectFormOffset] = useState(0);
   const [enterpriseFormOffset, setEnterpriseFormOffset] = useState(0);
   // Which call-to-action card is open; only one form at a time.
@@ -1261,6 +1244,39 @@ export default function ExplorarScreen(): React.JSX.Element {
 
   const handleProposeProject = (): void => openFormCard('project');
 
+  const contactAction: IntentGuideAction[] = resolveMarketplaceContactMailto()
+    ? [
+        {
+          testID: 'explorer-intent-guide-contact',
+          label: t('explorer.intents.guide.contact'),
+          onPress: openMarketplaceContact,
+        },
+      ]
+    : [];
+  const intentActions: IntentGuideAction[] = [
+    intent === 'propose'
+      ? {
+          testID: 'explorer-intent-guide-form',
+          label: t('explorer.intents.guide.openForm'),
+          primary: true,
+          onPress: () => {
+            setIntent(null);
+            handleProposeProject();
+          },
+        }
+      : {
+          testID: 'explorer-intent-guide-projects',
+          label: t('explorer.intents.guide.seeProjects'),
+          primary: true,
+          onPress: () => {
+            setIntent(null);
+            setDirectory('projects');
+            scrollToProjectList();
+          },
+        },
+    ...contactAction,
+  ];
+
   const tips: Tip[] = [
     {
       key: 'reputation',
@@ -1337,49 +1353,48 @@ export default function ExplorarScreen(): React.JSX.Element {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.pageHeading}>
-            <View style={[styles.compassMark, { backgroundColor: palette.fill }]}>
-              <CompassIcon size={22} color='#dffff0' strokeWidth={1.7} />
-            </View>
-            <View>
-              <Text style={[styles.pageTitle, { color: palette.text }]}>{t('explorer.title')}</Text>
-              <Text style={[styles.pageSubtitle, { color: palette.muted }]}>
-                {t('explorer.subtitle')}
-              </Text>
-            </View>
-            <View style={styles.headerActions}>
-              {isGlobalAdmin ? (
+          <PageHeader
+            testID='explorer-heading'
+            title={t('explorer.title')}
+            subtitle={t('explorer.subtitle')}
+            icon={<CompassIcon size={19} color='#dffff0' strokeWidth={1.8} />}
+            palette={palette}
+            actions={
+              <>
+                {isGlobalAdmin ? (
+                  <Pressable
+                    testID='explorer-admin-panel'
+                    accessibilityRole='link'
+                    accessibilityLabel={t('explorer.admin.openPanel')}
+                    onPress={() => void Linking.openURL(`${resolveAdminPanelUrl()}/marketplace`)}
+                    style={[
+                      styles.headerIconButton,
+                      { borderColor: palette.border, backgroundColor: palette.surface },
+                    ]}
+                  >
+                    <ShieldCheckIcon size={17} color={palette.primaryDeep} />
+                  </Pressable>
+                ) : null}
                 <Pressable
-                  testID='explorer-admin-panel'
-                  accessibilityRole='link'
-                  accessibilityLabel={t('explorer.admin.openPanel')}
-                  onPress={() => void Linking.openURL(`${resolveAdminPanelUrl()}/marketplace`)}
+                  testID='explorer-reload'
+                  accessibilityRole='button'
+                  accessibilityLabel={t('explorer.reload')}
+                  onPress={() => setRefreshKey((value) => value + 1)}
                   style={[
                     styles.headerIconButton,
                     { borderColor: palette.border, backgroundColor: palette.surface },
                   ]}
                 >
-                  <ShieldCheckIcon size={18} color={palette.primaryDeep} />
+                  <RefreshIcon size={17} color={palette.primaryDeep} />
                 </Pressable>
-              ) : null}
-              <Pressable
-                testID='explorer-reload'
-                accessibilityRole='button'
-                accessibilityLabel={t('explorer.reload')}
-                onPress={() => setRefreshKey((value) => value + 1)}
-                style={[
-                  styles.headerIconButton,
-                  { borderColor: palette.border, backgroundColor: palette.surface },
-                ]}
-              >
-                <RefreshIcon size={18} color={palette.primaryDeep} />
-              </Pressable>
-            </View>
-          </View>
+              </>
+            }
+          />
 
           <HeroCarousel
             palette={palette}
             onProposeProject={handleProposeProject}
+            onOpenIntent={setIntent}
             t={t}
             isDark={isDark}
             showcase={showcase}
@@ -1506,6 +1521,14 @@ export default function ExplorarScreen(): React.JSX.Element {
             </View>
           )}
         </ScrollView>
+        <IntentGuideModal
+          intent={intent}
+          icon={intent ? INTENT_ICONS[intent] : undefined}
+          palette={palette}
+          t={t}
+          actions={intentActions}
+          onClose={() => setIntent(null)}
+        />
       </Animated.View>
     </ScreenShell>
   );
@@ -1524,16 +1547,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 116, gap: 24 },
   projectBrowser: { gap: 24 },
-  pageHeading: { flexDirection: 'row', alignItems: 'center', gap: 11, marginTop: 4 },
-  compassMark: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pageTitle: { fontFamily: 'Sculpin-Bold', fontSize: 25, letterSpacing: -0.6 },
-  pageSubtitle: { fontSize: 12, marginTop: 1 },
   directoryTabs: { borderWidth: 1, borderRadius: 16, padding: 4, flexDirection: 'row', gap: 4 },
   directoryTab: {
     flex: 1,
@@ -1544,54 +1557,18 @@ const styles = StyleSheet.create({
   },
   directoryTabText: { fontSize: 14, fontWeight: '900' },
   heroBlock: { gap: 12, borderWidth: 1, borderRadius: 26, padding: 12 },
-  heroHeadingCopy: { flex: 1, minWidth: 0 },
   cardShadow: CARD_SHADOW,
-  heroHeading: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 16,
-  },
-  overline: { fontSize: 10, letterSpacing: 1.35, fontWeight: '800', marginBottom: 5 },
-  heroTitle: {
-    fontFamily: 'Sculpin-Bold',
-    fontSize: 25,
-    letterSpacing: -0.8,
-    lineHeight: 29,
-    maxWidth: 285,
-  },
-  livePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 999,
-    marginBottom: 2,
-  },
-  liveDot: { width: 6, height: 6, borderRadius: 3 },
-  livePillText: { fontSize: 9, letterSpacing: 0.65, fontWeight: '800' },
   intentCard: { borderWidth: 1, borderRadius: 19, padding: 15 },
   intentEmbedded: { borderTopWidth: 1, paddingTop: 14, paddingHorizontal: 4 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 'auto' },
   headerIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 13,
+    width: HEADER_BUTTON_SIZE,
+    height: HEADER_BUTTON_SIZE,
+    borderRadius: 11,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  intentQuestionRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 12,
-  },
-  intentQuestion: { fontFamily: 'Sculpin-Bold', fontSize: 19, letterSpacing: -0.45 },
-  intentPrompt: { fontSize: 8, letterSpacing: 0.7, fontWeight: '800', textAlign: 'right' },
+  intentHeading: { marginBottom: 10 },
   intentAction: {
     minHeight: 66,
     borderRadius: 14,

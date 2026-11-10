@@ -17,6 +17,7 @@ jest.mock('@alternun/ui', () => ({
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn() }),
+  useLocalSearchParams: () => ({}),
 }));
 jest.mock('../../components/i18n/useAppTranslation', () => ({
   useAppTranslation: () => ({ t: (key: string) => key }),

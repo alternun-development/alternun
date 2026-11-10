@@ -13,6 +13,9 @@ export interface EnterpriseManageCapabilities {
   images: boolean;
   products: boolean;
   team: boolean;
+  clients?: boolean;
+  editClients?: boolean;
+  assignAirs?: boolean;
 }
 
 export interface ManagedEnterprise {

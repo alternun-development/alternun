@@ -7,6 +7,7 @@ import { useAppTranslation } from '../../components/i18n/useAppTranslation';
 import { ProjectManageView } from '../../components/manage/ProjectManageView';
 import { useManagePalette } from '../../components/manage/useManagePalette';
 import { createManageClient } from '../../utils/projectManage';
+import { createClientsClient } from '../../utils/projectClients';
 import type { ManageScreenAuthContext } from './[projectId].types';
 
 /** In-app project administration (/manage/:projectId) for project admins and moderators. */
@@ -22,6 +23,10 @@ export default function ProjectManageScreen(): React.JSX.Element {
     () => createManageClient(projectId, () => client.getSessionToken()),
     [client, projectId]
   );
+  const clientsClient = useMemo(
+    () => createClientsClient({ projectId }, () => client.getSessionToken()),
+    [client, projectId]
+  );
   const palette = useManagePalette();
 
   return (
@@ -33,6 +38,7 @@ export default function ProjectManageScreen(): React.JSX.Element {
         t={t}
         onBack={() => router.back()}
         canPickFiles={Platform.OS === 'web'}
+        clientsClient={clientsClient}
       />
     </ScreenShell>
   );

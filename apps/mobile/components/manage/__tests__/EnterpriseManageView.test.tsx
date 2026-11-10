@@ -10,6 +10,13 @@ import type {
   EnterpriseManageOverview,
 } from '../../../utils/enterpriseManage';
 
+jest.mock('@alternun/ui', () => ({
+  // SearchFilterBar only reads colors from the theme.
+  useTheme: () => ({
+    theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
+  }),
+}));
+
 jest.mock('../../i18n/useAppTranslation', () => ({
   useAppTranslation: () => ({
     t: (key: string, _p?: unknown, fallback?: string) => fallback ?? key,

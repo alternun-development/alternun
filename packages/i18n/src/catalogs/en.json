@@ -594,7 +594,6 @@
         "loadingIntro": "Loading Airs Intro Video",
         "muted": "Muted",
         "openIntro": "Open Airs Intro Video",
-
         "pip": "Picture in picture",
         "restart": "Restart",
         "soundOn": "Sound On"
@@ -1087,7 +1086,8 @@
           "info": "Information",
           "images": "Images",
           "products": "Products and Airs",
-          "team": "Team"
+          "team": "Team",
+          "clients": "Clients"
         },
         "info": {
           "name": "Name",
@@ -1128,6 +1128,7 @@
         "info": "Information",
         "images": "Images",
         "team": "Team",
+        "clients": "Clients",
         "comments": "Comments"
       },
       "info": {
@@ -1169,6 +1170,70 @@
         "empty": "No one else is on the team yet.",
         "notFound": "No verified Airs account uses that email.",
         "readOnly": "Only the project admin can change the team."
+      },
+      "clients": {
+        "intro": "Add people with an Airs account or invite them by email.",
+        "search": "Search by name or email",
+        "empty": "No clients yet.",
+        "noMatch": "No client matches your search.",
+        "kind": {
+          "member": "Active",
+          "invitation": "Invited"
+        },
+        "status": {
+          "draft": "Draft",
+          "auto_approved": "Approved",
+          "pending_approval": "In review",
+          "approved": "Approved",
+          "awaiting_claim": "Waiting for sign-up",
+          "released": "Credited",
+          "rejected": "Rejected",
+          "cancelled": "Cancelled",
+          "reversed": "Reversed"
+        },
+        "viewProof": "View file",
+        "assignAirs": "Assign Airs",
+        "remove": "Remove",
+        "removeReason": "Removed from Airs",
+        "cancelInvitation": "Cancel invitation",
+        "addTitle": "Add client",
+        "project": "Project",
+        "email": "Person's email",
+        "lookup": "Search",
+        "hasAccount": "{{name}} already has an Airs account.",
+        "newPerson": "This email has no Airs account yet. We will send an invitation, and they become an active client once they confirm their sign-up.",
+        "name": "Name",
+        "assignToggle": "Assign Airs",
+        "amount": "Airs amount",
+        "concept": "Reason (for example, product purchase)",
+        "documentNumber": "Invoice or document number",
+        "proofAttach": "Attach file",
+        "proofChange": "Change file",
+        "proofReady": "File ready",
+        "airsHint": "The supporting file (photo or PDF up to 10 MB) stays private: only the project team and approvers see it. A person without an account receives their Airs when they sign up.",
+        "add": "Add client",
+        "readOnly": "Only the project admin and sub admins can add or remove clients.",
+        "notices": {
+          "added": "Client added.",
+          "invited": "Invitation sent. They become active once they confirm their sign-up.",
+          "invitedWithAirs": "Client invited: they will get an email to sign up and claim their Airs.",
+          "airsAdded": "Airs assigned to the client.",
+          "pendingApproval": "The Airs stay in review until an approver confirms them."
+        },
+        "errors": {
+          "nameRequired": "Enter the person's name.",
+          "documentRequired": "This project asks for the invoice or document number.",
+          "proof": "The file must be an image or a PDF up to 10 MB.",
+          "rateLimited": "Too many requests in a row. Try again in a while."
+        },
+        "clear": "Clear search",
+        "filterLabel": "Show",
+        "filters": {
+          "all": "All",
+          "member": "Active",
+          "invitation": "Invited",
+          "withAirs": "With Airs"
+        }
       },
       "comments": {
         "empty": "No comments with this status.",
@@ -1309,10 +1374,7 @@
         }
       },
       "title": "Explorer",
-      "subtitle": "The global map of AIRS projects",
-      "marketplace": "AIRS PROJECT MARKETPLACE",
-      "heroTitle": "Explore where your energy becomes impact.",
-      "live": "LIVE",
+      "subtitle": "Where your energy becomes positive impact.",
       "featured": "FEATURED PROJECT",
       "featuredProject": "FEATURED PROJECT",
       "heroDescription": "Discover the proposal and find a way to add your talent, network, or experience.",
@@ -1328,7 +1390,7 @@
       "active": "ACTIVE",
       "productive": "PRODUCTIVE",
       "waysToCollaborate": "Ways to collaborate",
-      "participateAndEarn": "See how to participate and earn AIRS",
+      "participateAndEarn": "See how to participate and earn Airs",
       "directory": {
         "label": "Choose what to explore",
         "projects": "Projects",
@@ -1437,23 +1499,46 @@
         }
       },
       "intents": {
-        "question": "What do you want to do today?",
-        "prompt": "CHOOSE YOUR PATH",
+        "question": "What do you want to do?",
         "collaborate": {
           "label": "I want to collaborate",
-          "description": "Give your time, knowledge, or network to an active project."
+          "description": "Give your time, knowledge, or network to an active project.",
+          "guide": {
+            "intro": "Give your time, knowledge or network to an active project. Every positive impact action adds to your reputation on Airs.",
+            "step1": "Explore the projects and pick one that moves you.",
+            "step2": "On its page, check the ways to contribute and what it needs today.",
+            "step3": "Write to us or reach out to the project to plan how you join."
+          }
         },
         "propose": {
           "label": "I want to propose a project",
-          "description": "Bring your productive or conservation initiative to the AIRS network."
+          "description": "Bring your productive or conservation initiative to the Airs network.",
+          "guide": {
+            "intro": "Do you lead a productive or conservation initiative? Tell us about it to bring it to the Airs network.",
+            "step1": "Fill in the form with the essentials of your initiative.",
+            "step2": "The Alternun team reviews it and contacts you to learn more.",
+            "step3": "If it fits, we publish its page on Airs so more people can join."
+          }
         },
         "donate": {
           "label": "I want to donate",
-          "description": "Boost a cause and connect your support with positive impact."
+          "description": "Boost a cause and connect your support with positive impact.",
+          "guide": {
+            "intro": "Boost a cause you care about and connect your support with positive impact.",
+            "step1": "Explore the projects and choose the cause you want to boost.",
+            "step2": "Check on its page how it receives support and what it uses it for.",
+            "step3": "Write to us and we will tell you how to channel your support to that project."
+          }
+        },
+        "guide": {
+          "close": "Close",
+          "contact": "Write to us",
+          "openForm": "Propose my project",
+          "seeProjects": "See projects"
         }
       },
       "submitBanner": {
-        "title": "Your project can move AIRS too.",
+        "title": "Your project can move Airs too.",
         "description": "Present a productive or conservation initiative to Alternun's global community."
       },
       "empty": {
@@ -1462,7 +1547,7 @@
       },
       "earn": {
         "title": "Collaboration creates momentum",
-        "description": "AIRS opportunities are coordinated with each project and the community."
+        "description": "Airs opportunities are coordinated with each project and the community."
       },
       "form": {
         "title": "Submit a project",

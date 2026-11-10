@@ -202,6 +202,7 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'activities:read',
     'comments:read',
     'comments:moderate',
+    'participants:read',
   ],
   moderator: [
     'enterprises:read',

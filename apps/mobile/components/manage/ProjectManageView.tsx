@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, RotateCcw, ShieldCheck } from 'lucide-react-native';
+import { ArrowLeft, RotateCcw } from 'lucide-react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RoleChips } from '../profile/RoleChips';
+import { HEADER_BUTTON_SIZE, PageHeader } from '../common/PageHeader';
+import { ManageClientsSection } from './ManageClientsSection';
 import { ManageCommentsSection } from './ManageCommentsSection';
 import { ManageImagesSection } from './ManageImagesSection';
 import { ManageInfoSection } from './ManageInfoSection';
@@ -16,11 +18,12 @@ import {
 } from '../../utils/projectManage';
 
 /** Tabs the person can use, in display order. */
-export function visibleTabs(can: ManageCapabilities): ManageTab[] {
+export function visibleTabs(can: ManageCapabilities, hasClients = false): ManageTab[] {
   return [
     ...(can.editContent ? (['info'] as const) : []),
     ...(can.media ? (['images'] as const) : []),
     ...(can.team ? (['team'] as const) : []),
+    ...(hasClients && can.clients ? (['clients'] as const) : []),
     ...(can.comments ? (['comments'] as const) : []),
   ];
 }
@@ -32,6 +35,7 @@ export function ProjectManageView({
   t,
   onBack,
   canPickFiles,
+  clientsClient,
 }: ProjectManageViewProps): React.JSX.Element {
   const [overview, setOverview] = useState<ManageOverview | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'denied' | 'error'>('loading');
@@ -45,7 +49,7 @@ export function ProjectManageView({
       .overview()
       .then((next) => {
         setOverview(next);
-        setTab((current) => current ?? visibleTabs(next.can)[0] ?? null);
+        setTab((current) => current ?? visibleTabs(next.can, !!clientsClient)[0] ?? null);
         setState('ready');
       })
       .catch((error: unknown) =>
@@ -55,7 +59,7 @@ export function ProjectManageView({
             : 'error'
         )
       );
-  }, [client]);
+  }, [client, clientsClient]);
 
   useEffect(load, [load, version]);
 
@@ -70,7 +74,7 @@ export function ProjectManageView({
         Object.values(overview.project.content)[0]
       )?.title ?? overview.project.slug
     : '';
-  const tabs = overview ? visibleTabs(overview.can) : [];
+  const tabs = overview ? visibleTabs(overview.can, !!clientsClient) : [];
   // Apply what the server saved right away; the refetch that follows only confirms it.
   const applySaved = (saved: ManagedProject): void =>
     setOverview((current) =>
@@ -86,10 +90,23 @@ export function ProjectManageView({
       style={{ backgroundColor: palette.background }}
       contentContainerStyle={styles.content}
     >
-      <Pressable accessibilityRole='button' onPress={onBack} style={styles.back}>
-        <ArrowLeft size={18} color={palette.primaryDeep} />
-        <Text style={[styles.backText, { color: palette.primaryDeep }]}>{t('manage.back')}</Text>
-      </Pressable>
+      <PageHeader
+        testID='project-manage-heading'
+        title={overview ? title : t('manage.title')}
+        subtitle={overview ? t('manage.title') : undefined}
+        palette={palette}
+        leading={
+          <Pressable
+            testID='project-manage-back'
+            accessibilityRole='button'
+            accessibilityLabel={t('manage.back')}
+            onPress={onBack}
+            style={[styles.back, { borderColor: palette.border, backgroundColor: palette.surface }]}
+          >
+            <ArrowLeft size={18} color={palette.primaryDeep} />
+          </Pressable>
+        }
+      />
 
       {state === 'loading' && !overview ? (
         <Text style={[manageStyles.muted, { color: palette.muted }]}>{t('manage.loading')}</Text>
@@ -113,26 +130,12 @@ export function ProjectManageView({
 
       {overview && state !== 'denied' ? (
         <>
-          <View
-            style={[
-              manageStyles.card,
-              { borderColor: palette.border, backgroundColor: palette.surface },
-            ]}
-          >
-            <View style={manageStyles.row}>
-              <ShieldCheck size={18} color={palette.primary} />
-              <Text style={[styles.eyebrow, { color: palette.primary }]}>{t('manage.title')}</Text>
-            </View>
-            <Text testID='project-manage-title' style={[styles.title, { color: palette.text }]}>
-              {title}
-            </Text>
-            <RoleChips
-              roles={overview.roles}
-              accent={palette.primary}
-              muted={palette.muted}
-              align='flex-start'
-            />
-          </View>
+          <RoleChips
+            roles={overview.roles}
+            accent={palette.primary}
+            muted={palette.muted}
+            align='flex-start'
+          />
 
           {notice ? (
             <Text
@@ -177,6 +180,15 @@ export function ProjectManageView({
             <ManageImagesSection {...sectionProps} canPickFiles={canPickFiles} />
           ) : null}
           {sectionProps && tab === 'team' ? <ManageTeamSection {...sectionProps} /> : null}
+          {clientsClient && tab === 'clients' ? (
+            <ManageClientsSection
+              client={clientsClient}
+              can={overview.can}
+              palette={palette}
+              t={t}
+              canPickFiles={canPickFiles}
+            />
+          ) : null}
           {sectionProps && tab === 'comments' ? <ManageCommentsSection {...sectionProps} /> : null}
         </>
       ) : null}
@@ -187,16 +199,14 @@ export function ProjectManageView({
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120, gap: 16 },
   back: {
-    minHeight: 44,
-    flexDirection: 'row',
+    width: HEADER_BUTTON_SIZE,
+    height: HEADER_BUTTON_SIZE,
+    borderRadius: 11,
+    borderWidth: 1,
     alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
+    justifyContent: 'center',
   },
-  backText: { fontSize: 14, fontWeight: '800' },
   retry: { flexDirection: 'row', gap: 8 },
-  eyebrow: { fontSize: 12, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
-  title: { fontFamily: 'Sculpin-Bold', fontSize: 26 },
   tabs: {
     flexDirection: 'row',
     flexWrap: 'wrap',
