@@ -9,7 +9,7 @@ import { marketplaceError } from './marketplace.errors';
 import { MarketplaceAdminRepository } from './marketplace.repository';
 import { actorFromPrincipal } from './marketplace.types';
 import { AirsReportRepository, type AirsReportApprover } from './airs-report.repository';
-import { resolveAirsNotificationsFrom, sendAirsEmail } from '../airs/airs.email';
+import { sendAirsEmail } from '../airs/airs.email';
 import type { AirsReportNotifierDependencies } from './airs-report-emails.types';
 import {
   createAirsReportNotifier,
@@ -62,11 +62,7 @@ export class AirsReportService {
         to: string;
         email: { subject: string; text: string; html: string };
       }) => {
-        const result = await sendAirsEmail({
-          to,
-          from: resolveAirsNotificationsFrom(process.env),
-          email,
-        });
+        const result = await sendAirsEmail({ to, email });
         return { sent: result.sent };
       },
       env: process.env,

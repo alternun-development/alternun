@@ -72,6 +72,7 @@ import { useTheme } from '@alternun/ui';
 import { ExpandableCtaCard } from '../components/explore/ExpandableCtaCard';
 import { EnterpriseApplicationForm } from '../components/explore/EnterpriseApplicationForm';
 import { TipsSlider } from '../components/explore/TipsSlider';
+import { FormField } from '../components/common/FormField';
 import { INTENT_KEYS, IntentGuideModal, isIntentKey } from '../components/explore/IntentGuideModal';
 import type { IntentGuideAction, IntentKey } from '../components/explore/types';
 import { HEADER_BUTTON_SIZE, PageHeader, SectionHeading } from '../components/common/PageHeader';
@@ -1018,51 +1019,38 @@ function SubmitProject({
           </View>
         </View>
       )}
-      <TextInput
-        value={projectName}
-        onChangeText={setProjectName}
-        placeholder={t('explorer.form.projectName')}
-        placeholderTextColor={palette.muted}
-        style={[styles.input, { color: palette.text, borderColor: palette.border }]}
-      />
-      <TextInput
-        value={location}
-        onChangeText={setLocation}
-        placeholder={t('explorer.form.location')}
-        placeholderTextColor={palette.muted}
-        style={[styles.input, { color: palette.text, borderColor: palette.border }]}
-      />
-      <TextInput
-        value={contactName}
-        onChangeText={setContactName}
-        placeholder={t('explorer.form.contactName')}
-        placeholderTextColor={palette.muted}
-        autoComplete='name'
-        style={[styles.input, { color: palette.text, borderColor: palette.border }]}
-      />
-      <TextInput
-        value={contactEmail}
-        onChangeText={setContactEmail}
-        placeholder={t('explorer.form.contactEmail')}
-        placeholderTextColor={palette.muted}
-        autoCapitalize='none'
-        autoComplete='email'
-        keyboardType='email-address'
-        style={[styles.input, { color: palette.text, borderColor: palette.border }]}
-      />
-      <TextInput
-        value={message}
-        onChangeText={setMessage}
-        placeholder={t('explorer.form.message')}
-        placeholderTextColor={palette.muted}
-        multiline
-        maxLength={2000}
-        style={[
-          styles.input,
-          styles.messageInput,
-          { color: palette.text, borderColor: palette.border },
-        ]}
-      />
+      <View style={styles.formFields}>
+        <FormField
+          label={t('explorer.form.projectName')}
+          value={projectName}
+          onChangeText={setProjectName}
+        />
+        <FormField
+          label={t('explorer.form.location')}
+          value={location}
+          onChangeText={setLocation}
+        />
+        <FormField
+          label={t('explorer.form.contactName')}
+          value={contactName}
+          onChangeText={setContactName}
+          autoComplete='name'
+        />
+        <FormField
+          label={t('explorer.form.contactEmail')}
+          value={contactEmail}
+          onChangeText={setContactEmail}
+          autoComplete='email'
+          keyboardType='email-address'
+        />
+        <FormField
+          label={t('explorer.form.message')}
+          value={message}
+          onChangeText={setMessage}
+          multiline
+          maxLength={2000}
+        />
+      </View>
       <TextInput
         value={website}
         onChangeText={setWebsite}
@@ -1788,15 +1776,7 @@ const styles = StyleSheet.create({
   formHeaderCopy: { flex: 1 },
   formTitle: { fontFamily: 'Sculpin-Bold', fontSize: 19, letterSpacing: -0.35 },
   formSubtitle: { fontSize: 11, lineHeight: 16, marginTop: 2 },
-  input: {
-    minHeight: 47,
-    borderWidth: 1,
-    borderRadius: 12,
-    fontSize: 13,
-    paddingHorizontal: 13,
-    marginBottom: 9,
-  },
-  messageInput: { minHeight: 88, textAlignVertical: 'top' },
+  formFields: { gap: 10, marginBottom: 10 },
   honeypotInput: { position: 'absolute', left: -10000, width: 1, height: 1, opacity: 0 },
   typeSelector: { flexDirection: 'row', gap: 8, marginTop: 1 },
   typeButton: {

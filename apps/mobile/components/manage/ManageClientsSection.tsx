@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Mail, Sparkles, UserCheck, Users, type LucideProps } from 'lucide-react-native';
+import { Mail, MailX, Sparkles, UserCheck, Users, type LucideProps } from 'lucide-react-native';
 import SearchFilterBar from '../common/SearchFilterBar';
 import { SectionHeading } from '../common/PageHeader';
+import { ClientListItem } from './ClientListItem';
 import { ManageField } from './ManageField';
 import { manageStyles } from './styles';
 import type { ClientDraft, ClientFilter, ManageClientsSectionProps } from './types';
@@ -41,11 +42,18 @@ const ERROR_KEYS: Readonly<Record<string, string>> = {
   AIRS_REPORT_LOOKUP_RATE_LIMITED: 'manage.clients.errors.rateLimited',
 };
 
-const CLIENT_FILTERS: readonly ClientFilter[] = ['all', 'member', 'invitation', 'withAirs'];
+const CLIENT_FILTERS: readonly ClientFilter[] = [
+  'all',
+  'member',
+  'invitation',
+  'cancelled',
+  'withAirs',
+];
 const FILTER_ICONS: Record<ClientFilter, React.FC<LucideProps>> = {
   all: Users as React.FC<LucideProps>,
   member: UserCheck as React.FC<LucideProps>,
   invitation: Mail as React.FC<LucideProps>,
+  cancelled: MailX as React.FC<LucideProps>,
   withAirs: Sparkles as React.FC<LucideProps>,
 };
 
@@ -309,6 +317,16 @@ export function ManageClientsSection({
     setServerProblems({});
   }
 
+  // A cancelled invitation is sent again from the form, with its email and name filled in.
+  function reinvite(item: ProjectClient): void {
+    setProjectId(item.projectId);
+    setDraft({ ...EMPTY_DRAFT, email: item.email, name: item.name });
+    setLookup({ email: item.email.toLowerCase(), hasAccount: false, displayName: null });
+    setProof(null);
+    setAttempted(false);
+    setServerProblems({});
+  }
+
   const spinner = (label: string, color: string): React.JSX.Element => (
     <View style={styles.busyRow}>
       <ActivityIndicator size='small' color={color} />
@@ -369,98 +387,20 @@ export function ManageClientsSection({
           </Text>
         ) : null}
         {visible.map((item) => (
-          <View
+          <ClientListItem
             key={`${item.kind}-${item.id}`}
-            testID={`manage-client-${item.id}`}
-            style={{ gap: 6, paddingTop: 10, borderTopWidth: 1, borderColor: palette.border }}
-          >
-            <View style={[manageStyles.row, { justifyContent: 'space-between' }]}>
-              <View style={{ flex: 1, minWidth: 160 }}>
-                <Text style={{ color: palette.text, fontWeight: '800' }}>
-                  {item.name || item.email}
-                </Text>
-                <Text style={[manageStyles.muted, { color: palette.muted }]}>
-                  {item.email}
-                  {multiProject && projectTitles.get(item.projectId)
-                    ? ` · ${projectTitles.get(item.projectId) ?? ''}`
-                    : ''}
-                </Text>
-              </View>
-              <Text
-                style={[
-                  manageStyles.secondaryButtonText,
-                  { color: item.kind === 'member' ? palette.primary : palette.muted },
-                ]}
-              >
-                {t(`manage.clients.kind.${item.kind}`)}
-              </Text>
-            </View>
-            {item.reports.map((report) => (
-              <View key={report.id} style={manageStyles.row}>
-                <Text style={[manageStyles.muted, { color: palette.text, flex: 1 }]}>
-                  {`${report.amount.toLocaleString('es-CO')} Airs · ${report.concept} · ${t(
-                    `manage.clients.status.${report.status}`,
-                    undefined,
-                    report.status
-                  )}`}
-                </Text>
-                {report.hasProof ? (
-                  <Pressable
-                    testID={`manage-client-proof-${report.id}`}
-                    accessibilityRole='link'
-                    disabled={busy}
-                    onPress={() => void showProof(item, report.id)}
-                  >
-                    {busyAction === `proof-${report.id}` ? (
-                      <ActivityIndicator size='small' color={palette.primaryDeep} />
-                    ) : (
-                      <Text
-                        style={[manageStyles.secondaryButtonText, { color: palette.primaryDeep }]}
-                      >
-                        {t('manage.clients.viewProof')}
-                      </Text>
-                    )}
-                  </Pressable>
-                ) : null}
-              </View>
-            ))}
-            {can.editClients ? (
-              <View style={manageStyles.row}>
-                {can.assignAirs ? (
-                  <Pressable
-                    testID={`manage-client-assign-${item.id}`}
-                    accessibilityRole='button'
-                    disabled={busy}
-                    onPress={() => assignTo(item)}
-                    style={chip(false)}
-                  >
-                    <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
-                      {t('manage.clients.assignAirs')}
-                    </Text>
-                  </Pressable>
-                ) : null}
-                <Pressable
-                  testID={`manage-client-remove-${item.id}`}
-                  accessibilityRole='button'
-                  disabled={busy}
-                  onPress={() => void remove(item)}
-                  style={chip(false)}
-                >
-                  {busyAction === `remove-${item.id}` ? (
-                    spinner(t('manage.clients.busy.remove'), palette.text)
-                  ) : (
-                    <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
-                      {t(
-                        item.kind === 'member'
-                          ? 'manage.clients.remove'
-                          : 'manage.clients.cancelInvitation'
-                      )}
-                    </Text>
-                  )}
-                </Pressable>
-              </View>
-            ) : null}
-          </View>
+            item={item}
+            palette={palette}
+            t={t}
+            projectTitle={multiProject ? projectTitles.get(item.projectId) : undefined}
+            canEdit={!!can.editClients}
+            canAssign={!!can.assignAirs}
+            busyAction={busyAction}
+            onAssign={() => assignTo(item)}
+            onReinvite={() => reinvite(item)}
+            onRemove={() => void remove(item)}
+            onShowProof={(reportId) => void showProof(item, reportId)}
+          />
         ))}
       </View>
 

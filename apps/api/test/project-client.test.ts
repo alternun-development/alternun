@@ -44,7 +44,7 @@ function setup(
   const invitations: any[] = [];
   const repository = {
     hasVerifiedAccount: async () => options.hasAccount ?? false,
-    listPendingInvitations: async () => invitations,
+    listInvitations: async () => invitations,
     findInvitation: async (_projectId: string, id: string) =>
       invitations.find((item) => item.id === id) ?? null,
     invite: async (projectId: string, email: string, name: string) => {
@@ -362,7 +362,13 @@ test('invitations are cancelled only within their project; members are removed w
 
 test('the enterprise list gathers the readable projects and skips archived or out-of-scope ones', async () => {
   const { service, invitations } = setup({ denied: [OTHER], reports: [] });
-  invitations.push({ id: 'inv-1', email: 'x@example.com', name: 'X', invitedAt: 'x' });
+  invitations.push({
+    id: 'inv-1',
+    email: 'x@example.com',
+    name: 'X',
+    status: 'pending',
+    invitedAt: 'x',
+  });
   const result = await service.listForEnterprise(principal(), 'req', 'ent-1');
   assert.deepEqual(result.projects, [{ id: PROJECT, title: 'Río' }]);
   assert.equal(result.clients.length, 1);
@@ -383,11 +389,103 @@ test('the invitation email speaks of Airs and positive impact in both languages'
   assert.doesNotMatch(email.text, /AIRS/);
 });
 
-test('marketplace notifications are sent from notifications@alternun.co unless configured', async () => {
-  const { resolveAirsNotificationsFrom } = await import('../src/modules/airs/airs.email');
-  assert.equal(resolveAirsNotificationsFrom({}), 'notifications@alternun.co');
-  assert.equal(
-    resolveAirsNotificationsFrom({ AIRS_NOTIFICATIONS_EMAIL_FROM: ' avisos@alternun.co ' }),
-    'avisos@alternun.co'
+test('emails go through Tláo: local .env mailbox fallback and Postmark refused', async () => {
+  const { isRetiredSmtpHost, smtpConfigFromEnv } = await import('../src/modules/airs/airs.email');
+  assert.equal(smtpConfigFromEnv({}), null);
+  const config = smtpConfigFromEnv({
+    ALTERNUN_NOTIFICATIONS_EMAIL: 'notifications@alternun.co',
+    ALTERNUN_NOTIFICATIONS_PASSWORD: 'secret',
+  });
+  assert.equal(config?.host, 'mail.xn--tlo-fla.com');
+  assert.equal(config?.port, 587);
+  assert.equal(config?.from, 'notifications@alternun.co');
+  assert.equal(config?.requireTls, true);
+  assert.equal(isRetiredSmtpHost('smtp.postmarkapp.com'), true);
+  assert.equal(isRetiredSmtpHost('mail.xn--tlo-fla.com'), false);
+});
+
+test('Postmark stays out of the API and infrastructure code', () => {
+  const fs = require('node:fs') as typeof import('node:fs');
+  const path = require('node:path') as typeof import('node:path');
+  const roots = [
+    path.resolve(__dirname, '../src'),
+    path.resolve(__dirname, '../../../packages/infra/modules'),
+    path.resolve(__dirname, '../../../packages/infra/config'),
+    path.resolve(__dirname, '../../../packages/infra/infra.config.ts'),
+  ];
+  const offenders: string[] = [];
+  const visit = (target: string): void => {
+    const stat = fs.statSync(target);
+    if (stat.isDirectory()) {
+      for (const entry of fs.readdirSync(target)) visit(path.join(target, entry));
+      return;
+    }
+    if (!/\.(ts|js|mjs|cjs|json)$/.test(target)) return;
+    const source = fs.readFileSync(target, 'utf8');
+    // The guard itself names Postmark to refuse it.
+    const lines = source
+      .split('\n')
+      .filter((line) => /postmark/i.test(line) && !/retired/i.test(line));
+    if (lines.length > 0) offenders.push(path.relative(process.cwd(), target));
+  };
+  roots.forEach(visit);
+  assert.deepEqual(offenders, []);
+});
+
+test('clients carry their invitation history and cancelled invitations stay listed', async () => {
+  const { service, invitations, members } = setup({ reports: [] });
+  invitations.push(
+    {
+      id: 'inv-3',
+      email: 'ana@example.com',
+      name: 'Ana',
+      status: 'pending',
+      invitedAt: '2026-11-10T03:46:58Z',
+      cancelledAt: null,
+      acceptedAt: null,
+    },
+    {
+      id: 'inv-2',
+      email: 'ana@example.com',
+      name: 'Ana',
+      status: 'cancelled',
+      invitedAt: '2026-11-10T03:23:46Z',
+      cancelledAt: '2026-11-10T03:46:05Z',
+      acceptedAt: null,
+    },
+    {
+      id: 'inv-1',
+      email: 'luis@example.com',
+      name: 'Luis',
+      status: 'cancelled',
+      invitedAt: '2026-11-09T10:00:00Z',
+      cancelledAt: '2026-11-09T11:00:00Z',
+      acceptedAt: null,
+    },
+    {
+      id: 'inv-0',
+      email: 'eva@example.com',
+      name: 'Eva',
+      status: 'accepted',
+      invitedAt: '2026-11-08T10:00:00Z',
+      cancelledAt: null,
+      acceptedAt: '2026-11-08T12:00:00Z',
+    }
   );
+  members.push({ id: 'part-9', email: 'Eva@example.com', displayName: 'Eva', addedAt: 'x' });
+
+  const clients = await service.list(principal(), 'req', PROJECT);
+  assert.deepEqual(
+    clients.map((client) => [
+      client.kind,
+      client.id,
+      client.invitations.map((item) => item.status),
+    ]),
+    [
+      ['invitation', 'inv-3', ['pending', 'cancelled']],
+      ['member', 'part-9', ['accepted']],
+      ['cancelled', 'inv-1', ['cancelled']],
+    ]
+  );
+  assert.equal(clients[0].invitations[1].cancelledAt, '2026-11-10T03:46:05Z');
 });

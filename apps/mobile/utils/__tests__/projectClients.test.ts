@@ -2,6 +2,7 @@
 import {
   airsAmount,
   clientFormProblems,
+  formatClientDate,
   createClientsClient,
   proofProblem,
   serverFieldProblems,
@@ -215,5 +216,13 @@ describe('client form validation', () => {
       code: 'VALIDATION_FAILED',
       fieldErrors: ['airs.concept too short'],
     });
+  });
+});
+
+describe('formatClientDate', () => {
+  it('formats valid dates and leaves missing or invalid ones empty', () => {
+    expect(formatClientDate('2026-11-10T03:46:58Z', 'en-US')).toMatch(/2026/);
+    expect(formatClientDate(null)).toBe('');
+    expect(formatClientDate('not a date')).toBe('');
   });
 });

@@ -9,6 +9,7 @@ import {
   type EnterpriseCompanySize,
 } from '../../services/enterpriseApplication';
 import type { EnterpriseApplicationFormProps, EnterpriseTextField as TextField } from './types';
+import { FormField } from '../common/FormField';
 
 const FIELDS: ReadonlyArray<{
   key: TextField;
@@ -99,14 +100,12 @@ export function EnterpriseApplicationForm({
   return (
     <View testID='enterprise-application-form' style={styles.form}>
       {FIELDS.map((field) => (
-        <TextInput
+        <FormField
           key={field.key}
           testID={`enterprise-application-${field.key}`}
+          label={t(`explorer.enterpriseForm.${field.key}`)}
           value={draft[field.key]}
           onChangeText={(value) => set(field.key, value)}
-          placeholder={t(`explorer.enterpriseForm.${field.key}`)}
-          accessibilityLabel={t(`explorer.enterpriseForm.${field.key}`)}
-          placeholderTextColor={palette.muted}
           multiline={field.multiline}
           keyboardType={
             field.email
@@ -117,15 +116,7 @@ export function EnterpriseApplicationForm({
               ? 'phone-pad'
               : 'default'
           }
-          autoCapitalize={field.email === true || field.url === true ? 'none' : 'sentences'}
-          style={[
-            styles.input,
-            field.multiline && styles.multiline,
-            {
-              color: palette.text,
-              borderColor: invalid === field.key ? '#f87171' : palette.border,
-            },
-          ]}
+          error={invalid === field.key ? t('explorer.enterpriseForm.fieldInvalid') : null}
         />
       ))}
 
@@ -206,14 +197,6 @@ export function EnterpriseApplicationForm({
 
 const styles = StyleSheet.create({
   form: { gap: 10 },
-  input: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 14,
-  },
-  multiline: { minHeight: 88, textAlignVertical: 'top' },
   label: { fontSize: 12, fontWeight: '800', marginTop: 4 },
   sizes: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   size: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9 },
