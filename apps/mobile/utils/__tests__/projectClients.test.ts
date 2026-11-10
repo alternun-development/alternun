@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/require-await, @typescript-eslint/no-unsafe-return */
-import { airsAmount, createClientsClient, proofProblem } from '../projectClients';
+import {
+  airsAmount,
+  clientFormProblems,
+  createClientsClient,
+  proofProblem,
+  serverFieldProblems,
+} from '../projectClients';
 import { ManageRequestError } from '../projectManage';
 
 function response(body: unknown, status = 200): Response {
@@ -146,5 +152,68 @@ describe('client helpers', () => {
     expect(airsAmount('0')).toBeNull();
     expect(airsAmount('4.5')).toBeNull();
     expect(airsAmount('')).toBeNull();
+  });
+});
+
+describe('client form validation', () => {
+  const draft = { email: 'a@b.co', name: '', amount: '', concept: '', documentNumber: '' };
+
+  it('matches the API limits field by field', () => {
+    expect(clientFormProblems(draft, { needsName: false, assign: false })).toEqual({});
+    expect(
+      clientFormProblems(
+        { ...draft, email: 'a@b', amount: '0', concept: 'pago', documentNumber: 'x'.repeat(81) },
+        { needsName: true, assign: true }
+      )
+    ).toEqual({
+      email: 'manage.clients.errors.email',
+      name: 'manage.clients.errors.nameRequired',
+      amount: 'manage.clients.errors.amount',
+      concept: 'manage.clients.errors.conceptShort',
+      documentNumber: 'manage.clients.errors.documentLong',
+    });
+    expect(
+      clientFormProblems(
+        { ...draft, name: 'x'.repeat(121), amount: '5', concept: 'x'.repeat(501) },
+        { needsName: true, assign: true }
+      )
+    ).toEqual({
+      name: 'manage.clients.errors.nameLong',
+      concept: 'manage.clients.errors.conceptLong',
+    });
+  });
+
+  it('maps the API validation messages to fields', () => {
+    expect(
+      serverFieldProblems([
+        'airs.concept must be longer than or equal to 10 characters',
+        'airs.amount must not be less than 1',
+        'email must be an email',
+        'name must be shorter than or equal to 120 characters',
+        'airs.documentNumber must be shorter than or equal to 80 characters',
+      ])
+    ).toEqual({
+      concept: 'manage.clients.errors.conceptShort',
+      amount: 'manage.clients.errors.amount',
+      email: 'manage.clients.errors.email',
+      name: 'manage.clients.errors.nameLong',
+      documentNumber: 'manage.clients.errors.documentLong',
+    });
+    expect(serverFieldProblems(['airs.concept must be shorter than or equal to 500'])).toEqual({
+      concept: 'manage.clients.errors.conceptLong',
+    });
+  });
+
+  it('keeps the API field errors on the request error', async () => {
+    const fetcher = jest
+      .fn()
+      .mockResolvedValue(
+        response({ code: 'VALIDATION_FAILED', fieldErrors: ['airs.concept too short', 3] }, 400)
+      );
+    const client = createClientsClient({ projectId: 'p1' }, async () => 'tok', fetcher, 'http://x');
+    await expect(client.add('p1', { email: 'a@b.co' })).rejects.toMatchObject({
+      code: 'VALIDATION_FAILED',
+      fieldErrors: ['airs.concept too short'],
+    });
   });
 });

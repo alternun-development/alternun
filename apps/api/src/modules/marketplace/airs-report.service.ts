@@ -9,12 +9,13 @@ import { marketplaceError } from './marketplace.errors';
 import { MarketplaceAdminRepository } from './marketplace.repository';
 import { actorFromPrincipal } from './marketplace.types';
 import { AirsReportRepository, type AirsReportApprover } from './airs-report.repository';
-import { sendAirsEmail } from '../airs/airs.email';
+import { resolveAirsNotificationsFrom, sendAirsEmail } from '../airs/airs.email';
 import type { AirsReportNotifierDependencies } from './airs-report-emails.types';
 import {
   createAirsReportNotifier,
   createAirsReportWorkflowNotifier,
   resolveAirsReportSupportEmails,
+  type AirsReportNotifyOptions,
 } from './airs-report-notifier';
 import { AdminNotificationService, adminNotificationEventFor } from './admin-notification.service';
 import type {
@@ -31,7 +32,10 @@ function approverFrom(principal: AdminPrincipal): AirsReportApprover {
   return { email: principal.email, emailVerified: principal.emailVerified };
 }
 
-type NotifyIssued = (report: AirsReportRecord) => Promise<unknown>;
+type NotifyIssued = (
+  report: AirsReportRecord,
+  options?: AirsReportNotifyOptions
+) => Promise<unknown>;
 
 /** Optional override of the issuance emails; tests inject a recorder, the app uses the default. */
 export const AIRS_REPORT_NOTIFY_ISSUED = Symbol('AIRS_REPORT_NOTIFY_ISSUED');
@@ -58,7 +62,11 @@ export class AirsReportService {
         to: string;
         email: { subject: string; text: string; html: string };
       }) => {
-        const result = await sendAirsEmail({ to, email });
+        const result = await sendAirsEmail({
+          to,
+          from: resolveAirsNotificationsFrom(process.env),
+          email,
+        });
         return { sent: result.sent };
       },
       env: process.env,
@@ -79,14 +87,17 @@ export class AirsReportService {
 
   // Emails are best effort: a failed send never blocks or undoes the issuance, and a replay of
   // the same request (idempotent) never sends them again.
-  private async announce(response: {
-    report: AirsReportRecord;
-    idempotent: boolean;
-  }): Promise<void> {
+  private async announce(
+    response: {
+      report: AirsReportRecord;
+      idempotent: boolean;
+    },
+    options: AirsReportNotifyOptions = {}
+  ): Promise<void> {
     if (response.idempotent) return;
     for (const notify of [this.notifyIssued, this.notifyWorkflow]) {
       try {
-        await notify(response.report);
+        await notify(response.report, options);
       } catch {
         // Intentionally ignored.
       }
@@ -165,7 +176,8 @@ export class AirsReportService {
     principal: AdminPrincipal,
     requestId: string,
     projectId: string,
-    input: SubmitAirsReportRequest
+    input: SubmitAirsReportRequest,
+    notify: AirsReportNotifyOptions = {}
   ): Promise<SubmitAirsReportResponse> {
     const response = await this.repository.submit(
       projectId,
@@ -174,7 +186,7 @@ export class AirsReportService {
       approverFrom(principal),
       requestId
     );
-    await this.announce(response);
+    await this.announce(response, notify);
     return response;
   }
 

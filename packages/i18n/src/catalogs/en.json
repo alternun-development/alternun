@@ -1216,15 +1216,24 @@
         "notices": {
           "added": "Client added.",
           "invited": "Invitation sent. They become active once they confirm their sign-up.",
-          "invitedWithAirs": "Client invited: they will get an email to sign up and claim their Airs.",
+          "invitedWithAirs": "Invitation sent with the details of their Airs: they receive them when they confirm their sign-up.",
           "airsAdded": "Airs assigned to the client.",
-          "pendingApproval": "The Airs stay in review until an approver confirms them."
+          "pendingApproval": "The Airs stay in review until an approver confirms them.",
+          "alreadyClient": "This person is already a client of the project.",
+          "invitedNoEmail": "Client invited, but we could not send the email. Try again later."
         },
         "errors": {
           "nameRequired": "Enter the person's name.",
           "documentRequired": "This project asks for the invoice or document number.",
           "proof": "The file must be an image or a PDF up to 10 MB.",
-          "rateLimited": "Too many requests in a row. Try again in a while."
+          "rateLimited": "Too many requests in a row. Try again in a while.",
+          "email": "Enter a valid email, for example name@domain.com.",
+          "nameLong": "The name can have up to {{max}} characters.",
+          "amount": "Enter a whole number of Airs greater than 0.",
+          "conceptShort": "The reason needs at least {{min}} characters to explain the assignment.",
+          "conceptLong": "The reason can have up to {{max}} characters.",
+          "documentLong": "The document number can have up to {{max}} characters.",
+          "review": "Check the highlighted fields to add the client."
         },
         "clear": "Clear search",
         "filterLabel": "Show",
@@ -1233,6 +1242,21 @@
           "member": "Active",
           "invitation": "Invited",
           "withAirs": "With Airs"
+        },
+        "conceptCount": "{{count}}/{{min}} characters minimum",
+        "lookupFirst": "Search the email in Airs to continue.",
+        "busy": {
+          "lookup": "Searching…",
+          "add": "Adding client…",
+          "remove": "Removing…"
+        },
+        "toasts": {
+          "addedTitle": "Client added",
+          "invitedTitle": "Invitation sent",
+          "errorTitle": "Could not finish",
+          "lookupErrorTitle": "Could not search the email",
+          "removedTitle": "Client removed",
+          "cancelledTitle": "Invitation cancelled"
         }
       },
       "comments": {

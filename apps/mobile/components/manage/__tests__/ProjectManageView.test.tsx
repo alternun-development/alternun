@@ -16,6 +16,7 @@ jest.mock('@alternun/ui', () => ({
   useTheme: () => ({
     theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
   }),
+  ToastSystem: () => null,
 }));
 
 jest.mock('../../i18n/useAppTranslation', () => ({
