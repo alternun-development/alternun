@@ -1,3 +1,13 @@
+## [1.1.132](https://github.com/alternun-development/alternun/compare/v1.1.131...v1.1.132) (2026-11-10)
+
+### Bug Fixes
+
+- **repo:** fix(security): marketplace access regression tests and review evidence
+
+### Bug Fixes
+
+- **security:** marketplace access regression tests and review evidence ([cfe509c](https://github.com/alternun-development/alternun/commit/cfe509c07c50344ab6ece3605c2a84b1a7df5203))
+
 ## [1.1.131](https://github.com/alternun-development/alternun/compare/v1.1.130...v1.1.131) (2026-11-09)
 
 ### Changes
