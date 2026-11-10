@@ -106,6 +106,8 @@ export interface ManageClientsSectionProps {
   openUrl?: (url: string) => Promise<unknown>;
   /** Enterprise view: shows each client's project and asks for it when adding. */
   multiProject?: boolean;
+  /** Shows a toast for a finished action (success or error). */
+  onToast?: (toast: { type: 'success' | 'error'; title: string; message?: string }) => void;
 }
 
 export type ClientFilter = 'all' | 'member' | 'invitation' | 'withAirs';

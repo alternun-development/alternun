@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, RotateCcw } from 'lucide-react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RoleChips } from '../profile/RoleChips';
+import { ToastSystem } from '@alternun/ui';
 import { HEADER_BUTTON_SIZE, PageHeader } from '../common/PageHeader';
+import { useToasts } from '../common/useToasts';
 import { ManageClientsSection } from './ManageClientsSection';
 import { ManageCommentsSection } from './ManageCommentsSection';
 import { ManageImagesSection } from './ManageImagesSection';
@@ -38,6 +40,7 @@ export function ProjectManageView({
   clientsClient,
 }: ProjectManageViewProps): React.JSX.Element {
   const [overview, setOverview] = useState<ManageOverview | null>(null);
+  const toasts = useToasts();
   const [state, setState] = useState<'loading' | 'ready' | 'denied' | 'error'>('loading');
   const [tab, setTab] = useState<ManageTab | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -85,119 +88,135 @@ export function ProjectManageView({
     : null;
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      testID='project-manage'
-      style={{ backgroundColor: palette.background }}
-      contentContainerStyle={styles.content}
-    >
-      <PageHeader
-        testID='project-manage-heading'
-        title={overview ? title : t('manage.title')}
-        subtitle={overview ? t('manage.title') : undefined}
-        palette={palette}
-        leading={
-          <Pressable
-            testID='project-manage-back'
-            accessibilityRole='button'
-            accessibilityLabel={t('manage.back')}
-            onPress={onBack}
-            style={[styles.back, { borderColor: palette.border, backgroundColor: palette.surface }]}
-          >
-            <ArrowLeft size={18} color={palette.primaryDeep} />
-          </Pressable>
-        }
-      />
-
-      {state === 'loading' && !overview ? (
-        <Text style={[manageStyles.muted, { color: palette.muted }]}>{t('manage.loading')}</Text>
-      ) : null}
-      {state === 'denied' ? (
-        <Text testID='project-manage-denied' style={[manageStyles.muted, { color: palette.text }]}>
-          {t('manage.denied')}
-        </Text>
-      ) : null}
-      {state === 'error' ? (
-        <Pressable
-          testID='project-manage-retry'
-          accessibilityRole='button'
-          onPress={load}
-          style={[manageStyles.primaryButton, styles.retry, { backgroundColor: palette.fill }]}
-        >
-          <RotateCcw size={16} color='#effff7' />
-          <Text style={manageStyles.primaryButtonText}>{t('manage.retry')}</Text>
-        </Pressable>
-      ) : null}
-
-      {overview && state !== 'denied' ? (
-        <>
-          <RoleChips
-            roles={overview.roles}
-            accent={palette.primary}
-            muted={palette.muted}
-            align='flex-start'
-          />
-
-          {notice ? (
-            <Text
-              testID='project-manage-notice'
-              style={[manageStyles.muted, { color: palette.primaryDeep }]}
+    <View style={styles.root}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        testID='project-manage'
+        style={{ backgroundColor: palette.background }}
+        contentContainerStyle={styles.content}
+      >
+        <PageHeader
+          testID='project-manage-heading'
+          title={overview ? title : t('manage.title')}
+          subtitle={overview ? t('manage.title') : undefined}
+          palette={palette}
+          leading={
+            <Pressable
+              testID='project-manage-back'
+              accessibilityRole='button'
+              accessibilityLabel={t('manage.back')}
+              onPress={onBack}
+              style={[
+                styles.back,
+                { borderColor: palette.border, backgroundColor: palette.surface },
+              ]}
             >
-              {notice}
-            </Text>
-          ) : null}
+              <ArrowLeft size={18} color={palette.primaryDeep} />
+            </Pressable>
+          }
+        />
 
-          <View
-            accessibilityRole='tablist'
-            style={[styles.tabs, { borderColor: palette.border, backgroundColor: palette.surface }]}
+        {state === 'loading' && !overview ? (
+          <Text style={[manageStyles.muted, { color: palette.muted }]}>{t('manage.loading')}</Text>
+        ) : null}
+        {state === 'denied' ? (
+          <Text
+            testID='project-manage-denied'
+            style={[manageStyles.muted, { color: palette.text }]}
           >
-            {tabs.map((item) => {
-              const selected = item === tab;
-              return (
-                <Pressable
-                  key={item}
-                  testID={`project-manage-tab-${item}`}
-                  accessibilityRole='tab'
-                  accessibilityState={{ selected }}
-                  onPress={() => setTab(item)}
-                  style={[styles.tab, selected && { backgroundColor: palette.fill }]}
-                >
-                  <Text style={[styles.tabText, { color: selected ? '#effff7' : palette.muted }]}>
-                    {t(`manage.tabs.${item}`)}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+            {t('manage.denied')}
+          </Text>
+        ) : null}
+        {state === 'error' ? (
+          <Pressable
+            testID='project-manage-retry'
+            accessibilityRole='button'
+            onPress={load}
+            style={[manageStyles.primaryButton, styles.retry, { backgroundColor: palette.fill }]}
+          >
+            <RotateCcw size={16} color='#effff7' />
+            <Text style={manageStyles.primaryButtonText}>{t('manage.retry')}</Text>
+          </Pressable>
+        ) : null}
 
-          {sectionProps && tab === 'info' ? (
-            <ManageInfoSection
-              // Re-initialise the form only when the stored record changes, never with stale data.
-              key={`info-${overview.project.updatedAt ?? ''}`}
-              {...sectionProps}
+        {overview && state !== 'denied' ? (
+          <>
+            <RoleChips
+              roles={overview.roles}
+              accent={palette.primary}
+              muted={palette.muted}
+              align='flex-start'
             />
-          ) : null}
-          {sectionProps && tab === 'images' ? (
-            <ManageImagesSection {...sectionProps} canPickFiles={canPickFiles} />
-          ) : null}
-          {sectionProps && tab === 'team' ? <ManageTeamSection {...sectionProps} /> : null}
-          {clientsClient && tab === 'clients' ? (
-            <ManageClientsSection
-              client={clientsClient}
-              can={overview.can}
-              palette={palette}
-              t={t}
-              canPickFiles={canPickFiles}
-            />
-          ) : null}
-          {sectionProps && tab === 'comments' ? <ManageCommentsSection {...sectionProps} /> : null}
-        </>
-      ) : null}
-    </ScrollView>
+
+            {notice ? (
+              <Text
+                testID='project-manage-notice'
+                style={[manageStyles.muted, { color: palette.primaryDeep }]}
+              >
+                {notice}
+              </Text>
+            ) : null}
+
+            <View
+              accessibilityRole='tablist'
+              style={[
+                styles.tabs,
+                { borderColor: palette.border, backgroundColor: palette.surface },
+              ]}
+            >
+              {tabs.map((item) => {
+                const selected = item === tab;
+                return (
+                  <Pressable
+                    key={item}
+                    testID={`project-manage-tab-${item}`}
+                    accessibilityRole='tab'
+                    accessibilityState={{ selected }}
+                    onPress={() => setTab(item)}
+                    style={[styles.tab, selected && { backgroundColor: palette.fill }]}
+                  >
+                    <Text style={[styles.tabText, { color: selected ? '#effff7' : palette.muted }]}>
+                      {t(`manage.tabs.${item}`)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {sectionProps && tab === 'info' ? (
+              <ManageInfoSection
+                // Re-initialise the form only when the stored record changes, never with stale data.
+                key={`info-${overview.project.updatedAt ?? ''}`}
+                {...sectionProps}
+              />
+            ) : null}
+            {sectionProps && tab === 'images' ? (
+              <ManageImagesSection {...sectionProps} canPickFiles={canPickFiles} />
+            ) : null}
+            {sectionProps && tab === 'team' ? <ManageTeamSection {...sectionProps} /> : null}
+            {clientsClient && tab === 'clients' ? (
+              <ManageClientsSection
+                client={clientsClient}
+                can={overview.can}
+                palette={palette}
+                t={t}
+                canPickFiles={canPickFiles}
+                onToast={toasts.show}
+              />
+            ) : null}
+            {sectionProps && tab === 'comments' ? (
+              <ManageCommentsSection {...sectionProps} />
+            ) : null}
+          </>
+        ) : null}
+      </ScrollView>
+      <ToastSystem toasts={toasts.toasts} onDismiss={toasts.dismiss} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 120, gap: 16 },
   back: {
     width: HEADER_BUTTON_SIZE,

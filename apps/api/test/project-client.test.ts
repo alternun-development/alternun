@@ -38,6 +38,7 @@ function setup(
     saveProof: [],
     sent: [],
     cancel: [],
+    notify: [],
   };
   const members: any[] = [];
   const invitations: any[] = [];
@@ -90,10 +91,17 @@ function setup(
     },
   };
   const reports = {
-    submit: async (_p: any, _r: string, projectId: string, input: any) => {
+    submit: async (_p: any, _r: string, projectId: string, input: any, notify: any) => {
       calls.submit.push(input);
+      calls.notify.push(notify);
       return {
-        report: { id: 'rep-1', projectId, status: options.reportStatus ?? 'awaiting_claim' },
+        report: {
+          id: 'rep-1',
+          projectId,
+          status: options.reportStatus ?? 'awaiting_claim',
+          amount: input.amount,
+          concept: input.concept,
+        },
       };
     },
   };
@@ -205,7 +213,7 @@ test('a new person needs a name and is invited by email', async () => {
   assert.match(calls.sent[0].email.text, /https:\/\/airs\.test\//);
 });
 
-test('Airs waiting to be claimed already invite the person, so no second email goes out', async () => {
+test('a new person gets one invitation email with the Airs waiting for them', async () => {
   const { service, calls } = setup({ reportStatus: 'awaiting_claim' });
   const result = await service.add(principal(), 'req', PROJECT, {
     email: 'new@example.com',
@@ -213,8 +221,14 @@ test('Airs waiting to be claimed already invite the person, so no second email g
     airs: { amount: 50, concept: 'Compra', documentNumber: ' F-12 ', proofPath: PROOF },
   });
   assert.equal(result.reportStatus, 'awaiting_claim');
-  assert.equal(result.invitationSent, false);
-  assert.equal(calls.sent.length, 0);
+  assert.equal(result.invitationSent, true);
+  // The report's own "claim your Airs" email is skipped: the invitation carries the details.
+  assert.deepEqual(calls.notify, [{ recipient: false }]);
+  assert.equal(calls.sent.length, 1);
+  assert.match(calls.sent[0].email.text, /tienes 50 Airs esperando por ti/);
+  assert.match(calls.sent[0].email.text, /Motivo: Compra/);
+  assert.match(calls.sent[0].email.text, /Proyecto: Río <Gaira>/);
+  assert.match(calls.sent[0].email.subject, /te invita a Airs/);
   assert.deepEqual(calls.submit[0], {
     recipientEmail: 'new@example.com',
     recipientName: 'Nueva',
@@ -226,6 +240,7 @@ test('Airs waiting to be claimed already invite the person, so no second email g
   assert.equal(calls.saveProof[0].reportId, 'rep-1');
   assert.equal(calls.saveProof[0].proof.path, PROOF);
 
+  // Airs in review are left out of the invitation: their approval sends the claim email.
   const pending = setup({ reportStatus: 'pending_approval' });
   const later = await pending.service.add(principal(), 'req', PROJECT, {
     email: 'new@example.com',
@@ -233,6 +248,38 @@ test('Airs waiting to be claimed already invite the person, so no second email g
     airs: { amount: 500, concept: 'Compra grande' },
   });
   assert.equal(later.invitationSent, true);
+  assert.doesNotMatch(pending.calls.sent[0].email.text, /500 Airs/);
+
+  // Someone already invited who gets new Airs is written to again, with those Airs.
+  const again = setup({ inviteIdempotent: true, reportStatus: 'awaiting_claim' });
+  const repeat = await again.service.add(principal(), 'req', PROJECT, {
+    email: 'new@example.com',
+    name: 'Nueva',
+    airs: { amount: 7, concept: 'Segunda compra' },
+  });
+  assert.equal(repeat.alreadyClient, true);
+  assert.match(again.calls.sent[0].email.text, /7 Airs/);
+});
+
+test('existing accounts keep the usual Airs email and failed invitations are not fatal', async () => {
+  const { service, calls } = setup({ hasAccount: true });
+  await service.add(principal(), 'req', PROJECT, {
+    email: 'ana@example.com',
+    airs: { amount: 5, concept: 'Compra de café' },
+  });
+  assert.deepEqual(calls.notify, [{ recipient: true }]);
+  assert.equal(calls.sent.length, 0);
+
+  const failing = setup();
+  failing.service.send = async () => {
+    throw new Error('smtp down');
+  };
+  const result = await failing.service.add(principal(), 'req', PROJECT, {
+    email: 'new@example.com',
+    name: 'Nueva',
+  });
+  assert.equal(result.invitationSent, false);
+  assert.equal(result.client.kind, 'invitation');
 });
 
 test('a repeated invitation sends no email and the proof must be a valid file of the project', async () => {
@@ -334,4 +381,13 @@ test('the invitation email speaks of Airs and positive impact in both languages'
   assert.match(email.text, /impacto positivo/);
   assert.match(email.text, /positive impact/);
   assert.doesNotMatch(email.text, /AIRS/);
+});
+
+test('marketplace notifications are sent from notifications@alternun.co unless configured', async () => {
+  const { resolveAirsNotificationsFrom } = await import('../src/modules/airs/airs.email');
+  assert.equal(resolveAirsNotificationsFrom({}), 'notifications@alternun.co');
+  assert.equal(
+    resolveAirsNotificationsFrom({ AIRS_NOTIFICATIONS_EMAIL_FROM: ' avisos@alternun.co ' }),
+    'avisos@alternun.co'
+  );
 });

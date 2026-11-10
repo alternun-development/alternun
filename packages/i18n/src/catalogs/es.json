@@ -1216,15 +1216,24 @@
         "notices": {
           "added": "Cliente agregado.",
           "invited": "Invitación enviada. Quedará activo cuando confirme su registro.",
-          "invitedWithAirs": "Cliente invitado: recibirá un correo para registrarse y reclamar sus Airs.",
+          "invitedWithAirs": "Invitación enviada con el detalle de sus Airs: los recibe al confirmar su registro.",
           "airsAdded": "Airs asignados al cliente.",
-          "pendingApproval": "Los Airs quedan en revisión hasta que un aprobador los confirme."
+          "pendingApproval": "Los Airs quedan en revisión hasta que un aprobador los confirme.",
+          "alreadyClient": "Esta persona ya es cliente del proyecto.",
+          "invitedNoEmail": "Cliente invitado, pero no pudimos enviar el correo. Inténtalo de nuevo más tarde."
         },
         "errors": {
           "nameRequired": "Escribe el nombre de la persona.",
           "documentRequired": "Este proyecto pide el número de factura o documento.",
           "proof": "El soporte debe ser una imagen o un PDF de hasta 10 MB.",
-          "rateLimited": "Hiciste muchas solicitudes seguidas. Intenta de nuevo en un rato."
+          "rateLimited": "Hiciste muchas solicitudes seguidas. Intenta de nuevo en un rato.",
+          "email": "Escribe un correo válido, por ejemplo nombre@dominio.com.",
+          "nameLong": "El nombre puede tener hasta {{max}} caracteres.",
+          "amount": "Escribe una cantidad entera de Airs mayor que 0.",
+          "conceptShort": "El concepto necesita al menos {{min}} caracteres para entender la asignación.",
+          "conceptLong": "El concepto puede tener hasta {{max}} caracteres.",
+          "documentLong": "El número de documento puede tener hasta {{max}} caracteres.",
+          "review": "Revisa los campos marcados para poder agregar el cliente."
         },
         "clear": "Borrar búsqueda",
         "filterLabel": "Mostrar",
@@ -1233,6 +1242,21 @@
           "member": "Activos",
           "invitation": "Invitados",
           "withAirs": "Con Airs"
+        },
+        "conceptCount": "{{count}}/{{min}} caracteres mínimo",
+        "lookupFirst": "Busca el correo en Airs para continuar.",
+        "busy": {
+          "lookup": "Buscando…",
+          "add": "Agregando cliente…",
+          "remove": "Quitando…"
+        },
+        "toasts": {
+          "addedTitle": "Cliente agregado",
+          "invitedTitle": "Invitación enviada",
+          "errorTitle": "No se pudo completar",
+          "lookupErrorTitle": "No se pudo buscar el correo",
+          "removedTitle": "Cliente quitado",
+          "cancelledTitle": "Invitación cancelada"
         }
       },
       "comments": {

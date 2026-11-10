@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { hasPermission, type AdminPrincipal } from '../../common/admin-auth/admin-auth.guard';
-import { sendAirsEmail } from '../airs/airs.email';
+import { resolveAirsNotificationsFrom, sendAirsEmail } from '../airs/airs.email';
 import { renderProjectClientInvitationEmail } from './airs-report-emails';
 import type { AirsReportEmailContent } from './airs-report-emails.types';
 import { resolveAirsReportAppUrl } from './airs-report-notifier';
@@ -39,9 +39,10 @@ function projectTitle(project: ProjectRecord): string {
  */
 @Injectable()
 export class ProjectClientService {
+  private readonly logger = new Logger(ProjectClientService.name);
   /** Sends one email and says whether it left; replaceable in tests. */
   send: (to: string, email: AirsReportEmailContent) => Promise<boolean> = async (to, email) =>
-    (await sendAirsEmail({ to, email })).sent;
+    (await sendAirsEmail({ to, from: resolveAirsNotificationsFrom(this.env), email })).sent;
   env: Record<string, string | undefined> = process.env;
 
   constructor(
@@ -111,17 +112,24 @@ export class ProjectClientService {
       const proof = input.airs.proofPath
         ? await this.checkProof(projectId, input.airs.proofPath)
         : null;
-      const submitted = await this.reports.submit(principal, requestId, projectId, {
-        recipientEmail: email,
-        ...(name ? { recipientName: name } : {}),
-        amount: input.airs.amount,
-        concept: input.airs.concept.trim(),
-        ...(input.airs.documentNumber?.trim()
-          ? { documentNumber: input.airs.documentNumber.trim() }
-          : {}),
-        ...(proof ? { documentSha256: proof.sha256 } : {}),
-        ...(input.airs.requestKey ? { requestKey: input.airs.requestKey } : {}),
-      });
+      // People without an account get one invitation email with these Airs instead.
+      const submitted = await this.reports.submit(
+        principal,
+        requestId,
+        projectId,
+        {
+          recipientEmail: email,
+          ...(name ? { recipientName: name } : {}),
+          amount: input.airs.amount,
+          concept: input.airs.concept.trim(),
+          ...(input.airs.documentNumber?.trim()
+            ? { documentNumber: input.airs.documentNumber.trim() }
+            : {}),
+          ...(proof ? { documentSha256: proof.sha256 } : {}),
+          ...(input.airs.requestKey ? { requestKey: input.airs.requestKey } : {}),
+        },
+        { recipient: hasAccount }
+      );
       report = submitted.report;
       if (proof) await this.repository.saveProof(report.id, proof, actor);
     }
@@ -139,9 +147,17 @@ export class ProjectClientService {
     } else {
       const invited = await this.repository.invite(projectId, email, name, actor, requestId);
       alreadyClient = invited.idempotent;
-      // Airs waiting to be claimed already send their own invitation to sign up.
-      if (!invited.idempotent && report?.status !== 'awaiting_claim')
-        invitationSent = await this.sendInvitation(projectId, email, name);
+      // A new invitation, or new Airs for someone already invited, gets one email. Airs still
+      // in review are left out: their approval sends the claim email.
+      if (!invited.idempotent || report)
+        invitationSent = await this.sendInvitation(
+          projectId,
+          email,
+          invited.invitation.name || name,
+          report?.status === 'awaiting_claim'
+            ? { amount: report.amount, concept: report.concept }
+            : null
+        );
     }
 
     const clients = await this.compose(projectId);
@@ -270,19 +286,33 @@ export class ProjectClientService {
     return { path, ...stored };
   }
 
-  // Best effort, like the report emails: a failed send never undoes the invitation.
-  private async sendInvitation(projectId: string, email: string, name: string): Promise<boolean> {
+  // Best effort, like the report emails: a failed send never undoes the invitation, but it is
+  // logged (without the address) so a missing email can be traced.
+  private async sendInvitation(
+    projectId: string,
+    email: string,
+    name: string,
+    airs: { amount: number; concept: string } | null
+  ): Promise<boolean> {
     try {
       const project = await this.adminRepository.findProject(projectId);
-      return await this.send(
+      const sent = await this.send(
         email,
         renderProjectClientInvitationEmail({
           name,
           projectName: project ? projectTitle(project) : null,
           appUrl: resolveAirsReportAppUrl(this.env),
+          airs,
         })
       );
-    } catch {
+      if (!sent) this.logger.warn(`Client invitation email not sent (project ${projectId})`);
+      return sent;
+    } catch (error) {
+      this.logger.warn(
+        `Client invitation email failed (project ${projectId}): ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
       return false;
     }
   }

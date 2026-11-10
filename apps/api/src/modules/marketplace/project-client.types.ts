@@ -10,7 +10,7 @@ export const AIRS_REPORT_PROOF_TYPES: Readonly<Record<string, string>> = {
   'application/pdf': 'pdf',
 };
 /** Lifetime of a signed URL to read a supporting file. */
-export const AIRS_REPORT_PROOF_URL_SECONDS = 300;
+export const AIRS_REPORT_PROOF_URL_SECONDS = 60;
 
 export type ProjectClientKind = 'member' | 'invitation';
 

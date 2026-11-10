@@ -108,13 +108,16 @@ export function createClientsClient(
     });
     if (!response.ok) {
       let code: string | undefined;
+      let fieldErrors: string[] = [];
       try {
-        const body = (await response.json()) as { code?: unknown };
+        const body = (await response.json()) as { code?: unknown; fieldErrors?: unknown };
         code = typeof body.code === 'string' ? body.code : undefined;
+        if (Array.isArray(body.fieldErrors))
+          fieldErrors = body.fieldErrors.filter((item): item is string => typeof item === 'string');
       } catch {
         // No JSON error body: the status code is enough.
       }
-      throw new ManageRequestError(response.status, code);
+      throw new ManageRequestError(response.status, code, fieldErrors);
     }
     return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
   }
@@ -187,6 +190,62 @@ export function createClientsClient(
       return url;
     },
   };
+}
+
+/** Limits the API applies to a client and its Airs (see the API DTOs). */
+export const CLIENT_LIMITS = {
+  nameMax: 120,
+  conceptMin: 10,
+  conceptMax: 500,
+  documentMax: 80,
+} as const;
+
+export type ClientField = 'email' | 'name' | 'amount' | 'concept' | 'documentNumber';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** i18n key of what blocks each field, or nothing when the form can be sent. */
+export function clientFormProblems(
+  draft: { email: string; name: string; amount: string; concept: string; documentNumber: string },
+  options: { needsName: boolean; assign: boolean }
+): Partial<Record<ClientField, string>> {
+  const problems: Partial<Record<ClientField, string>> = {};
+  const email = draft.email.trim();
+  if (email.length > 254 || !EMAIL_PATTERN.test(email))
+    problems.email = 'manage.clients.errors.email';
+  const name = draft.name.trim();
+  if (options.needsName && !name) problems.name = 'manage.clients.errors.nameRequired';
+  else if (name.length > CLIENT_LIMITS.nameMax) problems.name = 'manage.clients.errors.nameLong';
+  if (options.assign) {
+    if (airsAmount(draft.amount) === null) problems.amount = 'manage.clients.errors.amount';
+    const concept = draft.concept.trim();
+    if (concept.length < CLIENT_LIMITS.conceptMin)
+      problems.concept = 'manage.clients.errors.conceptShort';
+    else if (concept.length > CLIENT_LIMITS.conceptMax)
+      problems.concept = 'manage.clients.errors.conceptLong';
+    if (draft.documentNumber.trim().length > CLIENT_LIMITS.documentMax)
+      problems.documentNumber = 'manage.clients.errors.documentLong';
+  }
+  return problems;
+}
+
+/** Field problems from the API's validation messages ("airs.concept must be longer ..."). */
+export function serverFieldProblems(
+  fieldErrors: readonly string[]
+): Partial<Record<ClientField, string>> {
+  const problems: Partial<Record<ClientField, string>> = {};
+  for (const message of fieldErrors) {
+    if (/concept/.test(message))
+      problems.concept = /shorter/.test(message)
+        ? 'manage.clients.errors.conceptLong'
+        : 'manage.clients.errors.conceptShort';
+    else if (/amount/.test(message)) problems.amount = 'manage.clients.errors.amount';
+    else if (/documentNumber/.test(message))
+      problems.documentNumber = 'manage.clients.errors.documentLong';
+    else if (/email/.test(message)) problems.email = 'manage.clients.errors.email';
+    else if (/name/.test(message)) problems.name = 'manage.clients.errors.nameLong';
+  }
+  return problems;
 }
 
 /** Whole positive Airs amount from the form, or null when it is not one. */
