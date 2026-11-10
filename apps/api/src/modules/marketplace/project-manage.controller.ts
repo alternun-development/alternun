@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Headers,
-  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -348,7 +347,7 @@ export class ProjectManageController {
   }
 
   @Delete('clients/invitations/:invitationId')
-  @HttpCode(204)
+  @ApiOperation({ summary: 'Cancel a pending invitation and the Airs waiting for that person.' })
   async cancelClientInvitation(
     @Req() request: FastifyRequest,
     @Headers('authorization') authorization: string | undefined,
@@ -356,6 +355,6 @@ export class ProjectManageController {
     @Param('invitationId', new ParseUUIDPipe({ version: '4' })) invitationId: string
   ) {
     const { principal } = await this.access.resolve(bearer(authorization), projectId);
-    await this.clients.cancelInvitation(principal, requestId(request), projectId, invitationId);
+    return this.clients.cancelInvitation(principal, requestId(request), projectId, invitationId);
   }
 }

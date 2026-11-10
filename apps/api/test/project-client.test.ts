@@ -71,7 +71,10 @@ function setup(
       invitations.push(invitation);
       return { invitation, idempotent: options.inviteIdempotent ?? false };
     },
-    cancelInvitation: async (id: string) => calls.cancel.push(id),
+    cancelInvitation: async (id: string) => {
+      calls.cancel.push(id);
+      return { cancelledAirs: 2 };
+    },
     createProofUpload: async (path: string) => ({ uploadUrl: `https://upload/${path}`, path }),
     inspectProof: async () =>
       options.stored === undefined
@@ -371,7 +374,10 @@ test('a proof is only handed to the project team, as bytes and never as a URL', 
 test('invitations are cancelled only within their project; members are removed with a reason', async () => {
   const { service, invitations, calls } = setup();
   invitations.push({ id: 'inv-9', email: 'x@example.com', name: 'X', invitedAt: 'x' });
-  await service.cancelInvitation(principal(), 'req', PROJECT, 'inv-9');
+  // Cancelling an invitation reports how many waiting Airs were cancelled with it.
+  assert.deepEqual(await service.cancelInvitation(principal(), 'req', PROJECT, 'inv-9'), {
+    cancelledAirs: 2,
+  });
   assert.deepEqual(calls.cancel, ['inv-9']);
   await assert.rejects(
     service.cancelInvitation(principal(), 'req', PROJECT, 'missing'),

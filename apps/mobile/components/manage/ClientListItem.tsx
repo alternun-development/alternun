@@ -6,6 +6,9 @@ import { formatClientDate } from '../../utils/projectClients';
 
 const VISIBLE_REPORTS = 3;
 
+/** Assignments that will not move anymore; shown dimmed. */
+const CLOSED_STATUSES: ReadonlySet<string> = new Set(['cancelled', 'rejected', 'reversed']);
+
 /** What sending a report again does, by status; other statuses have nothing pending. */
 const RESEND_LABELS: Readonly<Record<string, string>> = {
   awaiting_claim: 'manage.clients.resendEmail',
@@ -30,6 +33,11 @@ export function ClientListItem({
 }: ClientListItemProps): React.JSX.Element {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [allReports, setAllReports] = useState(false);
+  // Cancelling an invitation also cancels its waiting Airs, so it asks first when there are some.
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const waitingAirs = item.reports.filter(
+    (report) => report.status === 'awaiting_claim' || report.status === 'pending_approval'
+  ).length;
   // Long histories show the latest assignments first; the rest are one tap away.
   const reports = allReports ? item.reports : item.reports.slice(0, VISIBLE_REPORTS);
   const busy = busyAction !== null;
@@ -76,7 +84,15 @@ export function ClientListItem({
       </View>
 
       {reports.map((report) => (
-        <View key={report.id} style={[manageStyles.row, styles.report]}>
+        <View
+          key={report.id}
+          testID={`manage-client-report-${report.id}`}
+          style={[
+            manageStyles.row,
+            styles.report,
+            CLOSED_STATUSES.has(report.status) && styles.closed,
+          ]}
+        >
           <View style={styles.reportCopy}>
             <Text style={[manageStyles.muted, { color: palette.text }]}>
               {`${report.amount.toLocaleString('es-CO')} Airs · ${report.concept}`}
@@ -116,6 +132,23 @@ export function ClientListItem({
               ) : (
                 <Text style={[manageStyles.secondaryButtonText, { color: palette.primaryDeep }]}>
                   {t(RESEND_LABELS[report.status] ?? '')}
+                </Text>
+              )}
+            </Pressable>
+          ) : null}
+          {/* Airs in review for someone invited: the invitation itself can also go again. */}
+          {canEdit && report.status === 'pending_approval' && item.kind === 'invitation' ? (
+            <Pressable
+              testID={`manage-client-resend-invitation-${report.id}`}
+              accessibilityRole='button'
+              disabled={busy}
+              onPress={onResendInvitation}
+            >
+              {busyAction === `resend-${item.id}` ? (
+                <ActivityIndicator size='small' color={palette.primaryDeep} />
+              ) : (
+                <Text style={[manageStyles.secondaryButtonText, { color: palette.primaryDeep }]}>
+                  {t('manage.clients.resendInvitation')}
                 </Text>
               )}
             </Pressable>
@@ -226,12 +259,32 @@ export function ClientListItem({
                   </Text>
                 </Pressable>
               ) : null}
+              {confirmCancel ? (
+                <Pressable
+                  testID={`manage-client-keep-${item.id}`}
+                  accessibilityRole='button'
+                  disabled={busy}
+                  onPress={() => setConfirmCancel(false)}
+                  style={chip}
+                >
+                  <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
+                    {t('manage.clients.keepInvitation')}
+                  </Text>
+                </Pressable>
+              ) : null}
               <Pressable
                 testID={`manage-client-remove-${item.id}`}
                 accessibilityRole='button'
                 disabled={busy}
-                onPress={onRemove}
-                style={chip}
+                onPress={() => {
+                  if (item.kind === 'invitation' && waitingAirs > 0 && !confirmCancel) {
+                    setConfirmCancel(true);
+                    return;
+                  }
+                  setConfirmCancel(false);
+                  onRemove();
+                }}
+                style={[chip, confirmCancel && { borderColor: '#f87171' }]}
               >
                 {busyAction === `remove-${item.id}` ? (
                   <View style={styles.busyRow}>
@@ -241,12 +294,19 @@ export function ClientListItem({
                     </Text>
                   </View>
                 ) : (
-                  <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
-                    {t(
-                      item.kind === 'member'
-                        ? 'manage.clients.remove'
-                        : 'manage.clients.cancelInvitation'
-                    )}
+                  <Text
+                    style={[
+                      manageStyles.secondaryButtonText,
+                      { color: confirmCancel ? '#f87171' : palette.text },
+                    ]}
+                  >
+                    {confirmCancel
+                      ? t('manage.clients.confirmCancel', { count: waitingAirs })
+                      : t(
+                          item.kind === 'member'
+                            ? 'manage.clients.remove'
+                            : 'manage.clients.cancelInvitation'
+                        )}
                   </Text>
                 )}
               </Pressable>
@@ -268,4 +328,5 @@ const styles = StyleSheet.create({
   report: { alignItems: 'flex-start' },
   reportCopy: { flex: 1, gap: 1 },
   busyRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  closed: { opacity: 0.55 },
 });

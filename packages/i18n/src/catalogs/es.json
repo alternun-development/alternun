@@ -1269,7 +1269,8 @@
           "cancelledTitle": "Invitación cancelada",
           "resentTitle": "Correo reenviado",
           "remindedTitle": "Recordatorio enviado",
-          "remindedBody": "Los admins recibieron de nuevo la solicitud por correo y en la app."
+          "remindedBody": "Los admins recibieron de nuevo la solicitud por correo y en la app.",
+          "cancelledAirs": "{{email}} · también se cancelaron {{count}} asignaciones de Airs pendientes."
         },
         "invitationStatus": {
           "pending": "Pendiente",
@@ -1299,7 +1300,9 @@
         "resendInvitation": "Reenviar invitación",
         "reportsAll": "Ver todas las asignaciones ({{count}})",
         "reportsLess": "Ver solo las más recientes",
-        "pagination": "Páginas de clientes"
+        "pagination": "Páginas de clientes",
+        "confirmCancel": "Confirmar: cancela también {{count}} asignaciones pendientes",
+        "keepInvitation": "No, mantener"
       },
       "comments": {
         "empty": "No hay comentarios en este estado.",

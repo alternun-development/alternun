@@ -1269,7 +1269,8 @@
           "cancelledTitle": "ยกเลิกคำเชิญแล้ว",
           "resentTitle": "ส่งอีเมลอีกครั้งแล้ว",
           "remindedTitle": "ส่งการแจ้งเตือนแล้ว",
-          "remindedBody": "ผู้ดูแลได้รับคำขออีกครั้งทางอีเมลและในแอป"
+          "remindedBody": "ผู้ดูแลได้รับคำขออีกครั้งทางอีเมลและในแอป",
+          "cancelledAirs": "{{email}} · ยกเลิกการมอบ Airs ที่รอดำเนินการ {{count}} รายการด้วย"
         },
         "invitationStatus": {
           "pending": "รอดำเนินการ",
@@ -1299,7 +1300,9 @@
         "resendInvitation": "ส่งคำเชิญอีกครั้ง",
         "reportsAll": "ดูการมอบทั้งหมด ({{count}})",
         "reportsLess": "ดูเฉพาะล่าสุด",
-        "pagination": "หน้าลูกค้า"
+        "pagination": "หน้าลูกค้า",
+        "confirmCancel": "ยืนยัน: ยกเลิกการมอบที่รอดำเนินการ {{count}} รายการด้วย",
+        "keepInvitation": "ไม่ เก็บไว้"
       },
       "comments": {
         "empty": "ไม่มีความคิดเห็นในสถานะนี้",

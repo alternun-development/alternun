@@ -1269,7 +1269,8 @@
           "cancelledTitle": "Invitation cancelled",
           "resentTitle": "Email sent again",
           "remindedTitle": "Reminder sent",
-          "remindedBody": "Admins got the request again by email and in the app."
+          "remindedBody": "Admins got the request again by email and in the app.",
+          "cancelledAirs": "{{email}} · {{count}} pending Airs assignments were cancelled too."
         },
         "invitationStatus": {
           "pending": "Pending",
@@ -1299,7 +1300,9 @@
         "resendInvitation": "Send invitation again",
         "reportsAll": "See all assignments ({{count}})",
         "reportsLess": "See only the latest",
-        "pagination": "Client pages"
+        "pagination": "Client pages",
+        "confirmCancel": "Confirm: also cancels {{count}} pending assignments",
+        "keepInvitation": "No, keep it"
       },
       "comments": {
         "empty": "No comments with this status.",

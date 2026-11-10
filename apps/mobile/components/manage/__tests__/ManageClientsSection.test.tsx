@@ -119,7 +119,7 @@ function clientsClient(extra: Partial<ClientsClient> = {}): ClientsClient {
       invitationSent: true,
       reportStatus: 'pending_approval' as const,
     })),
-    cancelInvitation: jest.fn(async () => undefined),
+    cancelInvitation: jest.fn(async () => ({ cancelledAirs: 0 })),
     remove: jest.fn(async () => undefined),
     proofFile: jest.fn(async () => ({ type: 'image/png', size: 10 } as never)),
     resendReport: jest.fn(async () => ({ sentTo: 'client' as const })),
@@ -566,6 +566,12 @@ describe('ManageClientsSection', () => {
 
     await press(r, 'manage-client-resend-invitation-i1');
     expect(c.resendInvitation).toHaveBeenCalledWith('p2', 'i1');
+
+    // Airs in review for an invited person: both the admins and the invitation can go again.
+    expect(byId(r, 'manage-client-resend-invitation-r-review').length).toBeGreaterThan(0);
+    expect(byId(r, 'manage-client-resend-invitation-r-wait')).toHaveLength(0);
+    await press(r, 'manage-client-resend-invitation-r-review');
+    expect(c.resendInvitation).toHaveBeenCalledTimes(2);
   });
 
   it('pages long client lists and folds long Airs histories', async () => {
@@ -614,6 +620,69 @@ describe('ManageClientsSection', () => {
     // A new search starts again on the first page.
     await type(r, 'manage-clients-search-search-input', 'persona1');
     expect(byId(r, 'manage-client-m1').length).toBeGreaterThan(0);
+  });
+
+  it('asks before cancelling an invitation with waiting Airs and keeps cancelled ones quiet', async () => {
+    const withAirs: ClientsListing = {
+      projects: listing.projects,
+      clients: [
+        {
+          ...listing.clients[1],
+          reports: [
+            {
+              id: 'r-wait',
+              amount: 100,
+              concept: 'Pago factura',
+              status: 'pending_approval',
+              submittedAt: '',
+              hasProof: false,
+            },
+            {
+              id: 'r-old',
+              amount: 22,
+              concept: 'Pago anterior',
+              status: 'cancelled',
+              submittedAt: '',
+              hasProof: false,
+            },
+          ],
+        },
+      ],
+    };
+    const c = clientsClient({
+      list: jest.fn(async () => withAirs),
+      cancelInvitation: jest.fn(async () => ({ cancelledAirs: 1 })),
+    });
+    const onToast = jest.fn();
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true, assignAirs: true }}
+        palette={palette}
+        t={t}
+        canPickFiles={false}
+        onToast={onToast}
+      />
+    );
+    // A cancelled assignment shows its state and offers nothing to send.
+    expect(texts(r)).toContain('manage.clients.status.cancelled');
+    expect(byId(r, 'manage-client-resend-r-old')).toHaveLength(0);
+    expect(byId(r, 'manage-client-resend-r-wait').length).toBeGreaterThan(0);
+
+    await press(r, 'manage-client-remove-i1');
+    expect(c.cancelInvitation).not.toHaveBeenCalled();
+    expect(texts(r)).toContain('manage.clients.confirmCancel');
+    await press(r, 'manage-client-keep-i1');
+    expect(texts(r)).not.toContain('manage.clients.confirmCancel');
+
+    await press(r, 'manage-client-remove-i1');
+    await press(r, 'manage-client-remove-i1');
+    expect(c.cancelInvitation).toHaveBeenCalledWith('p2', 'i1');
+    expect(onToast).toHaveBeenLastCalledWith({
+      type: 'success',
+      title: 'manage.clients.toasts.cancelledTitle',
+      message: 'manage.clients.toasts.cancelledAirs',
+    });
   });
 
   it('shows an error when the list cannot load', async () => {
