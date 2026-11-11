@@ -356,7 +356,7 @@
         "empty": "ยังไม่มีการแจ้งเตือน",
         "viewCenter": "ดูศูนย์การแจ้งเตือน",
         "seeAll": "ดูการแจ้งเตือนทั้งหมด",
-        "secondsAgo": "{{count}} วินาทีที่แล้ว",
+        "justNow": "เมื่อสักครู่",
         "minutesAgo": "{{count}} นาทีที่แล้ว",
         "hoursAgo": "{{count}} ชั่วโมงที่แล้ว",
         "daysAgo": "{{count}} วันที่แล้ว",
@@ -385,11 +385,11 @@
       "events": {
         "registration_completed": {
           "title": "ลงทะเบียนเสร็จสมบูรณ์",
-          "body": "บัญชี AIRS ของคุณพร้อมใช้งานแล้ว"
+          "body": "บัญชี Airs ของคุณพร้อมใช้งานแล้ว"
         },
         "airs_credited": {
-          "title": "ได้รับ AIRS แล้ว",
-          "body": "คุณได้รับ {{amount}} AIRS"
+          "title": "ได้รับ Airs แล้ว",
+          "body": "คุณได้รับ {{amount}} Airs"
         },
         "referral_confirmed": {
           "title": "ยืนยันการแนะนำแล้ว",
@@ -401,11 +401,11 @@
         },
         "profile_completed": {
           "title": "กรอกโปรไฟล์เสร็จสมบูรณ์",
-          "body": "โปรไฟล์ AIRS ของคุณเสร็จสมบูรณ์แล้ว"
+          "body": "โปรไฟล์ Airs ของคุณเสร็จสมบูรณ์แล้ว"
         },
         "generic": {
           "title": "อัปเดตบัญชี",
-          "body": "มีการอัปเดตใหม่ในบัญชี AIRS ของคุณ"
+          "body": "มีการอัปเดตใหม่ในบัญชี Airs ของคุณ"
         },
         "project_client_added": {
           "title": "ลูกค้าใหม่ใน {{project}}",
