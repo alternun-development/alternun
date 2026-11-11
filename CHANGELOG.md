@@ -1,3 +1,14 @@
+## [1.1.137](https://github.com/alternun-development/alternun/compare/v1.1.136...v1.1.137) (2026-11-11)
+
+### Bug Fixes
+
+- **repo:** chore: update reentry status
+- **repo:** fix(mobile): compact phone top bar, notifications under the pill, accurate time ago
+
+### Bug Fixes
+
+- **mobile:** compact phone top bar, notifications under the pill, accurate time ago ([2e592df](https://github.com/alternun-development/alternun/commit/2e592df77aeb4a14d1302a07772f658ad7858fd6))
+
 ## [1.1.136](https://github.com/alternun-development/alternun/compare/v1.1.135...v1.1.136) (2026-11-10)
 
 ### Changes
