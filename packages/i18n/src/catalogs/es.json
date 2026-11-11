@@ -356,7 +356,7 @@
         "empty": "Aún no tienes notificaciones",
         "viewCenter": "Ver el centro de notificaciones",
         "seeAll": "Ver todas las notificaciones",
-        "secondsAgo": "hace {{count}} s",
+        "justNow": "ahora",
         "minutesAgo": "hace {{count}} min",
         "hoursAgo": "hace {{count}} h",
         "daysAgo": "hace {{count}} d",
@@ -385,11 +385,11 @@
       "events": {
         "registration_completed": {
           "title": "Registro completado",
-          "body": "Tu cuenta de AIRS está lista."
+          "body": "Tu cuenta de Airs está lista."
         },
         "airs_credited": {
-          "title": "AIRS acreditados",
-          "body": "Recibiste {{amount}} AIRS."
+          "title": "Airs acreditados",
+          "body": "Recibiste {{amount}} Airs."
         },
         "referral_confirmed": {
           "title": "Referido confirmado",
@@ -401,11 +401,11 @@
         },
         "profile_completed": {
           "title": "Perfil completado",
-          "body": "Tu perfil de AIRS está completo."
+          "body": "Tu perfil de Airs está completo."
         },
         "generic": {
           "title": "Actualización de cuenta",
-          "body": "Hay una nueva actualización en tu cuenta de AIRS."
+          "body": "Hay una nueva actualización en tu cuenta de Airs."
         },
         "project_client_added": {
           "title": "Nuevo cliente en {{project}}",
