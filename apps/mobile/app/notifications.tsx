@@ -25,20 +25,12 @@ import { PageTabBar, type TabItem } from '../components/common/PageTabBar';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
 import { useNotifications } from '../components/notifications/NotificationsContext';
 import { useAuth } from '../components/auth/AppAuthProvider';
-import { TYPE_CONFIG } from '../components/dashboard/NotificationDropdown';
+import { TYPE_CONFIG, timeAgo } from '../components/dashboard/NotificationDropdown';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
 
 const BellIcon = Bell as React.FC<LucideProps>;
 const ArchiveIcon = Archive as React.FC<LucideProps>;
 const InboxIcon = Inbox as React.FC<LucideProps>;
-
-function timeAgo(date: Date, t: ReturnType<typeof useAppTranslation>): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diff < 60) return t.t('notifications.ui.secondsAgo', { count: diff });
-  if (diff < 3600) return t.t('notifications.ui.minutesAgo', { count: Math.floor(diff / 60) });
-  if (diff < 86400) return t.t('notifications.ui.hoursAgo', { count: Math.floor(diff / 3600) });
-  return t.t('notifications.ui.daysAgo', { count: Math.floor(diff / 86400) });
-}
 
 function getFilterOptions(t: ReturnType<typeof useAppTranslation>): SearchFilterOption[] {
   return ['all', 'unread', 'success', 'error', 'info', 'warning'].map((key) => ({

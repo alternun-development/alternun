@@ -188,11 +188,13 @@ export default function TopNav({
   const pillInset = (scale.pill - scale.circle) / 2 - 1;
   const circleSize = { width: scale.circle, height: scale.circle, borderRadius: scale.circle / 2 };
   const skeletonTone = isDark ? '#39464f' : '#c8d2d9';
-  // On phones the signed-in pill takes the room the wordmark leaves, within sane bounds.
-  const mobilePillWidth = Math.min(
+  // On phones the signed-in pill fits its content, up to the room the wordmark leaves.
+  const mobilePillMaxWidth = Math.min(
     300,
     Math.max(190, width - (scale.logoWidth + scale.navPadding * 2 + 10))
   );
+  // A short name and score: the skeleton has the size most loaded pills end up with.
+  const mobileSkeletonWidth = 190;
   const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
@@ -629,7 +631,7 @@ export default function TopNav({
                 styles.profilePill,
                 isMobile && styles.profilePillMobile,
                 {
-                  width: isExtraSmall ? scale.pill : isMobile ? mobilePillWidth : 300,
+                  width: isExtraSmall ? scale.pill : isMobile ? mobileSkeletonWidth : 300,
                   maxWidth: '100%',
                   height: scale.pill,
                   paddingLeft: pillInset,
@@ -697,7 +699,7 @@ export default function TopNav({
                   styles.profilePill,
                   signedIn &&
                     (isMobile
-                      ? [styles.signedInPillMobile, { width: mobilePillWidth }]
+                      ? [styles.signedInPillMobile, { maxWidth: mobilePillMaxWidth }]
                       : { minWidth: 300 }),
                   isMobile && styles.profilePillMobile,
                   { height: scale.pill, paddingLeft: pillInset, paddingRight: pillInset },
@@ -785,6 +787,7 @@ export default function TopNav({
 
                 {/* Notification badge */}
                 <TouchableOpacity
+                  testID='account-badge-bell'
                   style={[
                     styles.notifBadge,
                     circleSize,
@@ -900,6 +903,41 @@ export default function TopNav({
                   {menuItems}
                 </Animated.View>
               )}
+
+              {/* ── Notification dropdown: same anchor as the menu, under the pill ── */}
+              <Animated.View
+                testID='notification-dropdown-anchor'
+                pointerEvents={notifVisible ? 'auto' : 'none'}
+                style={[
+                  styles.notifDropdownWrapper,
+                  { top: scale.pill + 8, width: Math.min(300, width - scale.navPadding * 2 - 8) },
+                  {
+                    opacity: notifAnimated,
+                    transform: [
+                      {
+                        scale: notifAnimated.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.94, 1],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                {notifVisible && (
+                  <NotificationDropdown
+                    notifications={notifications}
+                    isDark={isDark}
+                    onMarkAllRead={() => onMarkAllNotificationsRead?.()}
+                    onDismiss={(id) => onDismissNotification?.(id)}
+                    onClose={() => setNotifVisible(false)}
+                    onNavigateToCenter={() => {
+                      setNotifVisible(false);
+                      onNavigateToNotifications?.();
+                    }}
+                  />
+                )}
+              </Animated.View>
             </View>
           )}
         </View>
@@ -979,35 +1017,6 @@ export default function TopNav({
           </SafeAreaView>
         </Modal>
       )}
-
-      {/* ── Notification dropdown (portal-like, outside nav bar) ─────────── */}
-      <Animated.View
-        style={[
-          styles.notifDropdownWrapper,
-          // Just below the navbar: its padding, the logo row and a small gap.
-          { top: scale.navPadding * 2 + scale.logoHeight + 6 },
-          {
-            opacity: notifAnimated,
-            transform: [
-              { scale: notifAnimated.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) },
-            ],
-          },
-        ]}
-      >
-        {notifVisible && (
-          <NotificationDropdown
-            notifications={notifications}
-            isDark={isDark}
-            onMarkAllRead={() => onMarkAllNotificationsRead?.()}
-            onDismiss={(id) => onDismissNotification?.(id)}
-            onClose={() => setNotifVisible(false)}
-            onNavigateToCenter={() => {
-              setNotifVisible(false);
-              onNavigateToNotifications?.();
-            }}
-          />
-        )}
-      </Animated.View>
     </View>
   );
 }
@@ -1143,8 +1152,6 @@ const styles = StyleSheet.create({
     boxShadow: '0px 10px 22px rgba(30, 230, 181, 0.18)',
   },
   signedInPillMobile: {
-    width: 220,
-    maxWidth: '100%',
     minWidth: 0,
   },
   profilePillMobile: {
@@ -1173,6 +1180,9 @@ const styles = StyleSheet.create({
   },
   profileLinkMobile: {
     gap: 6,
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: 'auto',
   },
   nameBlock: {
     flex: 1,
@@ -1182,6 +1192,9 @@ const styles = StyleSheet.create({
   },
   nameBlockMobile: {
     maxWidth: undefined,
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: 'auto',
   },
   pillName: {
     fontWeight: '700',
@@ -1369,7 +1382,7 @@ const styles = StyleSheet.create({
   // ── Notification dropdown wrapper ───────────────────────────────────────
   notifDropdownWrapper: {
     position: 'absolute',
-    right: 14,
+    right: 0,
     zIndex: 1300,
   },
 });
