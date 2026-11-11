@@ -238,6 +238,8 @@
           "airs": "Airs",
           "date": "วันที่"
         },
+        "resizeColumn": "ปรับความกว้างระหว่าง {{left}} และ {{right}}",
+        "sortBy": "เรียงตาม {{column}}",
         "empty": "ไม่พบกิจกรรมสำหรับการค้นหานี้",
         "now": "ตอนนี้",
         "activityTypes": {

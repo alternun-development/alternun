@@ -12,7 +12,7 @@ import {
 } from '@alternun/auth';
 import { useLocalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTranslation } from '../../components/i18n/useAppTranslation';
 import { useAuth } from '../../components/auth/AppAuthProvider';
 import { isBetterAuthExecutionEnabled } from '../../components/auth/authExecutionMode';
@@ -37,6 +37,7 @@ import {
   clearPendingReferralData,
 } from '../../components/auth/referralStorage';
 import { savePendingReferralData } from '../../components/auth/referralPersistence';
+import BrandLoader from '../../components/common/BrandLoader';
 
 async function applyPendingReferral(userId: string): Promise<void> {
   const pending = readPendingReferralData();
@@ -360,7 +361,7 @@ export default function AuthCallbackRoute(): React.JSX.Element {
 
   return (
     <View style={styles.screen}>
-      <ActivityIndicator size='large' color='#1ccba1' />
+      <BrandLoader />
       <ToastSystem toasts={toasts} onDismiss={dismissToast} />
     </View>
   );
