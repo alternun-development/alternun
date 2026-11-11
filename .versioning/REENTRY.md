@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Verify compact phone top bar and notification panel on testnet; merge PR #313 when approved
+Next micro-step: Verify Airs loader, column lanes and activity sorting on testnet; merge PR #313 when approved
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
