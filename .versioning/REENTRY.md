@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Probar en testnet cancelación de invitaciones con Airs, reenvíos y avisos a admins (con otra cuenta que no sea quien hace el cambio); luego merge PR
+Next micro-step: Verify compact phone top bar and notification panel on testnet; merge PR #313 when approved
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

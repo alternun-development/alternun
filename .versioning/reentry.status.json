@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-10T05:33:08.790Z",
+  "lastUpdated": "2026-11-11T02:57:55.509Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Probar en testnet cancelación de invitaciones con Airs, reenvíos y avisos a admins (con otra cuenta que no sea quien hace el cambio); luego merge PR",
+      "description": "Verify compact phone top bar and notification panel on testnet; merge PR #313 when approved",
       "id": "next",
       "priority": 1
     }
