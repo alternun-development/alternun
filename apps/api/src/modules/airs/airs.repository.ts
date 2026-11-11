@@ -30,6 +30,14 @@ export interface AirsCommunityTotal {
 }
 
 export type AirsActivityScope = 'personal' | 'global';
+export type AirsActivitySort = 'action' | 'source' | 'airs' | 'date';
+export type AirsActivityDirection = 'asc' | 'desc';
+export const AIRS_ACTIVITY_SORTS: ReadonlySet<string> = new Set([
+  'action',
+  'source',
+  'airs',
+  'date',
+]);
 
 export interface AirsActivityResult {
   entries: AirsDashboardLedgerEntry[];
@@ -585,6 +593,26 @@ function compareActivityEntriesByRecordedAtDesc(
   return rightTime - leftTime;
 }
 
+/** Same order as airs_get_activity: the chosen column, then the newest first. */
+function compareActivityEntries(
+  sort: AirsActivitySort,
+  direction: AirsActivityDirection
+): (left: AirsDashboardLedgerEntry, right: AirsDashboardLedgerEntry) => number {
+  const sign = direction === 'asc' ? 1 : -1;
+  return (left, right) => {
+    let result = 0;
+    if (sort === 'action') result = left.sourceKind.localeCompare(right.sourceKind);
+    if (sort === 'source') {
+      result = (left.sourceRef ?? left.sourceKind)
+        .toLowerCase()
+        .localeCompare((right.sourceRef ?? right.sourceKind).toLowerCase());
+    }
+    if (sort === 'airs') result = left.airsDelta - right.airsDelta;
+    if (sort === 'date') result = -compareActivityEntriesByRecordedAtDesc(left, right);
+    return result * sign || compareActivityEntriesByRecordedAtDesc(left, right);
+  };
+}
+
 async function fetchAirsActivityPage(
   input: {
     requestingUserId: string;
@@ -593,6 +621,8 @@ async function fetchAirsActivityPage(
     limit: number;
     search: string | null;
     sourceKind: AirsLedgerSourceKind | null;
+    sort: AirsActivitySort;
+    direction: AirsActivityDirection;
   },
   env: Record<string, string | undefined>
 ): Promise<AirsActivityRpcEntry> {
@@ -605,6 +635,8 @@ async function fetchAirsActivityPage(
       p_limit: input.limit,
       p_search: input.search?.length ? input.search : null,
       p_source_kind: input.sourceKind,
+      p_sort: input.sort,
+      p_direction: input.direction,
     },
     env
   );
@@ -724,12 +756,16 @@ export async function getAirsActivity(
     limit?: number;
     search?: string | null;
     sourceKind?: AirsLedgerSourceKind | null;
+    sort?: AirsActivitySort;
+    direction?: AirsActivityDirection;
   },
   env: Record<string, string | undefined> = process.env
 ): Promise<AirsActivityResult> {
   const pageSize = Math.max(1, Math.min(input.limit ?? 10, 50));
   const page = Math.max(1, input.page ?? 1);
   const search = input.search?.trim();
+  const sort = input.sort ?? 'date';
+  const direction = input.direction ?? 'desc';
 
   const scope = input.scope ?? 'personal';
 
@@ -744,6 +780,8 @@ export async function getAirsActivity(
           limit: queryLimit,
           search: search && search.length > 0 ? search : null,
           sourceKind: 'compensation',
+          sort,
+          direction,
         },
         env
       ),
@@ -755,6 +793,8 @@ export async function getAirsActivity(
           limit: queryLimit,
           search: search && search.length > 0 ? search : null,
           sourceKind: 'validated_regenerative_action',
+          sort,
+          direction,
         },
         env
       ),
@@ -767,7 +807,7 @@ export async function getAirsActivity(
           entry,
         ])
       ).values()
-    ).sort(compareActivityEntriesByRecordedAtDesc);
+    ).sort(compareActivityEntries(sort, direction));
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     const combinedTotalCount = compensationResult.totalCount + regenerativeResult.totalCount;
@@ -788,6 +828,8 @@ export async function getAirsActivity(
       limit: pageSize,
       search: search && search.length > 0 ? search : null,
       sourceKind: input.sourceKind ?? null,
+      sort,
+      direction,
     },
     env
   );

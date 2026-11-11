@@ -184,7 +184,7 @@ describe('AIRSLeaderboard render', () => {
       await flushEffects();
     });
 
-    expect(renderState.container.textContent).toContain('Top AIRS');
+    expect(renderState.container.textContent).toContain('Top Airs');
     expect(renderState.container.textContent).toContain('Ranking global de acumuladores');
     expect(renderState.container.textContent).toContain('Tu posición global: #4');
     expect(renderState.container.textContent).toContain('20');
@@ -317,7 +317,7 @@ describe('AIRSLeaderboard render', () => {
     );
 
     expect(renderState.container.textContent).toContain(
-      'Inicia sesión para ver el ranking de AIRS'
+      'Inicia sesión para ver el ranking de Airs'
     );
   });
 
@@ -404,7 +404,7 @@ describe('AIRSLeaderboard render', () => {
       await flushEffects();
     });
 
-    expect(renderState.container.textContent).toContain('Aún no hay usuarios con AIRS acumulados.');
+    expect(renderState.container.textContent).toContain('Aún no hay usuarios con Airs acumulados.');
   });
 
   it('renders the out-of-top user row in the global ranking', async () => {

@@ -216,7 +216,7 @@ export default function AIRSLeaderboard({
     >
       <View style={styles.sectionHeader}>
         <View style={styles.titleBlock}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Top AIRS</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>Top Airs</Text>
           <Text style={[styles.sectionSubtitle, { color: mutedColor }]}>{scopeLabel}</Text>
         </View>
         <TouchableOpacity
@@ -274,7 +274,7 @@ export default function AIRSLeaderboard({
           <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
             <View style={styles.emptyBox}>
               <Text style={[styles.emptyText, { color: mutedColor }]}>
-                Inicia sesión para ver el ranking de AIRS
+                Inicia sesión para ver el ranking de Airs
               </Text>
             </View>
           </View>
@@ -295,7 +295,7 @@ export default function AIRSLeaderboard({
             <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
               <View style={styles.emptyBox}>
                 <Text style={[styles.emptyText, { color: mutedColor }]}>
-                  Aún no hay usuarios con AIRS acumulados.
+                  Aún no hay usuarios con Airs acumulados.
                 </Text>
               </View>
             </View>
@@ -304,7 +304,7 @@ export default function AIRSLeaderboard({
               <View style={[styles.tableHeader, { backgroundColor: `${accent}0F` }]}>
                 <Text style={[styles.thRank, { color: accent }]}>#</Text>
                 <Text style={[styles.thName, { color: accent }]}>Usuario</Text>
-                <Text style={[styles.thBalance, { color: accent }]}>AIRS</Text>
+                <Text style={[styles.thBalance, { color: accent }]}>Airs</Text>
               </View>
 
               {topEntries.map((entry, idx) => {

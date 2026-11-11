@@ -19,6 +19,8 @@ import {
   type AirsActivityResult,
   type AirsActivityScope,
   type AirsCommunityTotal,
+  type AirsActivityDirection,
+  type AirsActivitySort,
   type AirsLedgerSourceKind,
   type AirsUserPositions,
   type UserAchievement,
@@ -479,6 +481,8 @@ export class AirsService {
       limit?: number;
       search?: string | null;
       sourceKind?: AirsLedgerSourceKind | null;
+      sort?: AirsActivitySort;
+      direction?: AirsActivityDirection;
     }
   ): Promise<AirsActivityResult> {
     const userId = await resolveUserId(token);

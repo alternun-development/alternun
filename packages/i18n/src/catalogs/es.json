@@ -238,6 +238,8 @@
           "airs": "Airs",
           "date": "Fecha"
         },
+        "resizeColumn": "Ajustar ancho entre {{left}} y {{right}}",
+        "sortBy": "Ordenar por {{column}}",
         "empty": "Sin actividad para esta búsqueda.",
         "now": "Ahora",
         "activityTypes": {
