@@ -1,9 +1,8 @@
-## [1.1.138](https://github.com/alternun-development/alternun/compare/v1.1.137...v1.1.138) (2026-11-11)
+## [1.1.138](https://github.com/alternun-development/alternun/compare/v1.1.137...v1.1.138) (2026-11-10)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: update reentry status
-- **repo:** feat(dashboard): Airs symbol loader, resizable column lanes and sortable activity
+- **repo:** update reentry status ([b382611](https://github.com/alternun-development/alternun/commit/b382611887f98b964a6d9575cab553fcb7ec06cc))
 
 ### Features
 

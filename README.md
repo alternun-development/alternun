@@ -124,10 +124,9 @@ Current version: **1.1.138**
 
 ## 📋 Latest Changes (v1.1.138)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: update reentry status
-- **repo:** feat(dashboard): Airs symbol loader, resizable column lanes and sortable activity
+- **repo:** update reentry status ([b382611](https://github.com/alternun-development/alternun/commit/b382611887f98b964a6d9575cab553fcb7ec06cc))
 
 ### Features
 
