@@ -126,10 +126,6 @@ Current version: **1.1.140**
 
 ### Bug Fixes
 
-- **repo:** fix(auth): send 6-digit email code and keep email auth on Better Auth
-
-### Bug Fixes
-
 - **auth:** send 6-digit email code and keep email auth on Better Auth ([652e9e7](https://github.com/alternun-development/alternun/commit/652e9e74905ce5aeb96c04a46dc9c474c77adbe2))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
