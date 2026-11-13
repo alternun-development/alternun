@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Verify Airs loader, column lanes and activity sorting on testnet; merge PR #313 when approved
+Next micro-step: Verify testnet/prod verification emails arrive via Tláo after SMTP secret switch
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
