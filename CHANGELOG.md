@@ -1,3 +1,13 @@
+## [1.1.141](https://github.com/alternun-development/alternun/compare/v1.1.140...v1.1.141) (2026-11-13)
+
+### Bug Fixes
+
+- **repo:** fix(auth): let the backend own email auth for both Better Auth and Supabase
+
+### Bug Fixes
+
+- **auth:** let the backend own email auth for both Better Auth and Supabase ([0f52230](https://github.com/alternun-development/alternun/commit/0f5223045c8109ad06d40fa318d156b1e1c0f530))
+
 ## [1.1.140](https://github.com/alternun-development/alternun/compare/v1.1.139...v1.1.140) (2026-11-13)
 
 ### Bug Fixes
