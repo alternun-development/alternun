@@ -458,18 +458,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       this.normalizeProvider(this.options.defaultProvider) ??
       'google';
 
-    if (provider === 'email' && this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signIn({
-        provider: 'email',
-        flow: options.flow ?? 'native',
-        redirectUri: options.redirectUri,
-        web3: options.web3,
-        email: options.email,
-        password: options.password,
-        metadata: options.metadata,
-      });
-    }
-
     const browserClient = await this.resolveBrowserClient();
 
     if (client?.signIn) {
@@ -649,15 +637,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signUp(input: AuthExecutionSignUpInput): Promise<AuthExecutionResult> {
-    if (this.emailFallbackProvider) {
-      return (await this.emailFallbackProvider.signUpWithEmail(
-        input.email,
-        input.password,
-        input.locale,
-        input.referral ?? null
-      )) as AuthExecutionResult;
-    }
-
     const client = this.client;
     const signUpName = deriveSignUpName(input.email, input.name);
 
@@ -942,16 +921,21 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signInWithEmail(email: string, password: string): Promise<User> {
-    if (this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signInWithEmail(email, password);
-    }
-
     const browserClient = await this.resolveBrowserClient();
     if (browserClient?.signIn?.email) {
       const result = await browserClient.signIn.email({
         email,
         password,
       });
+
+      // The Better Auth client reports failures (e.g. "Email not verified") in
+      // `error` instead of throwing; surface them so the UI shows the right notice.
+      if ((result as Record<string, unknown>)?.error) {
+        const errorPayload = (result as Record<string, unknown>).error as Record<string, unknown>;
+        throw new AlternunProviderError(
+          typeof errorPayload.message === 'string' ? errorPayload.message : 'Email sign in failed'
+        );
+      }
 
       const session = normalizeSession(result, 'email');
       const authResult: AuthExecutionResult = {
@@ -1050,24 +1034,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     locale?: string,
     referral?: AuthExecutionSignUpReferralInput | null
   ): Promise<AuthExecutionResult> {
-    if (this.emailFallbackProvider) {
-      return (await this.emailFallbackProvider.signUpWithEmail(
-        email,
-        password,
-        locale,
-        referral ?? null
-      )) as AuthExecutionResult;
-    }
-
     return this.signUp({ email, password, locale, referral });
   }
 
   async resendEmailConfirmation(email: string): Promise<void> {
-    if (this.emailFallbackProvider) {
-      await this.emailFallbackProvider.resendEmailConfirmation(email);
-      return;
-    }
-
     if (this.options.baseUrl) {
       await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/send-verification-email', {
         email,
@@ -1083,12 +1053,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async verifyEmailConfirmationCode(email: string, code: string): Promise<void> {
-    if (this.emailFallbackProvider) {
-      await this.emailFallbackProvider.verifyEmailConfirmationCode(email, code);
-      return;
-    }
-
-    return Promise.resolve();
+    await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/email-otp/verify-email', {
+      email: email.trim().toLowerCase(),
+      otp: code.trim().replace(/\s+/g, ''),
+    });
   }
 
   async requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void> {

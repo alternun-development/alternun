@@ -630,7 +630,8 @@ test('BetterAuthExecutionProvider joins a canonical /auth baseUrl without duplic
   assert.equal(result.redirectUrl, 'https://auth.example.com/oauth/start');
 });
 
-test('BetterAuthExecutionProvider uses the Supabase fallback for email flows when available', async () => {
+test('BetterAuthExecutionProvider keeps email flows on Better Auth even when Supabase is configured', async () => {
+  const httpCalls = [];
   let betterAuthSignInCalls = 0;
   let betterAuthSignUpCalls = 0;
   let observedBetterAuthSignUpOptions = null;
@@ -646,6 +647,21 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
   let observedPasswordReset = null;
 
   const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com',
+    fetchFn: async (url, init) => {
+      httpCalls.push({ url: String(url), body: init?.body ? JSON.parse(String(init.body)) : null });
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        async json() {
+          return { status: true };
+        },
+        async text() {
+          return '';
+        },
+      };
+    },
     client: {
       runtime: 'web',
       signIn: async () => {
@@ -738,38 +754,20 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
     password: 'password123',
   });
 
-  assert.equal(betterAuthSignInCalls, 0);
-  assert.equal(result.externalIdentity?.provider, 'email');
-  assert.equal(result.externalIdentity?.providerUserId, 'legacy-email-123');
-  assert.equal(result.session?.provider, 'email');
-  assert.equal(result.session?.accessToken, 'legacy-token');
-  assert.equal(fallbackCalls.signInWithEmail, 1);
+  assert.equal(betterAuthSignInCalls, 1);
+  assert.equal(result.externalIdentity?.email, 'ada@example.com');
 
   const signInUser = await provider.signInWithEmail('ada@example.com', 'password123');
   assert.equal(signInUser.email, 'ada@example.com');
-  assert.equal(betterAuthSignInCalls, 0);
-  assert.equal(fallbackCalls.signInWithEmail, 2);
+  assert.equal(betterAuthSignInCalls, 2);
 
-  const signUpResult = await provider.signUpWithEmail('ada@example.com', 'password123', 'en', {
+  await provider.signUpWithEmail('ada@example.com', 'password123', 'en', {
     referralCode: 'edward-5d64df',
     referredByUsername: 'edward',
     referredByEmail: 'edward@alternun.io',
   });
-  assert.equal(betterAuthSignUpCalls, 0);
-  assert.equal(observedBetterAuthSignUpOptions, null);
-  assert.equal(signUpResult.needsEmailVerification, false);
-  assert.equal(signUpResult.confirmationEmailSent, false);
-  assert.equal(fallbackCalls.signUpWithEmail, 1);
-  assert.deepEqual(observedFallbackSignUpArgs, [
-    'ada@example.com',
-    'password123',
-    'en',
-    {
-      referralCode: 'edward-5d64df',
-      referredByUsername: 'edward',
-      referredByEmail: 'edward@alternun.io',
-    },
-  ]);
+  assert.equal(betterAuthSignUpCalls, 1);
+  assert.equal(observedBetterAuthSignUpOptions.referral.referralCode, 'edward-5d64df');
 
   await provider.resendEmailConfirmation('ada@example.com');
   await provider.verifyEmailConfirmationCode('ada@example.com', '123456');
@@ -778,8 +776,19 @@ test('BetterAuthExecutionProvider uses the Supabase fallback for email flows whe
     'https://app.example.com/auth/reset-password'
   );
 
-  assert.equal(fallbackCalls.resendEmailConfirmation, 1);
-  assert.equal(fallbackCalls.verifyEmailConfirmationCode, 1);
+  assert.deepEqual(
+    httpCalls.map((call) => call.url),
+    [
+      'https://api.example.com/auth/send-verification-email',
+      'https://api.example.com/auth/email-otp/verify-email',
+    ]
+  );
+  assert.equal(fallbackCalls.signInWithEmail, 0);
+  assert.equal(fallbackCalls.signUpWithEmail, 0);
+  assert.equal(observedFallbackSignUpArgs, null);
+  assert.equal(fallbackCalls.resendEmailConfirmation, 0);
+  assert.equal(fallbackCalls.verifyEmailConfirmationCode, 0);
+  // Password reset is not wired on Better Auth yet; it still uses the legacy client.
   assert.equal(fallbackCalls.requestPasswordResetEmail, 1);
   assert.deepEqual(observedPasswordReset, {
     email: 'ada@example.com',
