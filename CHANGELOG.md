@@ -1,3 +1,13 @@
+## [1.1.140](https://github.com/alternun-development/alternun/compare/v1.1.139...v1.1.140) (2026-11-13)
+
+### Bug Fixes
+
+- **repo:** fix(auth): send 6-digit email code and keep email auth on Better Auth
+
+### Bug Fixes
+
+- **auth:** send 6-digit email code and keep email auth on Better Auth ([652e9e7](https://github.com/alternun-development/alternun/commit/652e9e74905ce5aeb96c04a46dc9c474c77adbe2))
+
 ## [1.1.139](https://github.com/alternun-development/alternun/compare/v1.1.138...v1.1.139) (2026-11-13)
 
 ### Changes
