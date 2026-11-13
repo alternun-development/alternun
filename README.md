@@ -124,10 +124,9 @@ Current version: **1.1.139**
 
 ## 📋 Latest Changes (v1.1.139)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore: update reentry status
-- **repo:** fix(auth): refuse retired SMTP provider for verification emails
+- **repo:** update reentry status ([af675ac](https://github.com/alternun-development/alternun/commit/af675acf529e6bc1367bcaa95d1b7771d477fe1c))
 
 ### Bug Fixes
 
