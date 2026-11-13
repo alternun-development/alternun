@@ -1,3 +1,14 @@
+## [1.1.139](https://github.com/alternun-development/alternun/compare/v1.1.138...v1.1.139) (2026-11-13)
+
+### Bug Fixes
+
+- **repo:** chore: update reentry status
+- **repo:** fix(auth): refuse retired SMTP provider for verification emails
+
+### Bug Fixes
+
+- **auth:** refuse retired SMTP provider for verification emails ([7a52cd1](https://github.com/alternun-development/alternun/commit/7a52cd1cc2c876c5fabe83b289c7ae67734033ca))
+
 ## [1.1.138](https://github.com/alternun-development/alternun/compare/v1.1.137...v1.1.138) (2026-11-10)
 
 ### Changes
