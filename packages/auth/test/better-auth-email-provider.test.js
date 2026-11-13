@@ -36,7 +36,7 @@ test('BetterAuthEmailProvider sends verification mail through the Better Auth en
   });
 });
 
-test('BetterAuthExecutionProvider verifies the typed email code through the Better Auth OTP endpoint', async () => {
+test('BetterAuthExecutionProvider verifies the typed email code through the backend verify endpoint', async () => {
   const { BetterAuthExecutionProvider } = await import(
     '../dist/providers/better-auth/BetterAuthExecutionProvider.js'
   );
@@ -64,8 +64,8 @@ test('BetterAuthExecutionProvider verifies the typed email code through the Bett
 
   await provider.verifyEmailConfirmationCode(' Ada@Example.com ', '123 456');
 
-  assert.equal(observedUrl, 'https://api.example.com/auth/email-otp/verify-email');
-  assert.deepEqual(observedBody, { email: 'ada@example.com', otp: '123456' });
+  assert.equal(observedUrl, 'https://api.example.com/auth/verify-email');
+  assert.deepEqual(observedBody, { email: 'ada@example.com', code: '123456' });
 });
 
 test('BetterAuthExecutionProvider surfaces a rejected email code', async () => {
@@ -90,5 +90,93 @@ test('BetterAuthExecutionProvider surfaces a rejected email code', async () => {
   await assert.rejects(
     provider.verifyEmailConfirmationCode('ada@example.com', '000000'),
     /INVALID_OTP/
+  );
+});
+
+test('BetterAuthExecutionProvider stores the Supabase session returned by the backend sign-in', async () => {
+  const { BetterAuthExecutionProvider } = await import(
+    '../dist/providers/better-auth/BetterAuthExecutionProvider.js'
+  );
+  const storedSessions = [];
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com',
+    browserClient: {
+      signIn: {
+        email: async () => ({
+          data: {
+            token: 'supabase-access',
+            session: { token: 'supabase-access', refreshToken: 'supabase-refresh' },
+            user: { id: 'user-1', email: 'ada@example.com', emailVerified: true },
+            needsEmailVerification: false,
+          },
+          error: null,
+        }),
+      },
+    },
+    emailFallbackClient: {
+      runtime: 'web',
+      signInWithEmail: async () => {
+        throw new Error('must not sign in directly against Supabase');
+      },
+      supabase: {
+        auth: {
+          setSession: async (tokens) => {
+            storedSessions.push(tokens);
+            return { error: null };
+          },
+        },
+      },
+    },
+  });
+
+  const user = await provider.signInWithEmail('ada@example.com', 'password123');
+
+  assert.equal(user.email, 'ada@example.com');
+  assert.deepEqual(storedSessions, [
+    { access_token: 'supabase-access', refresh_token: 'supabase-refresh' },
+  ]);
+});
+
+test('BetterAuthExecutionProvider reports unconfirmed email from the backend sign-in', async () => {
+  const { BetterAuthExecutionProvider } = await import(
+    '../dist/providers/better-auth/BetterAuthExecutionProvider.js'
+  );
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com',
+    browserClient: {
+      signIn: {
+        email: async () => ({
+          data: { token: null, session: null, user: null, needsEmailVerification: true },
+          error: null,
+        }),
+      },
+    },
+  });
+
+  await assert.rejects(
+    provider.signInWithEmail('ada@example.com', 'password123'),
+    /Email not confirmed/
+  );
+});
+
+test('BetterAuthExecutionProvider surfaces Better Auth sign-in errors instead of a missing session', async () => {
+  const { BetterAuthExecutionProvider } = await import(
+    '../dist/providers/better-auth/BetterAuthExecutionProvider.js'
+  );
+  const provider = new BetterAuthExecutionProvider({
+    baseUrl: 'https://api.example.com',
+    browserClient: {
+      signIn: {
+        email: async () => ({
+          data: null,
+          error: { status: 403, code: 'EMAIL_NOT_VERIFIED', message: 'Email not verified' },
+        }),
+      },
+    },
+  });
+
+  await assert.rejects(
+    provider.signInWithEmail('ada@example.com', 'password123'),
+    /Email not verified/
   );
 });
