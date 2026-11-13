@@ -109,7 +109,8 @@
         "codeOrLinkHint": "Usa el código del correo o haz clic en el enlace del botón para confirmar.",
         "codeTitle": "¿Tienes un código de verificación?",
         "emailFallback": "tu correo",
-        "linkSentTo": "Enviamos un enlace de confirmación a:"
+        "linkSentTo": "Enviamos un enlace de confirmación a:",
+        "spamFolderHint": "Si no lo ves, revisa también tu carpeta de spam o correo no deseado."
       },
       "divider": {
         "or": "o"
