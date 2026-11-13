@@ -109,7 +109,8 @@
         "codeOrLinkHint": "Use the code in the email or click the button link to confirm.",
         "codeTitle": "Have a verification code?",
         "emailFallback": "your email",
-        "linkSentTo": "We sent a confirmation link to:"
+        "linkSentTo": "We sent a confirmation link to:",
+        "spamFolderHint": "Don't see it? Check your spam or junk folder too."
       },
       "divider": {
         "or": "or"
