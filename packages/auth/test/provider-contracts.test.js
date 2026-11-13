@@ -779,8 +779,8 @@ test('BetterAuthExecutionProvider keeps email flows on Better Auth even when Sup
   assert.deepEqual(
     httpCalls.map((call) => call.url),
     [
-      'https://api.example.com/auth/send-verification-email',
-      'https://api.example.com/auth/email-otp/verify-email',
+      'https://api.example.com/auth/resend-email-verification',
+      'https://api.example.com/auth/verify-email',
     ]
   );
   assert.equal(fallbackCalls.signInWithEmail, 0);
