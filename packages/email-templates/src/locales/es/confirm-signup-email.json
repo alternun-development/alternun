@@ -2,7 +2,7 @@
   "subject": "Confirma tu cuenta de Alternun",
   "preview": "Aquí está tu código de verificación de Alternun.",
   "greeting": "Hola {{email}},",
-  "intro": "Te damos la bienvenida a Alternun. Escribe este código en la app para confirmar tu correo y empezar a usar Airs. El código vence en 10 minutos.",
+  "intro": "Te damos la bienvenida a Alternun. Escribe este código en la app para confirmar tu correo y empezar a usar Airs.",
   "codeLabel": "Código de verificación",
   "ctaLabel": "Confirmar mi cuenta",
   "ignoreNotice": "Si no creaste esta cuenta, puedes ignorar este correo.",

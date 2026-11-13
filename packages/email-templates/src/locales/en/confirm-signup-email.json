@@ -2,7 +2,7 @@
   "subject": "Confirm your Alternun account",
   "preview": "Your Alternun verification code is inside.",
   "greeting": "Hi {{email}},",
-  "intro": "Welcome to Alternun. Type this code in the app to confirm your email and start using Airs. The code expires in 10 minutes.",
+  "intro": "Welcome to Alternun. Type this code in the app to confirm your email and start using Airs.",
   "codeLabel": "Verification code",
   "ctaLabel": "Confirm my account",
   "ignoreNotice": "If you did not create this account, you can safely ignore this email.",

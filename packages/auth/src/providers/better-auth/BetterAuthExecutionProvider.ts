@@ -386,6 +386,42 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     return this.emailFallbackProvider?.supabase ?? null;
   }
 
+  /**
+   * When Supabase owns email accounts, the backend signs in on Supabase and
+   * returns its tokens; store them in the legacy client so the session persists.
+   * Better Auth sign-ins carry no such tokens (their session is a cookie).
+   */
+  private async adoptBackendLegacySession(payload: Record<string, unknown>): Promise<void> {
+    const backendSession = isRecord(payload.session) ? payload.session : null;
+    const accessToken = backendSession?.token;
+    const refreshToken = backendSession?.refreshToken;
+    if (typeof accessToken !== 'string' || typeof refreshToken !== 'string') {
+      return;
+    }
+
+    const legacyAuth = (
+      this.supabase as {
+        auth?: {
+          setSession?: (tokens: {
+            access_token: string;
+            refresh_token: string;
+          }) => Promise<{ error?: { message?: string } | null }>;
+        };
+      } | null
+    )?.auth;
+    if (!legacyAuth?.setSession) {
+      return;
+    }
+
+    const { error } = await legacyAuth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error) {
+      throw new AlternunProviderError(error.message ?? 'Could not store the email session.');
+    }
+  }
+
   private async resolveBrowserClient(): Promise<BetterAuthBrowserClientLike | null> {
     if (this.options.browserClient) {
       return this.options.browserClient;
@@ -937,21 +973,26 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         );
       }
 
+      // The API answers with Better Auth's payload or, when Supabase owns email
+      // accounts, with the backend sign-in DTO; both arrive wrapped in `data`.
+      const payload = isRecord((result as Record<string, unknown>)?.data)
+        ? ((result as Record<string, unknown>).data as Record<string, unknown>)
+        : ((result ?? {}) as Record<string, unknown>);
       const session = normalizeSession(result, 'email');
       const authResult: AuthExecutionResult = {
         session,
         externalIdentity: session?.externalIdentity ?? null,
         needsEmailVerification:
-          typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
-            ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
+          typeof payload.needsEmailVerification === 'boolean'
+            ? payload.needsEmailVerification
             : session?.externalIdentity?.emailVerified === false,
         confirmationEmailSent:
-          typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
-            ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
+          typeof payload.confirmationEmailSent === 'boolean'
+            ? payload.confirmationEmailSent
             : session?.externalIdentity?.emailVerified === false,
         emailAlreadyRegistered:
-          typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
-            ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
+          typeof payload.emailAlreadyRegistered === 'boolean'
+            ? payload.emailAlreadyRegistered
             : undefined,
       };
 
@@ -960,6 +1001,8 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
           'Email not confirmed. Please check your inbox before signing in.'
         );
       }
+
+      await this.adoptBackendLegacySession(payload);
 
       if (session?.externalIdentity) {
         return {
@@ -1039,8 +1082,9 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
 
   async resendEmailConfirmation(email: string): Promise<void> {
     if (this.options.baseUrl) {
-      await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/send-verification-email', {
-        email,
+      // The backend sends the code through whichever provider owns email accounts.
+      await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/resend-email-verification', {
+        email: email.trim().toLowerCase(),
       });
       return;
     }
@@ -1053,9 +1097,10 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async verifyEmailConfirmationCode(email: string, code: string): Promise<void> {
-    await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/email-otp/verify-email', {
+    // The backend checks the code against whichever provider owns email accounts.
+    await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/verify-email', {
       email: email.trim().toLowerCase(),
-      otp: code.trim().replace(/\s+/g, ''),
+      code: code.trim().replace(/\s+/g, ''),
     });
   }
 
