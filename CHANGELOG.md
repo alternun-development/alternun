@@ -1,9 +1,5 @@
 ## [1.1.142](https://github.com/alternun-development/alternun/compare/v1.1.141...v1.1.142) (2026-11-13)
 
-### Bug Fixes
-
-- **repo:** feat(auth): remind users to check their spam folder while awaiting the code
-
 ### Features
 
 - **auth:** remind users to check their spam folder while awaiting the code ([bbb1e72](https://github.com/alternun-development/alternun/commit/bbb1e72ffe449c0dad5d7d6459d6b8ed922e072e))
