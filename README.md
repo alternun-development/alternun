@@ -120,17 +120,18 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.138**
+Current version: **1.1.139**
 
-## 📋 Latest Changes (v1.1.138)
+## 📋 Latest Changes (v1.1.139)
 
-### Changes
+### Bug Fixes
 
-- **repo:** update reentry status ([b382611](https://github.com/alternun-development/alternun/commit/b382611887f98b964a6d9575cab553fcb7ec06cc))
+- **repo:** chore: update reentry status
+- **repo:** fix(auth): refuse retired SMTP provider for verification emails
 
-### Features
+### Bug Fixes
 
-- **dashboard:** Airs symbol loader, resizable column lanes and sortable activity ([d1f9ead](https://github.com/alternun-development/alternun/commit/d1f9eade99ed23e248129740518aaacb944a9cd3))
+- **auth:** refuse retired SMTP provider for verification emails ([7a52cd1](https://github.com/alternun-development/alternun/commit/7a52cd1cc2c876c5fabe83b289c7ae67734033ca))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
