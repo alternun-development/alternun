@@ -76,7 +76,12 @@ test('createBetterAuthDevAuth includes oauth proxy when configured', async () =>
     assert.equal(auth.options.emailAndPassword.autoSignIn, false);
     assert.equal(auth.options.emailVerification.sendOnSignUp, true);
     assert.equal(auth.options.emailVerification.sendOnSignIn, true);
-    assert.equal(typeof auth.options.emailVerification.sendVerificationEmail, 'function');
+    // Verification is a 6-digit code sent by the email OTP plugin, not a link token.
+    assert.equal(auth.options.emailVerification.sendVerificationEmail, undefined);
+    assert.equal(
+      auth.options.plugins.some((plugin) => plugin.id === 'email-otp'),
+      true
+    );
     assert.equal(auth.options.account.storeStateStrategy, 'database');
     assert.equal(auth.options.errorURL, 'http://127.0.0.1:8081/auth/callback');
     assert.equal(auth.options.advanced.database.generateId, 'uuid');
