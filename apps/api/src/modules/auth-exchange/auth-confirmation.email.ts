@@ -4,6 +4,7 @@ import * as nodemailer from 'nodemailer';
 // invokes the callable module directly rather than a nonexistent `.default`.
 import sanitizeHtml = require('sanitize-html');
 import { renderEmailTemplateTranslation, normalizeEmailLocale } from '@alternun/email-templates';
+import { isRetiredSmtpHost } from '../airs/airs.email';
 
 type BetterAuthVerificationEmailInput = {
   to: string;
@@ -227,6 +228,10 @@ export async function sendAuthVerificationEmail(
 ): Promise<void> {
   try {
     const config = await resolveVerificationEmailConfig(env);
+    if (isRetiredSmtpHost(config.host)) {
+      // Mail from the retired provider fails alternun.co SPF/DMARC and is silently dropped.
+      throw new Error('SMTP host is a retired provider; point the SMTP secret at Tláo Mail.');
+    }
     const locale = normalizeEmailLocale(input.locale, 'en');
     const translation = renderEmailTemplateTranslation({
       locale,
