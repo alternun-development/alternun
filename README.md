@@ -126,10 +126,6 @@ Current version: **1.1.141**
 
 ### Bug Fixes
 
-- **repo:** fix(auth): let the backend own email auth for both Better Auth and Supabase
-
-### Bug Fixes
-
 - **auth:** let the backend own email auth for both Better Auth and Supabase ([0f52230](https://github.com/alternun-development/alternun/commit/0f5223045c8109ad06d40fa318d156b1e1c0f530))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
