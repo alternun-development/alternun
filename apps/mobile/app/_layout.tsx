@@ -8,6 +8,7 @@ import { install as installQuickCrypto } from 'react-native-quick-crypto';
 installQuickCrypto();
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { AppAuthProvider } from '../components/auth/AppAuthProvider';
+import UserAvatarSync from '../components/avatar/UserAvatarSync';
 import { AirsDashboardProvider } from '../components/dashboard/AirsDashboardProvider';
 import {
   AppPreferencesProvider,
@@ -84,6 +85,7 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
 
   return (
     <AppAuthProvider>
+      <UserAvatarSync />
       <NotificationsProvider>
         <AirsDashboardProvider>
           <ThemeProvider value={navigationTheme}>

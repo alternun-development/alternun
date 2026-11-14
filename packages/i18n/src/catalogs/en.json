@@ -1204,6 +1204,30 @@
         "next": "{{amount}} Airs to reach {{next}}.",
         "top": "You reached the highest Airs tier.",
         "continue": "Continue"
+      },
+      "avatar": {
+        "title": "Choose your avatar",
+        "close": "Close",
+        "edit": "Change avatar",
+        "error": "We couldn't save your avatar. Please try again.",
+        "socialPhoto": "Your photo",
+        "initials": "Your initials",
+        "default": "Default",
+        "sections": {
+          "own": "Your photo",
+          "presets": "Illustrations",
+          "badges": "Your badges and honor awards"
+        },
+        "presets": {
+          "mangrove": "Mangrove",
+          "leaf": "Leaf",
+          "wave": "Wave",
+          "mountain": "Mountain",
+          "sun": "Sun",
+          "coral": "Coral",
+          "hummingbird": "Hummingbird",
+          "turtle": "Turtle"
+        }
       }
     },
     "manage": {

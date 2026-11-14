@@ -11,6 +11,7 @@ import {
   LogOut,
   MapPin,
   Moon,
+  Pencil,
   Settings,
   Shield,
   Trophy,
@@ -21,7 +22,6 @@ import {
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Alert,
   Animated,
   Platform,
@@ -82,6 +82,10 @@ import AchievementCollection from '../components/profile/AchievementCollection';
 import HonorAwardsSection from '../components/honorAwards/HonorAwardsSection';
 import ProfileStats from '../components/profile/ProfileStats';
 import TierRevealCinematic from '../components/profile/TierRevealCinematic';
+import AvatarPicker from '../components/avatar/AvatarPicker';
+import UserAvatar from '../components/avatar/UserAvatar';
+import { createUserAvatarClient } from '../utils/userAvatar';
+import { createHonorAwardClient } from '../utils/honorAwards';
 import { TierJourney } from '../components/profile/TierJourney';
 import { STATUS_BADGES } from '../components/profile/badgeAssets';
 import { ReferralCard } from '../components/profile/ReferralCard';
@@ -94,6 +98,7 @@ import type {
   TierLabelMap,
   AuthMethodDescriptor,
   LeaderboardRow,
+  LeaderboardApiEntry,
 } from './profile.types';
 
 const AwardIcon = Award as React.FC<LucideProps>;
@@ -105,6 +110,7 @@ const GlobeIcon = Globe as React.FC<LucideProps>;
 const LogOutIcon = LogOut as React.FC<LucideProps>;
 const MapPinIcon = MapPin as React.FC<LucideProps>;
 const MoonIcon = Moon as React.FC<LucideProps>;
+const PencilIcon = Pencil as React.FC<LucideProps>;
 const SettingsIcon = Settings as React.FC<LucideProps>;
 const TrophyIcon = Trophy as React.FC<LucideProps>;
 const UserCircle2Icon = UserCircle2 as React.FC<LucideProps>;
@@ -379,6 +385,7 @@ function ProfileHeader({
   c,
   floatAnim1,
   floatAnim2,
+  getToken,
 }: {
   displayName: string;
   score: number | null;
@@ -390,6 +397,8 @@ function ProfileHeader({
   c: ColorPalette;
   floatAnim1?: Animated.Value;
   floatAnim2?: Animated.Value;
+  /** Session token for the avatar picker; without it the avatar cannot be changed. */
+  getToken?: () => Promise<string | null>;
 }): React.JSX.Element {
   const { t, locale } = useAppTranslation('mobile');
   const hasScore = score !== null;
@@ -403,6 +412,15 @@ function ProfileHeader({
   };
   const spec = resolveTierSpec(tier, tierLabels);
   const [tierRevealOpen, setTierRevealOpen] = useState(false);
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
+  const avatarClient = useMemo(
+    () => (getToken ? createUserAvatarClient(getToken) : null),
+    [getToken]
+  );
+  const avatarHonorAwards = useMemo(
+    () => (getToken ? createHonorAwardClient({ kind: 'me' }, getToken) : null),
+    [getToken]
+  );
   const profileStats = {
     airs: t('profile.stats.airs', undefined, 'AIRS'),
     projects: t('profile.stats.projects', undefined, 'Projects'),
@@ -498,63 +516,78 @@ function ProfileHeader({
 
       {/* Content */}
       <View style={{ alignItems: 'center', zIndex: 1 }}>
-        {/* Avatar with tier badge: tapping it reveals the metal version of the tier badge */}
-        <TouchableOpacity
-          testID='profile-tier-avatar'
-          accessibilityRole='button'
-          accessibilityLabel={t(
-            'profile.tierReveal.open',
-            { tier: spec.label },
-            `Ver tu nivel ${spec.label}`
-          )}
-          activeOpacity={0.85}
-          disabled={!hasScore}
-          onPress={() => setTierRevealOpen(true)}
-          style={{ marginBottom: 14, position: 'relative' }}
-        >
-          <View
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: 48,
-              backgroundColor:
-                hasScore && STATUS_BADGES[tier] ? 'transparent' : hasScore ? spec.color : c.accent,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 3,
-              borderColor: heroBg,
-              ...createShadowStyle({
-                color: spec.color,
-                offsetX: 0,
-                offsetY: 2,
-                opacity: 0.3,
-                radius: 4,
-                elevation: 5,
-              }),
-            }}
+        {/* Avatar: tapping the photo or the pencil changes it; the tier chip reveals the metal badge */}
+        <View style={{ marginBottom: 14, position: 'relative' }}>
+          <TouchableOpacity
+            testID='profile-avatar'
+            accessibilityRole='button'
+            accessibilityLabel={t('profile.avatar.edit', undefined, 'Cambiar avatar')}
+            activeOpacity={0.85}
+            disabled={!avatarClient}
+            onPress={() => setAvatarPickerOpen(true)}
           >
-            {hasScore && STATUS_BADGES[tier] ? (
-              <Image
-                source={STATUS_BADGES[tier]}
-                accessibilityLabel={spec.label}
-                resizeMode='contain'
-                style={{ width: 90, height: 90 }}
-              />
-            ) : (
-              <Text
-                style={{
-                  fontSize: 36,
-                  fontWeight: '800',
-                  color: '#050510',
-                  fontFamily: 'Sculpin-Bold',
-                }}
-              >
-                {toInitials(displayName)}
-              </Text>
-            )}
-          </View>
-          {hasScore ? (
             <View
+              style={{
+                width: 96,
+                height: 96,
+                borderRadius: 48,
+                backgroundColor: 'transparent',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 3,
+                borderColor: heroBg,
+                ...createShadowStyle({
+                  color: spec.color,
+                  offsetX: 0,
+                  offsetY: 2,
+                  opacity: 0.3,
+                  radius: 4,
+                  elevation: 5,
+                }),
+              }}
+            >
+              <UserAvatar
+                size={90}
+                initials={toInitials(displayName)}
+                fallback={hasScore ? STATUS_BADGES[tier] ?? null : null}
+                initialsBackground={hasScore ? spec.color : c.accent}
+              />
+            </View>
+          </TouchableOpacity>
+          {avatarClient ? (
+            <TouchableOpacity
+              testID='profile-avatar-edit'
+              accessibilityRole='button'
+              accessibilityLabel={t('profile.avatar.edit', undefined, 'Cambiar avatar')}
+              onPress={() => setAvatarPickerOpen(true)}
+              style={{
+                position: 'absolute',
+                top: -2,
+                right: -6,
+                width: 30,
+                height: 30,
+                borderRadius: 15,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: c.accent,
+                borderWidth: 2,
+                borderColor: heroBg,
+              }}
+            >
+              <PencilIcon size={14} color='#050510' strokeWidth={2.4} />
+            </TouchableOpacity>
+          ) : null}
+          {hasScore ? (
+            <TouchableOpacity
+              testID='profile-tier-avatar'
+              accessibilityRole='button'
+              accessibilityLabel={t(
+                'profile.tierReveal.open',
+                { tier: spec.label },
+                `Ver tu nivel ${spec.label}`
+              )}
+              activeOpacity={0.85}
+              onPress={() => setTierRevealOpen(true)}
               style={{
                 position: 'absolute',
                 bottom: -4,
@@ -578,14 +611,25 @@ function ProfileHeader({
               >
                 {spec.label}
               </Text>
-            </View>
+            </TouchableOpacity>
           ) : null}
-        </TouchableOpacity>
+        </View>
         <TierRevealCinematic
           tier={tierRevealOpen && hasScore ? tier : null}
           score={safeScore}
           onClose={() => setTierRevealOpen(false)}
         />
+        {avatarClient ? (
+          <AvatarPicker
+            visible={avatarPickerOpen}
+            onClose={() => setAvatarPickerOpen(false)}
+            score={safeScore}
+            initials={toInitials(displayName)}
+            client={avatarClient}
+            honorAwards={avatarHonorAwards}
+            fallback={hasScore ? STATUS_BADGES[tier] ?? null : null}
+          />
+        ) : null}
 
         {/* Name */}
         <Text
@@ -1693,27 +1737,18 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
         });
         if (!res.ok || cancelled) return;
         const data = (await res.json()) as {
-          entries?: { rank: number; displayName: string; airsBalance: number; isMe: boolean }[];
-          requestingUserEntry?: {
-            rank: number;
-            displayName: string;
-            airsBalance: number;
-            isMe: boolean;
-          } | null;
+          entries?: LeaderboardApiEntry[];
+          requestingUserEntry?: LeaderboardApiEntry | null;
         };
         if (cancelled) return;
-        const toRow = (e: {
-          rank: number;
-          displayName: string;
-          airsBalance: number;
-          isMe: boolean;
-        }): LeaderboardRow => ({
+        const toRow = (e: LeaderboardApiEntry): LeaderboardRow => ({
           rank: e.rank,
           name: e.displayName,
           score: e.airsBalance,
           medal: MEDAL_DATA[e.rank]?.medal ?? null,
           color: MEDAL_DATA[e.rank]?.color ?? null,
           isMe: e.isMe,
+          avatar: e.avatar?.kind ? e.avatar : null,
         });
         const allRows = (data.entries ?? []).map(toRow);
         setRows(allRows);
@@ -1809,19 +1844,30 @@ function RankingTab({ isDark, c }: { isDark: boolean; c: ColorPalette }): React.
                 <Text style={[rankingStyles.rankNum, { color: row.color ?? c.muted }]}>
                   {row.rank}
                 </Text>
-                <View
-                  style={[
-                    rankingStyles.avatarCircle,
-                    {
-                      backgroundColor: row.color ? `${row.color}22` : 'rgba(255,255,255,0.08)',
-                      borderColor: row.color ? `${row.color}44` : 'rgba(255,255,255,0.12)',
-                    },
-                  ]}
-                >
-                  <Text style={[rankingStyles.avatarText, { color: row.color ?? c.muted }]}>
-                    {getInitials(row.name)}
-                  </Text>
-                </View>
+                {row.avatar ? (
+                  <View style={rankingStyles.avatarArt}>
+                    <UserAvatar
+                      size={36}
+                      initials={getInitials(row.name)}
+                      choice={row.avatar}
+                      socialUrl={null}
+                    />
+                  </View>
+                ) : (
+                  <View
+                    style={[
+                      rankingStyles.avatarCircle,
+                      {
+                        backgroundColor: row.color ? `${row.color}22` : 'rgba(255,255,255,0.08)',
+                        borderColor: row.color ? `${row.color}44` : 'rgba(255,255,255,0.12)',
+                      },
+                    ]}
+                  >
+                    <Text style={[rankingStyles.avatarText, { color: row.color ?? c.muted }]}>
+                      {getInitials(row.name)}
+                    </Text>
+                  </View>
+                )}
                 <View style={rankingStyles.rowBody}>
                   <View style={rankingStyles.nameRow}>
                     <Text style={[rankingStyles.userName, { color: c.text }]}>{row.name}</Text>
@@ -2668,6 +2714,7 @@ function PerfilTab({
           c={c}
           floatAnim1={floatAnim1}
           floatAnim2={floatAnim2}
+          getToken={user?.id ? getHonorAwardToken : undefined}
         />
 
         {/* Tier Journey */}
@@ -3110,6 +3157,7 @@ const rankingStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: { fontSize: 13, fontWeight: '700' },
+  avatarArt: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   rowBody: { flex: 1, gap: 2 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   userName: { fontSize: 14, fontWeight: '600' },

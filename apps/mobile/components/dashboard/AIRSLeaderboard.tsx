@@ -15,6 +15,8 @@ import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { type RankScope, changeLeaderboardScope } from './leaderboardTransitions';
 import { LeaderboardTierBadge } from './LeaderboardTierBadge';
+import UserAvatar from '../avatar/UserAvatar';
+import type { UserAvatarChoice } from '../../utils/userAvatar';
 
 interface LeaderboardEntry {
   rank: number;
@@ -23,6 +25,8 @@ interface LeaderboardEntry {
   airsBalance: number;
   airsLifetimeEarned: number;
   isMe: boolean;
+  /** Chosen avatar art; never a social photo. */
+  avatar?: UserAvatarChoice | null;
 }
 
 interface LeaderboardResult {
@@ -323,6 +327,14 @@ export default function AIRSLeaderboard({
                       <RankBadge rank={entry.rank} isDark={isDark} />
                     </View>
                     <View style={styles.nameCell}>
+                      {entry.avatar?.kind ? (
+                        <UserAvatar
+                          size={22}
+                          initials={entry.displayName.slice(0, 1)}
+                          choice={entry.avatar}
+                          socialUrl={null}
+                        />
+                      ) : null}
                       <Text
                         style={[styles.nameText, { color: entry.isMe ? accent : textColor }]}
                         numberOfLines={1}
@@ -364,6 +376,14 @@ export default function AIRSLeaderboard({
                       <RankBadge rank={myEntry.rank} isDark={isDark} />
                     </View>
                     <View style={styles.nameCell}>
+                      {myEntry.avatar?.kind ? (
+                        <UserAvatar
+                          size={22}
+                          initials={myEntry.displayName.slice(0, 1)}
+                          choice={myEntry.avatar}
+                          socialUrl={null}
+                        />
+                      ) : null}
                       <Text style={[styles.nameText, { color: accent }]} numberOfLines={1}>
                         {myEntry.displayName}
                       </Text>
