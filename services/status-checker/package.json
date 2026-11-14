@@ -1,0 +1,17 @@
+{
+  "name": "@alternun/status-checker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone infrastructure status checker for Alternun. Zero third-party runtime dependencies.",
+  "type": "module",
+  "bin": {
+    "alternun-status": "server.mjs"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node -e \"import('./checker.mjs').then(m=>m.checkAll()).then(d=>console.log(JSON.stringify(d,null,2)))\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
