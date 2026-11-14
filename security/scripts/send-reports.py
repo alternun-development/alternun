@@ -6,7 +6,7 @@ but the body is the audience-specific one).
 
 Usage:
   python3 security/scripts/send-reports.py <audit-dir> \
-      --ceo security-ceo@alternun.example --cto edward@alternun.io [--dry-run]
+      --ceo <ceo-email> --cto <cto-email> [--dry-run]
 
 Reads SMTP settings from AWS Secrets Manager (alternun/tlao/smtp). Sends nothing
 with --dry-run. No secret values are printed.
