@@ -120,18 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.0**
+Current version: **1.2.1**
 
-## 📋 Latest Changes (v1.2.0)
-
-### Features
-
-- **honor-awards:** medal art, info, demo and per-stay ally medals ([3dbc85f](https://github.com/alternun-development/alternun/commit/3dbc85f45561d6c1ada0443f85f41f3a39a33f7a))
-- **honor-awards:** Galardones de honor for people and allies ([3a84228](https://github.com/alternun-development/alternun/commit/3a84228224db44199f295b0d7c8acdc850208c4e))
+## 📋 Latest Changes (v1.2.1)
 
 ### Bug Fixes
 
-- **release:** keep changelog version headings at "##" for minor releases ([79db85b](https://github.com/alternun-development/alternun/commit/79db85bb7426bd45005ff6b90a457c947e5d9949))
+- **repo:** feat(profile): explain the Airs, projects and CO₂ figures with info buttons
+
+### Features
+
+- **profile:** explain the Airs, projects and CO₂ figures with info buttons ([17ebb73](https://github.com/alternun-development/alternun/commit/17ebb738104f637e92eb402f998e64a8fc1a62dc))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
