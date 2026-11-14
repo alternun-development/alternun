@@ -120,13 +120,22 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.4**
+Current version: **1.2.5**
 
-## 📋 Latest Changes (v1.2.4)
+## 📋 Latest Changes (v1.2.5)
+
+### Bug Fixes
+
+- **repo:** feat(profile): flip the avatar to the tier badge on hover and ease notification polling
+- **repo:** fix(profile): show the stored Google photo in the top bar when the session lacks it
+
+### Bug Fixes
+
+- **profile:** show the stored Google photo in the top bar when the session lacks it ([c1fb55e](https://github.com/alternun-development/alternun/commit/c1fb55eac69d50a741d159139762eb2d2eacb3cb))
 
 ### Features
 
-- **profile:** choose an avatar from the social photo, illustrations or held badges ([0a7e89f](https://github.com/alternun-development/alternun/commit/0a7e89f5afc54e920dde50c4575b771446699941))
+- **profile:** flip the avatar to the tier badge on hover and ease notification polling ([cab4942](https://github.com/alternun-development/alternun/commit/cab4942b00c6c1f831e4cbe6f49ac30530de1676))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
