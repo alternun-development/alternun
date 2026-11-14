@@ -17,6 +17,14 @@ summ = doc["summary"]
 when = doc["generatedAt"]
 date_label = when[:10]
 
+# Optional live tracker (artifact) URL and the infra-status SVG, if present.
+LIVE_TRACKER_URL = (sys.argv[3] if len(sys.argv) > 3 else "").strip()
+try:
+    INFRA_SVG = open(f"{out_dir}/infra-status.svg").read()
+    INFRA = json.load(open(f"{out_dir}/infra-status.json"))
+except Exception:
+    INFRA_SVG, INFRA = "", None
+
 SEV = {
     "crit": ("Crítico", "#d1403a", "#fbe7e6"),
     "warn": ("Atención", "#c47f12", "#faf0db"),
@@ -123,6 +131,26 @@ def render(audience):
         rows += (f'<div class="item" style="--sc:{sc};--pb:{pb}">'
                  f'<div class="top"><h3>{html.escape(title)}</h3>'
                  f'<span class="pill">{name}</span></div>{body}</div>')
+    infra_block = ""
+    if INFRA_SVG and INFRA:
+        env = INFRA["environments"]
+        d = INFRA["versionDrift"]
+        def envline(k, nm):
+            e = env[k]; _, col, _ = SEV["ok" if e["status"] == "up" else "warn"]
+            lab = {"up": "OK", "slow": "Lento", "degraded": "Degradado", "down": "Caído"}[e["status"]]
+            v = f' · v{e["apiVersion"]}' if e["apiVersion"] else ""
+            return f'<span style="color:{col};font-weight:600">{nm}: {lab}{v}</span>'
+        drift_note = (f'<p style="margin:8px 0 0;font-size:.86rem;color:#c47f12"><b>Drift de versión:</b> '
+                      f'prod v{d["prod"]} vs dev v{d["dev"]} — hay cambios en development sin promover a producción.</p>'
+                      if d["differs"] else "")
+        link = (f'<p style="margin:8px 0 0;font-size:.86rem"><a href="{html.escape(LIVE_TRACKER_URL)}">'
+                f'Abrir el tracker de estado en vivo &rarr;</a></p>' if LIVE_TRACKER_URL else "")
+        infra_block = (f'<h2 style="font-family:\'Space Grotesk\',sans-serif;font-size:1.1rem;margin:28px 0 10px">'
+                       f'Estado de la infraestructura</h2>'
+                       f'<p style="font-size:.9rem;color:#39485a;margin:0 0 10px">'
+                       f'{envline("prod","Producción")} &nbsp;·&nbsp; {envline("dev","Development")}</p>'
+                       f'<div style="border:1px solid #d9e0e8;border-radius:12px;overflow:hidden;background:#0d1218">{INFRA_SVG}</div>'
+                       f'{drift_note}{link}')
     who = "Resumen ejecutivo · CEO" if audience == "exec" else "Informe técnico · CTO"
     return f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -132,7 +160,7 @@ def render(audience):
 <span class="eyebrow">Auditoría de seguridad AWS · {who}</span>
 <h1>Estado de seguridad — {date_label}</h1>
 <div class="meta">Cuenta 124120088516 · {html.escape(when)} · generado automáticamente</div>
-{banner(audience)}{counts()}{rows}
+{banner(audience)}{counts()}{infra_block}{rows}
 <footer>Verificación automática semanal (lunes 11:11 COT). Solo lectura: no modifica la cuenta. Hallazgos ordenados por severidad. Fuente: findings.json de esta corrida.</footer>
 </div></body></html>"""
 

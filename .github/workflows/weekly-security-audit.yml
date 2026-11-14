@@ -25,6 +25,7 @@ jobs:
       AWS_REGION: us-east-1
       CEO_EMAIL: security-ceo@alternun.example
       CTO_EMAIL: edward@alternun.io
+      LIVE_TRACKER_URL: REDACTED_TRACKER_URL
     steps:
       - name: Checkout (full history for leak scan)
         uses: actions/checkout@v4
@@ -53,7 +54,8 @@ jobs:
           STAMP="$(date -u +%F)"
           OUT="security/audits/${STAMP}"
           bash security/scripts/run-audit.sh "$OUT"
-          python3 security/scripts/build-reports.py "$OUT/findings.json" "$OUT"
+          python3 security/scripts/infra-status.py "$OUT"
+          python3 security/scripts/build-reports.py "$OUT/findings.json" "$OUT" "${LIVE_TRACKER_URL:-}"
           echo "out=$OUT" >> "$GITHUB_OUTPUT"
 
       - name: Upload reports (workflow artifact, private)
