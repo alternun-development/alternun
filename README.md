@@ -120,17 +120,24 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.5**
+Current version: **1.2.6**
 
-## 📋 Latest Changes (v1.2.5)
-
-### Features
-
-- **profile:** flip the avatar to the tier badge on hover and ease notification polling ([cab4942](https://github.com/alternun-development/alternun/commit/cab4942b00c6c1f831e4cbe6f49ac30530de1676))
+## 📋 Latest Changes (v1.2.6)
 
 ### Bug Fixes
 
-- **profile:** show the stored Google photo in the top bar when the session lacks it ([c1fb55e](https://github.com/alternun-development/alternun/commit/c1fb55eac69d50a741d159139762eb2d2eacb3cb))
+- **repo:** feat(security): infra topology status in reports + live tracker
+- **repo:** chore(security): email deliverability report for Tláo + mailer hygiene
+- **repo:** fix(security): exclude audit's own files from git-history leak scan
+- **repo:** chore(security): weekly AWS audit loop, reports and reviewer IAM
+
+### Bug Fixes
+
+- **security:** exclude audit's own files from git-history leak scan ([57b41ef](https://github.com/alternun-development/alternun/commit/57b41ef790acc403ea4c1283277ba9e0b873e2fb))
+
+### Features
+
+- **security:** infra topology status in reports + live tracker ([b1d2c63](https://github.com/alternun-development/alternun/commit/b1d2c63bc5a8a8869d199699d4edacbefe3924d2))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

@@ -1,3 +1,20 @@
+## [1.2.6](https://github.com/alternun-development/alternun/compare/v1.2.5...v1.2.6) (2026-11-14)
+
+### Bug Fixes
+
+- **repo:** feat(security): infra topology status in reports + live tracker
+- **repo:** chore(security): email deliverability report for Tláo + mailer hygiene
+- **repo:** fix(security): exclude audit's own files from git-history leak scan
+- **repo:** chore(security): weekly AWS audit loop, reports and reviewer IAM
+
+### Bug Fixes
+
+- **security:** exclude audit's own files from git-history leak scan ([57b41ef](https://github.com/alternun-development/alternun/commit/57b41ef790acc403ea4c1283277ba9e0b873e2fb))
+
+### Features
+
+- **security:** infra topology status in reports + live tracker ([b1d2c63](https://github.com/alternun-development/alternun/commit/b1d2c63bc5a8a8869d199699d4edacbefe3924d2))
+
 ## [1.2.5](https://github.com/alternun-development/alternun/compare/v1.2.4...v1.2.5) (2026-11-14)
 
 ### Features
