@@ -23,11 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
-      # Recipients and the tracker URL are NOT hard-coded (this repo is public).
-      # Set them as repo secrets: SECURITY_CEO_EMAIL, SECURITY_CTO_EMAIL, SECURITY_TRACKER_URL.
+      # Recipients are NOT hard-coded (this repo is public) — set them as repo
+      # secrets SECURITY_CEO_EMAIL / SECURITY_CTO_EMAIL. The tracker is our own
+      # public status page; the secret, if set, overrides the default.
       CEO_EMAIL: ${{ secrets.SECURITY_CEO_EMAIL }}
       CTO_EMAIL: ${{ secrets.SECURITY_CTO_EMAIL }}
-      LIVE_TRACKER_URL: ${{ secrets.SECURITY_TRACKER_URL }}
+      LIVE_TRACKER_URL: ${{ secrets.SECURITY_TRACKER_URL || 'https://status.alternun.co/' }}
     steps:
       - name: Checkout (full history for leak scan)
         uses: actions/checkout@v4
