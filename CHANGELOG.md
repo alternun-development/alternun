@@ -1,3 +1,18 @@
+## [1.2.5](https://github.com/alternun-development/alternun/compare/v1.2.4...v1.2.5) (2026-11-14)
+
+### Bug Fixes
+
+- **repo:** feat(profile): flip the avatar to the tier badge on hover and ease notification polling
+- **repo:** fix(profile): show the stored Google photo in the top bar when the session lacks it
+
+### Bug Fixes
+
+- **profile:** show the stored Google photo in the top bar when the session lacks it ([c1fb55e](https://github.com/alternun-development/alternun/commit/c1fb55eac69d50a741d159139762eb2d2eacb3cb))
+
+### Features
+
+- **profile:** flip the avatar to the tier badge on hover and ease notification polling ([cab4942](https://github.com/alternun-development/alternun/commit/cab4942b00c6c1f831e4cbe6f49ac30530de1676))
+
 ## [1.2.4](https://github.com/alternun-development/alternun/compare/v1.2.3...v1.2.4) (2026-11-14)
 
 ### Features
