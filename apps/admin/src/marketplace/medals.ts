@@ -4,7 +4,12 @@ import type { NewMedalErrors, NewMedalValues, ProjectMedal } from './medals.type
 export const MEDAL_NAME_MAX = 80;
 export const MEDAL_DESCRIPTION_MAX = 300;
 
-export const emptyNewMedal: NewMedalValues = { name: '', description: '', imageUrl: '' };
+export const emptyNewMedal: NewMedalValues = {
+  name: '',
+  description: '',
+  imageUrl: '',
+  honorRecipeId: '',
+};
 
 export function medalsPath(projectId: string): string {
   return `/v1/admin/projects/${encodeURIComponent(projectId)}/medals`;
@@ -43,6 +48,7 @@ export function buildCreateMedalBody(values: NewMedalValues): Record<string, str
     name: values.name.trim(),
     ...(description ? { description } : {}),
     imageUrl: values.imageUrl.trim(),
+    ...(values.honorRecipeId ? { honorRecipeId: values.honorRecipeId } : {}),
   };
 }
 

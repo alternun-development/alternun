@@ -79,6 +79,7 @@ import { resolveSessionTokenWithRetry } from '../components/auth/sessionToken';
 import { useAirsDashboardSnapshot } from '../components/dashboard/AirsDashboardProvider';
 import type { ColorPalette } from '../components/profile/AchievementBadge';
 import AchievementCollection from '../components/profile/AchievementCollection';
+import HonorAwardsSection from '../components/honorAwards/HonorAwardsSection';
 import { TierJourney } from '../components/profile/TierJourney';
 import { STATUS_BADGES } from '../components/profile/badgeAssets';
 import { ReferralCard } from '../components/profile/ReferralCard';
@@ -2459,6 +2460,8 @@ function WalletTab({
   );
 }
 
+const HONOR_AWARDS_ME_SCOPE = { kind: 'me' } as const;
+
 function PerfilTab({
   isDark,
   c,
@@ -2576,6 +2579,11 @@ function PerfilTab({
     startAnimation(floatAnim2);
   }, [floatAnim1, floatAnim2, motionLevel]);
 
+  const getHonorAwardToken = useCallback(
+    () => resolveSessionTokenWithRetry(client, { attempts: 4, retryDelayMs: 250 }),
+    [client]
+  );
+
   useEffect(() => {
     const fetchAchievements = async (): Promise<void> => {
       try {
@@ -2656,6 +2664,11 @@ function PerfilTab({
 
         {/* Achievements */}
         <AchievementCollection achievements={achievements} score={airsScore} c={c} />
+
+        {/* Honor awards */}
+        {user?.id ? (
+          <HonorAwardsSection scope={HONOR_AWARDS_ME_SCOPE} getToken={getHonorAwardToken} c={c} />
+        ) : null}
 
         {/* Referrals */}
         <SectionContainer

@@ -26,6 +26,7 @@ import {
   type ResolvedAdminAccess,
 } from '../../utils/adminAccess';
 import type { DetailPalette, MarketplaceEnterpriseDetail, Translate } from './types';
+import HonorAwardsSection from '../honorAwards/HonorAwardsSection';
 
 export class MarketplaceEnterpriseRequestError extends Error {
   constructor(readonly status: number) {
@@ -270,6 +271,17 @@ export function MarketplaceEnterpriseDetailView({
             palette={palette}
             t={t}
             openUrl={openUrl}
+          />
+          <HonorAwardsSection
+            scope={{ kind: 'enterprise-public', slug: enterprise.slug }}
+            c={{
+              text: palette.text,
+              muted: palette.muted,
+              border: palette.border,
+              accent: palette.primaryDeep,
+            }}
+            subtitle={t('profile.honorAwards.enterpriseSubtitle')}
+            hideWhenEmpty
           />
 
           <View style={styles.projectsSection}>

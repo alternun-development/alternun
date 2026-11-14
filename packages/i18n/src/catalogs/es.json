@@ -914,7 +914,8 @@
         "achievements": "Logros",
         "account": "Cuenta",
         "referrals": "Referidos",
-        "preferences": "Preferencias"
+        "preferences": "Preferencias",
+        "honorAwards": "Galardones de honor"
       },
       "header": {
         "personalInfo": "Información Personal",
@@ -1085,6 +1086,47 @@
         "saveCaption": "Guardar y texto",
         "browserFallback": "Elige un enlace social o guarda la imagen y copia el texto.",
         "downloadError": "No se pudo guardar la imagen. Prueba Compartir con apps."
+      },
+      "honorAwards": {
+        "subtitle": "Medallas y trofeos que reconocen tu trayectoria de impacto positivo.",
+        "enterpriseSubtitle": "Reconocimientos que este aliado ha recibido en Airs.",
+        "pendingNote": "Galardones por reclamar: {{count}}",
+        "loadError": "No pudimos cargar los galardones. Toca para reintentar.",
+        "claimError": "No pudimos reclamar el galardón. Inténtalo de nuevo.",
+        "emptySlot": "Espacio disponible",
+        "claimCta": "Reclamar",
+        "missionLabel": "Misión:",
+        "supportedBy": "Con el apoyo de:",
+        "airsAmount": "+{{amount}} Airs",
+        "obtained": "Obtenida: {{date}}",
+        "shareMessage": "Obtuve el galardón \"{{title}}\" en Airs{{partner}}.",
+        "tiers": {
+          "gold": "Medalla de oro",
+          "silver": "Medalla de plata",
+          "bronze": "Medalla de bronce"
+        },
+        "kinds": {
+          "medal": "Medalla",
+          "trophy": "Trofeo"
+        },
+        "claim": {
+          "headline": "¡Galardón desbloqueado!",
+          "inspect": "Inspeccionar",
+          "continue": "Continuar"
+        },
+        "inspect": {
+          "flip": "Toca para ver el reverso",
+          "share": "Compartir",
+          "viewMission": "Ver misión",
+          "close": "Cerrar",
+          "back": "Volver"
+        },
+        "mission": {
+          "purpose": "Propósito:",
+          "visitPartner": "Visitar página",
+          "projectData": "Datos del proyecto:",
+          "viewProject": "Ver proyecto"
+        }
       }
     },
     "manage": {
@@ -1096,7 +1138,8 @@
           "images": "Imágenes",
           "products": "Productos y Airs",
           "team": "Equipo",
-          "clients": "Clientes"
+          "clients": "Clientes",
+          "honors": "Galardones"
         },
         "info": {
           "name": "Nombre",
@@ -1122,6 +1165,9 @@
         },
         "team": {
           "intro": "Personas que administran toda la empresa y todos sus proyectos. Deben haber iniciado sesión en Airs al menos una vez."
+        },
+        "honors": {
+          "intro": "Reclama los galardones que recibió tu organización; los reclamados se muestran en su página pública."
         }
       },
       "title": "Administrar proyecto",
