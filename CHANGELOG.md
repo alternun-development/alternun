@@ -1,3 +1,13 @@
+## [1.2.1](https://github.com/alternun-development/alternun/compare/v1.2.0...v1.2.1) (2026-11-14)
+
+### Bug Fixes
+
+- **repo:** feat(profile): explain the Airs, projects and CO₂ figures with info buttons
+
+### Features
+
+- **profile:** explain the Airs, projects and CO₂ figures with info buttons ([17ebb73](https://github.com/alternun-development/alternun/commit/17ebb738104f637e92eb402f998e64a8fc1a62dc))
+
 ## [1.2.0](https://github.com/alternun-development/alternun/compare/v1.1.142...v1.2.0) (2026-11-14)
 
 ### Features
