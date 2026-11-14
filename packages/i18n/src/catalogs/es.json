@@ -1177,6 +1177,14 @@
           "invalid": "Revisa el correo y el número de reserva.",
           "genericError": "No pudimos completar la acción. Inténtalo de nuevo."
         }
+      },
+      "statsInfo": {
+        "airsTitle": "Airs",
+        "airs": "Tus puntos Airs reconocen tus acciones de impacto positivo y construyen tu reputación. Se suman con cada acción, por ejemplo actividades y compras con aliados, y no bajan por inactividad.",
+        "projectsTitle": "Proyectos",
+        "projects": "Proyectos de impacto positivo a los que aportaste con tus acciones en Airs, por ejemplo con compras o actividades en comercios aliados.",
+        "co2Title": "CO₂",
+        "co2": "Estimación de referencia de las toneladas de CO₂ asociadas a los proyectos de impacto positivo que apoyaste con tus acciones."
       }
     },
     "manage": {

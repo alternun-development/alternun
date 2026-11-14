@@ -1177,6 +1177,14 @@
           "invalid": "Check the email and the reservation number.",
           "genericError": "We couldn't complete that. Please try again."
         }
+      },
+      "statsInfo": {
+        "airsTitle": "Airs",
+        "airs": "Your Airs points recognize your positive impact actions and build your reputation. They add up with every action, such as activities and purchases with allies, and they do not drop when you are inactive.",
+        "projectsTitle": "Projects",
+        "projects": "Positive impact projects you contributed to through your actions on Airs, for example with purchases or activities at partner businesses.",
+        "co2Title": "CO₂",
+        "co2": "Reference estimate of the tonnes of CO₂ linked to the positive impact projects you supported with your actions."
       }
     },
     "manage": {
