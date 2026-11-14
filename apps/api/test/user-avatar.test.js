@@ -81,6 +81,18 @@ test('avatar payloads are normalized', () => {
     ref: 'g1',
     art: { tier: 'gold' },
   });
+  assert.deepEqual(
+    mapAirsUserAvatar({ kind: null, ref: null, art: null, socialUrl: ' https://lh3.test/p ' }),
+    {
+      kind: null,
+      ref: null,
+      art: null,
+      socialUrl: 'https://lh3.test/p',
+    }
+  );
+  assert.equal(mapAirsUserAvatar({ socialUrl: 'http://insecure.test/p' }).socialUrl, null);
+  assert.equal(mapAirsUserAvatar({ socialUrl: null }).socialUrl, null);
+  assert.equal('socialUrl' in mapAirsUserAvatar({ kind: 'preset', ref: 'sun' }), false);
   assert.deepEqual(mapAirsUserAvatar({ kind: 3, ref: [], art: 'x' }), {
     kind: null,
     ref: null,
@@ -170,6 +182,30 @@ test('leaderboard rows carry the chosen art and nothing for the default', () =>
       assert.equal(result.requestingUserEntry.userId, 'me');
     }
   ));
+
+test('the avatar read returns only the person own https photo', () => {
+  const sql = fs
+    .readFileSync(
+      path.resolve(
+        __dirname,
+        '../../../supabase/migrations/20261114_0004_user_avatar_social_photo.sql'
+      ),
+      'utf8'
+    )
+    .toLowerCase();
+  assert.ok(sql.includes("'socialurl'"));
+  assert.ok(sql.includes("~* '^https://'"));
+  assert.ok(sql.includes("to_jsonb(u) ->> 'image'"));
+  assert.ok(!sql.includes('airs_get_leaderboard_page'));
+  assert.ok(
+    sql.includes(
+      'revoke all on function public.airs_get_user_avatar(text) from public, anon, authenticated'
+    )
+  );
+  assert.ok(
+    sql.includes('grant execute on function public.airs_get_user_avatar(text) to service_role')
+  );
+});
 
 test('the avatars migration checks ownership and never exposes social photos', () => {
   const sql = fs

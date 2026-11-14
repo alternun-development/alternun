@@ -28,8 +28,10 @@ export default function UserAvatarSync(): null {
       resolveSessionTokenWithRetry(client, { attempts: 3, retryDelayMs: 250 })
     )
       .get()
-      .then((choice) => {
-        if (active) setUserAvatarState({ choice });
+      .then((saved) => {
+        // The session photo comes first; the one kept at sign-in covers sessions without it.
+        if (active)
+          setUserAvatarState({ choice: saved.choice, socialUrl: socialUrl ?? saved.socialUrl });
       })
       .catch(() => {
         // Without the saved choice the default (photo or initials) is shown.

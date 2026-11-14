@@ -205,6 +205,32 @@ describe('UserAvatarSync', () => {
     act(() => tree.unmount());
   });
 
+  it('uses the photo kept at sign-in when the session has none', async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            kind: null,
+            ref: null,
+            art: null,
+            socialUrl: 'https://lh3.test/stored.jpg',
+          }),
+      })
+    );
+    useAuth.mockReturnValue({ user: { id: 'u1', metadata: {} }, client: {} });
+
+    let tree;
+    act(() => {
+      tree = renderer.create(<UserAvatarSync />);
+    });
+    await flush();
+
+    expect(getUserAvatarState().socialUrl).toBe('https://lh3.test/stored.jpg');
+    act(() => tree.unmount());
+  });
+
   it('keeps the default when the saved choice cannot be read', async () => {
     global.fetch = jest.fn(() => Promise.reject(new Error('offline')));
     useAuth.mockReturnValue({ user: { id: 'u1', metadata: {} }, client: {} });
