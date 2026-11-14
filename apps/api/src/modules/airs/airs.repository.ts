@@ -13,6 +13,17 @@ export interface AirsLeaderboardEntry {
   airsBalance: number;
   airsLifetimeEarned: number;
   isMe: boolean;
+  /** Chosen avatar art (illustration or badge); never a social photo. */
+  avatar?: AirsUserAvatar | null;
+}
+
+export type AirsUserAvatarKind = 'social' | 'preset' | 'tier' | 'achievement' | 'honor_award';
+
+/** How a person appears: their social photo (kind 'social' or null), an illustration or a badge. */
+export interface AirsUserAvatar {
+  kind: AirsUserAvatarKind | null;
+  ref: string | null;
+  art: Record<string, unknown> | null;
 }
 
 export interface AirsLeaderboardResult {
@@ -703,6 +714,17 @@ export async function getAirsLeaderboard(
     airsBalance: asNumber(row.airs_balance),
     airsLifetimeEarned: asNumber(row.airs_lifetime_earned),
     isMe: row.is_me === true,
+    avatar:
+      typeof row.avatar_kind === 'string'
+        ? {
+            kind: row.avatar_kind as AirsUserAvatarKind,
+            ref: asText(row.avatar_ref),
+            art:
+              row.avatar_art && typeof row.avatar_art === 'object'
+                ? (row.avatar_art as Record<string, unknown>)
+                : null,
+          }
+        : null,
   }));
   let requestingUserEntry = entries.find((e) => e.isMe) ?? null;
 
@@ -848,4 +870,35 @@ export async function getAirsEligibleUsersCount(
 ): Promise<number> {
   const rows = await supabaseRpcArray('airs_get_eligible_users_count', {}, env);
   return asNumber(rows[0]?.count);
+}
+
+export function mapAirsUserAvatar(value: unknown): AirsUserAvatar {
+  const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  return {
+    kind: typeof record.kind === 'string' ? (record.kind as AirsUserAvatarKind) : null,
+    ref: typeof record.ref === 'string' ? record.ref : null,
+    art:
+      record.art && typeof record.art === 'object' ? (record.art as Record<string, unknown>) : null,
+  };
+}
+
+export async function getAirsUserAvatar(
+  userId: string,
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsUserAvatar> {
+  return mapAirsUserAvatar(await supabaseRpc('airs_get_user_avatar', { p_user_id: userId }, env));
+}
+
+/** Saves an avatar choice; the RPC checks the person holds the badge (AVATAR_NOT_ALLOWED). */
+export async function setAirsUserAvatar(
+  input: { userId: string; kind: AirsUserAvatarKind | null; ref: string | null },
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsUserAvatar> {
+  return mapAirsUserAvatar(
+    await supabaseRpc(
+      'airs_set_user_avatar',
+      { p_user_id: input.userId, p_kind: input.kind, p_ref: input.ref },
+      env
+    )
+  );
 }

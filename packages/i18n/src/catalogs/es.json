@@ -1204,6 +1204,30 @@
         "next": "Te faltan {{amount}} Airs para llegar a {{next}}.",
         "top": "Alcanzaste el nivel más alto de Airs.",
         "continue": "Continuar"
+      },
+      "avatar": {
+        "title": "Elige tu avatar",
+        "close": "Cerrar",
+        "edit": "Cambiar avatar",
+        "error": "No pudimos guardar tu avatar. Inténtalo de nuevo.",
+        "socialPhoto": "Tu foto",
+        "initials": "Tus iniciales",
+        "default": "Predeterminado",
+        "sections": {
+          "own": "Tu foto",
+          "presets": "Ilustraciones",
+          "badges": "Tus insignias y galardones"
+        },
+        "presets": {
+          "mangrove": "Manglar",
+          "leaf": "Hoja",
+          "wave": "Ola",
+          "mountain": "Montaña",
+          "sun": "Sol",
+          "coral": "Coral",
+          "hummingbird": "Colibrí",
+          "turtle": "Tortuga"
+        }
       }
     },
     "manage": {

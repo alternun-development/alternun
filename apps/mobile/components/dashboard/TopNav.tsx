@@ -39,6 +39,8 @@ import {
   type LucideProps,
 } from 'lucide-react-native';
 import AirsBrandMark from '../branding/AirsBrandMark';
+import UserAvatar from '../avatar/UserAvatar';
+import { useUserAvatarState } from '../../utils/userAvatar';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPreferencesProvider';
 import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
@@ -282,6 +284,9 @@ export default function TopNav({
   const profileName = userDisplayName?.trim() ?? 'Account';
   const profileFirstName = useMemo(() => getFirstName(profileName), [profileName]);
   const initials = useMemo(() => getInitials(profileName), [profileName]);
+  // The chosen avatar or the social photo replaces the initials; without either, initials stay.
+  const avatarState = useUserAvatarState();
+  const showAvatarArt = Boolean(avatarState.choice.kind ?? avatarState.socialUrl);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
@@ -365,7 +370,11 @@ export default function TopNav({
             ]}
           >
             {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
-            <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>{initials}</Text>
+            {showAvatarArt ? (
+              <UserAvatar size={30} initials={initials} />
+            ) : (
+              <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>{initials}</Text>
+            )}
           </View>
           <View style={styles.dropHeaderInfo}>
             <Text style={[styles.dropHeaderName, { color: p.dropText }]} numberOfLines={1}>
@@ -733,7 +742,9 @@ export default function TopNav({
                 >
                   <View style={[styles.avatar, circleSize, { backgroundColor: p.avatarBg }]}>
                     {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
-                    {signedIn ? (
+                    {signedIn && showAvatarArt ? (
+                      <UserAvatar size={scale.circle - 6} initials={initials} />
+                    ) : signedIn ? (
                       <Text
                         style={[
                           styles.avatarText,

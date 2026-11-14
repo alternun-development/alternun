@@ -21,6 +21,15 @@ export function createAlternunSession(input: {
   };
 }
 
+/** The social photo the provider sent (Google, Discord), kept in the principal metadata. */
+function pictureFromMetadata(metadata: Record<string, unknown> | undefined): string | undefined {
+  for (const key of ['avatarUrl', 'avatar_url', 'picture', 'image']) {
+    const value = metadata?.[key];
+    if (typeof value === 'string' && /^https:\/\//i.test(value.trim())) return value.trim();
+  }
+  return undefined;
+}
+
 export function principalToUser(
   principal: Principal,
   overrides: {
@@ -34,7 +43,7 @@ export function principalToUser(
   return {
     id: overrides.id ?? principal.subject,
     email: principal.email,
-    avatarUrl: overrides.avatarUrl,
+    avatarUrl: overrides.avatarUrl ?? pictureFromMetadata(principal.metadata),
     provider: overrides.provider,
     providerUserId: overrides.providerUserId,
     roles: principal.roles,
