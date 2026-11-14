@@ -1,3 +1,13 @@
+## [1.2.3](https://github.com/alternun-development/alternun/compare/v1.2.2...v1.2.3) (2026-11-14)
+
+### Bug Fixes
+
+- **repo:** feat(profile): reveal the metal tier badge with the honor award animation
+
+### Features
+
+- **profile:** reveal the metal tier badge with the honor award animation ([655fbfc](https://github.com/alternun-development/alternun/commit/655fbfc7cb925e5bba28136fafe68598fb601f4e))
+
 ## [1.2.2](https://github.com/alternun-development/alternun/compare/v1.2.1...v1.2.2) (2026-11-14)
 
 ### Features
