@@ -27,6 +27,8 @@ export interface HonorAwardRecipeRecord {
   badgeImageUrl: string | null;
   frontImageUrl: string | null;
   backImageUrl: string | null;
+  /** Built-in art the app draws when there is no image, e.g. "golf_mangrove" or "coast". */
+  artPreset: string | null;
   projectId: string | null;
   partnerEnterpriseId: string | null;
   isActive: boolean;
@@ -50,6 +52,7 @@ export interface HonorAwardRecipeInput {
   badgeImageUrl?: string | null;
   frontImageUrl?: string | null;
   backImageUrl?: string | null;
+  artPreset?: string | null;
   projectId?: string | null;
   partnerEnterpriseId?: string | null;
   isActive?: boolean;
@@ -66,6 +69,8 @@ export interface HonorAwardGrantRecord {
   enterpriseId: string | null;
   status: HonorAwardStatus;
   source: HonorAwardSource;
+  /** For example a hotel reservation number: one grant per stay. */
+  reference: string | null;
   note: string | null;
   awardedAt: string;
   claimedAt: string | null;
@@ -74,8 +79,23 @@ export interface HonorAwardGrantRecord {
 
 /** Who receives a grant: a person by the email of their account, or an enterprise. */
 export type HonorAwardRecipientInput =
-  | { recipientType: 'user'; email: string; note?: string }
+  | { recipientType: 'user'; email: string; reference?: string; note?: string }
   | { recipientType: 'enterprise'; enterpriseId: string; note?: string };
+
+/** An ally gives one of its own honor awards to a person, e.g. a hotel medal for a stay. */
+export interface EnterpriseHonorAwardGrantInput {
+  recipeId: string;
+  email: string;
+  reference?: string;
+  note?: string;
+}
+
+/** How many honor awards of an ally a person holds (for example hotel stays). */
+export interface HonorAwardGuestSummary {
+  found: boolean;
+  total: number;
+  byRecipe: Array<{ recipeId: string; title: string; count: number }>;
+}
 
 export interface HonorAwardProjectSummary {
   id: string;

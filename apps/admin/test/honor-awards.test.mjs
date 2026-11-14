@@ -191,3 +191,56 @@ test('a project medal can carry the honor award it also gives', () => {
     false
   );
 });
+
+test('recipes carry their built-in art and grants a per-stay reference', () => {
+  const body = model.buildHonorAwardRecipeBody({
+    ...model.emptyHonorAwardRecipe,
+    title: 'Taybo Santa Marta',
+    artPreset: 'coast',
+  });
+  assert.equal(body.artPreset, 'coast');
+  assert.equal(
+    model.buildHonorAwardRecipeBody({ ...model.emptyHonorAwardRecipe, title: 'X' }).artPreset,
+    null
+  );
+  assert.equal(
+    model.recipeToValues(recipe({ artPreset: 'golf_mangrove' })).artPreset,
+    'golf_mangrove'
+  );
+
+  const grant = model.buildHonorAwardGrantBody(
+    { audience: 'user' },
+    { ...model.emptyHonorAwardGrant, email: 'guest@example.com', reference: ' RES-1 ' }
+  );
+  assert.deepEqual(grant, {
+    recipientType: 'user',
+    email: 'guest@example.com',
+    reference: 'RES-1',
+  });
+  assert.equal(
+    model.validateHonorAwardGrant(
+      { audience: 'user' },
+      { ...model.emptyHonorAwardGrant, email: 'guest@example.com', reference: 'x'.repeat(81) }
+    ),
+    copy.honorAwards.errors.tooLong(80)
+  );
+});
+
+test('the recipe form offers the built-in art presets', () => {
+  const html = renderToString(
+    createElement(page.HonorAwardRecipeForm, {
+      values: model.emptyHonorAwardRecipe,
+      errors: {},
+      editing: false,
+      busy: false,
+      projects: [],
+      enterprises: [],
+      onChange: () => {},
+      onSubmit: () => {},
+      onCancel: () => {},
+    })
+  );
+  for (const label of Object.values(copy.honorAwards.artPresets)) {
+    assert.ok(html.includes(label), `missing ${label}`);
+  }
+});

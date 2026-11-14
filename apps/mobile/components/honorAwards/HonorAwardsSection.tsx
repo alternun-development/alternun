@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SectionContainer } from '@alternun/ui';
+import { Info } from 'lucide-react-native';
 import { createHonorAwardClient, sortHonorAwards, type HonorAward } from '../../utils/honorAwards';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import HonorAwardClaimCinematic from './HonorAwardClaimCinematic';
 import HonorAwardEmblem from './HonorAwardEmblem';
 import HonorAwardInspectModal from './HonorAwardInspectModal';
+import HonorAwardsInfoModal from './HonorAwardsInfoModal';
+import { buildDemoHonorAward, demoTierForSlot } from './honorAwardDemo';
 import { buildHonorSlots, HONOR_TIER_PALETTES, honorText } from './honorAwardTheme';
 import type { HonorAwardsSectionProps, LoadState } from './honorAwards.types';
 
@@ -68,8 +71,9 @@ export default function HonorAwardsSection({
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [claimError, setClaimError] = useState(false);
-  const [celebrating, setCelebrating] = useState<HonorAward | null>(null);
-  const [inspecting, setInspecting] = useState<HonorAward | null>(null);
+  const [celebrating, setCelebrating] = useState<{ award: HonorAward; demo: boolean } | null>(null);
+  const [inspecting, setInspecting] = useState<{ award: HonorAward; demo: boolean } | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const load = useCallback(() => {
     let active = true;
@@ -104,7 +108,7 @@ export default function HonorAwardsSection({
             }
           : current
       );
-      setCelebrating(claimed);
+      setCelebrating({ award: claimed, demo: false });
     } catch {
       setClaimError(true);
     } finally {
@@ -116,11 +120,46 @@ export default function HonorAwardsSection({
   if (hideWhenEmpty && (state.kind !== 'ready' || awards.length === 0)) return null;
   const slots = buildHonorSlots(awards);
   const pendingCount = awards.filter((award) => award.status === 'pending').length;
+  const hasEmptySlots = slots.some((slot) => slot.kind === 'empty');
+
+  /** An empty slot previews the claim of a sample golf medal; nothing is saved. */
+  function previewDemo(index: number): void {
+    setCelebrating({
+      award: buildDemoHonorAward(demoTierForSlot(index), {
+        classification: honorText(
+          t,
+          'profile.honorAwards.demo.classification',
+          'Misión de compensación'
+        ),
+        purpose: honorText(
+          t,
+          'profile.honorAwards.demo.purpose',
+          'Como participante del torneo, sumaste a la conservación del bosque de manglar en el Caribe colombiano, junto a la Fundación Batis.'
+        ),
+      }),
+      demo: true,
+    });
+  }
 
   return (
     <SectionContainer
       title={title ?? honorText(t, 'profile.sections.honorAwards', 'Galardones de honor')}
       style={{ margin: 12 }}
+      trailing={
+        <Pressable
+          accessibilityRole='button'
+          accessibilityLabel={honorText(
+            t,
+            'profile.honorAwards.infoButton',
+            '¿Qué son los galardones de honor?'
+          )}
+          hitSlop={10}
+          onPress={() => setInfoOpen(true)}
+          style={[styles.infoButton, { borderColor: c.border ?? 'rgba(255,255,255,0.25)' }]}
+        >
+          <Info size={18} color={c.accent ?? '#1de9b6'} />
+        </Pressable>
+      }
     >
       <Text style={[styles.subtitle, { color: c.muted }]}>
         {subtitle ??
@@ -162,15 +201,25 @@ export default function HonorAwardsSection({
 
       {state.kind === 'ready' ? (
         <View style={styles.grid}>
-          {slots.map((slot) => {
+          {slots.map((slot, index) => {
             if (slot.kind === 'empty') {
               return (
-                <View key={slot.key} style={styles.slot} accessibilityLabel='honor-award-empty'>
+                <Pressable
+                  key={slot.key}
+                  accessibilityRole='button'
+                  accessibilityLabel={honorText(
+                    t,
+                    'profile.honorAwards.demo.slotLabel',
+                    'Espacio disponible: ver demostración'
+                  )}
+                  onPress={() => previewDemo(index)}
+                  style={styles.slot}
+                >
                   <HonorAwardEmblem tier='generic' size={56} placeholder />
                   <Text numberOfLines={2} style={[styles.slotLabel, { color: c.muted }]}>
                     {honorText(t, 'profile.honorAwards.emptySlot', 'Espacio disponible')}
                   </Text>
-                </View>
+                </Pressable>
               );
             }
             const { award } = slot;
@@ -184,7 +233,9 @@ export default function HonorAwardsSection({
                 accessibilityLabel={award.recipe.title}
                 accessibilityState={{ busy: claimingId === award.id }}
                 disabled={claimingId !== null || (pending && !client.canClaim)}
-                onPress={() => (claimable ? void claim(award) : setInspecting(award))}
+                onPress={() =>
+                  claimable ? void claim(award) : setInspecting({ award, demo: false })
+                }
                 style={styles.slot}
               >
                 <View style={styles.emblemBox}>
@@ -195,6 +246,7 @@ export default function HonorAwardsSection({
                       kind={award.recipe.kind}
                       title={award.recipe.title}
                       imageUrl={award.recipe.badgeImageUrl}
+                      artPreset={award.recipe.artPreset}
                       size={56}
                     />
                   </View>
@@ -221,16 +273,35 @@ export default function HonorAwardsSection({
           })}
         </View>
       ) : null}
+      {state.kind === 'ready' && hasEmptySlots ? (
+        <Text style={[styles.demoHint, { color: c.muted }]}>
+          {honorText(
+            t,
+            'profile.honorAwards.info.demoHint',
+            'Toca un espacio disponible para ver una demostración.'
+          )}
+        </Text>
+      ) : null}
 
       <HonorAwardClaimCinematic
-        award={celebrating}
+        award={celebrating?.award ?? null}
+        demo={celebrating?.demo ?? false}
         onClose={() => setCelebrating(null)}
         onInspect={(award) => {
+          setInspecting({ award, demo: celebrating?.demo ?? false });
           setCelebrating(null);
-          setInspecting(award);
         }}
       />
-      <HonorAwardInspectModal award={inspecting} onClose={() => setInspecting(null)} />
+      <HonorAwardInspectModal
+        award={inspecting?.award ?? null}
+        demo={inspecting?.demo ?? false}
+        onClose={() => setInspecting(null)}
+      />
+      <HonorAwardsInfoModal
+        visible={infoOpen}
+        audience={scope.kind === 'me' ? 'person' : 'ally'}
+        onClose={() => setInfoOpen(false)}
+      />
     </SectionContainer>
   );
 }
@@ -248,4 +319,13 @@ const styles = StyleSheet.create({
   slotYear: { fontSize: 10, fontWeight: '700' },
   claimBadge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   claimBadgeText: { color: '#ffffff', fontSize: 10, fontWeight: '800' },
+  infoButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  demoHint: { fontSize: 11, marginTop: 10, textAlign: 'center' },
 });

@@ -12,6 +12,7 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import { HONOR_TIER_PALETTES } from './honorAwardTheme';
+import HonorAwardCrest, { isHonorArtPreset } from './HonorAwardCrest';
 import type { HonorAwardEmblemProps } from './honorAwards.types';
 
 const SHIELD = 'M50 6 L90 20 L90 58 C90 83 72 99 50 108 C28 99 10 83 10 58 L10 20 Z';
@@ -52,6 +53,7 @@ export default function HonorAwardEmblem({
   imageUrl,
   size,
   placeholder = false,
+  artPreset,
 }: HonorAwardEmblemProps): React.JSX.Element {
   const palette = HONOR_TIER_PALETTES[tier];
   const height = size * 1.12;
@@ -67,6 +69,10 @@ export default function HonorAwardEmblem({
         />
       </View>
     );
+  }
+
+  if (!placeholder && isHonorArtPreset(artPreset)) {
+    return <HonorAwardCrest tier={tier} preset={artPreset ?? ''} title={title ?? ''} size={size} />;
   }
 
   const gradientId = `honor-shield-${tier}-${placeholder ? 'p' : 'a'}`;

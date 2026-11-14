@@ -141,3 +141,81 @@ describe('honor award slots and copy', () => {
     expect(honorText(t, 'missing', '+{{amount}} Airs', { amount: 5 })).toBe('+5 Airs');
   });
 });
+
+describe('honor award art and demo', () => {
+  // Imported lazily so the svg module only loads for these tests.
+  /* eslint-disable @typescript-eslint/no-var-requires */
+  const crest = require('../HonorAwardCrest') as typeof import('../HonorAwardCrest');
+  const demo = require('../honorAwardDemo') as typeof import('../honorAwardDemo');
+  /* eslint-enable @typescript-eslint/no-var-requires */
+
+  it('splits the banner title into two balanced lines', () => {
+    expect(crest.bannerLines('Manglar Verde')).toEqual(['MANGLAR', 'VERDE']);
+    expect(crest.bannerLines('Taybo Rodadero Santa Marta')).toEqual([
+      'TAYBO RODADERO',
+      'SANTA MARTA',
+    ]);
+    expect(crest.bannerLines('Golf')).toEqual(['GOLF', '']);
+  });
+
+  it('knows its built-in art presets', () => {
+    expect(crest.isHonorArtPreset('golf_mangrove')).toBe(true);
+    expect(crest.isHonorArtPreset('coast')).toBe(true);
+    expect(crest.isHonorArtPreset('unknown')).toBe(false);
+    expect(crest.isHonorArtPreset(null)).toBe(false);
+  });
+
+  it('previews a different tier in each empty slot with the golf medal art', () => {
+    expect([0, 1, 2, 3, 4].map(demo.demoTierForSlot)).toEqual([
+      'gold',
+      'silver',
+      'bronze',
+      'generic',
+      'gold',
+    ]);
+    const sample = demo.buildDemoHonorAward('silver', { classification: 'C', purpose: 'P' });
+    expect(sample.recipe.tier).toBe('silver');
+    expect(sample.recipe.artPreset).toBe('golf_mangrove');
+    expect(sample.recipe.airsAmount).toBe(10);
+    expect(sample.partner?.slug).toBe('');
+  });
+});
+
+describe('ally desk client', () => {
+  it('only exists on the ally manage scope and calls its endpoints', async () => {
+    const calls: Array<[string, RequestInit]> = [];
+    const fetcher = jest.fn(async (url: string, init: RequestInit) => {
+      calls.push([url, init]);
+      return jsonResponse(
+        200,
+        url.endsWith('/lookup') ? { found: true, total: 2, byRecipe: [] } : []
+      );
+    });
+    expect(
+      createHonorAwardClient({ kind: 'me' }, async () => 'x', fetcher as unknown as typeof fetch)
+        .desk
+    ).toBeUndefined();
+    const client = createHonorAwardClient(
+      { kind: 'enterprise-manage', enterpriseId: 'e1' },
+      async () => 'token',
+      fetcher as unknown as typeof fetch,
+      'https://api.test'
+    );
+    await client.desk?.listRecipes();
+    await client.desk?.grant({ recipeId: 'r1', email: ' Ada@Example.com ', reference: ' RES-1 ' });
+    const summary = await client.desk?.lookupGuest('ADA@example.com');
+    const base = 'https://api.test/v1/me/enterprises/e1/manage/honor-awards';
+    expect(calls.map(([url]) => url)).toEqual([
+      `${base}/recipes`,
+      `${base}/grants`,
+      `${base}/guests/lookup`,
+    ]);
+    expect(JSON.parse(String(calls[1][1].body))).toEqual({
+      recipeId: 'r1',
+      email: 'ada@example.com',
+      reference: 'RES-1',
+    });
+    expect(JSON.parse(String(calls[2][1].body))).toEqual({ email: 'ada@example.com' });
+    expect(summary?.total).toBe(2);
+  });
+});

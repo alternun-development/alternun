@@ -58,6 +58,7 @@ export function mapHonorAwardRecipe(row: Row): HonorAwardRecipeRecord {
     badgeImageUrl: text(row.badge_image_url),
     frontImageUrl: text(row.front_image_url),
     backImageUrl: text(row.back_image_url),
+    artPreset: text(row.art_preset),
     projectId: text(row.project_id),
     partnerEnterpriseId: text(row.partner_enterprise_id),
     isActive: row.is_active !== false,
@@ -76,6 +77,7 @@ export function mapHonorAwardGrant(row: Row): HonorAwardGrantRecord {
     enterpriseId: text(row.enterprise_id),
     status: row.status === 'claimed' || row.status === 'revoked' ? row.status : 'pending',
     source: row.source === 'project_medal' ? 'project_medal' : 'manual',
+    reference: text(row.reference),
     note: text(row.note),
     awardedAt: String(row.awarded_at ?? ''),
     claimedAt: text(row.claimed_at),
@@ -112,6 +114,7 @@ export function mapHonorAwardView(row: Row): HonorAwardView {
     badgeImageUrl: recipe.badgeImageUrl,
     frontImageUrl: recipe.frontImageUrl,
     backImageUrl: recipe.backImageUrl,
+    artPreset: recipe.artPreset,
   };
   return {
     id: String(row.id ?? ''),
@@ -158,6 +161,7 @@ function recipeColumns(input: HonorAwardRecipeInput): Row {
   assign('badge_image_url', input.badgeImageUrl);
   assign('front_image_url', input.frontImageUrl);
   assign('back_image_url', input.backImageUrl);
+  assign('art_preset', input.artPreset);
   assign('project_id', input.projectId);
   assign('partner_enterprise_id', input.partnerEnterpriseId);
   assign('is_active', input.isActive);
@@ -250,6 +254,7 @@ export class HonorAwardRepository {
     recipientType: HonorAwardAudience;
     userId?: string;
     enterpriseId?: string;
+    reference?: string | null;
     note?: string | null;
     actor: { issuer: string; subject: string };
   }): Promise<HonorAwardGrantRecord> {
@@ -260,6 +265,7 @@ export class HonorAwardRepository {
         recipient_type: grant.recipientType,
         user_id: grant.userId ?? null,
         enterprise_id: grant.enterpriseId ?? null,
+        reference: grant.reference ?? null,
         note: grant.note ?? null,
         awarded_by_issuer: grant.actor.issuer,
         awarded_by_subject: grant.actor.subject,
@@ -319,6 +325,38 @@ export class HonorAwardRepository {
       .maybeSingle();
     if (error) failDatabase(error);
     return data ? mapHonorAwardView(data as unknown as Row) : null;
+  }
+
+  /** Active honor awards for people that an ally backs: the ones it can give. */
+  async listRecipesForPartner(enterpriseId: string): Promise<HonorAwardRecipeRecord[]> {
+    const { data, error } = await this.client
+      .from('honor_award_recipes')
+      .select('*')
+      .eq('partner_enterprise_id', enterpriseId)
+      .eq('audience', 'user')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .order('title', { ascending: true });
+    if (error) failDatabase(error);
+    return ((data ?? []) as Row[]).map(mapHonorAwardRecipe);
+  }
+
+  /** Pending and claimed grants a person holds of the honor awards an ally backs. */
+  async listPartnerGrantsForUser(
+    enterpriseId: string,
+    userId: string
+  ): Promise<Array<{ recipeId: string; title: string }>> {
+    const { data, error } = await this.client
+      .from('honor_award_grants')
+      .select('id, recipe:honor_award_recipes!inner(id, title, partner_enterprise_id)')
+      .eq('user_id', userId)
+      .neq('status', 'revoked')
+      .eq('recipe.partner_enterprise_id', enterpriseId);
+    if (error) failDatabase(error);
+    return ((data ?? []) as unknown as Row[]).map((row) => {
+      const recipe = record(row.recipe) ?? {};
+      return { recipeId: String(recipe.id ?? ''), title: String(recipe.title ?? '') };
+    });
   }
 
   async findUserIdByEmail(email: string): Promise<string | null> {

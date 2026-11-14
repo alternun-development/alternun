@@ -26,6 +26,7 @@ const MINT = '#1de9b6';
 export default function HonorAwardInspectModal({
   award,
   onClose,
+  demo = false,
 }: HonorAwardInspectModalProps): React.JSX.Element | null {
   const { t } = useAppTranslation('mobile');
   const { motionLevel } = useAppPreferences();
@@ -135,17 +136,28 @@ export default function HonorAwardInspectModal({
             <Text style={styles.hint}>
               {honorText(t, 'profile.honorAwards.inspect.flip', 'Toca para ver el reverso')}
             </Text>
+            {demo ? (
+              <Text style={styles.demoNote}>
+                {honorText(
+                  t,
+                  'profile.honorAwards.demo.note',
+                  'Demostración: así se verá tu galardón cuando lo obtengas.'
+                )}
+              </Text>
+            ) : null}
             <View style={styles.actions}>
-              <Pressable
-                accessibilityRole='button'
-                onPress={() => void share()}
-                style={[styles.pill, { borderColor: '#7c83ff' }]}
-              >
-                <Share2 size={16} color='#c9ccff' />
-                <Text style={[styles.pillText, { color: '#c9ccff' }]}>
-                  {honorText(t, 'profile.honorAwards.inspect.share', 'Compartir')}
-                </Text>
-              </Pressable>
+              {demo ? null : (
+                <Pressable
+                  accessibilityRole='button'
+                  onPress={() => void share()}
+                  style={[styles.pill, { borderColor: '#7c83ff' }]}
+                >
+                  <Share2 size={16} color='#c9ccff' />
+                  <Text style={[styles.pillText, { color: '#c9ccff' }]}>
+                    {honorText(t, 'profile.honorAwards.inspect.share', 'Compartir')}
+                  </Text>
+                </Pressable>
+              )}
               <Pressable
                 accessibilityRole='button'
                 onPress={() => setStage('mission')}
@@ -227,16 +239,18 @@ export default function HonorAwardInspectModal({
                       ) : null}
                     </View>
                   </View>
-                  <Pressable
-                    accessibilityRole='link'
-                    onPress={() => go(`/explore/enterprise/${award.partner?.slug ?? ''}`)}
-                    style={[styles.linkPill, { borderColor: '#ffffff' }]}
-                  >
-                    <ExternalLink size={14} color='#ffffff' />
-                    <Text style={styles.linkText}>
-                      {honorText(t, 'profile.honorAwards.mission.visitPartner', 'Visitar página')}
-                    </Text>
-                  </Pressable>
+                  {demo || !award.partner.slug ? null : (
+                    <Pressable
+                      accessibilityRole='link'
+                      onPress={() => go(`/explore/enterprise/${award.partner?.slug ?? ''}`)}
+                      style={[styles.linkPill, { borderColor: '#ffffff' }]}
+                    >
+                      <ExternalLink size={14} color='#ffffff' />
+                      <Text style={styles.linkText}>
+                        {honorText(t, 'profile.honorAwards.mission.visitPartner', 'Visitar página')}
+                      </Text>
+                    </Pressable>
+                  )}
                 </View>
               ) : null}
 
@@ -253,16 +267,18 @@ export default function HonorAwardInspectModal({
                         .join(' · ')}
                     </Text>
                   ) : null}
-                  <Pressable
-                    accessibilityRole='link'
-                    onPress={() => go(`/explore/${award.project?.slug ?? ''}`)}
-                    style={[styles.linkPill, { borderColor: MINT }]}
-                  >
-                    <ExternalLink size={14} color={MINT} />
-                    <Text style={[styles.linkText, { color: MINT }]}>
-                      {honorText(t, 'profile.honorAwards.mission.viewProject', 'Ver proyecto')}
-                    </Text>
-                  </Pressable>
+                  {demo || !award.project.slug ? null : (
+                    <Pressable
+                      accessibilityRole='link'
+                      onPress={() => go(`/explore/${award.project?.slug ?? ''}`)}
+                      style={[styles.linkPill, { borderColor: MINT }]}
+                    >
+                      <ExternalLink size={14} color={MINT} />
+                      <Text style={[styles.linkText, { color: MINT }]}>
+                        {honorText(t, 'profile.honorAwards.mission.viewProject', 'Ver proyecto')}
+                      </Text>
+                    </Pressable>
+                  )}
                 </View>
               ) : null}
             </ScrollView>
@@ -284,6 +300,13 @@ const styles = StyleSheet.create({
   cardStage: { alignItems: 'center' },
   face: { ...StyleSheet.absoluteFillObject, backfaceVisibility: 'hidden' },
   hint: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 10 },
+  demoNote: {
+    color: '#1de9b6',
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 6,
+    textAlign: 'center',
+  },
   actions: { flexDirection: 'row', gap: 12, marginTop: 14 },
   pill: {
     flexDirection: 'row',

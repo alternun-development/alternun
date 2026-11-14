@@ -151,6 +151,15 @@ class HonorAwardRecipeFieldsDto {
   @MaxLength(2048)
   backImageUrl?: string | null;
 
+  @ApiPropertyOptional({
+    description: 'Built-in art when there is no image, e.g. "golf_mangrove" or "coast".',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsString()
+  @MaxLength(40)
+  artPreset?: string | null;
+
   @ApiPropertyOptional({ description: 'Impact project the award supports.' })
   @IsOptional()
   @ValidateIf((_, value) => value !== null)
@@ -207,11 +216,47 @@ export class GrantHonorAwardDto {
   @IsUUID('4')
   enterpriseId?: string;
 
+  @ApiPropertyOptional({ maxLength: 80, description: 'For example a reservation number.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  reference?: string;
+
   @ApiPropertyOptional({ maxLength: 300 })
   @IsOptional()
   @IsString()
   @MaxLength(300)
   note?: string;
+}
+
+export class EnterpriseGrantHonorAwardDto {
+  @ApiProperty({ description: 'Honor award recipe backed by this ally.' })
+  @IsUUID('4')
+  recipeId!: string;
+
+  @ApiProperty({ description: 'Account email of the person.' })
+  @IsString()
+  @MaxLength(320)
+  email!: string;
+
+  @ApiPropertyOptional({ maxLength: 80, description: 'For example the reservation number.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  reference?: string;
+
+  @ApiPropertyOptional({ maxLength: 300 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  note?: string;
+}
+
+export class HonorAwardGuestLookupDto {
+  @ApiProperty({ description: 'Account email of the person.' })
+  @IsString()
+  @MaxLength(320)
+  email!: string;
 }
 
 @ApiTags('admin honor awards')
@@ -267,7 +312,12 @@ export class HonorAwardAdminController {
   ) {
     const recipient =
       body.recipientType === 'user'
-        ? { recipientType: 'user' as const, email: body.email ?? '', note: body.note }
+        ? {
+            recipientType: 'user' as const,
+            email: body.email ?? '',
+            reference: body.reference,
+            note: body.note,
+          }
         : {
             recipientType: 'enterprise' as const,
             enterpriseId: body.enterpriseId ?? '',
@@ -343,6 +393,50 @@ export class EnterpriseHonorAwardController {
   ) {
     const { enterprise } = await this.access.resolveEnterprise(bearer(authorization), enterpriseId);
     return this.service.claim({ enterpriseId: enterprise.id }, grantId);
+  }
+  @Get('recipes')
+  @ApiOperation({ summary: 'Honor awards for people this ally can give.' })
+  async grantableRecipes(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string
+  ) {
+    const { principal, enterprise } = await this.access.resolveEnterprise(
+      bearer(authorization),
+      enterpriseId
+    );
+    return this.service.listGrantableForEnterprise(principal, requestId(request), enterprise.id);
+  }
+
+  @Post('grants')
+  @ApiOperation({ summary: "Give one of this ally's honor awards to a person (e.g. per stay)." })
+  async grant(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string,
+    @Body() body: EnterpriseGrantHonorAwardDto
+  ) {
+    const { principal, enterprise } = await this.access.resolveEnterprise(
+      bearer(authorization),
+      enterpriseId
+    );
+    return this.service.grantFromEnterprise(principal, requestId(request), enterprise.id, body);
+  }
+
+  @Post('guests/lookup')
+  @HttpCode(200)
+  @ApiOperation({ summary: "How many of this ally's honor awards a person holds." })
+  async lookupGuest(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string,
+    @Body() body: HonorAwardGuestLookupDto
+  ) {
+    const { principal, enterprise } = await this.access.resolveEnterprise(
+      bearer(authorization),
+      enterpriseId
+    );
+    return this.service.guestSummary(principal, requestId(request), enterprise.id, body.email);
   }
 }
 

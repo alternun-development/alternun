@@ -50,6 +50,7 @@ export default function HonorAwardClaimCinematic({
   award,
   onInspect,
   onClose,
+  demo = false,
 }: HonorAwardClaimCinematicProps): React.JSX.Element | null {
   const { t } = useAppTranslation('mobile');
   const { motionLevel } = useAppPreferences();
@@ -271,6 +272,7 @@ export default function HonorAwardClaimCinematic({
               kind={award.recipe.kind}
               title={award.recipe.title}
               imageUrl={award.recipe.badgeImageUrl}
+              artPreset={award.recipe.artPreset}
               size={medalSize}
             />
             <Animated.View
@@ -289,8 +291,21 @@ export default function HonorAwardClaimCinematic({
         <Animated.View
           style={[styles.copy, { opacity: reveal, transform: [{ translateY: revealY }] }]}
         >
+          {demo ? (
+            <View style={styles.demoRibbon}>
+              <Text style={styles.demoRibbonText}>
+                {honorText(t, 'profile.honorAwards.demo.ribbon', 'Demostración')}
+              </Text>
+            </View>
+          ) : null}
           <Text style={styles.headline}>
-            {honorText(t, 'profile.honorAwards.claim.headline', '¡Galardón desbloqueado!')}
+            {demo
+              ? honorText(
+                  t,
+                  'profile.honorAwards.demo.headline',
+                  'Así se ve al obtener un galardón'
+                )
+              : honorText(t, 'profile.honorAwards.claim.headline', '¡Galardón desbloqueado!')}
           </Text>
           <Text style={[styles.title, { color: palette.glow }]}>{award.recipe.title}</Text>
           <Text style={styles.subtitle}>
@@ -328,6 +343,21 @@ export default function HonorAwardClaimCinematic({
 }
 
 const styles = StyleSheet.create({
+  demoRibbon: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 3,
+    marginBottom: 4,
+  },
+  demoRibbonText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(3,10,9,0.94)',
