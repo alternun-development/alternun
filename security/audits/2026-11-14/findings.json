@@ -1,0 +1,70 @@
+{
+  "account": "124120088516",
+  "generatedAt": "2026-11-14T12:26:45+00:00",
+  "repo": "alternun-development/alternun",
+  "checks": [
+    {
+      "id": "C3a",
+      "title": "Admins sin MFA",
+      "status": "warn",
+      "detail": "sin MFA: Edward",
+      "list": ["Edward"]
+    },
+    {
+      "id": "C6a",
+      "title": "Visibilidad del repositorio",
+      "status": "warn",
+      "detail": "PUBLIC"
+    },
+    {
+      "id": "C7",
+      "title": "Ventana de acceso del reviewer",
+      "status": "warn",
+      "detail": "abierta hasta 2026-11-30T23:59:59Z"
+    },
+    {
+      "id": "C1",
+      "title": "Reviewer no puede escalar privilegios",
+      "status": "ok",
+      "detail": "0 de 21 acciones de escalación permitidas",
+      "metric": "0/21"
+    },
+    {
+      "id": "C2",
+      "title": "Lectura de secretos del reviewer denegada",
+      "status": "ok",
+      "detail": "todas con explicitDeny"
+    },
+    {
+      "id": "C3b",
+      "title": "Claves de acceso > 90 días",
+      "status": "ok",
+      "detail": "ninguna clave vieja",
+      "list": []
+    },
+    {
+      "id": "C4",
+      "title": "Política de contraseñas",
+      "status": "ok",
+      "detail": "aplicada"
+    },
+    {
+      "id": "C5",
+      "title": "No-admins que pueden leer secretos",
+      "status": "ok",
+      "detail": "ninguno",
+      "list": []
+    },
+    {
+      "id": "C6b",
+      "title": "Fugas en el historial git",
+      "status": "ok",
+      "detail": "AKIA=0 · JWT=0 · privKeys=0"
+    }
+  ],
+  "summary": {
+    "crit": 0,
+    "warn": 3,
+    "ok": 6
+  }
+}
