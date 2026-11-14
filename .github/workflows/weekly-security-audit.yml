@@ -1,0 +1,69 @@
+name: Weekly Security Audit
+
+# Runs the reusable AWS security verification loop every Monday 11:11 Colombia
+# time (16:11 UTC), builds the executive + technical reports and emails them to
+# the CEO and CTO via the Tláo SMTP secret. Read-only: never changes the account.
+
+on:
+  schedule:
+    - cron: "11 16 * * 1" # Monday 16:11 UTC = 11:11 America/Bogota (UTC-5)
+  workflow_dispatch: {} # allow manual runs
+
+permissions:
+  contents: read
+  id-token: write # for OIDC role assumption (preferred over static keys)
+
+concurrency:
+  group: weekly-security-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Audit + report
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      CEO_EMAIL: security-ceo@alternun.example
+      CTO_EMAIL: edward@alternun.io
+    steps:
+      - name: Checkout (full history for leak scan)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS credentials (read-only)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Preferred: OIDC role with ViewOnlyAccess + SecurityAudit (no static keys).
+          # Set repo variable AWS_AUDIT_ROLE_ARN, or fall back to secrets below.
+          role-to-assume: ${{ vars.AWS_AUDIT_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_AUDIT_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_AUDIT_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run audit loop
+        id: audit
+        run: |
+          set -euo pipefail
+          STAMP="$(date -u +%F)"
+          OUT="security/audits/${STAMP}"
+          bash security/scripts/run-audit.sh "$OUT"
+          python3 security/scripts/build-reports.py "$OUT/findings.json" "$OUT"
+          echo "out=$OUT" >> "$GITHUB_OUTPUT"
+
+      - name: Upload reports (workflow artifact, private)
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-${{ github.run_id }}
+          path: ${{ steps.audit.outputs.out }}
+          retention-days: 90
+
+      - name: Email reports to CEO + CTO
+        run: |
+          python3 security/scripts/send-reports.py "${{ steps.audit.outputs.out }}" \
+            --ceo "$CEO_EMAIL" --cto "$CTO_EMAIL"
