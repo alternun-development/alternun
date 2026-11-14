@@ -1,3 +1,13 @@
+## [1.2.4](https://github.com/alternun-development/alternun/compare/v1.2.3...v1.2.4) (2026-11-14)
+
+### Bug Fixes
+
+- **repo:** feat(profile): choose an avatar from the social photo, illustrations or held badges
+
+### Features
+
+- **profile:** choose an avatar from the social photo, illustrations or held badges ([0a7e89f](https://github.com/alternun-development/alternun/commit/0a7e89f5afc54e920dde50c4575b771446699941))
+
 ## [1.2.3](https://github.com/alternun-development/alternun/compare/v1.2.2...v1.2.3) (2026-11-14)
 
 ### Features
