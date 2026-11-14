@@ -34,13 +34,29 @@ def truthy(v):
     return str(v).strip().lower() in ("1", "true", "yes", "on")
 
 
-def build(audience_html, subject, from_addr, sender_name, to_addr, attachments):
+def html_to_text(html_doc):
+    """A readable plain-text fallback so the message is not HTML-only (helps deliverability)."""
+    import re
+    t = re.sub(r"(?is)<(script|style).*?</\1>", "", html_doc)
+    t = re.sub(r"(?i)</(p|div|h[1-6]|li|tr|section)>", "\n", t)
+    t = re.sub(r"(?i)<li[^>]*>", " - ", t)
+    t = re.sub(r"<[^>]+>", "", t)
+    t = re.sub(r"\n{3,}", "\n\n", t)
+    return (t.strip() or "Informe de seguridad Alternun.")
+
+
+def build(audience_html, subject, from_addr, sender_name, to_addr, attachments, text_body=None):
+    from email.utils import formatdate, make_msgid
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = f"{sender_name} <{from_addr}>" if sender_name else from_addr
     msg["To"] = to_addr
-    msg.set_content("Este informe requiere un cliente de correo con HTML. "
-                    "Adjunto va la versión completa.")
+    msg["Reply-To"] = from_addr
+    msg["Date"] = formatdate(localtime=True)
+    # Message-ID domain must match the From domain for DKIM/DMARC-friendly hygiene.
+    msg["Message-ID"] = make_msgid(domain=from_addr.split("@")[-1])
+    msg["Auto-Submitted"] = "auto-generated"  # it is an automated report, declare it honestly
+    msg.set_content(text_body or html_to_text(audience_html))
     msg.add_alternative(audience_html, subtype="html")
     for name, data in attachments:
         msg.add_attachment(data.encode("utf-8"), maintype="text", subtype="html", filename=name)
