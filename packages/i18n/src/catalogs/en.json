@@ -1189,6 +1189,21 @@
         "projects": "Positive impact projects you contributed to through your actions on Airs, for example with purchases or activities at partner businesses.",
         "co2Title": "CO₂",
         "co2": "Reference estimate of the tonnes of CO₂ linked to the positive impact projects you supported with your actions."
+      },
+      "tierReveal": {
+        "open": "See your {{tier}} tier",
+        "headline": "Congratulations!",
+        "title": "You are {{tier}}",
+        "body": {
+          "bronze": "Your Airs journey starts here. Every positive impact action adds Airs and builds your reputation.",
+          "silver": "Your journey is growing: Silver recognizes the positive impact actions that brought you here.",
+          "gold": "A milestone in your journey: Gold makes your commitment to positive impact visible.",
+          "platinum": "The highest Airs tier: Platinum recognizes a broad positive impact track record built over time."
+        },
+        "score": "{{score}} Airs",
+        "next": "{{amount}} Airs to reach {{next}}.",
+        "top": "You reached the highest Airs tier.",
+        "continue": "Continue"
       }
     },
     "manage": {
