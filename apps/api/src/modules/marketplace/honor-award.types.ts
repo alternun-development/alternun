@@ -110,6 +110,8 @@ export interface HonorAwardPartnerSummary {
   description: string | null;
   logoUrl: string | null;
   websiteUrl: string | null;
+  /** ISO country of the ally, shown under its name on the card (e.g. "CO"). */
+  countryCode: string | null;
 }
 
 /** An award as the app shows it: the grant with its recipe, project and ally. */

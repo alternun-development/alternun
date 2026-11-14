@@ -76,3 +76,50 @@ export function honorText(
   );
   return t(key, params, interpolated);
 }
+
+/** Colors of the card templates (Propuesta Badges V3): frame, title and tier label per tier. */
+export const HONOR_CARD_COLORS: Record<
+  HonorAwardTier,
+  { frame: string; title: string; tierLabel: string }
+> = {
+  generic: { frame: '#4a7c3a', title: '#4f8a3c', tierLabel: '#3f6f31' },
+  gold: { frame: '#d6b13f', title: '#c99a2e', tierLabel: '#a47414' },
+  silver: { frame: '#aebcc2', title: '#7d8b93', tierLabel: '#3f4a55' },
+  bronze: { frame: '#d9844f', title: '#d9844f', tierLabel: '#b4552a' },
+};
+
+/** "Octubre 30 - 2026": the obtained date as the card templates write it. */
+export function formatObtainedDate(value: string | null, locale?: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  let month = '';
+  try {
+    month = date.toLocaleDateString(locale, { month: 'long', timeZone: 'UTC' });
+  } catch {
+    month = '';
+  }
+  const label = month ? month.charAt(0).toLocaleUpperCase(locale) + month.slice(1) : '';
+  return `${label ? `${label} ` : ''}${date.getUTCDate()} - ${date.getUTCFullYear()}`;
+}
+
+const COUNTRY_NAMES: Readonly<Record<string, string>> = {
+  AR: 'Argentina',
+  BR: 'Brasil',
+  CL: 'Chile',
+  CO: 'Colombia',
+  EC: 'Ecuador',
+  ES: 'España',
+  MX: 'México',
+  PA: 'Panamá',
+  PE: 'Perú',
+  TH: 'Thailand',
+  US: 'United States',
+  VE: 'Venezuela',
+};
+
+/** Country name for an ISO code; the code itself when it is not known. */
+export function honorCountryName(code: string | null | undefined): string {
+  const normalized = code?.trim().toUpperCase() ?? '';
+  return COUNTRY_NAMES[normalized] ?? normalized;
+}

@@ -1176,6 +1176,10 @@
           "permissionDenied": "Tu rol no puede otorgar galardones.",
           "invalid": "Revisa el correo y el número de reserva.",
           "genericError": "No pudimos completar la acción. Inténtalo de nuevo."
+        },
+        "card": {
+          "stamp": "• Proyecto Airs {{year}} • Impacto positivo ambiental",
+          "obtainedLabel": "Obtenida:"
         }
       },
       "statsInfo": {

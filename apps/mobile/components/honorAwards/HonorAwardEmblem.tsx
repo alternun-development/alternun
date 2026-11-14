@@ -13,6 +13,7 @@ import Svg, {
 } from 'react-native-svg';
 import { HONOR_TIER_PALETTES } from './honorAwardTheme';
 import HonorAwardCrest, { isHonorArtPreset } from './HonorAwardCrest';
+import { presetBadge } from './honorAwardArt';
 import type { HonorAwardEmblemProps } from './honorAwards.types';
 
 const SHIELD = 'M50 6 L90 20 L90 58 C90 83 72 99 50 108 C28 99 10 83 10 58 L10 20 Z';
@@ -64,6 +65,21 @@ export default function HonorAwardEmblem({
         <Image
           accessibilityIgnoresInvertColors
           source={{ uri: imageUrl }}
+          style={{ width: size, height }}
+          resizeMode='contain'
+        />
+      </View>
+    );
+  }
+
+  // The medal of the design file for this preset and tier, when the app bundles it.
+  const bundled = placeholder ? null : presetBadge(artPreset, tier);
+  if (bundled) {
+    return (
+      <View style={{ width: size, height }}>
+        <Image
+          accessibilityIgnoresInvertColors
+          source={bundled}
           style={{ width: size, height }}
           resizeMode='contain'
         />

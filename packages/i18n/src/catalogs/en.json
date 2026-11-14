@@ -1176,6 +1176,10 @@
           "permissionDenied": "Your role cannot give awards.",
           "invalid": "Check the email and the reservation number.",
           "genericError": "We couldn't complete that. Please try again."
+        },
+        "card": {
+          "stamp": "• Airs project {{year}} • Positive environmental impact",
+          "obtainedLabel": "Earned:"
         }
       },
       "statsInfo": {

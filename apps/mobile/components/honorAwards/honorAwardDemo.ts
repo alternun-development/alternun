@@ -43,10 +43,11 @@ export function buildDemoHonorAward(
     partner: {
       id: 'demo-partner',
       slug: '',
-      displayName: 'Swing Golf Colombia',
+      displayName: 'Swing Golf',
       description: null,
       logoUrl: null,
       websiteUrl: null,
+      countryCode: 'CO',
     },
   };
 }
