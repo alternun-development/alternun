@@ -115,7 +115,10 @@ PY
 # CHECK 6 — repo visibility + git-history secret scan
 # ---------------------------------------------------------------------------
 REPO_VIS="$(gh repo view "$REPO_SLUG" --json visibility --jq .visibility 2>/dev/null || echo unknown)"
-HIST_LOG="$(git log -p --all 2>/dev/null | tr -d '\000' || true)"
+# Exclude the audit's own files: they legitimately contain example key patterns
+# (AKIA..., BEGIN PRIVATE KEY in the scanner, JWT samples in the report) and would
+# otherwise make the scanner flag itself.
+HIST_LOG="$(git log -p --all -- . ':(exclude)security/' 2>/dev/null | tr -d '\000' || true)"
 HIST_AKIA="$(printf '%s' "$HIST_LOG" | grep -oE 'A(KIA|SIA)[0-9A-Z]{16}' | sort -u | wc -l | tr -d ' ' || true)"
 HIST_PK="$(printf '%s' "$HIST_LOG" | grep -c 'BEGIN .*PRIVATE KEY' || true)"
 HIST_JWT="$(printf '%s' "$HIST_LOG" | grep -oE 'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}' | sort -u | wc -l | tr -d ' ' || true)"
