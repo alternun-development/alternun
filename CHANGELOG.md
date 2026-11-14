@@ -1,3 +1,20 @@
+## [1.2.0](https://github.com/alternun-development/alternun/compare/v1.1.142...v1.2.0) (2026-11-14)
+
+### Bug Fixes
+
+- **repo:** feat(honor-awards): medal art, info, demo and per-stay ally medals
+- **repo:** fix(release): keep changelog version headings at "##" for minor releases
+- **repo:** feat(honor-awards): Galardones de honor for people and allies
+
+### Bug Fixes
+
+- **release:** keep changelog version headings at "##" for minor releases ([79db85b](https://github.com/alternun-development/alternun/commit/79db85bb7426bd45005ff6b90a457c947e5d9949))
+
+### Features
+
+- **honor-awards:** Galardones de honor for people and allies ([3a84228](https://github.com/alternun-development/alternun/commit/3a84228224db44199f295b0d7c8acdc850208c4e))
+- **honor-awards:** medal art, info, demo and per-stay ally medals ([3dbc85f](https://github.com/alternun-development/alternun/commit/3dbc85f45561d6c1ada0443f85f41f3a39a33f7a))
+
 ## [1.1.142](https://github.com/alternun-development/alternun/compare/v1.1.141...v1.1.142) (2026-11-13)
 
 ### Features
@@ -1721,9 +1738,9 @@
 - **i18n:** add missing wallet.changePin and addAccount.noVault translations to es/th ([630036c](https://github.com/alternun-development/alternun/commit/630036c790bc5e7233ff8348b04bdb1180bd73ea))
 - **wallet:** full wallet management — add/delete/import + MetaMask linking + layout fix ([592f737](https://github.com/alternun-development/alternun/commit/592f737ac3234efcc1f4e83ad0cf2f57c3f4a95f))
 
-# [1.1.0](https://github.com/alternun-development/alternun/compare/v1.1.0-dev.0...v1.1.0) (2026-06-30)
+## [1.1.0](https://github.com/alternun-development/alternun/compare/v1.1.0-dev.0...v1.1.0) (2026-06-30)
 
-# [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
+## [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
 
 ### Bug Fixes
 
