@@ -4,14 +4,22 @@ import { Text } from 'react-native';
 import HonorAwardsSection from '../HonorAwardsSection';
 import HonorAwardClaimCinematic from '../HonorAwardClaimCinematic';
 import HonorAwardInspectModal from '../HonorAwardInspectModal';
+import HonorAwardsInfoModal from '../HonorAwardsInfoModal';
 
-jest.mock('@alternun/ui', () => ({ SectionContainer: ({ children }) => children }));
+jest.mock('@alternun/ui', () => ({
+  // The header action (info button) renders before the content, as in the real container.
+  SectionContainer: ({ children, trailing }) => {
+    const { createElement: mockCreate, Fragment: MockFragment } = require('react');
+    return mockCreate(MockFragment, null, trailing, children);
+  },
+}));
 jest.mock('../HonorAwardEmblem', () => ({ __esModule: true, default: () => null }));
 jest.mock('../HonorAwardClaimCinematic', () => ({
   __esModule: true,
   default: jest.fn(() => null),
 }));
 jest.mock('../HonorAwardInspectModal', () => ({ __esModule: true, default: jest.fn(() => null) }));
+jest.mock('../HonorAwardsInfoModal', () => ({ __esModule: true, default: jest.fn(() => null) }));
 jest.mock('../../settings/AppPreferencesProvider', () => ({
   useAppPreferences: () => ({ motionLevel: 'off' }),
 }));
@@ -132,7 +140,14 @@ it('offers a retry when the awards do not load', async () => {
   const tree = await render({ client });
   expect(texts(tree)).toContain('No pudimos cargar los galardones. Toca para reintentar.');
   client.list.mockImplementation(() => Promise.resolve([]));
-  const retry = pressables(tree)[0];
+  const retry = pressables(tree).find(
+    (node) =>
+      node.findAll(
+        (child) =>
+          child.type === Text &&
+          child.props.children === 'No pudimos cargar los galardones. Toca para reintentar.'
+      ).length > 0
+  );
   await act(async () => retry.props.onPress());
   expect(client.list).toHaveBeenCalledTimes(2);
 });
@@ -146,4 +161,40 @@ it('public pages stay hidden until the ally has an award, and never offer claims
   });
   expect(texts(shown)).toContain('Swing Golf');
   expect(texts(shown)).not.toContain('Reclamar');
+});
+
+it('opens the explanation from the info button', async () => {
+  const tree = await render({ client: makeClient() });
+  expect(HonorAwardsInfoModal.mock.calls.at(-1)[0].visible).toBe(false);
+  await act(async () => awardButton(tree, '¿Qué son los galardones de honor?').props.onPress());
+  const info = HonorAwardsInfoModal.mock.calls.at(-1)[0];
+  expect(info.visible).toBe(true);
+  expect(info.audience).toBe('person');
+});
+
+it('previews the claim of a sample golf medal from an empty slot', async () => {
+  const tree = await render({ client: makeClient() });
+  expect(texts(tree)).toContain('Toca un espacio disponible para ver una demostración.');
+  const slots = pressables(tree).filter(
+    (node) => node.props.accessibilityLabel === 'Espacio disponible: ver demostración'
+  );
+  expect(slots).toHaveLength(5);
+  await act(async () => slots[1].props.onPress());
+  const preview = HonorAwardClaimCinematic.mock.calls.at(-1)[0];
+  expect(preview.demo).toBe(true);
+  expect(preview.award.recipe.tier).toBe('silver');
+  expect(preview.award.recipe.artPreset).toBe('golf_mangrove');
+
+  await act(async () => preview.onInspect(preview.award));
+  const inspect = HonorAwardInspectModal.mock.calls.at(-1)[0];
+  expect(inspect.demo).toBe(true);
+  expect(inspect.award.id).toBe('demo-silver');
+});
+
+it('explains honor awards to allies on their pages', async () => {
+  await render({
+    client: makeClient({ canClaim: false }),
+    scope: { kind: 'enterprise-public', slug: 'swing' },
+  });
+  expect(HonorAwardsInfoModal.mock.calls.at(-1)[0].audience).toBe('ally');
 });

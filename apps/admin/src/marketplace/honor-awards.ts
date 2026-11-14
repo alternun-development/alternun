@@ -10,6 +10,8 @@ import type {
 export const HONOR_AWARD_TIERS = ['generic', 'gold', 'silver', 'bronze'] as const;
 export const HONOR_AWARD_KINDS = ['medal', 'trophy'] as const;
 export const HONOR_AWARD_AUDIENCES = ['user', 'enterprise'] as const;
+/** Built-in art the app can draw; empty means the generic shield. */
+export const HONOR_ART_PRESETS = ['golf_mangrove', 'coast'] as const;
 
 export const honorAwardRecipesPath = '/v1/admin/honor-awards/recipes';
 
@@ -40,6 +42,7 @@ export const emptyHonorAwardRecipe: HonorAwardRecipeValues = {
   badgeImageUrl: '',
   frontImageUrl: '',
   backImageUrl: '',
+  artPreset: '',
   projectId: '',
   partnerEnterpriseId: '',
 };
@@ -47,6 +50,7 @@ export const emptyHonorAwardRecipe: HonorAwardRecipeValues = {
 export const emptyHonorAwardGrant: HonorAwardGrantValues = {
   email: '',
   enterpriseId: '',
+  reference: '',
   note: '',
 };
 
@@ -76,6 +80,7 @@ export function recipeToValues(recipe: HonorAwardRecipe): HonorAwardRecipeValues
     badgeImageUrl: recipe.badgeImageUrl ?? '',
     frontImageUrl: recipe.frontImageUrl ?? '',
     backImageUrl: recipe.backImageUrl ?? '',
+    artPreset: recipe.artPreset ?? '',
     projectId: recipe.projectId ?? '',
     partnerEnterpriseId: recipe.partnerEnterpriseId ?? '',
   };
@@ -120,6 +125,7 @@ export function buildHonorAwardRecipeBody(values: HonorAwardRecipeValues): Recor
     badgeImageUrl: optional(values.badgeImageUrl),
     frontImageUrl: optional(values.frontImageUrl),
     backImageUrl: optional(values.backImageUrl),
+    artPreset: optional(values.artPreset),
     projectId: optional(values.projectId),
     partnerEnterpriseId: optional(values.partnerEnterpriseId),
   };
@@ -135,6 +141,7 @@ export function validateHonorAwardGrant(
   const copy = marketplaceCopy.honorAwards.errors;
   if (recipe.audience === 'user' && !EMAIL_PATTERN.test(values.email.trim())) return copy.email;
   if (recipe.audience === 'enterprise' && !values.enterpriseId) return copy.enterprise;
+  if (values.reference.trim().length > 80) return copy.tooLong(80);
   if (values.note.trim().length > 300) return copy.tooLong(300);
   return null;
 }
@@ -144,8 +151,14 @@ export function buildHonorAwardGrantBody(
   values: HonorAwardGrantValues
 ): Record<string, string> {
   const note = values.note.trim();
+  const reference = values.reference.trim();
   return recipe.audience === 'user'
-    ? { recipientType: 'user', email: values.email.trim().toLowerCase(), ...(note ? { note } : {}) }
+    ? {
+        recipientType: 'user',
+        email: values.email.trim().toLowerCase(),
+        ...(reference ? { reference } : {}),
+        ...(note ? { note } : {}),
+      }
     : { recipientType: 'enterprise', enterpriseId: values.enterpriseId, ...(note ? { note } : {}) };
 }
 

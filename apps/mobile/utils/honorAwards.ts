@@ -21,6 +21,8 @@ export interface HonorAwardRecipe {
   badgeImageUrl: string | null;
   frontImageUrl: string | null;
   backImageUrl: string | null;
+  /** Built-in art the app draws when there is no image ("golf_mangrove", "coast"). */
+  artPreset?: string | null;
 }
 
 export interface HonorAward {
@@ -53,10 +55,33 @@ export type HonorAwardScope =
   | { kind: 'enterprise-manage'; enterpriseId: string }
   | { kind: 'enterprise-public'; slug: string };
 
+/** How many of an ally's honor awards a person holds (for example hotel stays). */
+export interface HonorAwardGuestSummary {
+  found: boolean;
+  total: number;
+  byRecipe: Array<{ recipeId: string; title: string; count: number }>;
+}
+
+export interface HonorAwardGrantInput {
+  recipeId: string;
+  email: string;
+  /** For example the reservation number: one medal per stay. */
+  reference?: string;
+}
+
+/** What an ally's team does from its manage view: give its honor awards and look up a guest. */
+export interface HonorAwardAllyDesk {
+  listRecipes(): Promise<HonorAwardRecipe[]>;
+  grant(input: HonorAwardGrantInput): Promise<void>;
+  lookupGuest(email: string): Promise<HonorAwardGuestSummary>;
+}
+
 export interface HonorAwardClient {
   list(): Promise<HonorAward[]>;
   claim(awardId: string): Promise<HonorAward>;
   readonly canClaim: boolean;
+  /** Only for an ally's manage view. */
+  readonly desk?: HonorAwardAllyDesk;
 }
 
 export function honorAwardsPath(scope: HonorAwardScope): string {
@@ -79,14 +104,19 @@ export function createHonorAwardClient(
   const base = `${apiUrl.replace(/\/+$/, '')}${honorAwardsPath(scope)}`;
   const needsAuth = scope.kind !== 'enterprise-public';
 
-  async function request<T>(path: string, method = 'GET'): Promise<T> {
+  async function request<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
     const headers: Record<string, string> = { Accept: 'application/json' };
+    if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (needsAuth) {
       const token = await getToken();
       if (!token) throw new HonorAwardRequestError(401, 'AUTH_REQUIRED');
       headers.Authorization = `Bearer ${token}`;
     }
-    const response = await fetcher(`${base}${path}`, { method, headers });
+    const response = await fetcher(`${base}${path}`, {
+      method,
+      headers,
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
     if (!response.ok) {
       let code: string | undefined;
       try {
@@ -107,6 +137,25 @@ export function createHonorAwardClient(
       if (!needsAuth) return Promise.reject(new HonorAwardRequestError(403, 'READ_ONLY'));
       return request<HonorAward>(`/${encodeURIComponent(awardId)}/claim`, 'POST');
     },
+    ...(scope.kind === 'enterprise-manage'
+      ? {
+          desk: {
+            listRecipes: () => request<HonorAwardRecipe[]>('/recipes'),
+            grant: async (input: HonorAwardGrantInput) => {
+              const reference = input.reference?.trim();
+              await request('/grants', 'POST', {
+                recipeId: input.recipeId,
+                email: input.email.trim().toLowerCase(),
+                ...(reference ? { reference } : {}),
+              });
+            },
+            lookupGuest: (email: string) =>
+              request<HonorAwardGuestSummary>('/guests/lookup', 'POST', {
+                email: email.trim().toLowerCase(),
+              }),
+          },
+        }
+      : {}),
   };
 }
 

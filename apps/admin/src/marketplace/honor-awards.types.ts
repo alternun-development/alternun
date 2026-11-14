@@ -19,6 +19,8 @@ export type HonorAwardRecipe = {
   badgeImageUrl: string | null;
   frontImageUrl: string | null;
   backImageUrl: string | null;
+  /** Built-in art the app draws when there is no image. */
+  artPreset: string | null;
   projectId: string | null;
   partnerEnterpriseId: string | null;
   isActive: boolean;
@@ -35,6 +37,8 @@ export type HonorAwardGrant = {
   enterpriseId: string | null;
   status: 'pending' | 'claimed' | 'revoked';
   source: 'manual' | 'project_medal';
+  /** For example a hotel reservation number. */
+  reference: string | null;
   note: string | null;
   awardedAt: string;
   claimedAt: string | null;
@@ -57,6 +61,7 @@ export type HonorAwardRecipeValues = {
   badgeImageUrl: string;
   frontImageUrl: string;
   backImageUrl: string;
+  artPreset: string;
   projectId: string;
   partnerEnterpriseId: string;
 };
@@ -66,5 +71,6 @@ export type HonorAwardRecipeErrors = Partial<Record<keyof HonorAwardRecipeValues
 export type HonorAwardGrantValues = {
   email: string;
   enterpriseId: string;
+  reference: string;
   note: string;
 };

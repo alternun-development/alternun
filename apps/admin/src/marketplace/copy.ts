@@ -709,6 +709,14 @@ export const marketplaceCopy = {
       project: 'Impact project',
       partner: 'Supporting ally',
       none: 'None',
+      artPreset: 'Built-in art',
+      artPresetHint:
+        'Drawn by the app when there is no medal art: the golf medal design, or a coast scene for hotel medals.',
+    },
+    artPresets: {
+      none: 'Generic shield',
+      golf_mangrove: 'Golf · Mangrove (Manglar Verde)',
+      coast: 'Coast · Hotel stay',
     },
     kinds: { medal: 'Medal', trophy: 'Trophy' },
     tiers: { generic: 'Generic', gold: 'Gold', silver: 'Silver', bronze: 'Bronze' },
@@ -720,6 +728,9 @@ export const marketplaceCopy = {
       empty: 'Nobody has this award yet.',
       email: 'Account email',
       enterprise: 'Enterprise',
+      reference: 'Reference, e.g. reservation number (optional)',
+      referenceHint:
+        'With a reference the same person can get this award again (one per stay); each reference is used once.',
       note: 'Internal note (optional)',
       grant: 'Grant',
       granted: 'Award granted. The recipient can claim it in the app.',

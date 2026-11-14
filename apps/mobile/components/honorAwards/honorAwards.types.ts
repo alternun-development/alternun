@@ -1,5 +1,6 @@
 import type {
   HonorAward,
+  HonorAwardAllyDesk,
   HonorAwardClient,
   HonorAwardKind,
   HonorAwardScope,
@@ -37,6 +38,27 @@ export interface HonorAwardEmblemProps {
   size: number;
   /** Greyed out outline for slots still to earn. */
   placeholder?: boolean;
+  /** Built-in art ("golf_mangrove", "coast") when there is no image. */
+  artPreset?: string | null;
+}
+
+export interface HonorCrestPalette {
+  frame: string;
+  frameLight: string;
+  banner: string;
+  bannerText: string;
+  leafAccent: string;
+  leafStroke: string;
+  sun: string;
+  outfit: string;
+  trousers: string;
+}
+
+export interface HonorAwardCrestProps {
+  tier: HonorAwardTier;
+  preset: string;
+  title: string;
+  size: number;
 }
 
 export interface HonorAwardCardProps {
@@ -49,11 +71,27 @@ export interface HonorAwardClaimCinematicProps {
   award: HonorAward | null;
   onInspect: (award: HonorAward) => void;
   onClose: () => void;
+  /** Preview from an empty slot: nothing was earned, the copy says so. */
+  demo?: boolean;
 }
 
 export interface HonorAwardInspectModalProps {
   award: HonorAward | null;
   onClose: () => void;
+  /** Preview: no sharing and no links. */
+  demo?: boolean;
+}
+
+export interface HonorAwardsInfoModalProps {
+  visible: boolean;
+  /** A person's collection or an ally's. */
+  audience: 'person' | 'ally';
+  onClose: () => void;
+}
+
+export interface HonorAwardsAllyDeskProps {
+  desk: HonorAwardAllyDesk;
+  c: HonorAwardsPalette;
 }
 
 export interface HonorAwardsPalette {

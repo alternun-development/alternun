@@ -97,6 +97,7 @@ export default function HonorAwardCard({
               kind={recipe.kind}
               title={recipe.title}
               imageUrl={recipe.badgeImageUrl}
+              artPreset={recipe.artPreset}
               size={150 * scale}
             />
           </View>
