@@ -124,10 +124,6 @@ Current version: **1.2.3**
 
 ## 📋 Latest Changes (v1.2.3)
 
-### Bug Fixes
-
-- **repo:** feat(profile): reveal the metal tier badge with the honor award animation
-
 ### Features
 
 - **profile:** reveal the metal tier badge with the honor award animation ([655fbfc](https://github.com/alternun-development/alternun/commit/655fbfc7cb925e5bba28136fafe68598fb601f4e))
