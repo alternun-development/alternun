@@ -1,19 +1,13 @@
 ## [1.2.0](https://github.com/alternun-development/alternun/compare/v1.1.142...v1.2.0) (2026-11-14)
 
-### Bug Fixes
+### Features
 
-- **repo:** feat(honor-awards): medal art, info, demo and per-stay ally medals
-- **repo:** fix(release): keep changelog version headings at "##" for minor releases
-- **repo:** feat(honor-awards): Galardones de honor for people and allies
+- **honor-awards:** medal art, info, demo and per-stay ally medals ([3dbc85f](https://github.com/alternun-development/alternun/commit/3dbc85f45561d6c1ada0443f85f41f3a39a33f7a))
+- **honor-awards:** Galardones de honor for people and allies ([3a84228](https://github.com/alternun-development/alternun/commit/3a84228224db44199f295b0d7c8acdc850208c4e))
 
 ### Bug Fixes
 
 - **release:** keep changelog version headings at "##" for minor releases ([79db85b](https://github.com/alternun-development/alternun/commit/79db85bb7426bd45005ff6b90a457c947e5d9949))
-
-### Features
-
-- **honor-awards:** Galardones de honor for people and allies ([3a84228](https://github.com/alternun-development/alternun/commit/3a84228224db44199f295b0d7c8acdc850208c4e))
-- **honor-awards:** medal art, info, demo and per-stay ally medals ([3dbc85f](https://github.com/alternun-development/alternun/commit/3dbc85f45561d6c1ada0443f85f41f3a39a33f7a))
 
 ## [1.1.142](https://github.com/alternun-development/alternun/compare/v1.1.141...v1.1.142) (2026-11-13)
 
