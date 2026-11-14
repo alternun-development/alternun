@@ -23,6 +23,8 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Image,
+  Pressable,
   Animated,
   Platform,
   ToastAndroid,
@@ -82,6 +84,7 @@ import AchievementCollection from '../components/profile/AchievementCollection';
 import HonorAwardsSection from '../components/honorAwards/HonorAwardsSection';
 import ProfileStats from '../components/profile/ProfileStats';
 import TierRevealCinematic from '../components/profile/TierRevealCinematic';
+import AvatarFlip from '../components/avatar/AvatarFlip';
 import AvatarPicker from '../components/avatar/AvatarPicker';
 import UserAvatar from '../components/avatar/UserAvatar';
 import { createUserAvatarClient } from '../utils/userAvatar';
@@ -413,6 +416,9 @@ function ProfileHeader({
   const spec = resolveTierSpec(tier, tierLabels);
   const [tierRevealOpen, setTierRevealOpen] = useState(false);
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
+  // Hovering the avatar turns it over to show the current tier badge.
+  const [showTierFace, setShowTierFace] = useState(false);
+  const tierBadge = hasScore ? STATUS_BADGES[tier] ?? null : null;
   const avatarClient = useMemo(
     () => (getToken ? createUserAvatarClient(getToken) : null),
     [getToken]
@@ -516,15 +522,21 @@ function ProfileHeader({
 
       {/* Content */}
       <View style={{ alignItems: 'center', zIndex: 1 }}>
-        {/* Avatar: tapping the photo or the pencil changes it; the tier chip reveals the metal badge */}
+        {/* Avatar: the chosen one turns over on hover to show the tier badge; tapping it or the
+            tier chip plays the tier reveal, and only the pencil changes the avatar */}
         <View style={{ marginBottom: 14, position: 'relative' }}>
-          <TouchableOpacity
+          <Pressable
             testID='profile-avatar'
             accessibilityRole='button'
-            accessibilityLabel={t('profile.avatar.edit', undefined, 'Cambiar avatar')}
-            activeOpacity={0.85}
-            disabled={!avatarClient}
-            onPress={() => setAvatarPickerOpen(true)}
+            accessibilityLabel={t(
+              'profile.tierReveal.open',
+              { tier: spec.label },
+              `Ver tu nivel ${spec.label}`
+            )}
+            disabled={!hasScore}
+            onPress={() => setTierRevealOpen(true)}
+            onHoverIn={() => setShowTierFace(true)}
+            onHoverOut={() => setShowTierFace(false)}
           >
             <View
               style={{
@@ -546,14 +558,29 @@ function ProfileHeader({
                 }),
               }}
             >
-              <UserAvatar
+              <AvatarFlip
                 size={90}
-                initials={toInitials(displayName)}
-                fallback={hasScore ? STATUS_BADGES[tier] ?? null : null}
-                initialsBackground={hasScore ? spec.color : c.accent}
+                flipped={showTierFace}
+                front={
+                  <UserAvatar
+                    size={90}
+                    initials={toInitials(displayName)}
+                    initialsBackground={hasScore ? spec.color : c.accent}
+                  />
+                }
+                back={
+                  tierBadge ? (
+                    <Image
+                      source={tierBadge}
+                      accessibilityLabel={spec.label}
+                      resizeMode='contain'
+                      style={{ width: 90, height: 90 }}
+                    />
+                  ) : null
+                }
               />
             </View>
-          </TouchableOpacity>
+          </Pressable>
           {avatarClient ? (
             <TouchableOpacity
               testID='profile-avatar-edit'
@@ -627,7 +654,6 @@ function ProfileHeader({
             initials={toInitials(displayName)}
             client={avatarClient}
             honorAwards={avatarHonorAwards}
-            fallback={hasScore ? STATUS_BADGES[tier] ?? null : null}
           />
         ) : null}
 

@@ -1212,7 +1212,6 @@
         "error": "No pudimos guardar tu avatar. Inténtalo de nuevo.",
         "socialPhoto": "Tu foto",
         "initials": "Tus iniciales",
-        "default": "Predeterminado",
         "sections": {
           "own": "Tu foto",
           "presets": "Ilustraciones",

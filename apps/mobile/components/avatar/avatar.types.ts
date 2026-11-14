@@ -38,6 +38,13 @@ export interface AvatarPickerProps {
   initials: string;
   client: UserAvatarClient;
   honorAwards?: HonorAwardClient | null;
-  /** What the default option shows when there is no social photo (e.g. the tier badge). */
-  fallback?: ImageSourcePropType | null;
+}
+
+export interface AvatarFlipProps {
+  /** The avatar the person chose (or their photo / initials). */
+  front: React.ReactNode;
+  /** The tier badge shown on the back; without it the avatar never turns. */
+  back?: React.ReactNode;
+  flipped: boolean;
+  size: number;
 }

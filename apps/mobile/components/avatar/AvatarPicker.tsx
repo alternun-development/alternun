@@ -43,7 +43,6 @@ export default function AvatarPicker({
   initials,
   client,
   honorAwards,
-  fallback = null,
 }: AvatarPickerProps): React.JSX.Element | null {
   const { t, locale } = useAppTranslation('mobile');
   const { choice, socialUrl } = useUserAvatarState();
@@ -76,8 +75,6 @@ export default function AvatarPicker({
         ref: null,
         label: socialUrl
           ? t('profile.avatar.socialPhoto', undefined, 'Tu foto')
-          : fallback
-          ? t('profile.avatar.default', undefined, 'Predeterminado')
           : t('profile.avatar.initials', undefined, 'Tus iniciales'),
         render: (size) => (
           <UserAvatar
@@ -85,7 +82,6 @@ export default function AvatarPicker({
             initials={initials}
             choice={{ kind: null, ref: null, art: null }}
             socialUrl={socialUrl}
-            fallback={fallback}
           />
         ),
       },
@@ -156,7 +152,7 @@ export default function AvatarPicker({
         options: [...tiers, ...milestones, ...honors],
       },
     ];
-  }, [awards, fallback, initials, locale, score, socialUrl, t]);
+  }, [awards, initials, locale, score, socialUrl, t]);
 
   if (!visible) return null;
 
