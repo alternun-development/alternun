@@ -1,9 +1,5 @@
 ## [1.2.2](https://github.com/alternun-development/alternun/compare/v1.2.1...v1.2.2) (2026-11-14)
 
-### Bug Fixes
-
-- **repo:** feat(honor-awards): medals and cards matching the design templates
-
 ### Features
 
 - **honor-awards:** medals and cards matching the design templates ([0fe2681](https://github.com/alternun-development/alternun/commit/0fe2681983d76f426273f3c1c827508b38b04c6e))
