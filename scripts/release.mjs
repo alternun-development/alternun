@@ -4,6 +4,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { parsePorcelainStatus } from './release-git-status.mjs';
+import { normalizeChangelogFile } from './changelog-headings.mjs';
 
 const require = createRequire(import.meta.url);
 const {
@@ -1212,6 +1213,12 @@ function promoteRelease({ version, remote, dryRun, productionBranch }) {
   console.log(`Promoted v${version}: pushed develop and prepared a PR into ${productionBranch}.`);
 }
 
+/** Generates the changelog and keeps every version heading at "##" (minor releases came out as "#"). */
+function generateChangelog(dryRun) {
+  run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun });
+  if (!dryRun) normalizeChangelogFile(path.join(REPO_ROOT, 'CHANGELOG.md'));
+}
+
 function runBranchAwareVersioningRelease(releaseType, branchName, options) {
   if (branchName === 'develop') {
     const currentVersion = readRootVersion(branchName);
@@ -1220,7 +1227,7 @@ function runBranchAwareVersioningRelease(releaseType, branchName, options) {
     run('node', ['scripts/version-sync.mjs', '--version', version, '--target-branch', branchName], {
       dryRun: options.dryRun,
     });
-    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+    generateChangelog(options.dryRun);
 
     if (!options.dryRun) {
       try {
@@ -1252,7 +1259,7 @@ function runBranchAwareVersioningRelease(releaseType, branchName, options) {
   run('node', ['scripts/version-sync.mjs', '--version', version, '--target-branch', branchName], {
     dryRun: options.dryRun,
   });
-  run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+  generateChangelog(options.dryRun);
 
   if (!options.dryRun) {
     try {
@@ -1282,7 +1289,7 @@ function performVersionChange(target, options, branchName, productionBranch) {
       ],
       { dryRun: options.dryRun }
     );
-    run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+    generateChangelog(options.dryRun);
 
     if (!options.dryRun) {
       try {
@@ -1325,7 +1332,7 @@ function performVersionChange(target, options, branchName, productionBranch) {
   run('node', ['scripts/version-sync.mjs', '--version', target, '--target-branch', branchName], {
     dryRun: options.dryRun,
   });
-  run('pnpm', ['exec', 'versioning', 'changelog'], { dryRun: options.dryRun });
+  generateChangelog(options.dryRun);
 
   if (!options.dryRun) {
     try {
