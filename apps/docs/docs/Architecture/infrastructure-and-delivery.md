@@ -64,6 +64,7 @@ flowchart TD
   Root --> AdminDev[testnet.admin.alternun.co]
   Root --> SSOProd[sso.alternun.co]
   Root --> SSODev[testnet.sso.alternun.co]
+  Root --> Status[status.alternun.co]
   Root --> Docs[docs.alternun.io]
 ```
 
@@ -175,6 +176,49 @@ That design is pragmatic:
 - it reduces accidental deletion risk by putting safety guards into the infra logic
 
 The former backend-only `api-*` and `backend-*` stages were retired after they created duplicate public testnet resources and routing drift.
+
+## Status Monitoring
+
+Alternun runs its **own** status checker — a standalone service with zero third-party
+dependencies — rather than relying on an external status page provider. It lives in
+`services/status-checker` and probes the public surfaces of both environments, classifies
+each one, and detects version drift between production and development.
+
+Public endpoint: [`status.alternun.co`](https://status.alternun.co)
+
+```mermaid
+flowchart LR
+  EB[EventBridge schedule] --> L[Lambda alternun-status-dev]
+  L -->|probe| Prod[prod: API / Admin / SSO]
+  L -->|probe| Dev[dev: API / Admin / SSO]
+  L -->|write status.json, index.html, history.json| S3[(S3 private bucket)]
+  S3 --> CF[CloudFront + OAC]
+  CF --> Domain[status.alternun.co]
+```
+
+### How it works
+
+- **Probe logic** (`checker.mjs`): one HTTP GET per surface, timed, no redirects followed
+  (a redirect is itself a signal). Reads the API `version` field to compute drift.
+- **Status criteria:** `OK < 2s` · `Slow ≥ 2s` · `Degraded 3xx/4xx` · `Down 5xx/timeout`.
+  An environment takes the worst status among its surfaces; overall is `up` only when every
+  environment is `up`.
+- **Two runtimes, one core:**
+  - `lambda.mjs` — scheduled handler, writes `status.json` / `index.html` / `history.json`
+    to S3 (the deployed path above).
+  - `server.mjs` — a standalone HTTP server for running the same checker locally or on a VM.
+
+### Deployed resources (dev)
+
+| Resource       | Name / value                                   |
+| -------------- | ---------------------------------------------- |
+| Lambda         | `alternun-status-dev` (nodejs22.x)             |
+| Schedule       | EventBridge `rate(5 minutes)`                  |
+| Storage        | S3 `alternun-status-dev-<account>` (private)   |
+| CDN            | CloudFront distribution with Origin Access Control |
+| Domain         | `status.alternun.co` (ACM cert in `us-east-1`) |
+
+Deploy, redeploy and teardown steps are in `services/status-checker/README.md`.
 
 ## Practical Source Of Truth
 
