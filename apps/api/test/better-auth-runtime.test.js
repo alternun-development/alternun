@@ -369,3 +369,73 @@ test('handleBetterAuthRuntimeRequest answers OPTIONS preflight locally', async (
     'content-type, authorization, x-requested-with, accept, origin'
   );
 });
+
+async function buildSignInApp(env) {
+  const Fastify = require('fastify');
+  const {
+    registerBetterAuthEmailSignIn,
+  } = require('../src/common/bootstrap/better-auth-runtime.ts');
+  const app = Fastify();
+  const forwarded = [];
+  registerBetterAuthEmailSignIn(
+    app,
+    {
+      authHandler: async (request) => {
+        forwarded.push({ url: request.url, body: await request.text() });
+        return new Response(JSON.stringify({ token: 'better-auth-session', user: { id: 'u1' } }), {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+            'set-cookie': 'better-auth.session_token=abc; Path=/; HttpOnly',
+          },
+        });
+      },
+      baseUrl: 'https://testnet.api.alternun.co',
+      trustedOrigins: ['https://testnet.airs.alternun.co'],
+    },
+    env
+  );
+  // Stands in for the Nest controller route, which wins over `/auth/*`.
+  app.post('/auth/sign-in/email', async () => ({ handledBy: 'nest-supabase' }));
+  await app.ready();
+  return { app, forwarded };
+}
+
+test('email sign-in goes to Better Auth when it owns email accounts', async () => {
+  const { app, forwarded } = await buildSignInApp({ AUTH_SIGNUP_PROVIDER: 'better-auth' });
+  try {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/sign-in/email',
+      payload: { email: 'ada@example.com', password: 'password123' },
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.json().token, 'better-auth-session');
+    assert.match(String(response.headers['set-cookie']), /better-auth\.session_token=abc/);
+    assert.equal(forwarded.length, 1);
+    assert.equal(new URL(forwarded[0].url).pathname, '/auth/sign-in/email');
+    assert.deepEqual(JSON.parse(forwarded[0].body), {
+      email: 'ada@example.com',
+      password: 'password123',
+    });
+  } finally {
+    await app.close();
+  }
+});
+
+test('email sign-in stays on the Nest Supabase route when Supabase owns email accounts', async () => {
+  const { app, forwarded } = await buildSignInApp({ AUTH_SIGNUP_PROVIDER: 'supabase' });
+  try {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/sign-in/email',
+      payload: { email: 'ada@example.com', password: 'password123' },
+    });
+
+    assert.deepEqual(response.json(), { handledBy: 'nest-supabase' });
+    assert.equal(forwarded.length, 0);
+  } finally {
+    await app.close();
+  }
+});

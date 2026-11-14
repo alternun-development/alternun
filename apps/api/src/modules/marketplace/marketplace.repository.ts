@@ -5,6 +5,7 @@ import { MarketplaceApiError, marketplaceError } from './marketplace.errors';
 import type {
   AdminActor,
   AuditInput,
+  EnterpriseProductRecord,
   EnterpriseRecord,
   MediaKind,
   ProjectContent,
@@ -54,6 +55,14 @@ function nullableText(value: unknown): string | null {
 function record(value: unknown): Row {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as Row) : {};
 }
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
+}
+function nullableNumber(value: unknown): number | null {
+  return typeof value === 'number' ? value : null;
+}
 function rowArray(value: unknown): Row[] {
   return Array.isArray(value)
     ? value.filter((item): item is Row => !!item && typeof item === 'object')
@@ -70,9 +79,91 @@ function mapEnterprise(row: Row): EnterpriseRecord {
     countryCode: nullableText(row.country_code),
     websiteUrl: nullableText(row.website_url),
     sortOrder: Number(row.sort_order ?? 0),
+    kind: (text(row.kind) || 'company') as EnterpriseRecord['kind'],
+    sector: nullableText(row.sector),
+    description: nullableText(row.description),
+    partnershipStatus: (text(row.partnership_status) ||
+      'in_conversation') as EnterpriseRecord['partnershipStatus'],
+    location: record(row.location),
+    publicContact: record(row.public_contact),
+    logoUrl: nullableText(row.logo_url),
+    bannerUrl: nullableText(row.banner_url),
+    eventDetails: record(row.event_details),
+    sites: rowArray(row.sites) as unknown as EnterpriseRecord['sites'],
+    internalContacts: rowArray(
+      row.internal_contacts
+    ) as unknown as EnterpriseRecord['internalContacts'],
+    pendingItems: stringArray(row.pending_items),
+    internalNotes: nullableText(row.internal_notes),
     createdAt: text(row.created_at),
     updatedAt: text(row.updated_at),
   };
+}
+
+function mapProduct(row: Row): EnterpriseProductRecord {
+  return {
+    id: text(row.id),
+    enterpriseId: text(row.enterprise_id),
+    name: text(row.name),
+    description: nullableText(row.description),
+    airsMin: nullableNumber(row.airs_min),
+    airsMax: nullableNumber(row.airs_max),
+    airsNote: nullableText(row.airs_note),
+    sortOrder: Number(row.sort_order ?? 0),
+    isActive: row.is_active === true,
+    createdAt: text(row.created_at),
+    updatedAt: text(row.updated_at),
+  };
+}
+
+// Writable enterprise columns, keyed by their API (camelCase) name.
+const ENTERPRISE_COLUMNS: Record<string, string> = {
+  slug: 'slug',
+  displayName: 'display_name',
+  legalName: 'legal_name',
+  countryCode: 'country_code',
+  websiteUrl: 'website_url',
+  kind: 'kind',
+  sector: 'sector',
+  description: 'description',
+  partnershipStatus: 'partnership_status',
+  location: 'location',
+  publicContact: 'public_contact',
+  logoUrl: 'logo_url',
+  bannerUrl: 'banner_url',
+  eventDetails: 'event_details',
+  sites: 'sites',
+  internalContacts: 'internal_contacts',
+  pendingItems: 'pending_items',
+  internalNotes: 'internal_notes',
+};
+
+// Profile columns of a project that live outside the localized `content` (and its RPC).
+const PROJECT_PROFILE_COLUMNS: Record<string, string> = {
+  alternateName: 'alternate_name',
+  partnershipStatus: 'partnership_status',
+  locationDetails: 'location_details',
+  publicContact: 'public_contact',
+  internalContacts: 'internal_contacts',
+  pendingItems: 'pending_items',
+  internalNotes: 'internal_notes',
+};
+
+const PRODUCT_COLUMNS: Record<string, string> = {
+  name: 'name',
+  description: 'description',
+  airsMin: 'airs_min',
+  airsMax: 'airs_max',
+  airsNote: 'airs_note',
+  sortOrder: 'sort_order',
+  isActive: 'is_active',
+};
+
+function pickColumns(input: Row, columns: Record<string, string>): Row {
+  const values: Row = {};
+  for (const [camel, snake] of Object.entries(columns))
+    if (camel in input) values[snake] = input[camel];
+  return values;
 }
 
 function primaryEnterpriseId(row: Row): string {
@@ -102,6 +193,16 @@ function mapProject(row: Row): ProjectRecord {
     firstPublishedAt: nullableText(row.first_published_at),
     publishedAt: nullableText(row.published_at),
     sortOrder: Number(row.sort_order ?? 0),
+    alternateName: nullableText(row.alternate_name),
+    partnershipStatus: (text(row.partnership_status) ||
+      'structuring') as ProjectRecord['partnershipStatus'],
+    locationDetails: record(row.location_details),
+    publicContact: record(row.public_contact),
+    internalContacts: rowArray(
+      row.internal_contacts
+    ) as unknown as ProjectRecord['internalContacts'],
+    pendingItems: stringArray(row.pending_items),
+    internalNotes: nullableText(row.internal_notes),
     createdAt: text(row.created_at),
     updatedAt: text(row.updated_at),
     enterprises: relationships.map((relationship) => ({
@@ -186,6 +287,36 @@ export class MarketplacePublicRepository {
         media: rowArray(row.project_media).map(mapMedia),
       };
     });
+  }
+
+  /** Non-primary enterprises (sponsors, partners, operators) related to the given projects. */
+  async listAffiliations(
+    projectIds: readonly string[]
+  ): Promise<Array<{ projectId: string; enterprise: EnterpriseRecord }>> {
+    if (projectIds.length === 0) return [];
+    const { data, error } = await this.client
+      .from('enterprise_projects')
+      .select('project_id, enterprises!inner(*)')
+      .eq('is_primary', false)
+      .in('project_id', [...projectIds]);
+    if (error) failDatabase(error);
+    return rowArray(data).map((row) => ({
+      projectId: text(row.project_id),
+      enterprise: mapEnterprise(record(row.enterprises)),
+    }));
+  }
+
+  async listActiveProducts(enterpriseIds: readonly string[]): Promise<EnterpriseProductRecord[]> {
+    if (enterpriseIds.length === 0) return [];
+    const { data, error } = await this.client
+      .from('enterprise_products')
+      .select('*')
+      .eq('is_active', true)
+      .in('enterprise_id', [...enterpriseIds])
+      .order('sort_order')
+      .order('id');
+    if (error) failDatabase(error);
+    return rowArray(data).map(mapProduct);
   }
 
   async findPublishedBySlug(slug: string): Promise<{
@@ -299,11 +430,7 @@ export class MarketplaceAdminRepository {
     const { data, error } = await this.client
       .from('enterprises')
       .insert({
-        slug: input.slug,
-        display_name: input.displayName,
-        legal_name: input.legalName ?? null,
-        country_code: input.countryCode ?? null,
-        website_url: input.websiteUrl ?? null,
+        ...pickColumns(input, ENTERPRISE_COLUMNS),
         created_by_issuer: actor.issuer,
         created_by_subject: actor.subject,
         updated_by_issuer: actor.issuer,
@@ -316,12 +443,11 @@ export class MarketplaceAdminRepository {
   }
 
   async updateEnterprise(id: string, input: Row, actor: AdminActor): Promise<EnterpriseRecord> {
-    const values: Row = { updated_by_issuer: actor.issuer, updated_by_subject: actor.subject };
-    if ('slug' in input) values.slug = input.slug;
-    if ('displayName' in input) values.display_name = input.displayName;
-    if ('legalName' in input) values.legal_name = input.legalName;
-    if ('countryCode' in input) values.country_code = input.countryCode;
-    if ('websiteUrl' in input) values.website_url = input.websiteUrl;
+    const values: Row = {
+      ...pickColumns(input, ENTERPRISE_COLUMNS),
+      updated_by_issuer: actor.issuer,
+      updated_by_subject: actor.subject,
+    };
     const { data, error } = await this.client
       .from('enterprises')
       .update(values)
@@ -331,6 +457,140 @@ export class MarketplaceAdminRepository {
     if (error) failDatabase(error, 'ENTERPRISE_SLUG_CONFLICT');
     if (!data) marketplaceError('ENTERPRISE_NOT_FOUND');
     return mapEnterprise(data as Row);
+  }
+
+  async listProducts(enterpriseId: string): Promise<EnterpriseProductRecord[]> {
+    const { data, error } = await this.client
+      .from('enterprise_products')
+      .select('*')
+      .eq('enterprise_id', enterpriseId)
+      .order('sort_order')
+      .order('id');
+    if (error) failDatabase(error);
+    return rowArray(data).map(mapProduct);
+  }
+
+  async createProduct(
+    enterpriseId: string,
+    input: Row,
+    actor: AdminActor
+  ): Promise<EnterpriseProductRecord> {
+    const { data, error } = await this.client
+      .from('enterprise_products')
+      .insert({
+        ...pickColumns(input, PRODUCT_COLUMNS),
+        enterprise_id: enterpriseId,
+        created_by_issuer: actor.issuer,
+        created_by_subject: actor.subject,
+        updated_by_issuer: actor.issuer,
+        updated_by_subject: actor.subject,
+      })
+      .select('*')
+      .single();
+    if (error) failDatabase(error);
+    return mapProduct(data as Row);
+  }
+
+  async updateProduct(
+    enterpriseId: string,
+    productId: string,
+    input: Row,
+    actor: AdminActor
+  ): Promise<EnterpriseProductRecord> {
+    const { data, error } = await this.client
+      .from('enterprise_products')
+      .update({
+        ...pickColumns(input, PRODUCT_COLUMNS),
+        updated_by_issuer: actor.issuer,
+        updated_by_subject: actor.subject,
+      })
+      .eq('enterprise_id', enterpriseId)
+      .eq('id', productId)
+      .select('*')
+      .maybeSingle();
+    if (error) failDatabase(error);
+    if (!data) marketplaceError('PRODUCT_NOT_FOUND');
+    return mapProduct(data as Row);
+  }
+
+  async deleteProduct(enterpriseId: string, productId: string): Promise<void> {
+    const { data, error } = await this.client
+      .from('enterprise_products')
+      .delete()
+      .eq('enterprise_id', enterpriseId)
+      .eq('id', productId)
+      .select('id');
+    if (error) failDatabase(error);
+    if (rowArray(data).length === 0) marketplaceError('PRODUCT_NOT_FOUND');
+  }
+
+  async updateProjectProfile(id: string, input: Row, actor: AdminActor): Promise<void> {
+    const { data, error } = await this.client
+      .from('projects')
+      .update({
+        ...pickColumns(input, PROJECT_PROFILE_COLUMNS),
+        updated_by_issuer: actor.issuer,
+        updated_by_subject: actor.subject,
+      })
+      .eq('id', id)
+      .select('id');
+    if (error) failDatabase(error);
+    if (rowArray(data).length === 0) marketplaceError('PROJECT_NOT_FOUND');
+  }
+
+  async linkEnterprise(
+    projectId: string,
+    enterpriseId: string,
+    relation: string,
+    actor: AdminActor
+  ): Promise<void> {
+    const { error } = await this.client.from('enterprise_projects').upsert(
+      {
+        project_id: projectId,
+        enterprise_id: enterpriseId,
+        relation,
+        is_primary: false,
+        created_by_issuer: actor.issuer,
+        created_by_subject: actor.subject,
+      },
+      { onConflict: 'enterprise_id,project_id' }
+    );
+    if (error) failDatabase(error);
+  }
+
+  async unlinkEnterprise(projectId: string, enterpriseId: string): Promise<void> {
+    const { data, error } = await this.client
+      .from('enterprise_projects')
+      .delete()
+      .eq('project_id', projectId)
+      .eq('enterprise_id', enterpriseId)
+      .eq('is_primary', false)
+      .select('enterprise_id');
+    if (error) failDatabase(error);
+    if (rowArray(data).length === 0) marketplaceError('ENTERPRISE_NOT_FOUND');
+  }
+
+  async createSignedUpload(
+    bucket: string,
+    path: string
+  ): Promise<{ uploadUrl: string; token: string; path: string; publicUrl: string }> {
+    const storage = this.client.storage.from(bucket);
+    const { data, error } = await storage.createSignedUploadUrl(path);
+    if (error ?? !data) failDatabase({ message: error?.message });
+    return {
+      uploadUrl: data.signedUrl,
+      token: data.token,
+      path: data.path,
+      publicUrl: storage.getPublicUrl(data.path).data.publicUrl,
+    };
+  }
+
+  async ensureAllowedHost(kinds: readonly string[], host: string): Promise<void> {
+    const { error } = await this.client.from('project_media_allowed_hosts').upsert(
+      kinds.map((media_kind) => ({ media_kind, host })),
+      { onConflict: 'media_kind,host', ignoreDuplicates: true }
+    );
+    if (error) failDatabase(error);
   }
 
   async setEnterpriseStatus(
@@ -450,7 +710,7 @@ export class MarketplaceAdminRepository {
     const { data, error } = await this.client
       .from('projects')
       .select(
-        '*, enterprise_projects!inner(*), project_media(*), project_types(requires_document_number)'
+        '*, enterprise_projects!inner(*), related_enterprises:enterprise_projects(*), project_media(*), project_types(requires_document_number)'
       )
       .eq('id', id)
       .eq('enterprise_projects.is_primary', true)

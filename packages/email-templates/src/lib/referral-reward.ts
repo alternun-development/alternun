@@ -17,7 +17,7 @@ export interface ReferralRewardEmail {
   html: string;
 }
 
-const DEFAULT_REFERRAL_URL = 'https://airs.alternun.co/mi-perfil';
+const DEFAULT_REFERRAL_URL = 'https://airs.alternun.co/profile';
 
 type Template = {
   subject: string;

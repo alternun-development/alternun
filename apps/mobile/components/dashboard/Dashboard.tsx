@@ -498,17 +498,17 @@ export default function Dashboard({
   const handleNavigate = useCallback(
     (key: string) => {
       switch (key) {
-        case 'mi-perfil':
+        case 'profile':
           onOpenProfilePage();
           break;
-        case 'mi-perfil:wallet':
-          router.push({ pathname: '/mi-perfil', params: { tab: 'wallet' } });
+        case 'profile:wallet':
+          router.push({ pathname: '/profile', params: { tab: 'wallet' } });
           break;
-        case 'portafolio':
-          router.push('/portafolio');
+        case 'portfolio':
+          router.push('/portfolio');
           break;
-        case 'explorar':
-          router.push('/explorar');
+        case 'explore':
+          router.push('/explore');
           break;
         default:
           break;
@@ -676,12 +676,12 @@ export default function Dashboard({
               onNavigate={(key) => {
                 if (key === 'dashboard') {
                   scrollRef.current?.scrollTo({ y: 0, animated: true });
-                } else if (key === 'explorar') {
-                  router.push('/explorar');
-                } else if (key === 'portafolio') {
-                  router.push('/portafolio');
-                } else if (key === 'mi-perfil') {
-                  router.push('/mi-perfil');
+                } else if (key === 'explore') {
+                  router.push('/explore');
+                } else if (key === 'portfolio') {
+                  router.push('/portfolio');
+                } else if (key === 'profile') {
+                  router.push('/profile');
                 }
               }}
               onNavigateToNotifications={() => {

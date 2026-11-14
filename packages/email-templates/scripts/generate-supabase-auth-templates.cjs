@@ -391,7 +391,14 @@ function buildTemplateVariant(packageRoot, locale, templateKey, options) {
   };
 }
 
-function buildLocaleConditional(variantsByLocale, locales, fallbackLocale) {
+// `separator` goes between the template tags and each variant. Subjects must
+// use "" because Supabase keeps any newline as part of the subject line.
+function buildLocaleConditional(
+  variantsByLocale,
+  locales,
+  fallbackLocale,
+  separator = "\n"
+) {
   const availableLocales = locales.filter((locale) => variantsByLocale[locale]);
   if (availableLocales.length === 0) {
     throw new Error("No localized variants were generated.");
@@ -415,12 +422,12 @@ function buildLocaleConditional(variantsByLocale, locales, fallbackLocale) {
       index === 0
         ? `{{ if eq ${DATA_LOCALE_FIELD} "${locale}" }}`
         : `{{ else if eq ${DATA_LOCALE_FIELD} "${locale}" }}`;
-    content += `${prefix}\n${variantsByLocale[locale]}\n`;
+    content += `${prefix}${separator}${variantsByLocale[locale]}${separator}`;
   });
 
   const fallbackContent =
     variantsByLocale[fallbackLocale] ?? variantsByLocale[nonFallbackLocales[0]];
-  content += `{{ else }}\n${fallbackContent}\n{{ end }}`;
+  content += `{{ else }}${separator}${fallbackContent}${separator}{{ end }}`;
   return content;
 }
 
@@ -520,7 +527,8 @@ function main() {
     payload[`mailer_subjects_${mapping.event}`] = buildLocaleConditional(
       subjectByLocale,
       selectedLocales,
-      fallbackLocale
+      fallbackLocale,
+      ""
     );
     payload[`mailer_templates_${mapping.event}_content`] = buildLocaleConditional(
       htmlByLocale,

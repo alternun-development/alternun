@@ -495,3 +495,15 @@ grep -r "resolveVersionMetadata\|functionYouChanged" apps/mobile/**/__tests__/
 ```
 
 If a test exists, update it. If none exists, add a minimal one covering the changed path.
+
+---
+
+## 13. Route Names — English Only
+
+**All main app routes (URL paths / Expo Router file names in `apps/mobile/app`) must be in English**, for consistency across code, links and emails.
+
+- ✅ `/explore`, `/explore/[slug]`, `/explore/enterprise/[slug]`, `/profile`, `/portfolio`
+- ❌ `/explorar`, `/mi-perfil`, `/portafolio`, `/empresa`
+- User-facing copy stays localized via i18n (`packages/i18n`) — only the URL is English.
+- Legacy Spanish URLs (already sent in emails) are redirected in one place: `apps/mobile/utils/legacyRoutes.ts`, used by `apps/mobile/app/+not-found.tsx`. Add a prefix there when renaming a route; don't add Spanish files to `app/`.
+- **Guard:** `apps/mobile/app/__tests__/route-names.test.ts` fails if a route segment isn't in its English allowlist. New route? Use an English name and add it to the allowlist.

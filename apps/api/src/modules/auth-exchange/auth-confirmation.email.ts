@@ -4,11 +4,13 @@ import * as nodemailer from 'nodemailer';
 // invokes the callable module directly rather than a nonexistent `.default`.
 import sanitizeHtml = require('sanitize-html');
 import { renderEmailTemplateTranslation, normalizeEmailLocale } from '@alternun/email-templates';
+import { isRetiredSmtpHost } from '../airs/airs.email';
 
 type BetterAuthVerificationEmailInput = {
   to: string;
   displayName?: string | null;
-  confirmationUrl: string;
+  /** Optional link; when omitted the email only carries the code. */
+  confirmationUrl?: string | null;
   token: string;
   locale?: string | null;
 };
@@ -153,8 +155,9 @@ function buildVerificationEmailHtml(input: {
   preview: string;
   greeting: string;
   intro: string;
+  codeLabel: string;
   token: string;
-  confirmationUrl: string;
+  confirmationUrl?: string | null;
   ctaLabel: string;
   ignoreNotice: string;
   footer: string;
@@ -163,9 +166,19 @@ function buildVerificationEmailHtml(input: {
   const safePreview = sanitizeHtml(input.preview);
   const safeGreeting = sanitizeHtml(input.greeting);
   const safeIntro = sanitizeHtml(input.intro).replace(/\n/g, '<br />');
+  const safeCodeLabel = sanitizeHtml(input.codeLabel);
   const safeToken = sanitizeHtml(input.token);
-  const safeUrl = sanitizeHtml(input.confirmationUrl);
   const safeCtaLabel = sanitizeHtml(input.ctaLabel);
+  const ctaRow = input.confirmationUrl
+    ? `
+            <tr>
+              <td style="padding:10px 28px 4px 28px;text-align:center;">
+                <a href="${sanitizeHtml(
+                  input.confirmationUrl
+                )}" style="display:inline-block;padding:14px 24px;background:#333782;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;">${safeCtaLabel}</a>
+              </td>
+            </tr>`
+    : '';
   const safeIgnoreNotice = sanitizeHtml(input.ignoreNotice);
   const safeFooter = sanitizeHtml(input.footer);
 
@@ -193,16 +206,11 @@ function buildVerificationEmailHtml(input: {
                 <strong style="display:block;font-size:18px;color:#0f172a;margin-bottom:8px;">${safeGreeting}</strong>
                 <div style="margin-bottom:12px;">${safeIntro}</div>
                 <div style="margin:16px auto;padding:12px 16px;border-radius:12px;background:#f0f2ff;text-align:center;max-width:320px;">
-                  <p style="margin:0 0 6px 0;font-size:13px;color:#475569;"><strong>Verification code</strong></p>
-                  <p style="margin:0;font-size:24px;letter-spacing:2px;font-family:Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;color:#1e1b4b;">${safeToken}</p>
+                  <p style="margin:0 0 6px 0;font-size:13px;color:#475569;"><strong>${safeCodeLabel}</strong></p>
+                  <p style="margin:0;font-size:32px;font-weight:700;letter-spacing:8px;font-family:Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;color:#1e1b4b;">${safeToken}</p>
                 </div>
               </td>
-            </tr>
-            <tr>
-              <td style="padding:10px 28px 4px 28px;text-align:center;">
-                <a href="${safeUrl}" style="display:inline-block;padding:14px 24px;background:#333782;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;">${safeCtaLabel}</a>
-              </td>
-            </tr>
+            </tr>${ctaRow}
             <tr>
               <td style="padding:20px 28px 16px 28px;text-align:center;color:#64748b;font-size:13px;line-height:1.45;">
                 ${safeIgnoreNotice}
@@ -227,6 +235,10 @@ export async function sendAuthVerificationEmail(
 ): Promise<void> {
   try {
     const config = await resolveVerificationEmailConfig(env);
+    if (isRetiredSmtpHost(config.host)) {
+      // Mail from the retired provider fails alternun.co SPF/DMARC and is silently dropped.
+      throw new Error('SMTP host is a retired provider; point the SMTP secret at Tláo Mail.');
+    }
     const locale = normalizeEmailLocale(input.locale, 'en');
     const translation = renderEmailTemplateTranslation({
       locale,
@@ -234,8 +246,8 @@ export async function sendAuthVerificationEmail(
       params: {
         email: input.to,
         token: input.token,
-        url: input.confirmationUrl,
-        confirmationUrl: input.confirmationUrl,
+        url: input.confirmationUrl ?? '',
+        confirmationUrl: input.confirmationUrl ?? '',
       },
     });
 
@@ -255,6 +267,7 @@ export async function sendAuthVerificationEmail(
       preview: translation.preview,
       greeting: translation.greeting,
       intro: translation.intro,
+      codeLabel: translation.codeLabel ?? 'Verification code',
       token: input.token,
       confirmationUrl: input.confirmationUrl,
       ctaLabel: translation.ctaLabel,
@@ -270,7 +283,7 @@ export async function sendAuthVerificationEmail(
       translation.intro,
       '',
       `${translation.codeLabel ?? 'Verification code'}: ${input.token}`,
-      `${translation.ctaLabel}: ${input.confirmationUrl}`,
+      ...(input.confirmationUrl ? [`${translation.ctaLabel}: ${input.confirmationUrl}`] : []),
       '',
       translation.ignoreNotice,
       '',

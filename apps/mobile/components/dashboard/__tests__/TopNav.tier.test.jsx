@@ -97,7 +97,7 @@ it.each(
         .some((node) => StyleSheet.flatten(node.props.style)?.backgroundColor === color)
     ).toBe(false);
     act(() => {
-      tree.update(<TopNav {...props} themeMode={themeMode} activeSection='mi-perfil' />);
+      tree.update(<TopNav {...props} themeMode={themeMode} activeSection='profile' />);
     });
     expectTier();
     act(() => {
@@ -117,6 +117,16 @@ it('shows a skeleton until auth and the initial balance settle, then retains the
     tree = renderer.create(<TopNav {...props} signedIn={false} />);
   });
   expect(tree.root.findAllByProps({ testID: 'account-badge-skeleton' }).length).toBeGreaterThan(0);
+  // The skeleton has the loaded pill's inset and its three round controls at the same size.
+  const skeleton = tree.root.findAllByProps({ testID: 'account-badge-skeleton' })[0];
+  const skeletonStyle = StyleSheet.flatten(skeleton.props.style);
+  expect([skeletonStyle.height, skeletonStyle.paddingLeft, skeletonStyle.paddingRight]).toEqual([
+    62, 5, 5,
+  ]);
+  const circles = skeleton.findAll(
+    (node) => typeof node.type === 'string' && StyleSheet.flatten(node.props.style)?.width === 50
+  );
+  expect(circles.length).toBeGreaterThanOrEqual(3);
   mockAuthLoading = false;
   act(() => {
     tree.update(<TopNav {...props} />);
@@ -151,7 +161,12 @@ it('shows the menu chevron as a chip that reflects the open state', () => {
   expect(closedBg).toMatch(/1A$/);
   expect(pill().props.accessibilityState).toEqual({ expanded: false });
   // The test window is 750 wide, so the pill keeps the desktop minimum.
-  expect(StyleSheet.flatten(pill().props.style).minWidth).toBe(240);
+  const pillStyle = StyleSheet.flatten(pill().props.style);
+  expect(pillStyle.minWidth).toBe(300);
+  // The pill is as tall as the logo mark; its round controls share one diameter.
+  expect(pillStyle.height).toBe(62);
+  const chipStyle = StyleSheet.flatten(chip().props.style);
+  expect([chipStyle.width, chipStyle.height, chipStyle.borderRadius]).toEqual([50, 50, 25]);
   act(() => pill().props.onPress());
   expect(StyleSheet.flatten(chip().props.style).backgroundColor).toMatch(/2E$/);
   expect(pill().props.accessibilityState).toEqual({ expanded: true });

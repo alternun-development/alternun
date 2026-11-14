@@ -20,6 +20,13 @@ import type {
   Translate,
 } from './types';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
+import { ContactSection, LocationSection } from './ProfileSections';
+import { AdminEntryButton } from './AdminEntryButton';
+import {
+  adminProjectUrl,
+  canManageProject,
+  type ResolvedAdminAccess,
+} from '../../utils/adminAccess';
 
 export class MarketplaceProjectRequestError extends Error {
   constructor(readonly status: number) {
@@ -156,6 +163,9 @@ export function MarketplaceProjectDetailView({
   getSessionToken = () => Promise.resolve(null),
   onSignIn = () => undefined,
   onOpenEnterprise = () => undefined,
+  adminUrl = null,
+  adminAccess = null,
+  onManageProject,
 }: {
   slug: string;
   locale: string;
@@ -168,6 +178,12 @@ export function MarketplaceProjectDetailView({
   getSessionToken?: () => Promise<string | null>;
   onSignIn?: () => void;
   onOpenEnterprise?: (slug: string) => void;
+  /** Admin panel origin when the viewer holds an admin role; null hides the entry point. */
+  adminUrl?: string | null;
+  /** The viewer's admin roles; the link shows only for projects they can manage. */
+  adminAccess?: ResolvedAdminAccess | null;
+  /** Opens the in-app manage view; without it the link opens the admin console. */
+  onManageProject?: (projectId: string) => void;
 }): React.JSX.Element {
   const [project, setProject] = useState<MarketplacePublicProject | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -206,6 +222,7 @@ export function MarketplaceProjectDetailView({
 
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       testID='project-detail'
       style={{ backgroundColor: palette.background }}
       contentContainerStyle={styles.content}
@@ -259,6 +276,23 @@ export function MarketplaceProjectDetailView({
           <View
             style={[styles.hero, { backgroundColor: palette.surface, borderColor: palette.border }]}
           >
+            {(onManageProject !== undefined || adminUrl !== null) &&
+            canManageProject(adminAccess, project) ? (
+              <AdminEntryButton
+                testID='project-detail-admin'
+                label={t('explorer.admin.manageProject')}
+                url={
+                  onManageProject ? `/manage/${project.id}` : adminProjectUrl(project.id, adminUrl!)
+                }
+                color={palette.primaryDeep}
+                borderColor={palette.border}
+                floating
+                backgroundColor={palette.surface}
+                openUrl={
+                  onManageProject ? () => Promise.resolve(onManageProject(project.id)) : openUrl
+                }
+              />
+            ) : null}
             {cover ? (
               <Image
                 testID='project-detail-cover'
@@ -293,6 +327,11 @@ export function MarketplaceProjectDetailView({
               </Pressable>
               <Text style={[styles.theme, { color: palette.primary }]}>{project.theme}</Text>
               <Text style={[styles.title, { color: palette.text }]}>{project.title}</Text>
+              {project.alternateName ? (
+                <Text testID='project-detail-alternate-name' style={{ color: palette.muted }}>
+                  {project.alternateName}
+                </Text>
+              ) : null}
               <View style={styles.locationRow}>
                 <MapPin size={16} color={palette.muted} />
                 <Text style={{ color: palette.muted }}>{project.location}</Text>
@@ -393,6 +432,14 @@ export function MarketplaceProjectDetailView({
               <ExternalLink size={16} color='#effff7' />
             </Pressable>
           ) : null}
+
+          <LocationSection location={project.locationDetails} palette={palette} t={t} />
+          <ContactSection
+            contact={project.publicContact}
+            palette={palette}
+            t={t}
+            openUrl={openUrl}
+          />
 
           <MarketplaceProjectComments
             slug={project.slug}

@@ -9,17 +9,11 @@ const expectValue = expect as unknown as (actual: unknown) => {
 };
 
 describeTest('NAV_SECTIONS', () => {
-  itTest('keeps Explorer enabled while portfolio remains coming soon', () => {
-    const comingSoonKeys = NAV_SECTIONS.filter((section) => section.comingSoon).map(
-      (section) => section.key
-    );
-
-    expectValue(comingSoonKeys).toEqual(['portafolio']);
-    expectValue(NAV_SECTIONS.find((section) => section.key === 'dashboard')?.comingSoon).toBe(
-      undefined
-    );
-    expectValue(NAV_SECTIONS.find((section) => section.key === 'explorar')?.comingSoon).toBe(
-      undefined
-    );
+  itTest('lists only live sections: Portfolio stays hidden until it ships', () => {
+    expectValue(NAV_SECTIONS.map((section) => section.key)).toEqual([
+      'dashboard',
+      'explore',
+      'profile',
+    ]);
   });
 });

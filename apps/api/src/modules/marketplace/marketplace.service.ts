@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { isIP } from 'node:net';
 import { Injectable } from '@nestjs/common';
 import {
@@ -9,11 +10,15 @@ import {
 } from '../../common/admin-auth/admin-auth.guard';
 import type {
   CreateEnterpriseDto,
+  CreateEnterpriseProductDto,
   CreateProjectDto,
   CreateProjectMediaDto,
+  CreateUploadUrlDto,
+  LinkProjectEnterpriseDto,
   ReorderMarketplaceDto,
   ReorderProjectMediaDto,
   UpdateEnterpriseDto,
+  UpdateEnterpriseProductDto,
   UpdateProjectDto,
   UpdateProjectMediaDto,
 } from './marketplace.dto';
@@ -21,6 +26,7 @@ import { marketplaceError } from './marketplace.errors';
 import { MarketplaceAdminRepository, MarketplacePublicRepository } from './marketplace.repository';
 import {
   actorFromPrincipal,
+  type EnterpriseProductRecord,
   type EnterpriseRecord,
   type ProjectContent,
   type ProjectContentBlock,
@@ -36,6 +42,34 @@ type PublishedProjectRow = {
   project: ProjectRecord;
   enterprise: EnterpriseRecord;
   media: ProjectMediaRecord[];
+};
+
+// A published project as listed under one enterprise of the directory: its primary owner or an
+// affiliated enterprise (sponsor, partner, operator).
+type EnterpriseListing = {
+  listedEnterprise: EnterpriseRecord;
+  isPrimary: boolean;
+  row: PublishedProjectRow;
+};
+
+// Fields only platform_owner / internal_admin may write: partnership state and team-only data.
+const INTERNAL_PROFILE_FIELDS = [
+  'partnershipStatus',
+  'internalContacts',
+  'pendingItems',
+  'internalNotes',
+] as const;
+const PROJECT_PROFILE_FIELDS = [
+  'alternateName',
+  'locationDetails',
+  'publicContact',
+  ...INTERNAL_PROFILE_FIELDS,
+] as const;
+const MARKETPLACE_MEDIA_BUCKET = 'marketplace-media';
+const UPLOAD_EXTENSIONS: Readonly<Record<string, string>> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
 };
 
 function isGlobal(principal: AdminPrincipal): boolean {
@@ -94,6 +128,10 @@ function publicProject(
       : { participationCopy: localized.participationCopy }),
     ...(localized.ctaLabel === undefined ? {} : { ctaLabel: localized.ctaLabel }),
     waysToContribute: localized.waysToContribute,
+    alternateName: project.alternateName ?? null,
+    partnershipStatus: project.partnershipStatus ?? 'structuring',
+    locationDetails: project.locationDetails ?? {},
+    publicContact: project.publicContact ?? {},
     enterprise: {
       id: enterprise.id,
       slug: enterprise.slug,
@@ -118,31 +156,40 @@ function safePublicHttpsUrl(value: string | null): string | null {
 }
 
 function publicEnterprise(
-  rows: PublishedProjectRow[],
+  listings: EnterpriseListing[],
+  products: EnterpriseProductRecord[],
   requested?: string,
   acceptLanguage?: string
 ): PublicEnterprise {
-  const { enterprise } = rows[0];
-  const logoRow = rows
-    .flatMap((row) => row.media.map((item) => ({ item, project: row.project })))
-    .find(
-      ({ item }) => item.kind === 'logo' && item.isActive && safePublicHttpsUrl(item.url) !== null
-    );
+  const enterprise = listings[0].listedEnterprise;
   let logo: PublicEnterprise['logo'] = null;
-  if (logoRow) {
-    const logoLocale = resolveLocale(
-      logoRow.project.content,
-      requested,
-      acceptLanguage,
-      logoRow.project.defaultLocale
-    );
-    logo = {
-      url: safePublicHttpsUrl(logoRow.item.url)!,
-      altText:
-        logoRow.item.altText[logoLocale] ??
-        Object.values(logoRow.item.altText).find(Boolean) ??
-        enterprise.displayName,
-    };
+  if (safePublicHttpsUrl(enterprise.logoUrl)) {
+    logo = { url: enterprise.logoUrl!, altText: enterprise.displayName };
+  } else {
+    // Without its own logo, an enterprise that owns a single project (e.g. a hotel and its stay)
+    // falls back to that project's logo. With several projects there is no single logo to
+    // borrow, and affiliated enterprises never borrow one: it belongs to the project.
+    const owned = listings.filter((listing) => listing.isPrimary);
+    const logoRow = (owned.length === 1 ? owned : [])
+      .flatMap(({ row }) => row.media.map((item) => ({ item, project: row.project })))
+      .find(
+        ({ item }) => item.kind === 'logo' && item.isActive && safePublicHttpsUrl(item.url) !== null
+      );
+    if (logoRow) {
+      const logoLocale = resolveLocale(
+        logoRow.project.content,
+        requested,
+        acceptLanguage,
+        logoRow.project.defaultLocale
+      );
+      logo = {
+        url: safePublicHttpsUrl(logoRow.item.url)!,
+        altText:
+          logoRow.item.altText[logoLocale] ??
+          Object.values(logoRow.item.altText).find(Boolean) ??
+          enterprise.displayName,
+      };
+    }
   }
   return {
     id: enterprise.id,
@@ -151,24 +198,47 @@ function publicEnterprise(
     logo,
     countryCode: enterprise.countryCode,
     websiteUrl: safePublicHttpsUrl(enterprise.websiteUrl),
-    projectCount: rows.length,
+    projectCount: listings.length,
+    kind: enterprise.kind,
+    sector: enterprise.sector,
+    description: enterprise.description,
+    partnershipStatus: enterprise.partnershipStatus,
+    location: enterprise.location,
+    publicContact: enterprise.publicContact,
+    bannerUrl: safePublicHttpsUrl(enterprise.bannerUrl),
+    eventDetails: enterprise.eventDetails,
+    sites: enterprise.sites,
+    products: products
+      .filter((product) => product.enterpriseId === enterprise.id && product.isActive)
+      .map(({ id, name, description, airsMin, airsMax, airsNote }) => ({
+        id,
+        name,
+        description,
+        airsMin,
+        airsMax,
+        airsNote,
+      })),
   };
 }
 
-function activeEnterpriseGroups(rows: PublishedProjectRow[]): PublishedProjectRow[][] {
-  const groups = new Map<string, PublishedProjectRow[]>();
-  for (const row of rows) {
-    if (row.project.status !== 'published' || row.enterprise.status !== 'active') continue;
-    const current = groups.get(row.enterprise.id) ?? [];
-    current.push(row);
-    groups.set(row.enterprise.id, current);
+function activeEnterpriseGroups(listings: EnterpriseListing[]): EnterpriseListing[][] {
+  const groups = new Map<string, EnterpriseListing[]>();
+  for (const listing of listings) {
+    if (listing.row.project.status !== 'published' || listing.listedEnterprise.status !== 'active')
+      continue;
+    // Projects only reach the directory while their primary owner is active as well.
+    if (listing.row.enterprise.status !== 'active') continue;
+    const current = groups.get(listing.listedEnterprise.id) ?? [];
+    if (current.some((item) => item.row.project.id === listing.row.project.id)) continue;
+    current.push(listing);
+    groups.set(listing.listedEnterprise.id, current);
   }
-  const result: PublishedProjectRow[][] = [];
+  const result: EnterpriseListing[][] = [];
   groups.forEach((group) => result.push(group));
   return result.sort(
     ([a], [b]) =>
-      a.enterprise.sortOrder - b.enterprise.sortOrder ||
-      a.enterprise.displayName.localeCompare(b.enterprise.displayName)
+      a.listedEnterprise.sortOrder - b.listedEnterprise.sortOrder ||
+      a.listedEnterprise.displayName.localeCompare(b.listedEnterprise.displayName)
   );
 }
 
@@ -225,6 +295,32 @@ function ensureMutationInput(input: unknown): void {
   }
 }
 
+function pickKeys(source: object, keys: string[]): Record<string, unknown> {
+  const values = source as Record<string, unknown>;
+  return Object.fromEntries(keys.map((key) => [key, values[key]]));
+}
+
+// An empty string clears an optional profile text field (the API rejects null in bodies).
+const CLEARABLE_FIELDS = [
+  'logoUrl',
+  'bannerUrl',
+  'sector',
+  'description',
+  'internalNotes',
+  'alternateName',
+];
+function normalizeClearable(input: object): Record<string, unknown> {
+  const values = { ...(input as Record<string, unknown>) };
+  for (const key of CLEARABLE_FIELDS)
+    if (typeof values[key] === 'string' && !values[key].trim()) values[key] = null;
+  return values;
+}
+
+function validateAirsRange(input: { airsMin?: number | null; airsMax?: number | null }): void {
+  if (input.airsMin != null && input.airsMax != null && input.airsMax < input.airsMin)
+    marketplaceError('VALIDATION_FAILED');
+}
+
 function validateTimeZone(timeZone: string): void {
   try {
     new Intl.DateTimeFormat('en', { timeZone }).format();
@@ -263,18 +359,39 @@ export class MarketplacePublicService {
     return publicProject(row.project, row.enterprise, row.media, locale, acceptLanguage);
   }
 
+  private async enterpriseListings(): Promise<EnterpriseListing[]> {
+    const rows = await this.repository.listPublished();
+    const affiliations = await this.repository.listAffiliations(
+      rows.map(({ project }) => project.id)
+    );
+    const listings: EnterpriseListing[] = rows.map((row) => ({
+      listedEnterprise: row.enterprise,
+      isPrimary: true,
+      row,
+    }));
+    for (const { projectId, enterprise } of affiliations) {
+      const row = rows.find(({ project }) => project.id === projectId);
+      if (row) listings.push({ listedEnterprise: enterprise, isPrimary: false, row });
+    }
+    return listings;
+  }
+
   async listEnterprises(
     locale?: string,
     acceptLanguage?: string,
     page = 1,
     perPage = 20
   ): Promise<{ data: PublicEnterprise[]; page: number; perPage: number; total: number }> {
-    const groups = activeEnterpriseGroups(await this.repository.listPublished());
+    const groups = activeEnterpriseGroups(await this.enterpriseListings());
     const start = (page - 1) * perPage;
+    const pageGroups = groups.slice(start, start + perPage);
+    const products = await this.repository.listActiveProducts(
+      pageGroups.map(([first]) => first.listedEnterprise.id)
+    );
     return {
-      data: groups
-        .slice(start, start + perPage)
-        .map((rows) => publicEnterprise(rows, locale, acceptLanguage)),
+      data: pageGroups.map((listings) =>
+        publicEnterprise(listings, products, locale, acceptLanguage)
+      ),
       page,
       perPage,
       total: groups.length,
@@ -289,13 +406,14 @@ export class MarketplacePublicService {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length < 3 || slug.length > 80) {
       marketplaceError('VALIDATION_FAILED');
     }
-    const group = activeEnterpriseGroups(await this.repository.listPublished()).find(
-      (rows) => rows[0].enterprise.slug === slug
+    const group = activeEnterpriseGroups(await this.enterpriseListings()).find(
+      ([first]) => first.listedEnterprise.slug === slug
     );
     if (!group) marketplaceError('ENTERPRISE_NOT_FOUND');
+    const products = await this.repository.listActiveProducts([group[0].listedEnterprise.id]);
     return {
-      ...publicEnterprise(group, locale, acceptLanguage),
-      projects: group.map(({ project, enterprise, media }) =>
+      ...publicEnterprise(group, products, locale, acceptLanguage),
+      projects: group.map(({ row: { project, enterprise, media } }) =>
         publicProject(project, enterprise, media, locale, acceptLanguage)
       ),
     };
@@ -385,8 +503,9 @@ export class MarketplaceAdminService {
   ): Promise<EnterpriseRecord> {
     ensureMutationInput(input);
     await this.authorize(principal, 'enterprises:create', requestId, 'enterprise');
+    await this.validateEnterpriseImages(input);
     const created = await this.repository.createEnterprise(
-      input as unknown as Record<string, unknown>,
+      normalizeClearable(input),
       actorFromPrincipal(principal)
     );
     await this.repository.audit({
@@ -422,7 +541,10 @@ export class MarketplaceAdminService {
     ensureMutationInput(input);
     const before = await this.getEnterprise(principal, requestId, id);
     await this.authorize(principal, 'enterprises:update', requestId, 'enterprise', before.id);
-    if ('legalName' in input && !hasRole(principal, 'platform_owner', 'internal_admin'))
+    if (
+      ['legalName', ...INTERNAL_PROFILE_FIELDS].some((field) => field in input) &&
+      !hasRole(principal, 'platform_owner', 'internal_admin')
+    )
       await this.deny(
         principal,
         'PROTECTED_FIELD_WRITE_DENIED',
@@ -430,9 +552,10 @@ export class MarketplaceAdminService {
         'enterprise',
         before.id
       );
+    await this.validateEnterpriseImages(input);
     const after = await this.repository.updateEnterprise(
       id,
-      input as unknown as Record<string, unknown>,
+      normalizeClearable(input),
       actorFromPrincipal(principal)
     );
     await this.repository.audit({
@@ -568,6 +691,16 @@ export class MarketplaceAdminService {
       before.id
     );
     const contentOnly = Object.keys(input).every((key) => key === 'content');
+    const internalWrite = INTERNAL_PROFILE_FIELDS.some((field) => field in input);
+    if (internalWrite && !hasRole(principal, 'platform_owner', 'internal_admin'))
+      await this.deny(
+        principal,
+        'PROTECTED_FIELD_WRITE_DENIED',
+        requestId,
+        'project',
+        before.enterpriseId,
+        before.id
+      );
     if (hasRole(principal, 'moderator', 'sub_admin') && !contentOnly)
       await this.deny(
         principal,
@@ -592,14 +725,269 @@ export class MarketplaceAdminService {
     if (input.timeZone) validateTimeZone(input.timeZone);
     if (input.categoryCode && !(await this.repository.categoryExists(input.categoryCode)))
       marketplaceError('CATEGORY_UNSUPPORTED');
-    const after = await this.repository.updateProject(
-      id,
-      input as unknown as Record<string, unknown>,
-      actorFromPrincipal(principal),
-      requestId,
-      before.enterpriseId
-    );
+    const profile: Record<string, unknown> = {};
+    const patch: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(normalizeClearable(input)))
+      ((PROJECT_PROFILE_FIELDS as readonly string[]).includes(key) ? profile : patch)[key] = value;
+    let after = before;
+    if (Object.keys(patch).length > 0)
+      after = await this.repository.updateProject(
+        id,
+        patch,
+        actorFromPrincipal(principal),
+        requestId,
+        before.enterpriseId
+      );
+    if (Object.keys(profile).length > 0) {
+      await this.repository.updateProjectProfile(id, profile, actorFromPrincipal(principal));
+      after = (await this.repository.findProject(id)) ?? after;
+      await this.repository.audit({
+        actor: actorFromPrincipal(principal),
+        action: 'project.profile_updated',
+        targetType: 'project',
+        targetId: id,
+        enterpriseId: before.enterpriseId,
+        projectId: id,
+        requestId,
+        result: 'allowed',
+        beforeState: pickKeys(before, Object.keys(profile)),
+        afterState: pickKeys(after, Object.keys(profile)),
+      });
+    }
     return after;
+  }
+
+  async linkEnterprise(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    enterpriseId: string,
+    input: LinkProjectEnterpriseDto
+  ): Promise<ProjectRecord> {
+    const project = await this.getProject(principal, requestId, projectId);
+    if (!hasRole(principal, 'platform_owner', 'internal_admin'))
+      await this.deny(
+        principal,
+        'PERMISSION_DENIED',
+        requestId,
+        'project',
+        project.enterpriseId,
+        project.id
+      );
+    if (enterpriseId === project.enterpriseId) marketplaceError('ENTERPRISE_RELATION_CONFLICT');
+    if (!(await this.repository.findEnterprise(enterpriseId)))
+      marketplaceError('ENTERPRISE_NOT_FOUND');
+    await this.repository.linkEnterprise(
+      projectId,
+      enterpriseId,
+      input.relation,
+      actorFromPrincipal(principal)
+    );
+    await this.repository.audit({
+      actor: actorFromPrincipal(principal),
+      action: 'project.enterprise_linked',
+      targetType: 'project',
+      targetId: projectId,
+      enterpriseId,
+      projectId,
+      requestId,
+      result: 'allowed',
+      afterState: { enterpriseId, relation: input.relation },
+    });
+    return (await this.repository.findProject(projectId)) ?? project;
+  }
+
+  async unlinkEnterprise(
+    principal: AdminPrincipal,
+    requestId: string,
+    projectId: string,
+    enterpriseId: string
+  ): Promise<ProjectRecord> {
+    const project = await this.getProject(principal, requestId, projectId);
+    if (!hasRole(principal, 'platform_owner', 'internal_admin'))
+      await this.deny(
+        principal,
+        'PERMISSION_DENIED',
+        requestId,
+        'project',
+        project.enterpriseId,
+        project.id
+      );
+    if (enterpriseId === project.enterpriseId) marketplaceError('ENTERPRISE_RELATION_CONFLICT');
+    await this.repository.unlinkEnterprise(projectId, enterpriseId);
+    await this.repository.audit({
+      actor: actorFromPrincipal(principal),
+      action: 'project.enterprise_unlinked',
+      targetType: 'project',
+      targetId: projectId,
+      enterpriseId,
+      projectId,
+      requestId,
+      result: 'allowed',
+      beforeState: { enterpriseId },
+    });
+    return (await this.repository.findProject(projectId)) ?? project;
+  }
+
+  async listProducts(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string
+  ): Promise<EnterpriseProductRecord[]> {
+    await this.getEnterprise(principal, requestId, enterpriseId);
+    return this.repository.listProducts(enterpriseId);
+  }
+
+  async createProduct(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string,
+    input: CreateEnterpriseProductDto
+  ): Promise<EnterpriseProductRecord> {
+    ensureMutationInput(input);
+    validateAirsRange(input);
+    await this.getEnterprise(principal, requestId, enterpriseId);
+    await this.authorize(principal, 'enterprises:update', requestId, 'enterprise', enterpriseId);
+    const created = await this.repository.createProduct(
+      enterpriseId,
+      input as unknown as Record<string, unknown>,
+      actorFromPrincipal(principal)
+    );
+    await this.repository.audit({
+      actor: actorFromPrincipal(principal),
+      action: 'enterprise_product.created',
+      targetType: 'enterprise_product',
+      targetId: created.id,
+      enterpriseId,
+      requestId,
+      result: 'allowed',
+      afterState: created as unknown as Record<string, unknown>,
+    });
+    return created;
+  }
+
+  async updateProduct(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string,
+    productId: string,
+    input: UpdateEnterpriseProductDto
+  ): Promise<EnterpriseProductRecord> {
+    await this.getEnterprise(principal, requestId, enterpriseId);
+    await this.authorize(principal, 'enterprises:update', requestId, 'enterprise', enterpriseId);
+    const before = (await this.repository.listProducts(enterpriseId)).find(
+      (product) => product.id === productId
+    );
+    if (!before) marketplaceError('PRODUCT_NOT_FOUND');
+    validateAirsRange({ ...before, ...input });
+    // null clears the optional fields; keys left out stay as they are.
+    const updated = await this.repository.updateProduct(
+      enterpriseId,
+      productId,
+      input as unknown as Record<string, unknown>,
+      actorFromPrincipal(principal)
+    );
+    await this.repository.audit({
+      actor: actorFromPrincipal(principal),
+      action: 'enterprise_product.updated',
+      targetType: 'enterprise_product',
+      targetId: productId,
+      enterpriseId,
+      requestId,
+      result: 'allowed',
+      beforeState: before as unknown as Record<string, unknown>,
+      afterState: updated as unknown as Record<string, unknown>,
+    });
+    return updated;
+  }
+
+  async deleteProduct(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string,
+    productId: string
+  ): Promise<void> {
+    await this.getEnterprise(principal, requestId, enterpriseId);
+    await this.authorize(principal, 'enterprises:update', requestId, 'enterprise', enterpriseId);
+    await this.repository.deleteProduct(enterpriseId, productId);
+    await this.repository.audit({
+      actor: actorFromPrincipal(principal),
+      action: 'enterprise_product.deleted',
+      targetType: 'enterprise_product',
+      targetId: productId,
+      enterpriseId,
+      requestId,
+      result: 'allowed',
+    });
+  }
+
+  /**
+   * Issues a one-time signed URL to upload an image to the public marketplace bucket. The client
+   * uploads the file there, then saves the returned publicUrl as project media or as the
+   * enterprise logo/banner through the regular endpoints, which validate it again.
+   */
+  async createUploadUrl(
+    principal: AdminPrincipal,
+    requestId: string,
+    target: { type: 'project' | 'enterprise'; id: string },
+    input: CreateUploadUrlDto
+  ): Promise<{ uploadUrl: string; token: string; path: string; publicUrl: string }> {
+    let folder: string;
+    let mediaKinds: string[];
+    if (target.type === 'project') {
+      if (!['logo', 'cover', 'gallery_image'].includes(input.kind))
+        marketplaceError('VALIDATION_FAILED');
+      const project = await this.getProject(principal, requestId, target.id);
+      await this.authorize(
+        principal,
+        'project_media:write',
+        requestId,
+        'project_media',
+        project.enterpriseId,
+        project.id
+      );
+      await this.authorizeBrandAsset(principal, requestId, project, [input.kind]);
+      folder = `projects/${project.id}/${input.kind}`;
+      mediaKinds = [input.kind];
+    } else {
+      if (!['logo', 'banner'].includes(input.kind)) marketplaceError('VALIDATION_FAILED');
+      const enterprise = await this.getEnterprise(principal, requestId, target.id);
+      await this.authorize(principal, 'enterprises:update', requestId, 'enterprise', enterprise.id);
+      folder = `enterprises/${enterprise.id}/${input.kind}`;
+      mediaKinds = [input.kind === 'banner' ? 'cover' : 'logo'];
+    }
+    const extension = UPLOAD_EXTENSIONS[input.contentType];
+    if (!extension) marketplaceError('VALIDATION_FAILED');
+    const upload = await this.repository.createSignedUpload(
+      MARKETPLACE_MEDIA_BUCKET,
+      `${folder}/${randomUUID()}.${extension}`
+    );
+    // The bucket's own host must be allowed for the media kind before the URL can be saved.
+    await this.repository.ensureAllowedHost(mediaKinds, new URL(upload.publicUrl).hostname);
+    return upload;
+  }
+
+  // Enterprise logo and banner follow the project logo/cover host allowlist.
+  private async validateEnterpriseImages(input: {
+    logoUrl?: string | null;
+    bannerUrl?: string | null;
+  }): Promise<void> {
+    for (const [value, kind] of [
+      [input.logoUrl, 'logo'],
+      [input.bannerUrl, 'cover'],
+    ] as const) {
+      if (!value) continue;
+      let url: URL;
+      try {
+        url = new URL(value);
+      } catch {
+        return marketplaceError('MEDIA_URL_INVALID');
+      }
+      if (url.protocol !== 'https:' || url.username || url.password || isIP(url.hostname) !== 0)
+        marketplaceError('MEDIA_URL_INVALID');
+      if (!(await this.repository.allowedHosts(kind)).includes(url.hostname.toLowerCase()))
+        marketplaceError('MEDIA_HOST_NOT_ALLOWED');
+    }
   }
 
   async transition(

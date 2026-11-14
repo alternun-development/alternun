@@ -6,6 +6,7 @@ import { toNodeHandler } from 'better-auth/node';
 import { sql } from 'drizzle-orm';
 import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
 import { bearer } from 'better-auth/plugins/bearer';
+import { emailOTP } from 'better-auth/plugins/email-otp';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import type { BetterAuthDevConfig, BetterAuthDevOAuthProxyConfig } from './better-auth-dev.config';
 import { getDatabase } from '../../common/database/connection';
@@ -199,22 +200,32 @@ type BetterAuthDatabaseAdapterConfig = {
   schema: typeof betterAuthSchema;
 };
 
-type BetterAuthVerificationEmailUser = {
-  email: string;
-  name?: string | null;
-};
+// Email verification uses a 6-digit code typed in the app instead of the
+// default link token (a long JWT that users cannot type and spam filters flag).
+function buildEmailVerificationOtpPlugin() {
+  return emailOTP({
+    otpLength: 6,
+    expiresIn: 60 * 10,
+    storeOTP: 'hashed',
+    disableSignUp: true,
+    overrideDefaultEmailVerification: true,
+    async sendVerificationOTP({ email, otp, type }, ctx) {
+      // Only email verification is wired in the app; other OTP flows stay inert.
+      if (type !== 'email-verification') {
+        return;
+      }
 
-type BetterAuthVerificationEmailRequest = {
-  headers?: {
-    get(name: string): string | null;
-  };
-};
-
-type BetterAuthVerificationEmailArgs = {
-  user: BetterAuthVerificationEmailUser;
-  url: string;
-  token: string;
-};
+      await sendAuthVerificationEmail(
+        {
+          to: email,
+          token: otp,
+          locale: ctx?.request?.headers.get('accept-language') ?? undefined,
+        },
+        process.env
+      );
+    },
+  });
+}
 
 export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
   const oauthProxyPlugin = buildOAuthProxyPlugin(config.oauthProxy);
@@ -272,31 +283,22 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
       provider: 'pg',
       schema: betterAuthSchema,
     }),
-    plugins: [...(oauthProxyPlugin ? [oauthProxyPlugin] : []), bearer()],
+    plugins: [
+      ...(oauthProxyPlugin ? [oauthProxyPlugin] : []),
+      bearer(),
+      buildEmailVerificationOtpPlugin(),
+    ],
     socialProviders,
     emailAndPassword: {
       enabled: true,
       autoSignIn: false,
       requireEmailVerification: true,
     },
+    // sendVerificationEmail is supplied by the email OTP plugin; defining it here
+    // would take precedence and bring back the link-token email.
     emailVerification: {
       sendOnSignUp: true,
       sendOnSignIn: true,
-      async sendVerificationEmail(
-        { user, url, token }: BetterAuthVerificationEmailArgs,
-        request?: BetterAuthVerificationEmailRequest
-      ) {
-        await sendAuthVerificationEmail(
-          {
-            to: user.email,
-            displayName: user.name,
-            confirmationUrl: url,
-            token,
-            locale: request?.headers?.get('accept-language') ?? undefined,
-          },
-          process.env
-        );
-      },
     },
     databaseHooks: {
       user: {

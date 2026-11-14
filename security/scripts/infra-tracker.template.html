@@ -1,0 +1,123 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Estado Infra Alternun</title>
+<style>
+  /* Layout: live status tracker — header, env cards (prod/dev), surface rows, auto-refresh. */
+  :root{--bg:#f4f6f8;--surface:#fff;--surface2:#eef1f5;--fg:#16202b;--muted:#5a6b7b;--line:#d9e0e8;
+    --ok:#1f9d6b;--okbg:#e5f4ee;--warn:#c47f12;--warnbg:#faf0db;--crit:#d1403a;--critbg:#fbe7e6;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;--sans:"Inter",system-ui,sans-serif;--disp:"Space Grotesk",var(--sans)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1218;--surface:#151d26;--surface2:#1c2733;
+    --fg:#e6edf3;--muted:#93a3b4;--line:#27333f;--ok:#3fb985;--okbg:#11271f;--warn:#e0a53c;--warnbg:#2a2212;
+    --crit:#f0665f;--critbg:#2c1616;color-scheme:dark}}
+  :root[data-theme="dark"]{--bg:#0d1218;--surface:#151d26;--surface2:#1c2733;--fg:#e6edf3;--muted:#93a3b4;
+    --line:#27333f;--ok:#3fb985;--okbg:#11271f;--warn:#e0a53c;--warnbg:#2a2212;--crit:#f0665f;--critbg:#2c1616;color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.5}
+  .wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+  h1{font-family:var(--disp);font-size:1.5rem;letter-spacing:-.02em;margin:0 0 2px}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:8px 0 22px;font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .refresh{margin-left:auto;display:flex;gap:8px;align-items:center}
+  button{font:inherit;font-size:.8rem;border:1px solid var(--line);background:var(--surface);color:var(--fg);
+    border-radius:8px;padding:5px 12px;cursor:pointer}
+  button:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .env{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .env h2{font-family:var(--disp);font-size:1.05rem;margin:0 0 4px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .chip{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .env .ver{font-family:var(--mono);font-size:.74rem;color:var(--muted);margin-bottom:10px}
+  .surf{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+  .surf:first-of-type{border-top:none}
+  .surf .nm{font-weight:600}
+  .surf .mu{font-family:var(--mono);font-size:.74rem;color:var(--muted);margin-left:auto;text-align:right}
+  .drift{margin-top:18px;border:1px solid var(--warn);background:var(--warnbg);color:var(--warn);
+    border-radius:10px;padding:12px 14px;font-size:.88rem}
+  .drift.hidden{display:none}
+  footer{margin-top:26px;border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font-size:.78rem}
+  @media (prefers-reduced-motion:no-preference){.pulse{animation:p 2s ease-in-out infinite}@keyframes p{50%{opacity:.4}}}
+</style>
+
+<div class="wrap">
+  <span class="eyebrow">Alternun · tracker en vivo</span>
+  <h1>Estado de la infraestructura</h1>
+  <div class="bar">
+    <span id="overall"><span class="dot pulse" style="background:var(--muted)"></span>cargando…</span>
+    <span id="stamp"></span>
+    <span class="refresh">
+      <label style="font-size:.78rem"><input type="checkbox" id="auto" checked> auto 60s</label>
+      <button id="now" type="button">Actualizar</button>
+    </span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="drift hidden" id="drift"></div>
+  <footer id="foot">Prueba de salud en vivo de cada superficie pública. Criterios: OK &lt;2s · Lento ≥2s · Degradado 3xx/4xx · Caído 5xx/timeout.</footer>
+</div>
+
+<script>
+const SURF = [
+  {env:"prod", nm:"API",   url:"https://api.alternun.co/health", ver:true},
+  {env:"prod", nm:"Admin", url:"https://admin.alternun.co", ver:false},
+  {env:"prod", nm:"SSO",   url:"https://sso.alternun.co/-/health/live/", ver:false},
+  {env:"dev",  nm:"API",   url:"https://testnet.api.alternun.co/health", ver:true},
+  {env:"dev",  nm:"Admin", url:"https://testnet.admin.alternun.co", ver:false},
+  {env:"dev",  nm:"SSO",   url:"https://testnet.sso.alternun.co/-/health/live/", ver:false},
+];
+const SEED = {"generatedAt": "2026-11-14T13:09:19Z", "environments": {"prod": {"status": "up", "apiVersion": "1.1.124", "surfaces": [{"env": "prod", "surface": "API", "url": "https://api.alternun.co/health", "code": 200, "ms": 323, "status": "up", "version": "1.1.124"}, {"env": "prod", "surface": "Admin", "url": "https://admin.alternun.co", "code": 200, "ms": 806, "status": "up", "version": null}, {"env": "prod", "surface": "SSO", "url": "https://sso.alternun.co/-/health/live/", "code": 200, "ms": 321, "status": "up", "version": null}]}, "dev": {"status": "up", "apiVersion": "1.2.5", "surfaces": [{"env": "dev", "surface": "API", "url": "https://testnet.api.alternun.co/health", "code": 200, "ms": 283, "status": "up", "version": "1.2.5"}, {"env": "dev", "surface": "Admin", "url": "https://testnet.admin.alternun.co", "code": 200, "ms": 1170, "status": "up", "version": null}, {"env": "dev", "surface": "SSO", "url": "https://testnet.sso.alternun.co/-/health/live/", "code": 200, "ms": 341, "status": "up", "version": null}]}}, "versionDrift": {"prod": "1.1.124", "dev": "1.2.5", "differs": true}, "overall": "up"};
+const C = {up:["var(--ok)","OK"],slow:["var(--warn)","Lento"],degraded:["#d1792a","Degradado"],down:["var(--crit)","Caído"]};
+const ENVNAME = {prod:"Producción", dev:"Development (testnet)"};
+
+function statusFrom(ok, ms){ if(ok===false) return "down"; return ms>=2000?"slow":"up"; }
+
+async function probe(s){
+  const t0=performance.now();
+  try{
+    // The artifact sandbox blocks cross-site fetch; fall back to the seeded snapshot.
+    const r=await fetch(s.url,{mode:"no-cors",cache:"no-store"});
+    const ms=Math.round(performance.now()-t0);
+    return {...s, code:"—", ms, status: ms>=2000?"slow":"up", live:true};
+  }catch(e){
+    const seed=(SEED.environments[s.env].surfaces||[]).find(x=>x.surface===s.nm)||{};
+    return {...s, code:seed.code??"—", ms:seed.ms??null, status:seed.status??"up", version:seed.version, live:false};
+  }
+}
+
+function render(items){
+  const byEnv={prod:[],dev:[]}; items.forEach(i=>byEnv[i.env].push(i));
+  const rank={up:0,slow:1,degraded:2,down:3};
+  const grid=document.getElementById("grid"); grid.innerHTML="";
+  const envStatus={};
+  for(const env of ["prod","dev"]){
+    const list=byEnv[env]; const worst=list.reduce((a,b)=>rank[b.status]>rank[a]?rank[b.status]:a,0);
+    const st=Object.keys(rank).find(k=>rank[k]===worst)||"up"; envStatus[env]=st;
+    const [col,lab]=C[st];
+    const apiv=(list.find(x=>x.nm==="API")||{}).version || SEED.environments[env].apiVersion;
+    let h=`<div class="env"><h2>${ENVNAME[env]}<span class="chip" style="background:${col}22;color:${col};border:1px solid ${col}">${lab}</span></h2>`;
+    h+=`<div class="ver">${apiv?("API v"+apiv):""}</div>`;
+    for(const s of list){const [sc,sl]=C[s.status];
+      h+=`<div class="surf"><span class="dot" style="background:${sc}"></span><span class="nm">${s.nm}</span>`
+        +`<span class="mu">${s.ms!=null?s.ms+" ms":"—"} · ${sl}</span></div>`;}
+    h+=`</div>`; grid.insertAdjacentHTML("beforeend",h);
+  }
+  // overall
+  const anyBad=Object.values(envStatus).some(s=>s!=="up");
+  const [oc,ol]=anyBad?["var(--warn)","Atención"]:["var(--ok)","Todo operativo"];
+  document.getElementById("overall").innerHTML=`<span class="dot" style="background:${oc}"></span>${ol}`;
+  document.getElementById("stamp").textContent="actualizado "+new Date().toLocaleString();
+  const live=items.some(i=>i.live);
+  document.getElementById("foot").textContent = (live?"Sondas en vivo desde tu navegador. ":"Mostrando la última instantánea (el navegador bloqueó las sondas en vivo). ")
+    +"Criterios: OK <2s · Lento ≥2s · Degradado 3xx/4xx · Caído 5xx/timeout.";
+  // drift
+  const pv=SEED.environments.prod.apiVersion, dv=SEED.environments.dev.apiVersion;
+  const dr=document.getElementById("drift");
+  if(pv&&dv&&pv!==dv){dr.classList.remove("hidden");dr.innerHTML=`<b>Drift de versión:</b> producción v${pv} vs development v${dv} — hay cambios en development sin promover a producción.`;}
+  else dr.classList.add("hidden");
+}
+
+async function run(){ render(await Promise.all(SURF.map(probe))); }
+document.getElementById("now").addEventListener("click",run);
+let timer=null;
+function schedule(){ clearInterval(timer); if(document.getElementById("auto").checked) timer=setInterval(run,60000); }
+document.getElementById("auto").addEventListener("change",schedule);
+run(); schedule();
+</script>

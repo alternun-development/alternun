@@ -17,7 +17,10 @@ import {
 } from './auth-exchange.mapper';
 import { mintIssuerAccessToken, mintIssuerIdToken } from './auth-exchange-jwt';
 import { upsertOidcUserViaSupabase } from '../authentik/supabase-sync';
-import { claimAirsReportsViaSupabase } from './airs-report-claim';
+import {
+  acceptClientInvitationsViaSupabase,
+  claimAirsReportsViaSupabase,
+} from './airs-report-claim';
 import { ReferralsService } from '../referrals/referrals.service';
 import {
   normalizeExecutionEmail,
@@ -132,6 +135,19 @@ export class AuthExchangeService {
     } catch (error) {
       this.logger.warn(
         `Failed to claim Airs reports for exchange user ${appUserId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+    // Pending client invitations for this email become project clients. Also non-fatal.
+    try {
+      const result = await acceptClientInvitationsViaSupabase({ appUserId, email, emailConfirmed });
+      if (result.accepted > 0) {
+        this.logger.log(`Accepted ${result.accepted} client invitation(s) for user ${appUserId}`);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to accept client invitations for exchange user ${appUserId}: ${
           error instanceof Error ? error.message : String(error)
         }`
       );

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import AuthSignInScreen from '../components/auth/AuthSignInScreen';
 import { useAuth } from '../components/auth/AppAuthProvider';
 import { resolveInitialAuthMode } from '../components/auth/authRouteMode';
@@ -16,6 +16,7 @@ import {
   buildReferralPersistenceKey,
   savePendingReferralData,
 } from '../components/auth/referralPersistence';
+import BrandLoader from '../components/common/BrandLoader';
 
 function readSearchParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) return value[0] ?? null;
@@ -128,7 +129,7 @@ export default function AuthRoute(): React.JSX.Element {
   if (loading || !isNavigationReady || user) {
     return (
       <View style={styles.loadingScreen}>
-        <ActivityIndicator size='large' color='#1ccba1' />
+        <BrandLoader />
       </View>
     );
   }

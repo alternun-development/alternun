@@ -120,13 +120,28 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.124**
+Current version: **1.2.6**
 
-## 📋 Latest Changes (v1.1.124)
+## 📋 Latest Changes (v1.2.6)
+
+### Features
+
+- **status:** standalone infra status-checker service (no third-party deps) ([6b565ac](https://github.com/alternun-development/alternun/commit/6b565acc6f3248a5be7ea3837808ed29e58106f3))
+- **security:** infra topology status in reports + live tracker ([b1d2c63](https://github.com/alternun-development/alternun/commit/b1d2c63bc5a8a8869d199699d4edacbefe3924d2))
+
+### Changes
+
+- **security:** gitleaks config + make history scan non-blocking ([8a32cf9](https://github.com/alternun-development/alternun/commit/8a32cf9f766b730d1397bff316e3760a708a844a))
+- **security:** email deliverability report for Tláo + mailer hygiene ([342197f](https://github.com/alternun-development/alternun/commit/342197f2143a738532eb59a8cc2da0268b1f55c7))
+- **security:** weekly AWS audit loop, reports and reviewer IAM ([1c523e6](https://github.com/alternun-development/alternun/commit/1c523e61f3be206c113d838f49f44cbf99af20e6))
+
+### Security
+
+- **repo:** remove recipient emails and tracker URL from public repo ([03fc286](https://github.com/alternun-development/alternun/commit/03fc286b4deb1ce5b0e5d4ce35474fd7c93452a8))
 
 ### Bug Fixes
 
-- **marketplace:** count admins from every related enterprise on project access ([a526360](https://github.com/alternun-development/alternun/commit/a526360c862a1b66b7cceb3e3330ac08084ce577))
+- **security:** exclude audit's own files from git-history leak scan ([57b41ef](https://github.com/alternun-development/alternun/commit/57b41ef790acc403ea4c1283277ba9e0b873e2fb))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

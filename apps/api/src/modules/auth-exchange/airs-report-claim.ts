@@ -76,3 +76,47 @@ export async function claimAirsReportsViaSupabase(
 
   return readClaimBody(await response.json().catch(() => null));
 }
+
+/**
+ * Turns the pending client invitations for the signed-in person's confirmed email into project
+ * participants. Same trust model as the claim above: idempotent, and failures are non-fatal.
+ */
+export async function acceptClientInvitationsViaSupabase(
+  input: AirsReportClaimInput,
+  env: Record<string, string | undefined> = process.env
+): Promise<{ skipped: boolean; accepted: number }> {
+  const config = resolveSupabaseOidcSyncConfig(env);
+  const email = input.email.trim().toLowerCase();
+  if (!config || !input.emailConfirmed || !email) return { skipped: true, accepted: 0 };
+
+  const response = await fetch(
+    `${config.supabaseUrl.replace(
+      /\/$/,
+      ''
+    )}/rest/v1/rpc/marketplace_accept_project_client_invitations`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: config.supabaseKey,
+        Authorization: `Bearer ${config.supabaseKey}`,
+      },
+      body: JSON.stringify({
+        p_user_id: input.appUserId,
+        p_session_email: email,
+        p_email_confirmed: true,
+        p_request_id: input.requestId ?? `client-accept-${randomUUID()}`,
+      }),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(
+      `Failed to accept client invitations: ${response.status} ${response.statusText}`
+    );
+  }
+  const body = (await response.json().catch(() => null)) as { accepted?: unknown } | null;
+  return {
+    skipped: false,
+    accepted: typeof body?.accepted === 'number' && body.accepted > 0 ? body.accepted : 0,
+  };
+}

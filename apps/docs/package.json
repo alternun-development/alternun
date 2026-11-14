@@ -1,12 +1,12 @@
 {
   "name": "alternun-docs",
-  "version": "1.1.124",
+  "version": "1.2.6",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
     "sync:changelog": "node ../../scripts/sync-docs-changelog.mjs",
     "start": "pnpm run sync:changelog && docusaurus start",
-    "dev:local": "pnpm run sync:changelog && docusaurus start --host 127.0.0.1 --port 8083",
+    "dev:local": "pnpm run sync:changelog && docusaurus start --host 127.0.0.1 --port 8090",
     "build": "./build.sh",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",

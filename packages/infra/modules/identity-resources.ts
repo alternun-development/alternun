@@ -809,7 +809,7 @@ export function deployIdentityInfrastructure(
               adminEmail: args.settings.integration.bootstrap.admin.email,
               adminGroup: args.settings.integration.bootstrap.admin.group,
               // Social-login users are "external" and blocked from /if/user/ until promoted.
-              superAdminEmails: ['edward@alternun.io'],
+              superAdminEmails: ['edward@alternun.io', 'sgomez@alternun.io'],
               internalEmailDomains: ['alternun.io', 'alternun.co'],
               // Development-only platform admin; never granted in production.
               devAdminEmails: productionIdentityStage ? [] : ['branner@lstech.solutions'],

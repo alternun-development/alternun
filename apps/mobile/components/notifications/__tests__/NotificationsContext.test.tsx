@@ -21,7 +21,11 @@ jest.mock('../../../utils/runtimeConfig', () => ({
   resolveMobileApiBaseUrl: () => 'http://127.0.0.1:3000',
 }));
 
-import { NotificationsProvider, useNotifications } from '../NotificationsContext';
+import {
+  NotificationsProvider,
+  nextNotificationsDelay,
+  useNotifications,
+} from '../NotificationsContext';
 
 describe('NotificationsProvider', () => {
   afterEach(() => {
@@ -97,6 +101,75 @@ describe('NotificationsProvider', () => {
         title: 'notifications.events.airs_credited.title',
         body: 'notifications.events.airs_credited.body:10',
         read: false,
+      }),
+    ]);
+    await act(async () => renderer.unmount());
+  });
+
+  it('describes new clients to admins, flagging Airs waiting for approval', async () => {
+    mockAuth.user = { id: 'app-user-123' };
+    mockAuth.client.getSessionToken.mockResolvedValue('session-token');
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        notifications: [
+          {
+            id: 'n-pending',
+            eventType: 'project_client_added',
+            severity: 'warning',
+            payload: {
+              projectName: 'Fundación Batis',
+              clientName: 'Ana',
+              clientEmail: 'ana@x.test',
+              amount: 500,
+              concept: 'Compra grande',
+              reportStatus: 'pending_approval',
+            },
+            read: false,
+            archived: false,
+            createdAt: '2026-11-10T12:00:00.000Z',
+          },
+          {
+            id: 'n-client',
+            eventType: 'project_client_added',
+            severity: 'info',
+            payload: {
+              projectName: 'Fundación Batis',
+              clientName: 'Luis',
+              clientEmail: 'l@x.test',
+            },
+            read: false,
+            archived: false,
+            createdAt: '2026-11-10T12:00:00.000Z',
+          },
+        ],
+      }),
+    } as Response);
+    let items: ReturnType<typeof useNotifications>['items'] = [];
+    let renderer: ReturnType<typeof create>;
+    function Probe(): null {
+      items = useNotifications().items;
+      return null;
+    }
+    await act(async () => {
+      renderer = create(
+        <NotificationsProvider>
+          <Probe />
+        </NotificationsProvider>
+      );
+      await Promise.resolve();
+    });
+    expect(items).toEqual([
+      expect.objectContaining({
+        id: 'n-pending',
+        type: 'warning',
+        title: 'notifications.events.project_client_added.titlePending:500',
+        body: 'notifications.events.project_client_added.bodyAirs:500',
+      }),
+      expect.objectContaining({
+        id: 'n-client',
+        title: 'notifications.events.project_client_added.title',
+        body: 'notifications.events.project_client_added.body',
       }),
     ]);
     await act(async () => renderer.unmount());
@@ -260,5 +333,51 @@ describe('NotificationsProvider', () => {
       expect.objectContaining({ method: 'PATCH' })
     );
     await act(async () => renderer.unmount());
+  });
+
+  it('backs off after rejected requests instead of polling every few seconds', async () => {
+    jest.useFakeTimers();
+    try {
+      mockAuth.user = { id: 'app-user-123' };
+      mockAuth.client.getSessionToken.mockResolvedValue('expired-token');
+      const fetchMock = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue({ ok: false, status: 401, json: async () => ({}) } as Response);
+      const settle = () =>
+        act(async () => {
+          for (let i = 0; i < 8; i += 1) await Promise.resolve();
+        });
+      let renderer: ReturnType<typeof create>;
+      act(() => {
+        renderer = create(
+          <NotificationsProvider>
+            <></>
+          </NotificationsProvider>
+        );
+      });
+      await settle();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
+      // After one failure the next request waits 60 s, not the usual 30 s.
+      act(() => jest.advanceTimersByTime(59_000));
+      await settle();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      act(() => jest.advanceTimersByTime(1_000));
+      await settle();
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      act(() => renderer.unmount());
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('nextNotificationsDelay', () => {
+  it('doubles after each failure and caps at five minutes', () => {
+    expect(nextNotificationsDelay(0)).toBe(30_000);
+    expect(nextNotificationsDelay(1)).toBe(60_000);
+    expect(nextNotificationsDelay(2)).toBe(120_000);
+    expect(nextNotificationsDelay(10)).toBe(300_000);
   });
 });

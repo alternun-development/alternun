@@ -5,6 +5,13 @@ import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'rea
 import { DirectoryControls, DirectoryPagination } from '../DirectoryControls';
 import type { DirectoryView } from '../types';
 
+jest.mock('@alternun/ui', () => ({
+  // SearchFilterBar only reads colors from the theme.
+  useTheme: () => ({
+    theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
+  }),
+}));
+
 const palette = {
   surface: '#fff',
   border: '#ddd',

@@ -1,0 +1,384 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Auditoría AWS Alternun</title>
+<style>
+  /* Layout: utilitarian security scorecard — verdict banner, severity-ranked finding cards, evidence tables. */
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f5;
+    --fg: #16202b;
+    --muted: #5a6b7b;
+    --line: #d9e0e8;
+    --accent: #1f6feb;
+    --ok: #1f9d6b;
+    --warn: #c47f12;
+    --crit: #d1403a;
+    --ok-bg: #e5f4ee;
+    --warn-bg: #faf0db;
+    --crit-bg: #fbe7e6;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --sans: "Inter", system-ui, -apple-system, sans-serif;
+    --display: "Space Grotesk", var(--sans);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1218;
+      --surface: #151d26;
+      --surface-2: #1c2733;
+      --fg: #e6edf3;
+      --muted: #93a3b4;
+      --line: #27333f;
+      --accent: #58a6ff;
+      --ok: #3fb985;
+      --warn: #e0a53c;
+      --crit: #f0665f;
+      --ok-bg: #11271f;
+      --warn-bg: #2a2212;
+      --crit-bg: #2c1616;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1218;
+    --surface: #151d26;
+    --surface-2: #1c2733;
+    --fg: #e6edf3;
+    --muted: #93a3b4;
+    --line: #27333f;
+    --accent: #58a6ff;
+    --ok: #3fb985;
+    --warn: #e0a53c;
+    --crit: #f0665f;
+    --ok-bg: #11271f;
+    --warn-bg: #2a2212;
+    --crit-bg: #2c1616;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.5;
+    margin: 0;
+  }
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 32px 64px;
+  }
+  h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; font-weight: 600; }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: -0.02em; }
+  h2 { font-size: 1.15rem; letter-spacing: -0.01em; }
+  h3 { font-size: 1rem; }
+  p { margin: 0; }
+  a { color: var(--accent); }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  header.top { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--mono); font-size: 0.76rem; color: var(--muted); }
+  .meta b { color: var(--fg); font-weight: 500; }
+
+  .verdict {
+    margin-top: 24px;
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--ok);
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .verdict .tag { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ok); font-weight: 600; }
+  .verdict p { color: var(--muted); max-width: 68ch; }
+  .verdict strong { color: var(--fg); }
+
+  .counts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .count {
+    flex: 1 1 120px;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .count .n { font-family: var(--display); font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .count .l { font-size: 0.78rem; color: var(--muted); }
+  .count.crit .n { color: var(--crit); }
+  .count.warn .n { color: var(--warn); }
+  .count.ok .n { color: var(--ok); }
+
+  section { margin-top: 40px; display: flex; flex-direction: column; gap: 16px; }
+  section > .shead { display: flex; flex-direction: column; gap: 4px; }
+  section > .shead p { color: var(--muted); font-size: 0.9rem; max-width: 70ch; }
+
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .finding > .fhead {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 16px 18px;
+    border-left: 5px solid var(--line);
+  }
+  .finding.crit > .fhead { border-left-color: var(--crit); }
+  .finding.warn > .fhead { border-left-color: var(--warn); }
+  .finding.ok > .fhead { border-left-color: var(--ok); }
+  .fhead .id { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); padding-top: 2px; font-variant-numeric: tabular-nums; }
+  .fhead .body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+  .fhead .body h3 { line-height: 1.3; }
+  .fhead .body p { color: var(--muted); font-size: 0.9rem; }
+  .pill {
+    align-self: flex-start;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.crit { background: var(--crit-bg); color: var(--crit); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); }
+  .fix {
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+    padding: 12px 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .fix .lbl { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .fix p { font-size: 0.9rem; }
+  .fix code { font-family: var(--mono); font-size: 0.82em; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.86rem; min-width: 460px; }
+  caption { text-align: left; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 12px 14px 8px; }
+  th, td { text-align: left; padding: 9px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; font-size: 0.74rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  td.mono, th.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .chip { font-family: var(--mono); font-size: 0.7rem; font-weight: 600; padding: 2px 7px; border-radius: 5px; white-space: nowrap; }
+  .chip.deny { background: var(--ok-bg); color: var(--ok); }
+  .chip.allow { background: var(--warn-bg); color: var(--warn); }
+  .chip.y { background: var(--ok-bg); color: var(--ok); }
+  .chip.n { background: var(--crit-bg); color: var(--crit); }
+  footer { margin-top: 48px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 6px; }
+  .note { font-size: 0.82rem; color: var(--muted); }
+  ul.compact { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; color: var(--muted); }
+  ul.compact b { color: var(--fg); font-weight: 500; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Auditoría de seguridad · Alternun AWS</span>
+    <h1>Escalación de privilegios y fugas</h1>
+    <div class="meta">
+      <span><b>Cuenta</b> 124120088516</span>
+      <span><b>Fecha</b> 2026-11-14 11:53 UTC</span>
+      <span><b>Alcance</b> perfil <code>external-reviewer</code> + repo público</span>
+      <span><b>Árbol</b> 0e31f68aa</span>
+    </div>
+  </header>
+
+  <div class="verdict">
+    <span class="tag">● Resultado — sin ruta de escalación</span>
+    <p>El perfil <strong>external-reviewer</strong> no puede escalar a administrador ni a root. Las 34 acciones de escalación simuladas se deniegan, y los secretos y datos quedan bloqueados por un <em>deny</em> explícito. El riesgo real no está en el reviewer sino en <strong>otros frentes</strong>: el repositorio es público, el usuario admin <code>Edward</code> no tiene MFA y su clave lleva ~7 meses sin rotar, y no hay política de contraseñas.</p>
+  </div>
+
+  <div class="counts">
+    <div class="count crit"><span class="n">1</span><span class="l">Crítico abierto (A-01)</span></div>
+    <div class="count warn"><span class="n">2</span><span class="l">Parcial / pendiente</span></div>
+    <div class="count ok"><span class="n">5</span><span class="l">Mitigados / OK</span></div>
+    <div class="count"><span class="n">34/34</span><span class="l">Privesc denegadas</span></div>
+  </div>
+
+  <div class="verdict" style="border-left-color: var(--accent); margin-top: 16px;">
+    <span class="tag" style="color: var(--accent);">↻ Mitigaciones aplicadas — 2026-11-14</span>
+    <ul class="compact" style="margin-top:2px">
+      <li><b>LuisFernando eliminado:</b> fuera del grupo Administrador, política desadjuntada, consola y usuario borrados. El grupo <code>Administrador</code> queda solo con <code>Edward</code>.</li>
+      <li><b>Usuario revisor de secretos creado:</b> usuario de solo lectura de secretos (Secrets Manager/SSM/KMS + config de Lambda/CodeBuild) con autogestión de MFA y consola (reseteo obligatorio al primer ingreso).</li>
+      <li><b>Lectura de secretos restringida a:</b> <code>Edward</code> (admin) + root + <code>sgomez</code>. Política <code>deny-secret-reads</code> creada (sin adjuntar) para blindar futuros roles no-admin.</li>
+      <li><b>A-05 corregido:</b> secret-scan de CI ahora cubre el historial; revisión manual de 2.356 commits sin fugas.</li>
+      <li><b>A-03 corregido:</b> política de contraseñas aplicada (≥14, complejidad, caducidad 90 d, no-reuso 24), efectiva para toda contraseña nueva.</li>
+      <li><b>A-02 — clave de Edward rotada:</b> clave nueva creada y validada, <code>.env</code> actualizado, claves viejas (abril y marzo) borradas. Falta activar MFA en <code>Edward</code>.</li>
+      <li><b>Pendiente:</b> activar MFA en <code>Edward</code>; y la rotación de secretos de runtime + migración a Secrets Manager (A-01, decisión de Santiago).</li>
+    </ul>
+  </div>
+
+  <section>
+    <div class="shead">
+      <h2>Escalación desde el perfil reviewer</h2>
+      <p>Simulado con <code>iam:SimulatePrincipalPolicy</code> contra el principal <code>user/external-reviewer</code>: evalúa sus políticas efectivas exactas sin ejecutar ninguna acción ni dejar rastro. No se completó ninguna escalación destructiva.</p>
+    </div>
+
+    <div class="finding ok">
+      <div class="fhead">
+        <span class="id">R-01</span>
+        <div class="body">
+          <h3>Ninguna de las 34 acciones de escalación está permitida</h3>
+          <p>Toda vía clásica de privesc en IAM da <code>implicitDeny</code>: crear claves, versionar políticas, adjuntar políticas, pasar roles, lanzar cómputo con un rol, o asumir roles. El reviewer solo tiene <code>ViewOnlyAccess</code> + <code>SecurityAudit</code>, sin permisos de escritura.</p>
+        </div>
+        <span class="pill ok">OK</span>
+      </div>
+      <div class="fix">
+        <span class="lbl">Muestra de la simulación</span>
+        <div class="tablewrap" style="border:none;border-radius:0;margin-top:6px">
+          <table>
+            <caption>Acción → decisión evaluada</caption>
+            <thead><tr><th>Acción</th><th>Decisión</th><th>Acción</th><th>Decisión</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">iam:CreateAccessKey</td><td><span class="chip deny">denegado</span></td><td class="mono">iam:PassRole</td><td><span class="chip deny">denegado</span></td></tr>
+              <tr><td class="mono">iam:CreatePolicyVersion</td><td><span class="chip deny">denegado</span></td><td class="mono">lambda:CreateFunction</td><td><span class="chip deny">denegado</span></td></tr>
+              <tr><td class="mono">iam:AttachUserPolicy</td><td><span class="chip deny">denegado</span></td><td class="mono">ec2:RunInstances</td><td><span class="chip deny">denegado</span></td></tr>
+              <tr><td class="mono">iam:PutGroupPolicy</td><td><span class="chip deny">denegado</span></td><td class="mono">cloudformation:CreateStack</td><td><span class="chip deny">denegado</span></td></tr>
+              <tr><td class="mono">iam:UpdateLoginProfile</td><td><span class="chip deny">denegado</span></td><td class="mono">ssm:SendCommand</td><td><span class="chip deny">denegado</span></td></tr>
+              <tr><td class="mono">sts:AssumeRole</td><td><span class="chip deny">denegado</span></td><td class="mono">glue:CreateDevEndpoint</td><td><span class="chip deny">denegado</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="finding ok">
+      <div class="fhead">
+        <span class="id">R-02</span>
+        <div class="body">
+          <h3>Secretos y datos bloqueados por deny explícito</h3>
+          <p>La política <code>deny-sensitive</code> produce <code>explicitDeny</code> (gana sobre cualquier allow) en lectura de secretos, datos y config con env vars. La ventana de acceso cierra todo tras el 2026-11-30: la misma simulación con fecha posterior deniega incluso <code>ec2:DescribeInstances</code>.</p>
+        </div>
+        <span class="pill ok">OK</span>
+      </div>
+      <div class="fix">
+        <span class="lbl">Verificado · explicitDeny</span>
+        <p><code>secretsmanager:GetSecretValue</code> · <code>ssm:GetParameter</code> · <code>kms:Decrypt</code> · <code>s3:GetObject</code> · <code>lambda:GetFunctionConfiguration</code> · <code>codebuild:BatchGetProjects</code> · <code>cloudformation:GetTemplate</code> · <code>dynamodb:Scan</code> · <code>logs:FilterLogEvents</code> · <code>ecs:DescribeTaskDefinition</code></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead">
+      <h2>Hallazgos de la cuenta</h2>
+      <p>Enumeración de postura general con credenciales admin (solo lectura). Estos son los riesgos reales, por encima del perfil reviewer.</p>
+    </div>
+
+    <div class="finding crit">
+      <div class="fhead">
+        <span class="id">A-01</span>
+        <div class="body">
+          <h3>Repositorio público con secretos en env vars del runtime</h3>
+          <p>El repo <code>alternun-development/alternun</code> es <strong>público</strong>. El código, la infra (SST/scripts) y los nombres de las variables quedan expuestos. No se hallaron claves ni secretos en el árbol ni en el historial git (bien), pero la doc interna confirma que los valores reales viven en <em>env vars en texto plano</em> de las Lambdas de API (prod/dev) y de seis proyectos de CodeBuild: <code>DATABASE_URL</code>, <code>AUTHENTIK_JWT_SIGNING_KEY</code>, <code>*_CLIENT_SECRET</code>, <code>BETTER_AUTH_SECRET</code>. Cualquier principal sin el deny del reviewer los lee.</p>
+        </div>
+        <span class="pill crit">Crítico</span>
+      </div>
+      <div class="fix">
+        <span class="lbl">Qué hacer</span>
+        <p>Decidir si el repo debe seguir público (si no es necesario, pasarlo a privado). Mover los secretos de env vars en texto plano a referencias de Secrets Manager / SSM SecureString en Lambda y CodeBuild — el deny del reviewer es contención, no el arreglo. Rotar los secretos expuestos.</p>
+      </div>
+    </div>
+
+    <div class="finding warn">
+      <div class="fhead">
+        <span class="id">A-02</span>
+        <div class="body">
+          <h3>Clave de <code>Edward</code> rotada · falta MFA</h3>
+          <p>La clave de acceso vieja (<strong>2026-04-19</strong>, ~7 meses) fue <strong>rotada</strong>: se creó una nueva, se actualizó el <code>.env</code> local y se validó, y la vieja se desactivó y borró. También se borró una segunda clave inactiva de marzo. <code>Edward</code> queda con <strong>una sola clave</strong>, nueva. CodeBuild no usa esta clave (usa rol de instancia) y ningún workflow de GitHub la referencia. <strong>Queda pendiente activar MFA</strong> en <code>Edward</code> — sigue sin segundo factor.</p>
+        </div>
+        <span class="pill warn">Parcial · falta MFA</span>
+      </div>
+      <div class="fix">
+        <span class="lbl">Hecho / pendiente</span>
+        <p>Hecho: clave rotada y verificada (<code>sts:GetCallerIdentity</code> → <code>user/Edward</code>), claves viejas eliminadas. Pendiente: enrolar MFA en <code>Edward</code> (requiere que lo hagas tú desde la consola).</p>
+      </div>
+    </div>
+
+    <div class="finding ok">
+      <div class="fhead">
+        <span class="id">A-03</span>
+        <div class="body">
+          <h3>Política de contraseñas aplicada · corregido</h3>
+          <p>Se creó la política de contraseñas de la cuenta, efectiva para toda contraseña nueva o cambiada a partir de ahora.</p>
+        </div>
+        <span class="pill ok">Corregido</span>
+      </div>
+      <div class="fix">
+        <span class="lbl">Aplicado</span>
+        <p>Mínimo 14 caracteres · mayúsculas, minúsculas, números y símbolos obligatorios · caducidad 90 días · no reutilizar las últimas 24 · los usuarios pueden cambiar su propia contraseña.</p>
+      </div>
+    </div>
+
+    <div class="finding warn">
+      <div class="fhead">
+        <span class="id">A-04</span>
+        <div class="body">
+          <h3>Reviewer con acceso de solo lectura sin segundo factor</h3>
+          <p>Por la decisión del 2026-10-29 (los reviewers no lograban pasar el enrolamiento de MFA), el modo actual no exige MFA: la clave <code>AKIA…YLZR</code> o la contraseña de consola dan solo-lectura directa hasta que cierre la ventana. Es un riesgo aceptado y acotado (deny de secretos + expiración 2026-11-30), pero un robo de esa clave da lectura sin segundo factor.</p>
+        </div>
+        <span class="pill warn">Medio</span>
+      </div>
+      <div class="fix">
+        <span class="lbl">Qué hacer</span>
+        <p>Rotar la clave <code>AKIA…YLZR</code> y desactivar el usuario al terminar la revisión. A mediano plazo, IAM Identity Center o federación SAML vía Authentik: sin claves de larga vida, MFA central y auditoría por persona (hoy un solo usuario compartido = una sola identidad en CloudTrail).</p>
+      </div>
+    </div>
+
+    <div class="finding ok">
+      <div class="fhead">
+        <span class="id">A-05</span>
+        <div class="body">
+          <h3>Escaneo de secretos en CI ahora cubre el historial · corregido</h3>
+          <p>El workflow <code>secret-scan.yml</code> solo corría gitleaks con <code>--no-git</code> (solo el working tree). Se añadió un paso de <strong>historial completo</strong> (<code>gitleaks detect</code> sin <code>--no-git</code>, sobre el checkout con <code>fetch-depth: 0</code> que ya existía). Además se revisó a mano todo el historial (2.356 commits): <strong>sin fugas</strong>. GitHub secret scanning sigue sin habilitar (requiere Advanced Security) — opcional.</p>
+        </div>
+        <span class="pill ok">Corregido</span>
+      </div>
+      <div class="fix">
+        <span class="lbl">Revisión profunda del historial · nada real encontrado</span>
+        <p>Sin claves <code>AKIA/ASIA</code>, sin claves privadas, sin tokens JWT (<code>eyJ…</code>), sin cadenas de conexión reales. Las únicas coincidencias son placeholders (<code>postgres:password@…</code>, <code>u:p@…</code>) en archivos <code>.example</code> y tests, y el project-ref público de Supabase (no es secreto).</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead">
+      <h2>Postura de identidad</h2>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Usuarios IAM · MFA, claves y admin</caption>
+        <thead><tr><th>Usuario</th><th>MFA</th><th>Claves activas</th><th>Admin</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">Edward</td><td><span class="chip n">no</span></td><td class="mono">1 · 2026-04-19</td><td><span class="chip allow">AdministratorAccess</span></td></tr>
+          <tr><td class="mono">sgomez</td><td><span class="chip n">pendiente</span></td><td class="mono">0 · consola</td><td><span class="chip deny">solo lee secretos</span></td></tr>
+          <tr><td class="mono">external-reviewer</td><td><span class="chip n">no</span></td><td class="mono">1 · 2026-10-21</td><td><span class="chip deny">solo lectura</span></td></tr>
+          <tr><td class="mono" style="text-decoration:line-through;opacity:.6">LuisFernando</td><td colspan="3"><span class="chip deny">eliminado 2026-11-14</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="compact">
+      <li><b>Root:</b> MFA activado (verificado en el resumen de la cuenta).</li>
+      <li><b>Alcance:</b> solo <code>us-east-1</code>; otras regiones no revisadas. Simulación, no ejecución: no se crearon usuarios, claves ni políticas, y no se dejó persistencia.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>Método: <code>iam:SimulatePrincipalPolicy</code> + enumeración de solo lectura (ViewOnly/SecurityAudit) sobre la cuenta 124120088516, y escaneo del árbol e historial git del repo.</span>
+    <span>Prioridad sugerida: A-01 y A-02 esta semana; A-03, A-04 y A-05 antes del cierre de la ventana del reviewer (2026-11-30).</span>
+  </footer>
+</div>

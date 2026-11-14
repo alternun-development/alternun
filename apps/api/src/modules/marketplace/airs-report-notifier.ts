@@ -9,6 +9,11 @@ import type { AirsReportRecord } from './airs-report.types';
 
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+export interface AirsReportNotifyOptions {
+  /** False skips the email to the recipient; support still gets its tracking email. */
+  recipient?: boolean;
+}
+
 export interface AirsReportNotifyResult {
   recipientSent: boolean;
   supportSent: number;
@@ -35,8 +40,11 @@ export function resolveAirsReportSupportEmails(env: Record<string, string | unde
  */
 export function createAirsReportNotifier(
   dependencies: AirsReportNotifierDependencies
-): (report: AirsReportRecord) => Promise<AirsReportNotifyResult> {
-  return async (report) => {
+): (
+  report: AirsReportRecord,
+  options?: AirsReportNotifyOptions
+) => Promise<AirsReportNotifyResult> {
+  return async (report, options = {}) => {
     const result: AirsReportNotifyResult = { recipientSent: false, supportSent: 0 };
     if (report.status !== 'awaiting_claim' && report.status !== 'released') {
       return result;
@@ -49,14 +57,17 @@ export function createAirsReportNotifier(
       appUrl: resolveAirsReportAppUrl(dependencies.env),
     };
 
-    try {
-      const sent = await dependencies.send({
-        to: report.recipientEmail,
-        email: renderAirsReportRecipientEmail(context),
-      });
-      result.recipientSent = sent.sent;
-    } catch {
-      result.recipientSent = false;
+    // A caller that writes to the recipient itself (e.g. the client invitation) skips this one.
+    if (options.recipient !== false) {
+      try {
+        const sent = await dependencies.send({
+          to: report.recipientEmail,
+          email: renderAirsReportRecipientEmail(context),
+        });
+        result.recipientSent = sent.sent;
+      } catch {
+        result.recipientSent = false;
+      }
     }
 
     const supportEmail = renderAirsReportSupportEmail(context);

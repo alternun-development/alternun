@@ -325,7 +325,7 @@ export default function SettingsScreen(): React.JSX.Element {
             onToggleTheme={toggleThemeMode}
             onCycleLanguage={cycleLanguage}
             onCycleMotionLevel={cycleMotionLevel}
-            onOpenProfile={() => router.push('/mi-perfil')}
+            onOpenProfile={() => router.push('/profile')}
             onOpenSettings={() => {}}
             onSignOut={() => {
               void signOutUser();

@@ -34,12 +34,32 @@ interface NotificationDropdownProps {
   onNavigateToCenter?: () => void;
 }
 
-function timeAgo(date: Date, t: ReturnType<typeof useAppTranslation>): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diff < 60) return t.t('notifications.ui.secondsAgo', { count: diff });
+const DAY_SECONDS = 86400;
+
+/**
+ * How long ago a notification arrived: relative for the last week, then its date. A device
+ * clock slightly behind the server counts as "just now" instead of a negative time.
+ */
+export function timeAgo(
+  date: Date,
+  t: ReturnType<typeof useAppTranslation>,
+  now: number = Date.now()
+): string {
+  if (date.getTime() <= 0) return '';
+  const diff = Math.max(0, Math.floor((now - date.getTime()) / 1000));
+  if (diff < 60) return t.t('notifications.ui.justNow');
   if (diff < 3600) return t.t('notifications.ui.minutesAgo', { count: Math.floor(diff / 60) });
-  if (diff < 86400) return t.t('notifications.ui.hoursAgo', { count: Math.floor(diff / 3600) });
-  return t.t('notifications.ui.daysAgo', { count: Math.floor(diff / 86400) });
+  if (diff < DAY_SECONDS) {
+    return t.t('notifications.ui.hoursAgo', { count: Math.floor(diff / 3600) });
+  }
+  if (diff < 7 * DAY_SECONDS) {
+    return t.t('notifications.ui.daysAgo', { count: Math.floor(diff / DAY_SECONDS) });
+  }
+  return date.toLocaleDateString(t.locale, {
+    day: 'numeric',
+    month: 'short',
+    year: date.getFullYear() === new Date(now).getFullYear() ? undefined : 'numeric',
+  });
 }
 
 export const TYPE_CONFIG: Record<
@@ -234,11 +254,9 @@ export default function NotificationDropdown({
 }
 
 const styles = StyleSheet.create({
+  // Placed by TopNav under the profile pill, like the menu.
   panel: {
-    position: 'absolute',
-    top: 50,
-    right: 0,
-    width: 300,
+    width: '100%',
     maxHeight: 380,
     borderWidth: 1,
     borderRadius: 16,

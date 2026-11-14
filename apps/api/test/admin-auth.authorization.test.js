@@ -12,6 +12,7 @@ const EXPECTED_ADMIN_ROLES = [
   'partner_operator',
   'sub_admin',
   'partner_readonly',
+  'project_moderator',
 ];
 const AUTHENTIK_JWKS_URL = 'https://login.alternun.co/application/o/alternun-admin/jwks/';
 const AUTHENTIK_ISSUER = 'https://login.alternun.co/application/o/alternun-admin/';
@@ -250,7 +251,11 @@ test('marketplace permission matrix preserves role-specific enterprise, project,
       'partner_operator',
       'sub_admin',
     ].includes(role);
-    assert.equal(can(role, 'participants:read'), canManageParticipants);
+    // Project moderators see a project's clients (read-only) in the app.
+    assert.equal(
+      can(role, 'participants:read'),
+      canManageParticipants || role === 'project_moderator'
+    );
     assert.equal(can(role, 'participants:manage'), canManageParticipants);
     assert.equal(can(role, 'airs_reports:submit'), canManageParticipants);
   }
@@ -642,4 +647,29 @@ test('the API example environment exposes a dedicated admin JWKS URL', () => {
   assert.match(environmentExample, /^ADMIN_AUTH_ISSUER=/m);
   assert.match(environmentExample, /^ADMIN_AUTH_AUDIENCE=/m);
   assert.match(environmentExample, /^ADMIN_AUTH_JWKS_URL=/m);
+});
+
+test('a project moderator moderates only within its memberships and never globally', () => {
+  const adminAuth = loadAdminAuthContract();
+  const principal = {
+    iss: 'issuer',
+    aud: 'admin',
+    sub: 'project-moderator',
+    roles: ['project_moderator'],
+    organizationIds: [],
+  };
+  for (const permission of ['comments:moderate', 'project_media:moderate', 'projects:read']) {
+    assert.equal(adminAuth.hasPermission(principal, permission), true, permission);
+    // Scope must come from a membership: the role itself grants nothing globally.
+    assert.equal(adminAuth.grantsGlobally(principal, permission), false, permission);
+  }
+  for (const permission of [
+    'projects:update',
+    'project_media:write',
+    'project_memberships:assign',
+    'completions:award',
+    'enterprises:update',
+  ]) {
+    assert.equal(adminAuth.hasPermission(principal, permission), false, permission);
+  }
 });

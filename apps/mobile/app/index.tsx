@@ -15,7 +15,8 @@ import {
   useRouter,
 } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import BrandLoader from '../components/common/BrandLoader';
 
 export default function HomeScreen(): React.JSX.Element {
   const { user, loading, signIn, signOutUser, client } = useAuth();
@@ -70,7 +71,7 @@ export default function HomeScreen(): React.JSX.Element {
   if (webAuthCallbackRedirectPath) {
     return (
       <View style={styles.loadingScreen}>
-        <ActivityIndicator size='large' color='#1ccba1' />
+        <BrandLoader />
       </View>
     );
   }
@@ -78,7 +79,7 @@ export default function HomeScreen(): React.JSX.Element {
   if (loading || !isNavigationReady) {
     return (
       <View style={styles.loadingScreen}>
-        <ActivityIndicator size='large' color='#1ccba1' />
+        <BrandLoader />
       </View>
     );
   }
@@ -120,7 +121,7 @@ export default function HomeScreen(): React.JSX.Element {
       isLoading={loading}
       onReload={refreshAirsSnapshot}
       onRequireSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
-      onOpenProfilePage={() => router.push('/mi-perfil')}
+      onOpenProfilePage={() => router.push('/profile')}
       onOpenSettingsPage={() => router.push('/settings')}
       onWalletConnect={async (walletType: string): Promise<void> => {
         await signIn({

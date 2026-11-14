@@ -16,6 +16,7 @@ import { AirsReportQueuePage } from './pages/marketplace/airs-report-queue-page'
 import { NotificationsPage } from './pages/marketplace/notifications-page';
 import { ProjectAccessPage } from './pages/marketplace/project-access-page';
 import { ProjectTypesPage } from './pages/marketplace/project-types-page';
+import { HonorAwardsPage } from './pages/marketplace/honor-awards-page';
 import { MarketplaceEnterpriseDetailPage } from './pages/marketplace/enterprise-detail-page';
 import { MarketplaceEnterprisesPage } from './pages/marketplace/enterprises-page';
 import { MarketplaceProjectDetailPage } from './pages/marketplace/project-detail-page';
@@ -149,6 +150,19 @@ export function AdminRouter() {
                 fallback={<ForbiddenPage />}
               >
                 <ProjectTypesPage />
+              </CanAccess>
+            }
+          />
+
+          <Route
+            path='/honor-awards'
+            element={
+              <CanAccess
+                resource='marketplace-honor-awards'
+                action='list'
+                fallback={<ForbiddenPage />}
+              >
+                <HonorAwardsPage />
               </CanAccess>
             }
           />

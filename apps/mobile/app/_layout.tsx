@@ -8,6 +8,7 @@ import { install as installQuickCrypto } from 'react-native-quick-crypto';
 installQuickCrypto();
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { AppAuthProvider } from '../components/auth/AppAuthProvider';
+import UserAvatarSync from '../components/avatar/UserAvatarSync';
 import { AirsDashboardProvider } from '../components/dashboard/AirsDashboardProvider';
 import {
   AppPreferencesProvider,
@@ -74,16 +75,17 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
 
   // Map pathname to active dock tab
   const activeTab: DockTab =
-    pathname === '/portafolio'
-      ? 'portafolio'
-      : pathname.startsWith('/explorar')
-      ? 'explorar'
-      : pathname === '/mi-perfil'
-      ? 'mi-perfil'
+    pathname === '/portfolio'
+      ? 'portfolio'
+      : pathname.startsWith('/explore')
+      ? 'explore'
+      : pathname === '/profile'
+      ? 'profile'
       : 'dashboard';
 
   return (
     <AppAuthProvider>
+      <UserAvatarSync />
       <NotificationsProvider>
         <AirsDashboardProvider>
           <ThemeProvider value={navigationTheme}>
@@ -134,15 +136,15 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
                     }}
                   />
                   <Stack.Screen
-                    name='explorar'
+                    name='explore'
                     options={{ headerShown: false, animation: 'slide_from_right' }}
                   />
                   <Stack.Screen
-                    name='portafolio'
+                    name='portfolio'
                     options={{ headerShown: false, animation: 'slide_from_right' }}
                   />
                   <Stack.Screen
-                    name='mi-perfil'
+                    name='profile'
                     options={{
                       headerShown: false,
                       animationEnabled: false,
@@ -185,11 +187,7 @@ function RootApp({ fontsLoaded }: { fontsLoaded: boolean }): React.JSX.Element {
                     onChangeTab={(tab: DockTab) => {
                       if (tab === 'dashboard') {
                         router.replace('/');
-                      } else if (
-                        tab === 'portafolio' ||
-                        tab === 'explorar' ||
-                        tab === 'mi-perfil'
-                      ) {
+                      } else if (tab === 'portfolio' || tab === 'explore' || tab === 'profile') {
                         router.push(`/${tab}`);
                       }
                     }}

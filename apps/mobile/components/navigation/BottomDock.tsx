@@ -2,19 +2,13 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView as BlurViewRaw } from 'expo-blur';
-import {
-  LayoutDashboard,
-  ShieldCheck,
-  Leaf,
-  CircleUserRound,
-  type LucideProps,
-} from 'lucide-react-native';
+import { LayoutDashboard, Leaf, CircleUserRound, type LucideProps } from 'lucide-react-native';
 import type { FC } from 'react';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 
 const BlurView = BlurViewRaw as unknown as React.FC<React.ComponentProps<typeof BlurViewRaw>>;
 
-export type DockTab = 'dashboard' | 'portafolio' | 'explorar' | 'mi-perfil';
+export type DockTab = 'dashboard' | 'portfolio' | 'explore' | 'profile';
 
 interface DockItem {
   key: DockTab;
@@ -24,9 +18,8 @@ interface DockItem {
 
 const DOCK_ITEMS: DockItem[] = [
   { key: 'dashboard', label: 'Home', icon: LayoutDashboard as FC<LucideProps> },
-  { key: 'portafolio', label: 'Portfolio', icon: ShieldCheck as FC<LucideProps> },
-  { key: 'explorar', label: 'Explore', icon: Leaf as FC<LucideProps> },
-  { key: 'mi-perfil', label: 'Profile', icon: CircleUserRound as FC<LucideProps> },
+  { key: 'explore', label: 'Explore', icon: Leaf as FC<LucideProps> },
+  { key: 'profile', label: 'Profile', icon: CircleUserRound as FC<LucideProps> },
 ];
 
 export const DOCK_HEIGHT = 64;

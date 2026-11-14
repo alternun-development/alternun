@@ -8,13 +8,21 @@ import React, {
   useRef,
   type ReactNode,
 } from 'react';
+import { AppState } from 'react-native';
 import type { Translator } from '@alternun/i18n';
 import { useAuth } from '../auth/AppAuthProvider';
 import type { NotificationItem, NotifType } from '../dashboard/NotificationDropdown';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 
-const REFRESH_INTERVAL_MS = 15_000;
+/** Polling pace: every 30 s, doubling after each failure up to 5 min, never twice within 5 s. */
+const REFRESH_INTERVAL_MS = 30_000;
+const MAX_BACKOFF_MS = 5 * 60_000;
+const MIN_GAP_MS = 5_000;
+
+export function nextNotificationsDelay(failures: number): number {
+  return Math.min(REFRESH_INTERVAL_MS * 2 ** Math.max(0, failures), MAX_BACKOFF_MS);
+}
 
 type NotificationPayload = Record<string, unknown>;
 
@@ -78,6 +86,22 @@ function notificationCopy(
     case 'referral_confirmed':
     case 'profile_completed':
       return { title: t.t(`${key}.title`), body: t.t(`${key}.body`) };
+    case 'project_client_added': {
+      // Sent to Alternun global admins and the project's admins.
+      const values = {
+        project: textPayload(record.payload, 'projectName'),
+        client: textPayload(record.payload, 'clientName'),
+        email: textPayload(record.payload, 'clientEmail'),
+        amount: textPayload(record.payload, 'amount'),
+        concept: textPayload(record.payload, 'concept'),
+      };
+      const pending = record.payload.reportStatus === 'pending_approval';
+      const withAirs = values.amount !== undefined;
+      return {
+        title: t.t(`${key}.${pending ? 'titlePending' : 'title'}`, values),
+        body: t.t(`${key}.${withAirs ? 'bodyAirs' : 'body'}`, values),
+      };
+    }
     default:
       return {
         title: t.t('notifications.events.generic.title'),
@@ -184,13 +208,57 @@ export function NotificationsProvider({ children }: { children: ReactNode }): Re
     });
   }, [authLoading, userId]);
 
-  useEffect(() => {
-    void refresh().catch(() => undefined);
-    if (!userId) return undefined;
+  // Failures and the last request survive effect re-runs so they cannot cause request bursts.
+  const pollRef = useRef({ userId, failures: 0, lastAt: 0 });
+  if (pollRef.current.userId !== userId) {
+    pollRef.current = { userId, failures: 0, lastAt: 0 };
+  }
 
-    const interval = setInterval(() => void refresh().catch(() => undefined), REFRESH_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [refresh, userId]);
+  useEffect(() => {
+    if (!userId) {
+      void refresh().catch(() => undefined);
+      return undefined;
+    }
+    if (authLoading) return undefined;
+
+    const poll = pollRef.current;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const schedule = (ms: number): void => {
+      if (timer) clearTimeout(timer);
+      if (active) timer = setTimeout(() => void tick(), ms);
+    };
+    const tick = async (): Promise<void> => {
+      // Only poll while the app (or browser tab) is in front.
+      if (AppState.currentState === 'background') return;
+      const wait = poll.lastAt + MIN_GAP_MS - Date.now();
+      if (wait > 0) {
+        schedule(wait);
+        return;
+      }
+      poll.lastAt = Date.now();
+      try {
+        await refresh();
+        poll.failures = 0;
+      } catch {
+        // A rejected session (401) or an outage: back off instead of hammering the API.
+        poll.failures += 1;
+      }
+      schedule(nextNotificationsDelay(poll.failures));
+    };
+
+    void tick();
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active')
+        schedule(poll.failures > 0 ? nextNotificationsDelay(poll.failures) : 0);
+      else if (timer) clearTimeout(timer);
+    });
+    return () => {
+      active = false;
+      if (timer) clearTimeout(timer);
+      appState.remove();
+    };
+  }, [authLoading, refresh, userId]);
 
   const updateRemote = useCallback(
     async (id: string, patch: Record<string, boolean>): Promise<void> => {

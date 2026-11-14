@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-11-14T13:09:19Z",
+  "environments": {
+    "prod": {
+      "status": "up",
+      "apiVersion": "1.1.124",
+      "surfaces": [
+        {
+          "env": "prod",
+          "surface": "API",
+          "url": "https://api.alternun.co/health",
+          "code": 200,
+          "ms": 323,
+          "status": "up",
+          "version": "1.1.124"
+        },
+        {
+          "env": "prod",
+          "surface": "Admin",
+          "url": "https://admin.alternun.co",
+          "code": 200,
+          "ms": 806,
+          "status": "up",
+          "version": null
+        },
+        {
+          "env": "prod",
+          "surface": "SSO",
+          "url": "https://sso.alternun.co/-/health/live/",
+          "code": 200,
+          "ms": 321,
+          "status": "up",
+          "version": null
+        }
+      ]
+    },
+    "dev": {
+      "status": "up",
+      "apiVersion": "1.2.5",
+      "surfaces": [
+        {
+          "env": "dev",
+          "surface": "API",
+          "url": "https://testnet.api.alternun.co/health",
+          "code": 200,
+          "ms": 283,
+          "status": "up",
+          "version": "1.2.5"
+        },
+        {
+          "env": "dev",
+          "surface": "Admin",
+          "url": "https://testnet.admin.alternun.co",
+          "code": 200,
+          "ms": 1170,
+          "status": "up",
+          "version": null
+        },
+        {
+          "env": "dev",
+          "surface": "SSO",
+          "url": "https://testnet.sso.alternun.co/-/health/live/",
+          "code": 200,
+          "ms": 341,
+          "status": "up",
+          "version": null
+        }
+      ]
+    }
+  },
+  "versionDrift": {
+    "prod": "1.1.124",
+    "dev": "1.2.5",
+    "differs": true
+  },
+  "overall": "up"
+}

@@ -18,6 +18,20 @@ const enterprise: EnterpriseRecord = {
   status: 'active',
   countryCode: 'CO',
   websiteUrl: 'https://forest.example',
+  sortOrder: 0,
+  kind: 'company',
+  sector: 'Hotelería',
+  description: 'Hotel junto al bosque.',
+  partnershipStatus: 'in_conversation',
+  location: { municipality: 'Santa Marta', department: 'Magdalena' },
+  publicContact: { web: 'https://forest.example', phone: 'POR CONFIRMAR' },
+  logoUrl: null,
+  bannerUrl: null,
+  eventDetails: {},
+  sites: [],
+  internalContacts: [{ name: 'Private contact', email: 'private@forest.example' }],
+  pendingItems: ['Private pending item'],
+  internalNotes: 'Private internal note',
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-02T00:00:00.000Z',
 };
@@ -66,9 +80,30 @@ const logo: ProjectMediaRecord = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
-function repository(rows: unknown[]): MarketplacePublicRepository {
-  return { listPublished: async () => rows } as unknown as MarketplacePublicRepository;
+function repository(
+  rows: unknown[],
+  affiliations: unknown[] = [],
+  products: unknown[] = []
+): MarketplacePublicRepository {
+  return {
+    listPublished: async () => rows,
+    listAffiliations: async () => affiliations,
+    listActiveProducts: async () => products,
+  } as unknown as MarketplacePublicRepository;
 }
+
+const publicProfile = {
+  kind: 'company',
+  sector: 'Hotelería',
+  description: 'Hotel junto al bosque.',
+  partnershipStatus: 'in_conversation',
+  location: { municipality: 'Santa Marta', department: 'Magdalena' },
+  publicContact: { web: 'https://forest.example', phone: 'POR CONFIRMAR' },
+  bannerUrl: null,
+  eventDetails: {},
+  sites: [],
+  products: [],
+};
 
 function expectNotFound(error: unknown): boolean {
   return (
@@ -102,10 +137,12 @@ test('public enterprise list includes only active enterprises with published pro
     id: enterprise.id,
     slug: enterprise.slug,
     displayName: enterprise.displayName,
-    logo: { url: logo.url, altText: 'Hotel logo' },
+    // Two owned projects: no single project logo to fall back to.
+    logo: null,
     countryCode: 'CO',
     websiteUrl: 'https://forest.example',
     projectCount: 2,
+    ...publicProfile,
   });
 });
 
@@ -124,12 +161,22 @@ test('public enterprise detail returns localized published projects without inte
   assert.equal(result.projects[0].title, 'Forest stay');
   assert.equal(result.websiteUrl, null);
   assert.deepEqual(Object.keys(result).sort(), [
+    'bannerUrl',
     'countryCode',
+    'description',
     'displayName',
+    'eventDetails',
     'id',
+    'kind',
+    'location',
     'logo',
+    'partnershipStatus',
+    'products',
     'projectCount',
     'projects',
+    'publicContact',
+    'sector',
+    'sites',
     'slug',
     'websiteUrl',
   ]);
@@ -137,7 +184,7 @@ test('public enterprise detail returns localized published projects without inte
   assert.doesNotMatch(serialized, /http:\/\/unsafe/);
   assert.doesNotMatch(
     serialized,
-    /Private legal name|private-issuer|private-subject|legalName|createdBy/
+    /Private legal name|private-issuer|private-subject|legalName|createdBy|Private contact|Private pending item|Private internal note|internalContacts|pendingItems|internalNotes/
   );
 });
 
@@ -150,4 +197,102 @@ test('paused, archived, and enterprises without published projects are unavailab
   }
   const emptyService = new MarketplacePublicService(repository([]));
   await assert.rejects(emptyService.findEnterpriseBySlug(enterprise.slug), expectNotFound);
+});
+
+test('affiliated enterprises are listed with their own profile, products and the project they support', async () => {
+  const sponsor: EnterpriseRecord = {
+    ...enterprise,
+    id: 'sponsor-1',
+    slug: 'beach-hotels',
+    displayName: 'Beach Hotels',
+    logoUrl: null,
+    sortOrder: 1,
+  };
+  const products = [
+    {
+      id: 'product-1',
+      enterpriseId: sponsor.id,
+      name: 'Noche de hospedaje',
+      description: 'Habitación doble',
+      airsMin: 5,
+      airsMax: null,
+      airsNote: 'por noche',
+      sortOrder: 0,
+      isActive: true,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    },
+  ];
+  const service = new MarketplacePublicService(
+    repository(
+      [{ project, enterprise, media: [logo] }],
+      [
+        { projectId: project.id, enterprise: sponsor },
+        {
+          projectId: 'unpublished-project',
+          enterprise: { ...sponsor, id: 'orphan', slug: 'orphan' },
+        },
+        {
+          projectId: project.id,
+          enterprise: { ...sponsor, id: 'paused', slug: 'paused', status: 'paused' },
+        },
+      ],
+      products
+    )
+  );
+
+  const list = await service.listEnterprises('en');
+  assert.deepEqual(
+    list.data.map((item) => item.slug),
+    ['forest-hotel', 'beach-hotels']
+  );
+
+  const detail = await service.findEnterpriseBySlug('beach-hotels', 'en');
+  // The project logo belongs to the project; a sponsor without its own logo shows none.
+  assert.equal(detail.logo, null);
+  assert.equal(detail.projects[0].slug, project.slug);
+  assert.equal(detail.projects[0].enterprise.slug, enterprise.slug);
+  assert.deepEqual(detail.products, [
+    {
+      id: 'product-1',
+      name: 'Noche de hospedaje',
+      description: 'Habitación doble',
+      airsMin: 5,
+      airsMax: null,
+      airsNote: 'por noche',
+    },
+  ]);
+});
+
+test('an enterprise logo set on the enterprise wins over the project logo', async () => {
+  const service = new MarketplacePublicService(
+    repository([
+      {
+        project,
+        enterprise: { ...enterprise, logoUrl: 'https://cdn.example/own-logo.png' },
+        media: [logo],
+      },
+    ])
+  );
+  const detail = await service.findEnterpriseBySlug(enterprise.slug, 'en');
+  assert.deepEqual(detail.logo, {
+    url: 'https://cdn.example/own-logo.png',
+    altText: enterprise.displayName,
+  });
+});
+
+test('an enterprise owning several projects does not borrow one of their logos', async () => {
+  const service = new MarketplacePublicService(
+    repository([
+      { project, enterprise, media: [logo] },
+      {
+        project: { ...project, id: 'project-2', slug: 'second' },
+        enterprise,
+        media: [{ ...logo, id: 'logo-2', projectId: 'project-2' }],
+      },
+    ])
+  );
+  const detail = await service.findEnterpriseBySlug(enterprise.slug, 'en');
+  assert.equal(detail.logo, null);
+  assert.equal(detail.projectCount, 2);
 });

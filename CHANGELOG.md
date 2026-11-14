@@ -1,3 +1,217 @@
+## [1.2.6](https://github.com/alternun-development/alternun/compare/v1.2.5...v1.2.6) (2026-11-14)
+
+### Features
+
+- **status:** standalone infra status-checker service (no third-party deps) ([6b565ac](https://github.com/alternun-development/alternun/commit/6b565acc6f3248a5be7ea3837808ed29e58106f3))
+- **security:** infra topology status in reports + live tracker ([b1d2c63](https://github.com/alternun-development/alternun/commit/b1d2c63bc5a8a8869d199699d4edacbefe3924d2))
+
+### Changes
+
+- **security:** gitleaks config + make history scan non-blocking ([8a32cf9](https://github.com/alternun-development/alternun/commit/8a32cf9f766b730d1397bff316e3760a708a844a))
+- **security:** email deliverability report for Tláo + mailer hygiene ([342197f](https://github.com/alternun-development/alternun/commit/342197f2143a738532eb59a8cc2da0268b1f55c7))
+- **security:** weekly AWS audit loop, reports and reviewer IAM ([1c523e6](https://github.com/alternun-development/alternun/commit/1c523e61f3be206c113d838f49f44cbf99af20e6))
+
+### Security
+
+- **repo:** remove recipient emails and tracker URL from public repo ([03fc286](https://github.com/alternun-development/alternun/commit/03fc286b4deb1ce5b0e5d4ce35474fd7c93452a8))
+
+### Bug Fixes
+
+- **security:** exclude audit's own files from git-history leak scan ([57b41ef](https://github.com/alternun-development/alternun/commit/57b41ef790acc403ea4c1283277ba9e0b873e2fb))
+
+## [1.2.5](https://github.com/alternun-development/alternun/compare/v1.2.4...v1.2.5) (2026-11-14)
+
+### Features
+
+- **profile:** flip the avatar to the tier badge on hover and ease notification polling ([cab4942](https://github.com/alternun-development/alternun/commit/cab4942b00c6c1f831e4cbe6f49ac30530de1676))
+
+### Bug Fixes
+
+- **profile:** show the stored Google photo in the top bar when the session lacks it ([c1fb55e](https://github.com/alternun-development/alternun/commit/c1fb55eac69d50a741d159139762eb2d2eacb3cb))
+
+## [1.2.4](https://github.com/alternun-development/alternun/compare/v1.2.3...v1.2.4) (2026-11-14)
+
+### Features
+
+- **profile:** choose an avatar from the social photo, illustrations or held badges ([0a7e89f](https://github.com/alternun-development/alternun/commit/0a7e89f5afc54e920dde50c4575b771446699941))
+
+## [1.2.3](https://github.com/alternun-development/alternun/compare/v1.2.2...v1.2.3) (2026-11-14)
+
+### Features
+
+- **profile:** reveal the metal tier badge with the honor award animation ([655fbfc](https://github.com/alternun-development/alternun/commit/655fbfc7cb925e5bba28136fafe68598fb601f4e))
+
+## [1.2.2](https://github.com/alternun-development/alternun/compare/v1.2.1...v1.2.2) (2026-11-14)
+
+### Features
+
+- **honor-awards:** medals and cards matching the design templates ([0fe2681](https://github.com/alternun-development/alternun/commit/0fe2681983d76f426273f3c1c827508b38b04c6e))
+
+## [1.2.1](https://github.com/alternun-development/alternun/compare/v1.2.0...v1.2.1) (2026-11-14)
+
+### Features
+
+- **profile:** explain the Airs, projects and CO₂ figures with info buttons ([17ebb73](https://github.com/alternun-development/alternun/commit/17ebb738104f637e92eb402f998e64a8fc1a62dc))
+
+## [1.2.0](https://github.com/alternun-development/alternun/compare/v1.1.142...v1.2.0) (2026-11-14)
+
+### Features
+
+- **honor-awards:** medal art, info, demo and per-stay ally medals ([3dbc85f](https://github.com/alternun-development/alternun/commit/3dbc85f45561d6c1ada0443f85f41f3a39a33f7a))
+- **honor-awards:** Galardones de honor for people and allies ([3a84228](https://github.com/alternun-development/alternun/commit/3a84228224db44199f295b0d7c8acdc850208c4e))
+
+### Bug Fixes
+
+- **release:** keep changelog version headings at "##" for minor releases ([79db85b](https://github.com/alternun-development/alternun/commit/79db85bb7426bd45005ff6b90a457c947e5d9949))
+
+## [1.1.142](https://github.com/alternun-development/alternun/compare/v1.1.141...v1.1.142) (2026-11-13)
+
+### Features
+
+- **auth:** remind users to check their spam folder while awaiting the code ([bbb1e72](https://github.com/alternun-development/alternun/commit/bbb1e72ffe449c0dad5d7d6459d6b8ed922e072e))
+
+## [1.1.141](https://github.com/alternun-development/alternun/compare/v1.1.140...v1.1.141) (2026-11-13)
+
+### Bug Fixes
+
+- **auth:** let the backend own email auth for both Better Auth and Supabase ([0f52230](https://github.com/alternun-development/alternun/commit/0f5223045c8109ad06d40fa318d156b1e1c0f530))
+
+## [1.1.140](https://github.com/alternun-development/alternun/compare/v1.1.139...v1.1.140) (2026-11-13)
+
+### Bug Fixes
+
+- **auth:** send 6-digit email code and keep email auth on Better Auth ([652e9e7](https://github.com/alternun-development/alternun/commit/652e9e74905ce5aeb96c04a46dc9c474c77adbe2))
+
+## [1.1.139](https://github.com/alternun-development/alternun/compare/v1.1.138...v1.1.139) (2026-11-13)
+
+### Changes
+
+- **repo:** update reentry status ([af675ac](https://github.com/alternun-development/alternun/commit/af675acf529e6bc1367bcaa95d1b7771d477fe1c))
+
+### Bug Fixes
+
+- **auth:** refuse retired SMTP provider for verification emails ([7a52cd1](https://github.com/alternun-development/alternun/commit/7a52cd1cc2c876c5fabe83b289c7ae67734033ca))
+
+## [1.1.138](https://github.com/alternun-development/alternun/compare/v1.1.137...v1.1.138) (2026-11-10)
+
+### Changes
+
+- **repo:** update reentry status ([b382611](https://github.com/alternun-development/alternun/commit/b382611887f98b964a6d9575cab553fcb7ec06cc))
+
+### Features
+
+- **dashboard:** Airs symbol loader, resizable column lanes and sortable activity ([d1f9ead](https://github.com/alternun-development/alternun/commit/d1f9eade99ed23e248129740518aaacb944a9cd3))
+
+## [1.1.137](https://github.com/alternun-development/alternun/compare/v1.1.136...v1.1.137) (2026-11-10)
+
+### Changes
+
+- **repo:** update reentry status ([e7677e6](https://github.com/alternun-development/alternun/commit/e7677e608089ee0bc5a41a68ec1e91a8e120529c))
+
+### Bug Fixes
+
+- **mobile:** compact phone top bar, notifications under the pill, accurate time ago ([2e592df](https://github.com/alternun-development/alternun/commit/2e592df77aeb4a14d1302a07772f658ad7858fd6))
+
+## [1.1.136](https://github.com/alternun-development/alternun/compare/v1.1.135...v1.1.136) (2026-11-10)
+
+### Changes
+
+- **repo:** update reentry status ([6e35144](https://github.com/alternun-development/alternun/commit/6e351447b52b40753550725eefd5b2c69236f4d9))
+
+### Features
+
+- **marketplace:** cancelled invitations cancel their waiting Airs ([3bfab51](https://github.com/alternun-development/alternun/commit/3bfab51999f51df68feea4e0f361e40f134a1347))
+
+## [1.1.135](https://github.com/alternun-development/alternun/compare/v1.1.134...v1.1.135) (2026-11-10)
+
+### Changes
+
+- **repo:** update reentry status ([760249f](https://github.com/alternun-development/alternun/commit/760249f6fb85d7dbc09c1ec5604096caf22ae2ab))
+
+### Features
+
+- **marketplace:** admin notices for new clients, resends and client pagination ([e02f936](https://github.com/alternun-development/alternun/commit/e02f936740bfde3f5330320112a874f4f309cd67))
+
+## [1.1.134](https://github.com/alternun-development/alternun/compare/v1.1.133...v1.1.134) (2026-11-09)
+
+### Changes
+
+- **repo:** update reentry status ([754e8aa](https://github.com/alternun-development/alternun/commit/754e8aad13c88ff415f7a1d1857a46dd6138c4b6))
+
+### Features
+
+- **marketplace:** private in-app proof viewer, visible labels, discard changes ([7c575be](https://github.com/alternun-development/alternun/commit/7c575be3b0d8e73403ede55c674413ee3e6f854a))
+
+## [1.1.133](https://github.com/alternun-development/alternun/compare/v1.1.132...v1.1.133) (2026-11-09)
+
+### Changes
+
+- **repo:** update reentry status ([3bf2d41](https://github.com/alternun-development/alternun/commit/3bf2d410cb54dd055346d2997df0c903599bf37e))
+
+### Features
+
+- **email,marketplace:** send through Tláo only, auth-style form fields, client history ([c02931d](https://github.com/alternun-development/alternun/commit/c02931df00cade60a16e915f30b39b95a4125179))
+
+## [1.1.132](https://github.com/alternun-development/alternun/compare/v1.1.131...v1.1.132) (2026-11-09)
+
+### Bug Fixes
+
+- **security:** marketplace access regression tests and review evidence ([cfe509c](https://github.com/alternun-development/alternun/commit/cfe509c07c50344ab6ece3605c2a84b1a7df5203))
+
+## [1.1.131](https://github.com/alternun-development/alternun/compare/v1.1.130...v1.1.131) (2026-11-09)
+
+### Changes
+
+- **repo:** update reentry status ([fc905b6](https://github.com/alternun-development/alternun/commit/fc905b6fd21a07d6f3914bc17cb273b1a5035b02))
+
+### Features
+
+- **marketplace:** client form feedback and invitation emails with Airs details ([01d7700](https://github.com/alternun-development/alternun/commit/01d7700b3e99c91cd5b08ab5d6b90beb2b69689c))
+
+## [1.1.130](https://github.com/alternun-development/alternun/compare/v1.1.129...v1.1.130) (2026-11-09)
+
+### Bug Fixes
+
+- **mobile:** size the top bar pill and controls to the Airs logo mark ([c6f3669](https://github.com/alternun-development/alternun/commit/c6f36698b19006c1831325553779776558c79781))
+
+## [1.1.129](https://github.com/alternun-development/alternun/compare/v1.1.128...v1.1.129) (2026-11-09)
+
+### Bug Fixes
+
+- **mobile:** hide native scrollbars on detail, manage and menu views ([0313ccd](https://github.com/alternun-development/alternun/commit/0313ccd1608d1e3cecb28c414483260bb09f705b))
+
+## [1.1.128](https://github.com/alternun-development/alternun/compare/v1.1.127...v1.1.128) (2026-11-09)
+
+### Changes
+
+- **repo:** sync reentry status for v1.1.128-dev.0 ([ab9ac08](https://github.com/alternun-development/alternun/commit/ab9ac083fe08ff02c6a4f8e15261116d65577d71))
+
+### Features
+
+- **marketplace:** domain project admins and demo role accounts ([3a358de](https://github.com/alternun-development/alternun/commit/3a358de2a3dabb2ebef7f493df96d85c6ffa42e8))
+- **marketplace:** clients tab, intent guides and compact page headers ([1c4c073](https://github.com/alternun-development/alternun/commit/1c4c073592b9ca2fbda0f4106669338d751e59d7))
+- **marketplace:** in-app project and enterprise management, enrolment and explorer refresh ([546678f](https://github.com/alternun-development/alternun/commit/546678fd6fc60514d062b57c82126ff46b3fbe4c))
+
+## [1.1.127](https://github.com/alternun-development/alternun/compare/v1.1.124...v1.1.127) (2026-11-09)
+
+### Changes
+
+- **admin,api,mobile:** oidc-client, api, copy, permissions ([5f44adb](https://github.com/alternun-development/alternun/commit/5f44adb2b73e0b697a0ebff35524c1790e3711af))
+- **api,docs,mobile:** admin-access.controller, admin-access.service, admin-access.types, marketplace.module ([3db6574](https://github.com/alternun-development/alternun/commit/3db65745ef111d7350d64cb89f1cad7da92fd4c7))
+- **repo,admin,api:** .gitignore, AGENTS, CLAUDE, api ([449dbf9](https://github.com/alternun-development/alternun/commit/449dbf904fcb9c2bb20c85bc115e4dc6a5c16f41))
+
+## [1.1.126](https://github.com/alternun-development/alternun/compare/v1.1.125-dev.0...v1.1.126) (2026-11-09)
+
+### Bug Fixes
+
+- **repo:** test(api,docs,mobile): admin-access.controller, admin-access.service, admin-access.types, marketplace.module
+
+## [1.1.125](https://github.com/alternun-development/alternun/compare/v1.1.124...v1.1.125) (2026-11-09)
+
+### Bug Fixes
+
+- **repo:** test(repo,admin,api): .gitignore, AGENTS, CLAUDE, api
+
 ## [1.1.124](https://github.com/alternun-development/alternun/compare/v1.1.123...v1.1.124) (2026-10-28)
 
 ### Bug Fixes
@@ -1573,9 +1787,9 @@
 - **i18n:** add missing wallet.changePin and addAccount.noVault translations to es/th ([630036c](https://github.com/alternun-development/alternun/commit/630036c790bc5e7233ff8348b04bdb1180bd73ea))
 - **wallet:** full wallet management — add/delete/import + MetaMask linking + layout fix ([592f737](https://github.com/alternun-development/alternun/commit/592f737ac3234efcc1f4e83ad0cf2f57c3f4a95f))
 
-# [1.1.0](https://github.com/alternun-development/alternun/compare/v1.1.0-dev.0...v1.1.0) (2026-06-30)
+## [1.1.0](https://github.com/alternun-development/alternun/compare/v1.1.0-dev.0...v1.1.0) (2026-06-30)
 
-# [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
+## [1.1.0](https://github.com/alternun-development/alternun/compare/v1.0.296...v1.1.0) (2026-06-30)
 
 ### Bug Fixes
 
