@@ -56,3 +56,31 @@ Config via env: `PORT` (8787), `CHECK_INTERVAL_MS` (60000), `STATE_DIR` (`./stat
 - **Behind a domain:** put it behind the existing ALB/Cloudflare as e.g. `status.alternun.co`.
 - **Serverless option:** `checker.mjs` has no server coupling, so `checkAll()` can also run
   from a Lambda on a schedule that writes `status.json` to S3 for a static page.
+
+## Deployed (dev) — AWS, scheduled Lambda + S3 + CloudFront
+
+A standalone deploy, isolated from the SST stack (all resources prefixed `alternun-status-dev-*`):
+
+| Resource         | Name                                                                |
+| ---------------- | ------------------------------------------------------------------- |
+| Lambda           | `alternun-status-dev` (nodejs22, handler `lambda.handler`)          |
+| Role             | `alternun-status-dev-lambda` (S3 write on its bucket + logs only)   |
+| Bucket (private) | `alternun-status-dev-124120088516`                                  |
+| Schedule         | EventBridge rule `alternun-status-dev-schedule` — `rate(5 minutes)` |
+| CDN              | CloudFront distribution with OAC over the private bucket            |
+
+`lambda.mjs` is the scheduled handler: it runs `checkAll()` and writes `status.json`,
+`index.html` and `history.json` to the bucket. CloudFront serves `index.html` (bucket
+stays private via Origin Access Control).
+
+**Redeploy the function code:**
+
+```bash
+cd services/status-checker
+zip -j /tmp/status.zip checker.mjs page.mjs lambda.mjs
+# add {"type":"module"} as package.json in the zip
+aws lambda update-function-code --function-name alternun-status-dev --zip-file fileb:///tmp/status.zip
+```
+
+**Tear down** (reversible): delete the CloudFront distribution, EventBridge rule, Lambda,
+role and bucket, all under the `alternun-status-dev-*` prefix.
