@@ -23,9 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
-      CEO_EMAIL: sgomez@alternun.io
-      CTO_EMAIL: edward@alternun.io
-      LIVE_TRACKER_URL: https://claude.ai/artifact/G6yZ3NjjbdHssoAb5CCSS4
+      # Recipients and the tracker URL are NOT hard-coded (this repo is public).
+      # Set them as repo secrets: SECURITY_CEO_EMAIL, SECURITY_CTO_EMAIL, SECURITY_TRACKER_URL.
+      CEO_EMAIL: ${{ secrets.SECURITY_CEO_EMAIL }}
+      CTO_EMAIL: ${{ secrets.SECURITY_CTO_EMAIL }}
+      LIVE_TRACKER_URL: ${{ secrets.SECURITY_TRACKER_URL }}
     steps:
       - name: Checkout (full history for leak scan)
         uses: actions/checkout@v4
