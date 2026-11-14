@@ -39,6 +39,8 @@ export interface HonorAward {
     description: string | null;
     logoUrl: string | null;
     websiteUrl: string | null;
+    /** ISO country code of the ally (e.g. "CO"), shown under its name on the card. */
+    countryCode?: string | null;
   } | null;
 }
 

@@ -187,15 +187,28 @@ describe('medal art', () => {
   const { Text: SvgText } = require('react-native-svg');
   const HonorAwardEmblem = require('../HonorAwardEmblem').default;
 
-  it('draws the golf crest with the mission name on the banner', () => {
+  it('uses the medal from the design file for the golf preset', () => {
+    const { Image } = require('react-native');
     let tree;
     act(() => {
       tree = renderer.create(
         <HonorAwardEmblem tier='gold' title='Manglar Verde' artPreset='golf_mangrove' size={120} />
       );
     });
+    expect(tree.root.findAllByType(Image)).toHaveLength(1);
+    expect(tree.root.findAllByType(SvgText)).toHaveLength(0);
+    act(() => tree.unmount());
+  });
+
+  it('draws the vector crest with the name on the banner for presets without art', () => {
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardEmblem tier='bronze' title='Taybo Santa Marta' artPreset='coast' size={120} />
+      );
+    });
     const banner = tree.root.findAllByType(SvgText).map((node) => node.props.children);
-    expect(banner).toEqual(['MANGLAR', 'VERDE']);
+    expect(banner).toEqual(['TAYBO', 'SANTA MARTA']);
     act(() => tree.unmount());
   });
 
