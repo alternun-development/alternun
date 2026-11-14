@@ -29,10 +29,12 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   Max,
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import type { FastifyRequest } from 'fastify';
 import type { FastifyAdminRequest } from '../../common/admin-auth/admin-auth.guard';
@@ -69,6 +71,12 @@ export class CreateProjectMedalDto {
   @Min(0)
   @Max(10000)
   sortOrder?: number;
+
+  @ApiPropertyOptional({ description: 'Honor award recipe (for people) this medal also gives.' })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsUUID('4')
+  honorRecipeId?: string | null;
 }
 
 export class UpdateProjectMedalDto {
@@ -102,6 +110,12 @@ export class UpdateProjectMedalDto {
   @Min(0)
   @Max(10000)
   sortOrder?: number;
+
+  @ApiPropertyOptional({ description: 'Honor award recipe (for people) this medal also gives.' })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsUUID('4')
+  honorRecipeId?: string | null;
 }
 
 @ApiTags('admin project medals')

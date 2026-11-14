@@ -32,6 +32,12 @@ jest.mock('../../components/marketplace/MarketplaceProjectComments', () => ({
   default: () => null,
 }));
 
+// Honor awards load on their own and have their own tests.
+jest.mock('../../components/honorAwards/HonorAwardsSection', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 const palette = {
   background: '#fff',
   surface: '#fff',

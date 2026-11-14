@@ -914,7 +914,8 @@
         "achievements": "Achievements",
         "account": "Account",
         "referrals": "Referrals",
-        "preferences": "Preferences"
+        "preferences": "Preferences",
+        "honorAwards": "Honor awards"
       },
       "header": {
         "personalInfo": "Personal Information",
@@ -1085,6 +1086,47 @@
         "saveCaption": "Save & caption",
         "browserFallback": "Choose a social link, or save the image and copy your caption.",
         "downloadError": "Unable to save the image. Try Share with apps instead."
+      },
+      "honorAwards": {
+        "subtitle": "Medals and trophies that recognize your positive impact journey.",
+        "enterpriseSubtitle": "Recognition this ally has received on Airs.",
+        "pendingNote": "Awards to claim: {{count}}",
+        "loadError": "We couldn't load the awards. Tap to retry.",
+        "claimError": "We couldn't claim the award. Please try again.",
+        "emptySlot": "Open slot",
+        "claimCta": "Claim",
+        "missionLabel": "Mission:",
+        "supportedBy": "Supported by:",
+        "airsAmount": "+{{amount}} Airs",
+        "obtained": "Earned: {{date}}",
+        "shareMessage": "I earned the \"{{title}}\" award on Airs{{partner}}.",
+        "tiers": {
+          "gold": "Gold medal",
+          "silver": "Silver medal",
+          "bronze": "Bronze medal"
+        },
+        "kinds": {
+          "medal": "Medal",
+          "trophy": "Trophy"
+        },
+        "claim": {
+          "headline": "Award unlocked!",
+          "inspect": "Inspect",
+          "continue": "Continue"
+        },
+        "inspect": {
+          "flip": "Tap to see the back",
+          "share": "Share",
+          "viewMission": "View mission",
+          "close": "Close",
+          "back": "Back"
+        },
+        "mission": {
+          "purpose": "Purpose:",
+          "visitPartner": "Visit page",
+          "projectData": "Project details:",
+          "viewProject": "View project"
+        }
       }
     },
     "manage": {
@@ -1096,7 +1138,8 @@
           "images": "Images",
           "products": "Products and Airs",
           "team": "Team",
-          "clients": "Clients"
+          "clients": "Clients",
+          "honors": "Awards"
         },
         "info": {
           "name": "Name",
@@ -1122,6 +1165,9 @@
         },
         "team": {
           "intro": "People who manage the whole enterprise and all its projects. They must have signed in to Airs at least once."
+        },
+        "honors": {
+          "intro": "Claim the awards your organization received; claimed awards show on its public page."
         }
       },
       "title": "Manage project",

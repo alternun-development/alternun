@@ -110,6 +110,12 @@ describe('EnterpriseManageView', () => {
     ]);
   });
 
+  it('adds the honor awards tab last when the screen provides its client', () => {
+    expect(
+      enterpriseTabs({ editInfo: true, images: false, products: false, team: false }, false, true)
+    ).toEqual(['info', 'honors']);
+  });
+
   it('shows the denied state for people without access', async () => {
     const c = client({
       overview: jest.fn(async () => {

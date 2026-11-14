@@ -235,6 +235,7 @@ test('a stored medal maps to the API shape', () => {
       name: 'Golf',
       image_url: 'https://x/y.png',
       sort_order: 3,
+      honor_recipe_id: 'r',
       created_at: 'now',
     }),
     {
@@ -245,8 +246,10 @@ test('a stored medal maps to the API shape', () => {
       imageUrl: 'https://x/y.png',
       isActive: true,
       sortOrder: 3,
+      honorRecipeId: 'r',
       createdAt: 'now',
     }
   );
+  assert.equal(mapProjectMedal({}).honorRecipeId, null);
   assert.equal(mapProjectMedal({ is_active: false }).isActive, false);
 });
