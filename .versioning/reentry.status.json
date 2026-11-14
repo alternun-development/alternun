@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-14T10:39:16.244Z",
+  "lastUpdated": "2026-11-14T11:38:10.744Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Verify avatar picker (social photo, presets, badges) on testnet after v1.2.4",
+      "description": "Verify avatar flip/tier reveal and notification backoff on testnet after v1.2.5",
       "id": "next",
       "priority": 1
     }

@@ -102,14 +102,11 @@ describe('AvatarPicker', () => {
     expect(shown).not.toContain('Pendiente');
   });
 
-  it('labels the default as the photo or as the fallback badge', () => {
+  it('labels the default as the photo when there is one', () => {
     act(() => setUserAvatarState({ socialUrl: 'https://cdn.test/me.png' }));
-    const withPhoto = renderPicker();
-    expect(labels(withPhoto.tree)).toContain('Tu foto');
-
-    act(() => setUserAvatarState({ socialUrl: null }));
-    const withFallback = renderPicker({ fallback: 1 });
-    expect(labels(withFallback.tree)).toContain('Predeterminado');
+    const { tree } = renderPicker();
+    expect(labels(tree)).toContain('Tu foto');
+    expect(labels(tree)).not.toContain('Tus iniciales');
   });
 
   it('saves the choice, shares it and closes', async () => {
@@ -229,6 +226,47 @@ describe('UserAvatarSync', () => {
 
     expect(getUserAvatarState().socialUrl).toBe('https://lh3.test/stored.jpg');
     act(() => tree.unmount());
+  });
+
+  it('waits for the session to load and retries when the token is late', async () => {
+    jest.useFakeTimers();
+    try {
+      const settle = () =>
+        act(async () => {
+          for (let i = 0; i < 12; i += 1) await Promise.resolve();
+        });
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('token not ready'))
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ kind: 'preset', ref: 'wave', art: null }),
+        });
+      const user = { id: 'u1', metadata: {} };
+      useAuth.mockReturnValue({ user, loading: true, client: {} });
+
+      let tree;
+      act(() => {
+        tree = renderer.create(<UserAvatarSync />);
+      });
+      await settle();
+      expect(global.fetch).not.toHaveBeenCalled();
+
+      useAuth.mockReturnValue({ user, loading: false, client: {} });
+      act(() => tree.update(<UserAvatarSync />));
+      await settle();
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(getUserAvatarState().choice.kind).toBeNull();
+
+      act(() => jest.advanceTimersByTime(1500));
+      await settle();
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(getUserAvatarState().choice).toEqual({ kind: 'preset', ref: 'wave', art: null });
+      act(() => tree.unmount());
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('keeps the default when the saved choice cannot be read', async () => {
