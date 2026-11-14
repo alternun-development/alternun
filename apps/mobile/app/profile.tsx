@@ -80,6 +80,7 @@ import { useAirsDashboardSnapshot } from '../components/dashboard/AirsDashboardP
 import type { ColorPalette } from '../components/profile/AchievementBadge';
 import AchievementCollection from '../components/profile/AchievementCollection';
 import HonorAwardsSection from '../components/honorAwards/HonorAwardsSection';
+import ProfileStats from '../components/profile/ProfileStats';
 import { TierJourney } from '../components/profile/TierJourney';
 import { STATUS_BADGES } from '../components/profile/badgeAssets';
 import { ReferralCard } from '../components/profile/ReferralCard';
@@ -621,70 +622,61 @@ function ProfileHeader({
         ) : null}
 
         {/* Stats row */}
-        <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
-          <Stat
-            label={profileStats.airs}
-            value={hasScore ? safeScore.toLocaleString(locale) : '—'}
-            c={c}
-          />
-          <Divider c={c} />
-          <Stat label={profileStats.projects} value='0' c={c} />
-          <Divider c={c} />
-          <Stat label={profileStats.co2} value='0 t' c={c} />
-        </View>
+        <ProfileStats
+          isDark={isDark}
+          c={c}
+          openInfoLabel={(metric) =>
+            t(
+              'dashboard.summaryCards.metricInfo.openLabel',
+              { metric },
+              `Más información sobre ${metric}`
+            )
+          }
+          closeInfoLabel={t('dashboard.summaryCards.metricInfo.closeLabel', undefined, 'Cerrar')}
+          items={[
+            {
+              key: 'airs',
+              label: profileStats.airs,
+              value: hasScore ? safeScore.toLocaleString(locale) : '—',
+              info: {
+                title: t('profile.statsInfo.airsTitle', undefined, 'Airs'),
+                description: t(
+                  'profile.statsInfo.airs',
+                  undefined,
+                  'Tus puntos Airs reconocen tus acciones de impacto positivo y construyen tu reputación. Se suman con cada acción, por ejemplo actividades y compras con aliados, y no bajan por inactividad.'
+                ),
+              },
+            },
+            {
+              key: 'projects',
+              label: profileStats.projects,
+              value: '0',
+              info: {
+                title: t('profile.statsInfo.projectsTitle', undefined, 'Proyectos'),
+                description: t(
+                  'profile.statsInfo.projects',
+                  undefined,
+                  'Proyectos de impacto positivo a los que aportaste con tus acciones en Airs, por ejemplo con compras o actividades en comercios aliados.'
+                ),
+              },
+            },
+            {
+              key: 'co2',
+              label: profileStats.co2,
+              value: '0 t',
+              info: {
+                title: t('profile.statsInfo.co2Title', undefined, 'CO₂'),
+                description: t(
+                  'profile.statsInfo.co2',
+                  undefined,
+                  'Estimación de referencia de las toneladas de CO₂ asociadas a los proyectos de impacto positivo que apoyaste con tus acciones.'
+                ),
+              },
+            },
+          ]}
+        />
       </View>
     </View>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  c,
-}: {
-  label: string;
-  value: string;
-  c: ColorPalette;
-}): React.JSX.Element {
-  return (
-    <View style={{ alignItems: 'center' }}>
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: '800',
-          letterSpacing: -0.02,
-          color: c.text,
-          fontFamily: 'monospace',
-        }}
-      >
-        {value}
-      </Text>
-      <Text
-        style={{
-          fontSize: 10,
-          fontWeight: '600',
-          color: c.muted,
-          letterSpacing: 0.08,
-          textTransform: 'uppercase',
-          marginTop: 2,
-        }}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
-
-function Divider({ c }: { c: ColorPalette }): React.JSX.Element {
-  return (
-    <View
-      style={{
-        width: 1,
-        backgroundColor: c.muted,
-        opacity: 0.18,
-        height: 40,
-      }}
-    />
   );
 }
 
