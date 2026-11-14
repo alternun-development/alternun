@@ -21,7 +21,11 @@ jest.mock('../../../utils/runtimeConfig', () => ({
   resolveMobileApiBaseUrl: () => 'http://127.0.0.1:3000',
 }));
 
-import { NotificationsProvider, useNotifications } from '../NotificationsContext';
+import {
+  NotificationsProvider,
+  nextNotificationsDelay,
+  useNotifications,
+} from '../NotificationsContext';
 
 describe('NotificationsProvider', () => {
   afterEach(() => {
@@ -329,5 +333,51 @@ describe('NotificationsProvider', () => {
       expect.objectContaining({ method: 'PATCH' })
     );
     await act(async () => renderer.unmount());
+  });
+
+  it('backs off after rejected requests instead of polling every few seconds', async () => {
+    jest.useFakeTimers();
+    try {
+      mockAuth.user = { id: 'app-user-123' };
+      mockAuth.client.getSessionToken.mockResolvedValue('expired-token');
+      const fetchMock = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue({ ok: false, status: 401, json: async () => ({}) } as Response);
+      const settle = () =>
+        act(async () => {
+          for (let i = 0; i < 8; i += 1) await Promise.resolve();
+        });
+      let renderer: ReturnType<typeof create>;
+      act(() => {
+        renderer = create(
+          <NotificationsProvider>
+            <></>
+          </NotificationsProvider>
+        );
+      });
+      await settle();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
+      // After one failure the next request waits 60 s, not the usual 30 s.
+      act(() => jest.advanceTimersByTime(59_000));
+      await settle();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      act(() => jest.advanceTimersByTime(1_000));
+      await settle();
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      act(() => renderer.unmount());
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('nextNotificationsDelay', () => {
+  it('doubles after each failure and caps at five minutes', () => {
+    expect(nextNotificationsDelay(0)).toBe(30_000);
+    expect(nextNotificationsDelay(1)).toBe(60_000);
+    expect(nextNotificationsDelay(2)).toBe(120_000);
+    expect(nextNotificationsDelay(10)).toBe(300_000);
   });
 });

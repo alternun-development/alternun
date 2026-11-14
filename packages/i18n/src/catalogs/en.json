@@ -1212,7 +1212,6 @@
         "error": "We couldn't save your avatar. Please try again.",
         "socialPhoto": "Your photo",
         "initials": "Your initials",
-        "default": "Default",
         "sections": {
           "own": "Your photo",
           "presets": "Illustrations",
