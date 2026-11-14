@@ -84,6 +84,17 @@ export const adminResources: AdminResourceDefinition[] = [
     },
   },
   {
+    name: 'marketplace-honor-awards',
+    list: '/honor-awards',
+    surfaces: ['internal'],
+    meta: {
+      title: marketplaceCopy.honorAwards.navigation.title,
+      description: marketplaceCopy.honorAwards.navigation.description,
+      endpoint: '/v1/admin/honor-awards/recipes',
+      emptyState: marketplaceCopy.honorAwards.empty,
+    },
+  },
+  {
     name: 'marketplace-airs-reports',
     list: '/airs-reports',
     surfaces: ['internal'],

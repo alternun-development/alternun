@@ -8,6 +8,7 @@ import { EnterpriseManageView } from '../../../components/manage/EnterpriseManag
 import { useManagePalette } from '../../../components/manage/useManagePalette';
 import { createEnterpriseManageClient } from '../../../utils/enterpriseManage';
 import { createClientsClient } from '../../../utils/projectClients';
+import { createHonorAwardClient } from '../../../utils/honorAwards';
 import type { ManageScreenAuthContext } from '../[projectId].types';
 
 /** In-app enterprise administration (/manage/enterprise/:enterpriseId). */
@@ -27,6 +28,13 @@ export default function EnterpriseManageScreen(): React.JSX.Element {
     () => createClientsClient({ enterpriseId }, () => client.getSessionToken()),
     [client, enterpriseId]
   );
+  const honorAwardsClient = useMemo(
+    () =>
+      createHonorAwardClient({ kind: 'enterprise-manage', enterpriseId }, () =>
+        client.getSessionToken()
+      ),
+    [client, enterpriseId]
+  );
   const palette = useManagePalette();
 
   return (
@@ -39,6 +47,7 @@ export default function EnterpriseManageScreen(): React.JSX.Element {
         onBack={() => router.back()}
         canPickFiles={Platform.OS === 'web'}
         clientsClient={clientsClient}
+        honorAwardsClient={honorAwardsClient}
       />
     </ScreenShell>
   );

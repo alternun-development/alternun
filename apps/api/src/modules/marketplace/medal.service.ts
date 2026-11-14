@@ -53,6 +53,17 @@ function checkText(name: string | undefined, description: string | null | undefi
   }
 }
 
+/** A linked honor award must exist and be one that people receive. */
+export async function checkMedalHonorRecipe(
+  honorRecipeId: string | null | undefined,
+  audienceOf: (recipeId: string) => Promise<string | null>
+): Promise<void> {
+  if (!honorRecipeId) return;
+  const audience = await audienceOf(honorRecipeId);
+  if (!audience) marketplaceError('HONOR_AWARD_NOT_FOUND');
+  if (audience !== 'user') marketplaceError('HONOR_AWARD_AUDIENCE_MISMATCH');
+}
+
 @Injectable()
 export class MedalService {
   constructor(
@@ -133,6 +144,9 @@ export class MedalService {
     await validateMedalImageUrl(input.imageUrl, () =>
       this.adminRepository.allowedHosts('gallery_image')
     );
+    await checkMedalHonorRecipe(input.honorRecipeId, (id) =>
+      this.repository.honorRecipeAudience(id)
+    );
     const created = await this.repository.create(
       projectId,
       { ...input, name: input.name.trim() },
@@ -168,6 +182,9 @@ export class MedalService {
         this.adminRepository.allowedHosts('gallery_image')
       );
     }
+    await checkMedalHonorRecipe(input.honorRecipeId, (id) =>
+      this.repository.honorRecipeAudience(id)
+    );
     const before = await this.repository.find(projectId, medalId);
     if (!before) marketplaceError('MEDAL_NOT_FOUND');
     const updated = await this.repository.update(projectId, medalId, {

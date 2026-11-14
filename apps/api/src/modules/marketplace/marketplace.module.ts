@@ -61,6 +61,14 @@ import {
   ProjectAccessService,
 } from './project-access';
 import { MedalAdminController } from './medal.controller';
+import {
+  EnterpriseHonorAwardController,
+  EnterpriseHonorAwardPublicController,
+  HonorAwardAdminController,
+  HonorAwardMeController,
+} from './honor-award.controller';
+import { HonorAwardRepository } from './honor-award.repository';
+import { HonorAwardService } from './honor-award.service';
 import { MedalRepository } from './medal.repository';
 import { MedalService } from './medal.service';
 import { AdminNotificationController } from './admin-notification.controller';
@@ -105,6 +113,10 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     ProjectTypeAssignmentController,
     AdminNotificationController,
     MedalAdminController,
+    HonorAwardAdminController,
+    HonorAwardMeController,
+    EnterpriseHonorAwardController,
+    EnterpriseHonorAwardPublicController,
     ProjectAccessController,
   ],
   providers: [
@@ -140,6 +152,8 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     AdminNotificationService,
     MedalRepository,
     MedalService,
+    HonorAwardRepository,
+    HonorAwardService,
     ProjectAccessRepository,
     ProjectAccessService,
     {

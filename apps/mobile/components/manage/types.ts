@@ -1,3 +1,4 @@
+import type { HonorAwardClient } from '../../utils/honorAwards';
 import type { DetailPalette, Translate } from '../marketplace/types';
 import type {
   ManageClient,
@@ -68,7 +69,7 @@ export interface ManageTeamSectionProps {
   t: Translate;
 }
 
-export type EnterpriseManageTab = 'info' | 'images' | 'products' | 'team' | 'clients';
+export type EnterpriseManageTab = 'info' | 'images' | 'products' | 'team' | 'clients' | 'honors';
 
 export interface EnterpriseSectionProps {
   client: EnterpriseManageClient;
@@ -92,6 +93,8 @@ export interface EnterpriseManageViewProps {
   onBack: () => void;
   canPickFiles: boolean;
   clientsClient?: ClientsClient;
+  /** Honor awards of the enterprise, claimed from the "honors" tab. */
+  honorAwardsClient?: HonorAwardClient;
 }
 
 export interface ManageClientsSectionProps {

@@ -9,6 +9,8 @@ export type ProjectMedal = {
   imageUrl: string;
   isActive: boolean;
   sortOrder: number;
+  /** Honor award (for people) this medal also gives. */
+  honorRecipeId?: string | null;
   createdAt: string;
 };
 
@@ -16,6 +18,8 @@ export type NewMedalValues = {
   name: string;
   description: string;
   imageUrl: string;
+  /** Optional honor award recipe id; empty for none. */
+  honorRecipeId?: string;
 };
 
 export type NewMedalErrors = {

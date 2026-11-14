@@ -12,6 +12,7 @@ import { ManageClientsSection } from './ManageClientsSection';
 import { ManageTeamSection } from './ManageTeamSection';
 import { manageStyles } from './styles';
 import type { EnterpriseManageTab, EnterpriseManageViewProps } from './types';
+import HonorAwardsSection from '../honorAwards/HonorAwardsSection';
 import { ManageRequestError } from '../../utils/projectManage';
 import type {
   EnterpriseManageCapabilities,
@@ -22,7 +23,8 @@ import type {
 /** Tabs the person can use, in display order. */
 export function enterpriseTabs(
   can: EnterpriseManageCapabilities,
-  hasClients = false
+  hasClients = false,
+  hasHonors = false
 ): EnterpriseManageTab[] {
   return [
     ...(can.editInfo ? (['info'] as const) : []),
@@ -30,6 +32,7 @@ export function enterpriseTabs(
     ...(can.products ? (['products'] as const) : []),
     ...(can.team ? (['team'] as const) : []),
     ...(hasClients && can.clients ? (['clients'] as const) : []),
+    ...(hasHonors ? (['honors'] as const) : []),
   ];
 }
 
@@ -41,6 +44,7 @@ export function EnterpriseManageView({
   onBack,
   canPickFiles,
   clientsClient,
+  honorAwardsClient,
 }: EnterpriseManageViewProps): React.JSX.Element {
   const [overview, setOverview] = useState<EnterpriseManageOverview | null>(null);
   const toasts = useToasts();
@@ -73,7 +77,7 @@ export function EnterpriseManageView({
     if (message) setNotice(message);
     setVersion((value) => value + 1);
   };
-  const tabs = overview ? enterpriseTabs(overview.can, !!clientsClient) : [];
+  const tabs = overview ? enterpriseTabs(overview.can, !!clientsClient, !!honorAwardsClient) : [];
   // Apply what the server saved right away; the refetch that follows only confirms it.
   const applySaved = (saved: ManagedEnterprise): void =>
     setOverview((current) =>
@@ -209,6 +213,19 @@ export function EnterpriseManageView({
                 canPickFiles={canPickFiles}
                 multiProject
                 onToast={toasts.show}
+              />
+            ) : null}
+            {honorAwardsClient && tab === 'honors' ? (
+              <HonorAwardsSection
+                scope={{ kind: 'enterprise-manage', enterpriseId: overview.enterprise.id }}
+                client={honorAwardsClient}
+                c={{
+                  text: palette.text,
+                  muted: palette.muted,
+                  border: palette.border,
+                  accent: palette.primaryDeep,
+                }}
+                subtitle={t('manage.enterprise.honors.intro')}
               />
             ) : null}
           </>
