@@ -219,3 +219,34 @@ describe('ally desk client', () => {
     expect(summary?.total).toBe(2);
   });
 });
+
+describe('card template details', () => {
+  /* eslint-disable @typescript-eslint/no-var-requires */
+  const theme = require('../honorAwardTheme') as typeof import('../honorAwardTheme');
+  const art = require('../honorAwardArt') as typeof import('../honorAwardArt');
+  /* eslint-enable @typescript-eslint/no-var-requires */
+
+  it('writes the obtained date like the templates', () => {
+    expect(theme.formatObtainedDate('2026-10-30T12:00:00Z', 'es')).toBe('Octubre 30 - 2026');
+    expect(theme.formatObtainedDate('2026-10-30T12:00:00Z', 'en')).toBe('October 30 - 2026');
+    expect(theme.formatObtainedDate(null)).toBe('');
+    expect(theme.formatObtainedDate('nope')).toBe('nope');
+  });
+
+  it('names the ally country under its name', () => {
+    expect(theme.honorCountryName('co')).toBe('Colombia');
+    expect(theme.honorCountryName('ZZ')).toBe('ZZ');
+    expect(theme.honorCountryName(null)).toBe('');
+  });
+
+  it('bundles the medals and back photo of the golf preset only', () => {
+    for (const tier of ['generic', 'gold', 'silver', 'bronze'] as const) {
+      expect(art.presetBadge('golf_mangrove', tier)).toBeTruthy();
+      expect(art.presetBadge('coast', tier)).toBeNull();
+    }
+    expect(art.presetBadge(null, 'gold')).toBeNull();
+    expect(art.presetBack('golf_mangrove')).toBeTruthy();
+    expect(art.presetBack('coast')).toBeNull();
+    expect(art.presetBack(undefined)).toBeNull();
+  });
+});

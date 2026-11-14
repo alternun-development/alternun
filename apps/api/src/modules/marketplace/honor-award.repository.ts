@@ -20,7 +20,7 @@ export type HonorAwardOwner = { userId: string } | { enterpriseId: string };
 const VIEW_SELECT =
   'id, status, awarded_at, claimed_at, recipe:honor_award_recipes!inner(*, ' +
   'project:projects(id, slug, default_locale, content), ' +
-  'partner:enterprises!partner_enterprise_id(id, slug, display_name, description, logo_url, website_url))';
+  'partner:enterprises!partner_enterprise_id(id, slug, display_name, description, logo_url, website_url, country_code))';
 
 function failDatabase(error: { code?: string } | null): never {
   if (error?.code === '23505') marketplaceError('HONOR_AWARD_ALREADY_GRANTED');
@@ -137,6 +137,7 @@ export function mapHonorAwardView(row: Row): HonorAwardView {
           description: text(partner.description),
           logoUrl: text(partner.logo_url),
           websiteUrl: text(partner.website_url),
+          countryCode: text(partner.country_code),
         }
       : null,
   };

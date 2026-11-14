@@ -1,3 +1,4 @@
+import type { ImageSourcePropType } from 'react-native';
 import type {
   HonorAward,
   HonorAwardAllyDesk,
@@ -52,6 +53,25 @@ export interface HonorCrestPalette {
   sun: string;
   outfit: string;
   trousers: string;
+}
+
+/** Art bundled with the app for a preset: the medal of each tier and the back photo. */
+export interface HonorPresetArt {
+  badge: Record<HonorAwardTier, ImageSourcePropType>;
+  back?: ImageSourcePropType;
+}
+
+export interface HonorAwardStampProps {
+  /** Text that runs around the ring, e.g. "PROYECTO AIRS 2026 • IMPACTO POSITIVO AMBIENTAL". */
+  text: string;
+  size: number;
+}
+
+export interface HonorAwardPartnerMarkProps {
+  partner: NonNullable<HonorAward['partner']>;
+  /** Card width, used to scale the mark. */
+  width: number;
+  locale?: string;
 }
 
 export interface HonorAwardCrestProps {
