@@ -280,3 +280,170 @@ test('the honor awards migration keeps its tables away from client roles', () =>
   );
   assert.ok(sql.includes('security definer'));
 });
+
+const { normalizeReference } = require('../src/modules/marketplace/honor-award.service.ts');
+
+function allyBuild({ recipes = [], users = {}, partnerGrants = [] } = {}) {
+  const calls = { audits: [], grants: [] };
+  const repository = {
+    findRecipe: async (id) => recipes.find((item) => item.id === id) ?? null,
+    listRecipesForPartner: async (enterpriseId) =>
+      recipes.filter(
+        (item) => item.partnerEnterpriseId === enterpriseId && item.audience === 'user'
+      ),
+    listPartnerGrantsForUser: async () => partnerGrants,
+    findUserIdByEmail: async (email) => users[email] ?? null,
+    insertGrant: async (grant) => {
+      calls.grants.push(grant);
+      return {
+        id: GRANT_ID,
+        recipeId: grant.recipeId,
+        userId: grant.userId,
+        reference: grant.reference,
+      };
+    },
+  };
+  const adminRepository = {
+    audit: async (entry) => calls.audits.push(entry),
+    allowedHosts: async () => [],
+  };
+  return { service: new HonorAwardService(repository, adminRepository), calls };
+}
+
+const HOTEL = recipe({
+  id: 'hotel-1',
+  partnerEnterpriseId: ENTERPRISE_ID,
+  title: 'Taybo Santa Marta',
+});
+
+test('references are trimmed, blank ones dropped and long ones refused', () => {
+  assert.equal(normalizeReference('  RES-100 '), 'RES-100');
+  assert.equal(normalizeReference('   '), null);
+  assert.equal(normalizeReference(undefined), null);
+  assert.throws(() => normalizeReference('x'.repeat(81)), code('HONOR_AWARD_INPUT_INVALID'));
+});
+
+test('art presets are short lowercase keys', () => {
+  assert.equal(normalizeRecipeInput({ artPreset: ' Golf_Mangrove ' }).artPreset, 'golf_mangrove');
+  assert.equal(normalizeRecipeInput({ artPreset: '  ' }).artPreset, null);
+  assert.throws(
+    () => checkRecipeInput({ artPreset: 'golf mangrove!' }),
+    code('HONOR_AWARD_INPUT_INVALID')
+  );
+  assert.doesNotThrow(() => checkRecipeInput({ artPreset: 'coast' }));
+});
+
+test('an ally gives its own honor award for a stay, with the reservation as reference', async () => {
+  const { service, calls } = allyBuild({
+    recipes: [HOTEL],
+    users: { 'ada@example.com': 'user-1' },
+  });
+  const grant = await service.grantFromEnterprise(
+    principal('partner_operator'),
+    'req',
+    ENTERPRISE_ID,
+    {
+      recipeId: 'hotel-1',
+      email: ' Ada@Example.com ',
+      reference: ' RES-100 ',
+    }
+  );
+  assert.equal(grant.userId, 'user-1');
+  assert.equal(calls.grants[0].reference, 'RES-100');
+  assert.equal(calls.audits.at(-1).enterpriseId, ENTERPRISE_ID);
+  assert.equal(calls.audits.at(-1).action, 'honor_award.granted');
+});
+
+test('an ally cannot give honor awards of another ally, retired ones or without permission', async () => {
+  const other = recipe({ id: 'other', partnerEnterpriseId: 'someone-else' });
+  const retired = { ...HOTEL, id: 'retired', isActive: false };
+  const { service } = allyBuild({
+    recipes: [other, retired],
+    users: { 'ada@example.com': 'user-1' },
+  });
+  const input = { email: 'ada@example.com' };
+  await assert.rejects(
+    service.grantFromEnterprise(principal('partner_operator'), 'req', ENTERPRISE_ID, {
+      ...input,
+      recipeId: 'other',
+    }),
+    code('HONOR_AWARD_NOT_FOUND')
+  );
+  await assert.rejects(
+    service.grantFromEnterprise(principal('partner_operator'), 'req', ENTERPRISE_ID, {
+      ...input,
+      recipeId: 'retired',
+    }),
+    code('HONOR_AWARD_NOT_CLAIMABLE')
+  );
+  await assert.rejects(
+    service.grantFromEnterprise(principal('partner_readonly'), 'req', ENTERPRISE_ID, {
+      ...input,
+      recipeId: 'hotel-1',
+    }),
+    code('PERMISSION_DENIED')
+  );
+});
+
+test('the guest lookup counts the ally honor awards a person holds', async () => {
+  const { service } = allyBuild({
+    users: { 'ada@example.com': 'user-1' },
+    partnerGrants: [
+      { recipeId: 'hotel-1', title: 'Taybo Santa Marta' },
+      { recipeId: 'hotel-1', title: 'Taybo Santa Marta' },
+      { recipeId: 'hotel-2', title: 'Taybo Medellín' },
+    ],
+  });
+  const summary = await service.guestSummary(
+    principal('partner_operator'),
+    'req',
+    ENTERPRISE_ID,
+    'ADA@example.com'
+  );
+  assert.equal(summary.found, true);
+  assert.equal(summary.total, 3);
+  assert.deepEqual(
+    summary.byRecipe.map((item) => [item.recipeId, item.count]),
+    [
+      ['hotel-1', 2],
+      ['hotel-2', 1],
+    ]
+  );
+  const unknown = await service.guestSummary(
+    principal('partner_operator'),
+    'req',
+    ENTERPRISE_ID,
+    'nobody@example.com'
+  );
+  assert.deepEqual(unknown, { found: false, total: 0, byRecipe: [] });
+});
+
+test('the ally lists only its active honor awards for people', async () => {
+  const { service } = allyBuild({
+    recipes: [HOTEL, recipe({ id: 'x', partnerEnterpriseId: 'other' })],
+  });
+  const recipes = await service.listGrantableForEnterprise(
+    principal('partner_operator'),
+    'req',
+    ENTERPRISE_ID
+  );
+  assert.deepEqual(
+    recipes.map((item) => item.id),
+    ['hotel-1']
+  );
+});
+
+test('the presets and references migration keeps one grant per reservation', () => {
+  const sql = fs
+    .readFileSync(
+      path.resolve(
+        __dirname,
+        '../../../supabase/migrations/20261114_0002_honor_award_presets_references.sql'
+      ),
+      'utf8'
+    )
+    .toLowerCase();
+  assert.ok(sql.includes('add column art_preset text'));
+  assert.ok(sql.includes('add column reference text'));
+  assert.ok(sql.includes('honor_award_grants_recipe_reference_uidx'));
+});

@@ -153,3 +153,88 @@ describe('inspect view', () => {
     act(() => tree.unmount());
   });
 });
+
+describe('demo mode', () => {
+  it('labels the preview and changes the headline', () => {
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardClaimCinematic award={award} demo onInspect={jest.fn()} onClose={jest.fn()} />
+      );
+    });
+    expect(texts(tree)).toEqual(
+      expect.arrayContaining(['Demostración', 'Así se ve al obtener un galardón'])
+    );
+    expect(texts(tree)).not.toContain('¡Galardón desbloqueado!');
+    act(() => tree.unmount());
+  });
+
+  it('hides sharing and links in the preview card and mission', () => {
+    let tree;
+    act(() => {
+      tree = renderer.create(<HonorAwardInspectModal award={award} demo onClose={jest.fn()} />);
+    });
+    expect(texts(tree)).toContain('Demostración: así se verá tu galardón cuando lo obtengas.');
+    expect(texts(tree)).not.toContain('Compartir');
+    act(() => button(tree, 'Ver misión').props.onPress());
+    expect(texts(tree)).not.toContain('Ver proyecto');
+    expect(texts(tree)).not.toContain('Visitar página');
+    act(() => tree.unmount());
+  });
+});
+
+describe('medal art', () => {
+  const { Text: SvgText } = require('react-native-svg');
+  const HonorAwardEmblem = require('../HonorAwardEmblem').default;
+
+  it('draws the golf crest with the mission name on the banner', () => {
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardEmblem tier='gold' title='Manglar Verde' artPreset='golf_mangrove' size={120} />
+      );
+    });
+    const banner = tree.root.findAllByType(SvgText).map((node) => node.props.children);
+    expect(banner).toEqual(['MANGLAR', 'VERDE']);
+    act(() => tree.unmount());
+  });
+
+  it('keeps the generic shield for unknown presets', () => {
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardEmblem tier='bronze' title='Taybo' artPreset='unknown' size={60} />
+      );
+    });
+    expect(tree.root.findAllByType(SvgText).map((node) => node.props.children)).toEqual(['TAYBO']);
+    act(() => tree.unmount());
+  });
+});
+
+describe('info modal', () => {
+  const HonorAwardsInfoModal = require('../HonorAwardsInfoModal').default;
+
+  it('explains how a person gets an award, and how an ally gives one', () => {
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardsInfoModal visible audience='person' onClose={jest.fn()} />
+      );
+    });
+    expect(texts(tree)).toEqual(
+      expect.arrayContaining([
+        '¿Cómo obtengo uno?',
+        'Participa en una misión o actividad de un aliado de Airs.',
+        'Toca un espacio disponible para ver una demostración.',
+      ])
+    );
+    act(() => tree.update(<HonorAwardsInfoModal visible audience='ally' onClose={jest.fn()} />));
+    expect(texts(tree)).toContain('¿Cómo funcionan?');
+    expect(texts(tree)).not.toContain('Toca un espacio disponible para ver una demostración.');
+    act(() =>
+      tree.update(<HonorAwardsInfoModal visible={false} audience='ally' onClose={jest.fn()} />)
+    );
+    expect(tree.toJSON()).toBeNull();
+    act(() => tree.unmount());
+  });
+});

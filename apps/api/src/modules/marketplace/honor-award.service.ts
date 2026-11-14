@@ -10,7 +10,9 @@ import {
   HONOR_AWARD_KINDS,
   HONOR_AWARD_TIERS,
   type CreateHonorAwardRecipeInput,
+  type EnterpriseHonorAwardGrantInput,
   type HonorAwardGrantRecord,
+  type HonorAwardGuestSummary,
   type HonorAwardRecipeInput,
   type HonorAwardRecipeRecord,
   type HonorAwardRecipientInput,
@@ -26,9 +28,19 @@ const TEXT_LIMITS: ReadonlyArray<[keyof HonorAwardRecipeInput, number]> = [
 ];
 const IMAGE_FIELDS = ['badgeImageUrl', 'frontImageUrl', 'backImageUrl'] as const;
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const ART_PRESET_PATTERN = /^[a-z0-9_]{1,40}$/;
+const REFERENCE_MAX = 80;
 
 function invalid(): never {
   return marketplaceError('HONOR_AWARD_INPUT_INVALID');
+}
+
+/** A trimmed reference such as a reservation number, or null when blank. */
+export function normalizeReference(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > REFERENCE_MAX) invalid();
+  return trimmed;
 }
 
 /** Trims text fields and turns blank optional text into null. */
@@ -44,6 +56,9 @@ export function normalizeRecipeInput<T extends HonorAwardRecipeInput>(input: T):
   for (const field of IMAGE_FIELDS) {
     const value = normalized[field];
     if (typeof value === 'string') normalized[field] = value.trim() || null;
+  }
+  if (typeof normalized.artPreset === 'string') {
+    normalized.artPreset = normalized.artPreset.trim().toLowerCase() || null;
   }
   return normalized as T;
 }
@@ -62,6 +77,9 @@ export function checkRecipeInput(input: HonorAwardRecipeInput): void {
     input.eventYear !== null &&
     (!Number.isInteger(input.eventYear) || input.eventYear < 2000 || input.eventYear > 2100)
   ) {
+    invalid();
+  }
+  if (typeof input.artPreset === 'string' && !ART_PRESET_PATTERN.test(input.artPreset)) {
     invalid();
   }
   if (
@@ -197,6 +215,8 @@ export class HonorAwardService {
     const trimmedNote = recipient.note?.trim();
     const note = trimmedNote ? trimmedNote : null;
     if (note && note.length > 300) invalid();
+    const reference =
+      recipient.recipientType === 'user' ? normalizeReference(recipient.reference) : null;
 
     let target: { userId: string } | { enterpriseId: string };
     if (recipient.recipientType === 'user') {
@@ -215,6 +235,7 @@ export class HonorAwardService {
       recipeId,
       recipientType: recipient.recipientType,
       ...target,
+      reference,
       note,
       actor: actorFromPrincipal(principal),
     });
@@ -253,6 +274,103 @@ export class HonorAwardService {
       afterState: { ...revoked },
     });
     return revoked;
+  }
+
+  /** Reporters of an ally (who can give Airs) can also give its honor awards. */
+  private async requireAllyGranter(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string
+  ): Promise<void> {
+    if (hasPermission(principal, 'airs_reports:submit')) return;
+    await this.adminRepository.audit({
+      actor: actorFromPrincipal(principal),
+      action: 'authorization.denied',
+      targetType: 'honor_award',
+      enterpriseId,
+      requestId,
+      result: 'denied',
+      reasonCode: 'PERMISSION_DENIED',
+    });
+    marketplaceError('PERMISSION_DENIED');
+  }
+
+  /** The honor awards for people that this ally backs, which its team can give. */
+  async listGrantableForEnterprise(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string
+  ): Promise<HonorAwardRecipeRecord[]> {
+    await this.requireAllyGranter(principal, requestId, enterpriseId);
+    return this.repository.listRecipesForPartner(enterpriseId);
+  }
+
+  /**
+   * An ally gives one of its honor awards to a person by account email, for example a hotel
+   * medal for a stay with the reservation number as reference (one grant per reservation).
+   */
+  async grantFromEnterprise(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string,
+    input: EnterpriseHonorAwardGrantInput
+  ): Promise<HonorAwardGrantRecord> {
+    await this.requireAllyGranter(principal, requestId, enterpriseId);
+    const recipe = await this.repository.findRecipe(input.recipeId);
+    if (!recipe || recipe.partnerEnterpriseId !== enterpriseId || recipe.audience !== 'user') {
+      marketplaceError('HONOR_AWARD_NOT_FOUND');
+    }
+    if (!recipe.isActive) marketplaceError('HONOR_AWARD_NOT_CLAIMABLE');
+    const email = input.email.trim().toLowerCase();
+    if (!EMAIL_PATTERN.test(email) || email.length > 320) invalid();
+    const trimmedNote = input.note?.trim();
+    const note = trimmedNote ? trimmedNote : null;
+    if (note && note.length > 300) invalid();
+    const reference = normalizeReference(input.reference);
+    const userId = await this.repository.findUserIdByEmail(email);
+    if (!userId) marketplaceError('HONOR_AWARD_RECIPIENT_NOT_FOUND');
+
+    const created = await this.repository.insertGrant({
+      recipeId: recipe.id,
+      recipientType: 'user',
+      userId,
+      reference,
+      note,
+      actor: actorFromPrincipal(principal),
+    });
+    await this.adminRepository.audit({
+      actor: actorFromPrincipal(principal),
+      action: 'honor_award.granted',
+      targetType: 'honor_award_grant',
+      targetId: created.id,
+      enterpriseId,
+      requestId,
+      result: 'allowed',
+      afterState: { ...created },
+    });
+    return created;
+  }
+
+  /** How many of this ally's honor awards a person holds, e.g. stays at its hotels. */
+  async guestSummary(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string,
+    email: string
+  ): Promise<HonorAwardGuestSummary> {
+    await this.requireAllyGranter(principal, requestId, enterpriseId);
+    const normalized = email.trim().toLowerCase();
+    if (!EMAIL_PATTERN.test(normalized) || normalized.length > 320) invalid();
+    const userId = await this.repository.findUserIdByEmail(normalized);
+    if (!userId) return { found: false, total: 0, byRecipe: [] };
+    const grants = await this.repository.listPartnerGrantsForUser(enterpriseId, userId);
+    const counts = new Map<string, { recipeId: string; title: string; count: number }>();
+    for (const grant of grants) {
+      const current = counts.get(grant.recipeId) ?? { ...grant, count: 0 };
+      current.count += 1;
+      counts.set(grant.recipeId, current);
+    }
+    return { found: true, total: grants.length, byRecipe: Array.from(counts.values()) };
   }
 
   /** Pending and claimed awards of a person or enterprise, newest first. */

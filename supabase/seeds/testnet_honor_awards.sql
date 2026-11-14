@@ -1,7 +1,8 @@
 -- Testnet sample honor awards: the "Manglar Verde" mission of the Swing Golf Colombia tour
 -- (Tour Colombia FCG Callaway 2026), supporting the Fundación Batis mangrove project.
 --
--- Not a migration: run it by hand on testnet after 20261114_0001_honor_awards.sql. It is safe
+-- Not a migration: run it by hand on testnet after 20261114_0001_honor_awards.sql and
+-- 20261114_0002_honor_award_presets_references.sql. It is safe
 -- to run more than once (a recipe with the same title, tier and audience is not duplicated).
 -- The ally and the project are looked up by slug; if one is missing the link stays empty.
 
@@ -23,7 +24,7 @@ recipes (kind, tier, audience, title, airs_amount, sort_order) as (
 insert into public.honor_award_recipes (
   kind, tier, audience, title, classification, purpose, event_name, event_year,
   venue_name, venue_location, airs_amount, project_id, partner_enterprise_id, sort_order,
-  created_by_issuer, created_by_subject
+  art_preset, created_by_issuer, created_by_subject
 )
 select
   recipes.kind,
@@ -43,6 +44,7 @@ select
   links.project_id,
   links.partner_id,
   recipes.sort_order,
+  'golf_mangrove',
   'seed',
   'testnet-honor-awards'
 from recipes cross join links
@@ -52,5 +54,10 @@ where not exists (
     and existing.tier = recipes.tier
     and existing.audience = recipes.audience
 );
+
+-- Recipes seeded before the art presets existed get the golf medal art too.
+update public.honor_award_recipes
+set art_preset = 'golf_mangrove', updated_at = timezone('utc', now())
+where created_by_subject = 'testnet-honor-awards' and art_preset is null;
 
 commit;

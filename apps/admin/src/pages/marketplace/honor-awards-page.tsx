@@ -11,6 +11,7 @@ import {
   buildHonorAwardRecipeBody,
   emptyHonorAwardGrant,
   emptyHonorAwardRecipe,
+  HONOR_ART_PRESETS,
   HONOR_AWARD_AUDIENCES,
   HONOR_AWARD_KINDS,
   HONOR_AWARD_TIERS,
@@ -167,6 +168,21 @@ export function HonorAwardRecipeForm({
           ))}
         </select>
       </label>
+      <label>
+        <span>{copy.fields.artPreset}</span>
+        <select
+          value={values.artPreset}
+          onChange={(event) => set({ artPreset: event.target.value })}
+        >
+          <option value=''>{copy.artPresets.none}</option>
+          {HONOR_ART_PRESETS.map((preset) => (
+            <option key={preset} value={preset}>
+              {copy.artPresets[preset]}
+            </option>
+          ))}
+        </select>
+        <small>{copy.fields.artPresetHint}</small>
+      </label>
       <div className='marketplace-form-actions'>
         <button className='primary-button' disabled={busy} onClick={onSubmit} type='button'>
           {editing ? copy.save : copy.create}
@@ -252,6 +268,7 @@ export function HonorAwardGrantsPanel({
               </span>
               <small>
                 {copy.grants.statuses[item.status]} · {copy.grants.sources[item.source]}
+                {item.reference ? ` · ${item.reference}` : ''}
               </small>
               {item.status !== 'revoked' ? (
                 <button
@@ -275,16 +292,28 @@ export function HonorAwardGrantsPanel({
       {recipe.isActive ? (
         <div className='marketplace-inline-form'>
           {recipe.audience === 'user' ? (
-            <label>
-              <span>{copy.grants.email}</span>
-              <input
-                inputMode='email'
-                value={values.email}
-                onChange={(event) =>
-                  setValues((current) => ({ ...current, email: event.target.value }))
-                }
-              />
-            </label>
+            <>
+              <label>
+                <span>{copy.grants.email}</span>
+                <input
+                  inputMode='email'
+                  value={values.email}
+                  onChange={(event) =>
+                    setValues((current) => ({ ...current, email: event.target.value }))
+                  }
+                />
+              </label>
+              <label>
+                <span>{copy.grants.reference}</span>
+                <input
+                  value={values.reference}
+                  onChange={(event) =>
+                    setValues((current) => ({ ...current, reference: event.target.value }))
+                  }
+                />
+                <small>{copy.grants.referenceHint}</small>
+              </label>
+            </>
           ) : (
             <label>
               <span>{copy.grants.enterprise}</span>

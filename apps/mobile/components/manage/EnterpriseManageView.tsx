@@ -13,6 +13,7 @@ import { ManageTeamSection } from './ManageTeamSection';
 import { manageStyles } from './styles';
 import type { EnterpriseManageTab, EnterpriseManageViewProps } from './types';
 import HonorAwardsSection from '../honorAwards/HonorAwardsSection';
+import HonorAwardsAllyDesk from '../honorAwards/HonorAwardsAllyDesk';
 import { ManageRequestError } from '../../utils/projectManage';
 import type {
   EnterpriseManageCapabilities,
@@ -216,17 +217,25 @@ export function EnterpriseManageView({
               />
             ) : null}
             {honorAwardsClient && tab === 'honors' ? (
-              <HonorAwardsSection
-                scope={{ kind: 'enterprise-manage', enterpriseId: overview.enterprise.id }}
-                client={honorAwardsClient}
-                c={{
-                  text: palette.text,
-                  muted: palette.muted,
-                  border: palette.border,
-                  accent: palette.primaryDeep,
-                }}
-                subtitle={t('manage.enterprise.honors.intro')}
-              />
+              <>
+                <HonorAwardsSection
+                  scope={{ kind: 'enterprise-manage', enterpriseId: overview.enterprise.id }}
+                  client={honorAwardsClient}
+                  c={{
+                    text: palette.text,
+                    muted: palette.muted,
+                    border: palette.border,
+                    accent: palette.primaryDeep,
+                  }}
+                  subtitle={t('manage.enterprise.honors.intro')}
+                />
+                {honorAwardsClient.desk ? (
+                  <HonorAwardsAllyDesk
+                    desk={honorAwardsClient.desk}
+                    c={{ text: palette.text, muted: palette.muted, border: palette.border }}
+                  />
+                ) : null}
+              </>
             ) : null}
           </>
         ) : null}
