@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Verify testnet/prod verification emails arrive via Tláo after SMTP secret switch
+Next micro-step: Verify avatar picker (social photo, presets, badges) on testnet after v1.2.4
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-13T16:16:12.074Z",
+  "lastUpdated": "2026-11-14T10:39:16.244Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Verify testnet/prod verification emails arrive via Tláo after SMTP secret switch",
+      "description": "Verify avatar picker (social photo, presets, badges) on testnet after v1.2.4",
       "id": "next",
       "priority": 1
     }

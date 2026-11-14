@@ -1,3 +1,5 @@
+import type { UserAvatarChoice } from '../utils/userAvatar';
+
 export type UserMetadata = Record<string, unknown>;
 
 export interface AccountReferralSummary {
@@ -29,4 +31,15 @@ export interface LeaderboardRow {
   medal: string | null;
   color: string | null;
   isMe: boolean;
+  /** Chosen avatar art; the ranking never shows social photos. */
+  avatar: UserAvatarChoice | null;
+}
+
+/** One entry of GET /v1/airs/leaderboard. */
+export interface LeaderboardApiEntry {
+  rank: number;
+  displayName: string;
+  airsBalance: number;
+  isMe: boolean;
+  avatar?: UserAvatarChoice | null;
 }
