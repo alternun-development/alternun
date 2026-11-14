@@ -81,6 +81,7 @@ import type { ColorPalette } from '../components/profile/AchievementBadge';
 import AchievementCollection from '../components/profile/AchievementCollection';
 import HonorAwardsSection from '../components/honorAwards/HonorAwardsSection';
 import ProfileStats from '../components/profile/ProfileStats';
+import TierRevealCinematic from '../components/profile/TierRevealCinematic';
 import { TierJourney } from '../components/profile/TierJourney';
 import { STATUS_BADGES } from '../components/profile/badgeAssets';
 import { ReferralCard } from '../components/profile/ReferralCard';
@@ -401,6 +402,7 @@ function ProfileHeader({
     platinum: t('profile.tierLabels.platinum', undefined, 'Platinum'),
   };
   const spec = resolveTierSpec(tier, tierLabels);
+  const [tierRevealOpen, setTierRevealOpen] = useState(false);
   const profileStats = {
     airs: t('profile.stats.airs', undefined, 'AIRS'),
     projects: t('profile.stats.projects', undefined, 'Projects'),
@@ -496,8 +498,20 @@ function ProfileHeader({
 
       {/* Content */}
       <View style={{ alignItems: 'center', zIndex: 1 }}>
-        {/* Avatar with tier badge */}
-        <View style={{ marginBottom: 14, position: 'relative' }}>
+        {/* Avatar with tier badge: tapping it reveals the metal version of the tier badge */}
+        <TouchableOpacity
+          testID='profile-tier-avatar'
+          accessibilityRole='button'
+          accessibilityLabel={t(
+            'profile.tierReveal.open',
+            { tier: spec.label },
+            `Ver tu nivel ${spec.label}`
+          )}
+          activeOpacity={0.85}
+          disabled={!hasScore}
+          onPress={() => setTierRevealOpen(true)}
+          style={{ marginBottom: 14, position: 'relative' }}
+        >
           <View
             style={{
               width: 96,
@@ -566,7 +580,12 @@ function ProfileHeader({
               </Text>
             </View>
           ) : null}
-        </View>
+        </TouchableOpacity>
+        <TierRevealCinematic
+          tier={tierRevealOpen && hasScore ? tier : null}
+          score={safeScore}
+          onClose={() => setTierRevealOpen(false)}
+        />
 
         {/* Name */}
         <Text
