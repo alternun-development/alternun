@@ -36,8 +36,14 @@ export class UserAvatarRequestError extends Error {
   }
 }
 
+/** The person's own avatar read: their choice and the social photo kept at sign-in. */
+export interface UserAvatarRead {
+  choice: UserAvatarChoice;
+  socialUrl: string | null;
+}
+
 export interface UserAvatarClient {
-  get(): Promise<UserAvatarChoice>;
+  get(): Promise<UserAvatarRead>;
   set(kind: UserAvatarKind | null, ref?: string | null): Promise<UserAvatarChoice>;
 }
 
@@ -56,7 +62,7 @@ export function createUserAvatarClient(
 ): UserAvatarClient {
   const url = `${apiUrl.replace(/\/+$/, '')}/v1/me/avatar`;
 
-  async function request(method: 'GET' | 'PUT', body?: unknown): Promise<UserAvatarChoice> {
+  async function request(method: 'GET' | 'PUT', body?: unknown): Promise<unknown> {
     const token = await getToken();
     if (!token) throw new UserAvatarRequestError(401, 'AUTH_REQUIRED');
     const response = await fetcher(url, {
@@ -78,12 +84,23 @@ export function createUserAvatarClient(
       }
       throw new UserAvatarRequestError(response.status, code);
     }
-    return normalizeChoice(await response.json());
+    return response.json();
   }
 
   return {
-    get: () => request('GET'),
-    set: (kind, ref) => request('PUT', { kind, ref: ref ?? null }),
+    get: async () => {
+      const payload = await request('GET');
+      const photo =
+        payload && typeof payload === 'object'
+          ? (payload as Record<string, unknown>).socialUrl
+          : null;
+      return {
+        choice: normalizeChoice(payload),
+        socialUrl:
+          typeof photo === 'string' && /^https:\/\//i.test(photo.trim()) ? photo.trim() : null,
+      };
+    },
+    set: async (kind, ref) => normalizeChoice(await request('PUT', { kind, ref: ref ?? null })),
   };
 }
 

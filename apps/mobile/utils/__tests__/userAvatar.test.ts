@@ -22,7 +22,10 @@ describe('createUserAvatarClient', () => {
     );
     const client = createUserAvatarClient(async () => 'tok', fetcher, API);
 
-    await expect(client.get()).resolves.toEqual({ kind: 'preset', ref: 'mangrove', art: null });
+    await expect(client.get()).resolves.toEqual({
+      choice: { kind: 'preset', ref: 'mangrove', art: null },
+      socialUrl: null,
+    });
     expect(fetcher).toHaveBeenCalledWith('https://api.example.test/v1/me/avatar', {
       method: 'GET',
       headers: { Accept: 'application/json', Authorization: 'Bearer tok' },
@@ -60,7 +63,22 @@ describe('createUserAvatarClient', () => {
       jest.fn(async () => response(null)),
       API
     );
-    await expect(client.get()).resolves.toEqual(DEFAULT_AVATAR_CHOICE);
+    await expect(client.get()).resolves.toEqual({ choice: DEFAULT_AVATAR_CHOICE, socialUrl: null });
+  });
+
+  it('returns the https photo kept at sign-in', async () => {
+    const read = (socialUrl: unknown) =>
+      createUserAvatarClient(
+        async () => 'tok',
+        jest.fn(async () => response({ kind: null, ref: null, art: null, socialUrl })),
+        API
+      ).get();
+
+    await expect(read(' https://lh3.test/p ')).resolves.toMatchObject({
+      socialUrl: 'https://lh3.test/p',
+    });
+    await expect(read('http://insecure.test/p')).resolves.toMatchObject({ socialUrl: null });
+    await expect(read(7)).resolves.toMatchObject({ socialUrl: null });
   });
 
   it('fails without a session and never calls the API', async () => {

@@ -24,6 +24,8 @@ export interface AirsUserAvatar {
   kind: AirsUserAvatarKind | null;
   ref: string | null;
   art: Record<string, unknown> | null;
+  /** The person's own social photo (https), only on their avatar read; never in rankings. */
+  socialUrl?: string | null;
 }
 
 export interface AirsLeaderboardResult {
@@ -874,12 +876,17 @@ export async function getAirsEligibleUsersCount(
 
 export function mapAirsUserAvatar(value: unknown): AirsUserAvatar {
   const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
-  return {
+  const avatar: AirsUserAvatar = {
     kind: typeof record.kind === 'string' ? (record.kind as AirsUserAvatarKind) : null,
     ref: typeof record.ref === 'string' ? record.ref : null,
     art:
       record.art && typeof record.art === 'object' ? (record.art as Record<string, unknown>) : null,
   };
+  if ('socialUrl' in record) {
+    const photo = typeof record.socialUrl === 'string' ? record.socialUrl.trim() : '';
+    avatar.socialUrl = /^https:\/\//i.test(photo) ? photo : null;
+  }
+  return avatar;
 }
 
 export async function getAirsUserAvatar(
