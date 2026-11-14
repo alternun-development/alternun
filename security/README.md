@@ -45,7 +45,7 @@ OUT="security/audits/$(date -u +%F)"
 bash security/scripts/run-audit.sh "$OUT"
 python3 security/scripts/build-reports.py "$OUT/findings.json" "$OUT"
 # preview locally, then (only when you mean to send):
-python3 security/scripts/send-reports.py "$OUT" --ceo sgomez@alternun.io --cto edward@alternun.io --dry-run
+python3 security/scripts/send-reports.py "$OUT" --ceo <ceo-email> --cto <cto-email> --dry-run
 ```
 
 ## Weekly automation

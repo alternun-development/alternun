@@ -214,7 +214,7 @@
     <span class="tag" style="color: var(--accent);">↻ Mitigaciones aplicadas — 2026-11-14</span>
     <ul class="compact" style="margin-top:2px">
       <li><b>LuisFernando eliminado:</b> fuera del grupo Administrador, política desadjuntada, consola y usuario borrados. El grupo <code>Administrador</code> queda solo con <code>Edward</code>.</li>
-      <li><b>sgomez@alternun.io creado:</b> usuario de solo lectura de secretos (Secrets Manager/SSM/KMS + config de Lambda/CodeBuild) con autogestión de MFA y consola (reseteo obligatorio al primer ingreso).</li>
+      <li><b>Usuario revisor de secretos creado:</b> usuario de solo lectura de secretos (Secrets Manager/SSM/KMS + config de Lambda/CodeBuild) con autogestión de MFA y consola (reseteo obligatorio al primer ingreso).</li>
       <li><b>Lectura de secretos restringida a:</b> <code>Edward</code> (admin) + root + <code>sgomez</code>. Política <code>deny-secret-reads</code> creada (sin adjuntar) para blindar futuros roles no-admin.</li>
       <li><b>A-05 corregido:</b> secret-scan de CI ahora cubre el historial; revisión manual de 2.356 commits sin fugas.</li>
       <li><b>A-03 corregido:</b> política de contraseñas aplicada (≥14, complejidad, caducidad 90 d, no-reuso 24), efectiva para toda contraseña nueva.</li>
