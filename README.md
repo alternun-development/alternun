@@ -124,10 +124,6 @@ Current version: **1.2.4**
 
 ## 📋 Latest Changes (v1.2.4)
 
-### Bug Fixes
-
-- **repo:** feat(profile): choose an avatar from the social photo, illustrations or held badges
-
 ### Features
 
 - **profile:** choose an avatar from the social photo, illustrations or held badges ([0a7e89f](https://github.com/alternun-development/alternun/commit/0a7e89f5afc54e920dde50c4575b771446699941))
