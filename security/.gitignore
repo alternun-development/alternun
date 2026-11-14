@@ -1,0 +1,4 @@
+# never commit generated credentials or raw secret dumps
+*.secret
+*-password.txt
+newkey.tmp
