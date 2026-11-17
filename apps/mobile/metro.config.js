@@ -100,6 +100,16 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === "react-dom/client") {
     return { type: "sourceFile", filePath: reactDomClientEntry };
   }
+  // Expo SDK packages (expo-haptics, ...) import expo-modules-core without declaring it, so
+  // pnpm resolves it from its hidden hoist, which may hold another Expo SDK's copy (the
+  // admin pulls expo 55). Always use the app's own expo-modules-core.
+  if (moduleName === "expo-modules-core" || moduleName.startsWith("expo-modules-core/")) {
+    return resolve(
+      { ...context, originModulePath: path.join(__dirname, "package.json") },
+      moduleName,
+      platform
+    );
+  }
   // Pin react-native to the app version so workspace packages (e.g. @alternun/ui)
   // that bundle their own copy of react-native don't create a duplicate runtime.
   // Re-root resolution to the app directory so pnpm's local symlink in
