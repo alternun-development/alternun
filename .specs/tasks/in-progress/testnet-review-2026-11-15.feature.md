@@ -44,10 +44,8 @@ State on 2026-11-17 (analysis of `develop`):
 - [~] #74 CORS header traced from the request origin. First fix (`0f0a8cba`) was not recognized;
   now the origin is returned only inside an `allowlist.includes(origin)` check (`837524bb`).
   Waiting for the next CodeQL run on `develop`.
-- [ ] #75 Missing rate limiting on the email sign-in hook. Real mitigation is in place: Better Auth
-      handles that route with explicit limits (5/min sign-in, 5/min sign-up, 3/min OTP, `0f0a8cba`),
-      but CodeQL only recognizes known limiters (e.g. `@fastify/rate-limit`, not installed).
-      **Decision:** add a Fastify limiter for that route, or dismiss the alert as mitigated.
+- [~] #75 Missing rate limiting on the email sign-in hook → `@fastify/rate-limit` on that route
+  only (10/min per client IP) in front of Better Auth's own limits (`1214da87`). Waiting for the next CodeQL run on `develop`.
 - [x] #67 Shell command built from an absolute path (infra test) → path passed via env
       (`0f0a8cba`); stays open on `master` until the release merges.
 - [ ] The PR's "CodeQL" check compares against a stale merge analysis (2026-11-14): GitHub cannot
@@ -71,7 +69,7 @@ another admin's approval** — never auto-approved, never self-approved.
       `?report=<id>` opens that report), list with proof, recipient totals, approve/reject with
       reason; Explorer header entry for approvers only; API `me/airs-reports` with the Airs session,
       same approver table and self-approval refusal (`55dc5974`, `de0ea137`, `f5abeb00`).
-      Open question: approvers can open the proof of any report, not only pending ones.
+      Approvers read proof files only while the report is in review (`e204e1fc`).
 - [ ] Review email: a real button, not a plain-text link; consider linking to the app's
       `/airs-reports` now that approval exists there.
 - [ ] No notification arrived for a new 40-Airs assignment.
