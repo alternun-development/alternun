@@ -38,11 +38,21 @@ Legend: `[x]` done and committed, `[~]` code done but needs a deploy, config or 
 
 ## 1. Security findings on PR #313 (CodeQL)
 
-- [x] #74 CORS header echoed the request origin → now echoes the configured origin.
-- [x] #75 Missing rate limiting on email sign-in → explicit Better Auth `rateLimit` (memory, per
-      Lambda instance). Follow-up: shared storage if abuse appears.
-- [x] #76, #77 Polynomial ReDoS in honor-award email check → linear-time check.
-- [x] #67 Shell command built from an absolute path (infra test) → path passed via env.
+State on 2026-11-17 (analysis of `develop`):
+
+- [x] #76, #77 Polynomial ReDoS in honor-award email check → linear-time check (`0f0a8cba`); closed.
+- [~] #74 CORS header traced from the request origin. First fix (`0f0a8cba`) was not recognized;
+  now the origin is returned only inside an `allowlist.includes(origin)` check (`837524bb`).
+  Waiting for the next CodeQL run on `develop`.
+- [ ] #75 Missing rate limiting on the email sign-in hook. Real mitigation is in place: Better Auth
+      handles that route with explicit limits (5/min sign-in, 5/min sign-up, 3/min OTP, `0f0a8cba`),
+      but CodeQL only recognizes known limiters (e.g. `@fastify/rate-limit`, not installed).
+      **Decision:** add a Fastify limiter for that route, or dismiss the alert as mitigated.
+- [x] #67 Shell command built from an absolute path (infra test) → path passed via env
+      (`0f0a8cba`); stays open on `master` until the release merges.
+- [ ] The PR's "CodeQL" check compares against a stale merge analysis (2026-11-14): GitHub cannot
+      build `refs/pull/313/merge` while the PR conflicts with `master` (see §8c). It turns green
+      once `master` is synced.
 
 ## 2. Airs approval flow
 
@@ -133,13 +143,25 @@ another admin's approval** — never auto-approved, never self-approved.
       fix it from the admin panel.
 - [ ] `@alternun/i18n` has no plural support; explorer uses `_one`/`_other` keys via a helper.
 
-## 8c. Release tooling
+## 8c. Release and history sync (PR #313)
 
-- [ ] `develop` history was rewritten (likely the 2026-11-14 audit purge): production tags
-      v1.2.4–v1.2.6 point to commits outside `develop` and `master`, and `develop` no longer shares
-      recent history with `master` (2,322 commits ahead, same releases with different SHAs).
-      `pnpm release:patch:promote` fails in `publish-production-changelog.mjs` ("Unable to find a
-      production tag preceding v1.2.7"). Needs an owner decision before promoting v1.2.7.
+- [x] `pnpm release patch` → `v1.2.7-dev.0` deployed to testnet (2026-11-17). Verified: API
+      `/health` 1.2.7-dev.0; the Lambda's `ADMIN_AUTH_*` now point to the `alternun-admin` provider.
+      Fixes after that deploy (`d19392e1` self-approval of completions, `837524bb` CORS) ship in the
+      next release.
+- [ ] `develop` history was rewritten on purpose (2026-11-14 audit purge). Consequences:
+  - PR #313 conflicts with `master` (`CONFLICTING`): same releases with different SHAs, 2,322
+    commits ahead.
+  - 318 production tags point to pre-rewrite commits; 296 map 1:1 to the new history by release
+    commit (e.g. v1.2.6 `f03c79d7` → `dfbd16d5`), 22 are ambiguous.
+  - `pnpm release:patch:promote` fails in `publish-production-changelog.mjs` ("Unable to find a
+    production tag preceding v1.2.7") because no production tag is reachable from `develop`.
+- [ ] **Fix on develop (needs owner to run or allow):** re-point the 296 mapped tags to the new
+      history (`git tag -f` + force-push of those tags only; mapping with old SHAs kept for
+      rollback), then `pnpm release:patch:promote` to tag v1.2.7 and refresh PR #313.
+- [ ] **Proposed fix to master, after PR #313 is approved:** sync `master` to the approved release
+      commit of the new history instead of a merge (a merge would bring back the purged history).
+      This triggers the production pipeline; verify `dash-prod` and `/health` afterwards.
 
 ## 9. Testnet data left by the review (clean up when done)
 
