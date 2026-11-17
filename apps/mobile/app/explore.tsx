@@ -19,6 +19,7 @@ import {
   Building2,
   ChevronRight,
   CircleDollarSign,
+  ClipboardCheck,
   Compass,
   Gift,
   HandHeart,
@@ -70,6 +71,7 @@ import type {
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 import { resolveAdminPanelUrl } from '../utils/adminAccess';
 import { useAdminAccess } from '../hooks/useAdminAccess';
+import { useAirsReviewAccess } from '../hooks/useAirsReviewAccess';
 import { ExpandableCtaCard } from '../components/explore/ExpandableCtaCard';
 import { EnterpriseApplicationForm } from '../components/explore/EnterpriseApplicationForm';
 import { TipsSlider } from '../components/explore/TipsSlider';
@@ -104,6 +106,7 @@ const Building2Icon = Building2 as React.FC<LucideProps>;
 const UserPlusIcon = UserPlus as React.FC<LucideProps>;
 const RefreshIcon = RefreshCw as React.FC<LucideProps>;
 const ShieldCheckIcon = ShieldCheck as React.FC<LucideProps>;
+const ClipboardCheckIcon = ClipboardCheck as React.FC<LucideProps>;
 
 function safeImageUrl(
   media: MarketplaceMedia[],
@@ -1133,6 +1136,8 @@ export default function ExplorarScreen(): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
   const router = useRouter();
   const isGlobalAdmin = useAdminAccess()?.isGlobalAdmin === true;
+  // Approvers review Airs in review from the app (GET /v1/me/airs-reports/access).
+  const canReviewAirs = useAirsReviewAccess();
   // Bumped by the header reload button; the directories reload when it changes.
   const [refreshKey, setRefreshKey] = useState(0);
   const isDark = themeMode === 'dark';
@@ -1352,6 +1357,20 @@ export default function ExplorarScreen(): React.JSX.Element {
             palette={palette}
             actions={
               <>
+                {canReviewAirs ? (
+                  <Pressable
+                    testID='explorer-airs-review'
+                    accessibilityRole='link'
+                    accessibilityLabel={t('explorer.admin.airsReview')}
+                    onPress={() => router.push('/airs-reports')}
+                    style={[
+                      styles.headerIconButton,
+                      { borderColor: palette.border, backgroundColor: palette.surface },
+                    ]}
+                  >
+                    <ClipboardCheckIcon size={17} color={palette.primaryDeep} />
+                  </Pressable>
+                ) : null}
                 {isGlobalAdmin ? (
                   <Pressable
                     testID='explorer-admin-panel'

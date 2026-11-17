@@ -44,6 +44,11 @@ jest.mock('../../components/common/ScreenShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+let mockCanReviewAirs = false;
+jest.mock('../../hooks/useAirsReviewAccess', () => ({
+  useAirsReviewAccess: () => mockCanReviewAirs,
+}));
+
 jest.mock('../../components/marketplace/MarketplaceEnterpriseDirectory', () => ({
   MarketplaceEnterpriseBrowser: 'MockEnterpriseBrowser',
 }));
@@ -210,6 +215,24 @@ describe('Explorer admin entry point', () => {
     void act(() => button.props.onPress());
     expect(openUrl.mock.calls[0][0]).toMatch(/\/marketplace$/);
     openUrl.mockRestore();
+  });
+
+  it('shows the Airs in review entry point only to approvers', async () => {
+    let screen = await renderExplorerScreen();
+    expect(screen.root.findAllByProps({ testID: 'explorer-airs-review' })).toHaveLength(0);
+    void act(() => screen.unmount());
+
+    mockCanReviewAirs = true;
+    try {
+      screen = await renderExplorerScreen();
+      const [button] = screen.root.findAllByProps({ testID: 'explorer-airs-review' });
+      expect(button.props.accessibilityLabel).toBe('explorer.admin.airsReview');
+      mockPush.mockClear();
+      void act(() => button.props.onPress());
+      expect(mockPush).toHaveBeenCalledWith('/airs-reports');
+    } finally {
+      mockCanReviewAirs = false;
+    }
   });
 
   it('reloads the projects from the header reload button', async () => {
