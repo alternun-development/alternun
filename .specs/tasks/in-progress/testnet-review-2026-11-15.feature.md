@@ -21,13 +21,11 @@ Legend: `[x]` done and committed, `[~]` code done but needs a deploy, config or 
 
 ## 0. Blockers
 
-- [~] **Admin panel says "Your session has expired" on every section** (34, 35).
+- [~] **Admin panel says "Your session has expired" on every section** (34, 35): fixed, pending deploy.
   - [x] API guard required the optional `nbf` claim, which Authentik never sets (commit `917db6e1`).
-  - [~] API Lambda gets the app's issuer/audience and a non-existent JWKS path for `ADMIN_AUTH_*`.
-    Fix in `packages/infra/modules/backend-api.ts` derives them from the `alternun-admin`
-    provider. Held back: the pre-commit secret scan flags a pre-existing line in that file
-    (false positive); needs an owner decision (allowlist entry or reviewed `--no-verify`).
-    Takes effect after the next testnet deploy.
+  - [x] API Lambda got the app's issuer/audience and a non-existent JWKS path for `ADMIN_AUTH_*`;
+        now derived from the `alternun-admin` provider (commit `045ae688`). Takes effect after the next
+        testnet deploy.
 - [x] **Approval email links to the app instead of the admin panel** (32); now
       `<admin>/airs-reports?report=<id>` and the queue opens that report (commit `89eff5c7`).
 - [x] **Nobody may approve their own Airs**: recipient and submitter excluded from the review
@@ -67,13 +65,13 @@ Legend: `[x]` done and committed, `[~]` code done but needs a deploy, config or 
 
 ## 4. Manage views: feedback and lists that refresh
 
-- [ ] "Save changes" in Information shows a confirmation (14).
-- [ ] Client list refreshes after "Client added" (17, 18).
-- [ ] "Assign Airs" opens in the client's row and its button says "Assign Airs", not
-      "Add client" (26); success toast title matches the action (27).
-- [ ] Removing a team member asks for confirmation.
-- [ ] Comments: one reason field per comment; the missing-reason error must not shift the
-      buttons (20); a hidden comment shows its reason.
+- [x] "Save changes" in Information shows a confirmation (14). (commit `bf4a1fb0`)
+- [x] Client list refreshes after "Client added" (17, 18). (commit `bf4a1fb0`)
+- [x] "Assign Airs" opens in the client's row and its button says "Assign Airs", not
+      "Add client" (26); success toast title matches the action (27). (commit `bf4a1fb0`)
+- [x] Removing a team member asks for confirmation. (commit `bf4a1fb0`)
+- [x] Comments: one reason field per comment; the missing-reason error must not shift the
+      buttons (20); a hidden comment shows its reason. (commit `a82f3248`)
 - [ ] Team: change a member's role in place; warn when adding a global admin as moderator.
 - [ ] Enterprise Team tab: contradictory intro texts; roles still named "Project admin/moderator".
 - [ ] Awards tab: explain how honor awards are given (30).
@@ -85,17 +83,17 @@ Legend: `[x]` done and committed, `[~]` code done but needs a deploy, config or 
 
 - [ ] Real gallery (grid/carousel with enlarged view) instead of one 260×180 thumbnail (25).
 - [ ] La Matilde has no banner (content, not code).
-- [ ] "Earn Airs with the project's allies" looks like a button but does nothing; show the allies.
-- [ ] Hide placeholder values ("POR CONFIRMAR") and internal statuses.
+- [x] "Earn Airs with the project's allies" looks like a button but does nothing; show the allies. (commit `2c4dd654`)
+- [x] Hide placeholder values ("POR CONFIRMAR") and internal statuses. (commit `2c4dd654`)
 
 ## 6. Explorer and copy
 
-- [ ] "Enterprises creating impact" → "Empresas donde sumas Airs" (+ English equivalent) (04).
-- [ ] City instead of country code "CO" (04, 10).
-- [ ] Plural: "1 published projects" (04, 10).
+- [x] "Enterprises creating impact" → "Empresas donde sumas Airs" (+ English equivalent) (04). (commit `2c4dd654`)
+- [x] City instead of country code "CO" (04, 10). (commit `2c4dd654`)
+- [x] Plural: "1 published projects" (04, 10). (commit `2c4dd654`)
 - [ ] Featured project chosen by an admin instead of rotating (it showed a test photo).
 - [ ] Remaining English/Spanish mix and "puntos" wording.
-- [ ] Empty green carousel block above the enterprise form (05).
+- [x] Empty green carousel block above the enterprise form (05). (commit `2c4dd654`)
 
 ## 7. Dark-mode visual redesign (review §3.4)
 
@@ -110,8 +108,18 @@ Legend: `[x]` done and committed, `[~]` code done but needs a deploy, config or 
 
 ## 8. Admin panel
 
-- [ ] Sign-in screen: hide technical data (API, issuer, client, audience) and "DEV" version.
+- [x] Sign-in screen: hide technical data (API, issuer, client, audience) and "DEV" version (commit `68a660f9`).
 - [ ] Opening the panel from the app shield opens a new tab with another sign-in without notice.
+
+## 8b. Copy and content follow-ups found while fixing
+
+- [ ] "Earn Airs with the project's allies" now renders as text: the public project payload has no
+      list of the project's allies; add it to show them on the page.
+- [ ] Landing and onboarding copy (packages/i18n) still says "AIRS" and "verificable/verificada";
+      rewrite with the brand language rules.
+- [ ] Enterprise "torneo-swing-golf-rincon-cajica" description (DB content) mentions "puntos";
+      fix it from the admin panel.
+- [ ] `@alternun/i18n` has no plural support; explorer uses `_one`/`_other` keys via a helper.
 
 ## 9. Testnet data left by the review (clean up when done)
 

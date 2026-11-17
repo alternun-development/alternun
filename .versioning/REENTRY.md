@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Commit infra ADMIN*AUTH*\* fix (secret-scan false positive on backend-api.ts), then pnpm release patch + release:patch:promote to deploy testnet and update PR #313; backfill English project content
+Next micro-step: Release: pnpm release patch + pnpm release:patch:promote to deploy testnet (admin auth env, Lambda base64, Airs emails) and refresh PR #313; then #315 §2 in-app Airs approval screen
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
