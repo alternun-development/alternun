@@ -46,12 +46,24 @@ Legend: `[x]` done and committed, `[~]` code done but needs a deploy, config or 
 
 ## 2. Airs approval flow
 
+Rule (owner decision 2026-11-17): **any Airs an admin assigns to their own account always need
+another admin's approval** — never auto-approved, never self-approved.
+
+- [x] Airs reports: a report to the submitter's own account is never auto-approved
+      (`SELF_REPORT`, DB) and its submitter/recipient cannot approve or reject it (DB + API,
+      `89eff5c7`); the review email and client notice now say it is a self-assignment instead of
+      "over the automatic limits" (`d19392e1`). The 40-Airs test report went to review for this
+      reason, not because of the limits.
+- [x] Activity completions: an admin could award their own completion (writes Airs). The API now
+      refuses it by app session, console identity, account or email (`d19392e1`).
+
 - [ ] In-app screen for "In review" Airs, for global admins / approvers (there are 5-day-old
       reports pending; today approval only exists in the admin panel).
 - [ ] Review email: a real button, not a plain-text link.
 - [ ] No notification arrived for a new 40-Airs assignment.
-- [ ] Automatic-approval threshold looks low (40 Airs already go to manual review). Confirm the
-      threshold and whether it should be configurable per project/enterprise (**decision**).
+- [ ] Automatic-approval threshold: the 40-Airs case was a self-assignment, not the limit. Still
+      confirm the daily/monthly limits and whether they should be configurable per project/enterprise
+      (**decision**).
 - [ ] Proof files above ~4.4 MB will hit the 6 MB Lambda response limit once base64-encoded;
       serve them through a short-lived signed URL.
 
@@ -120,6 +132,14 @@ Legend: `[x]` done and committed, `[~]` code done but needs a deploy, config or 
 - [ ] Enterprise "torneo-swing-golf-rincon-cajica" description (DB content) mentions "puntos";
       fix it from the admin panel.
 - [ ] `@alternun/i18n` has no plural support; explorer uses `_one`/`_other` keys via a helper.
+
+## 8c. Release tooling
+
+- [ ] `develop` history was rewritten (likely the 2026-11-14 audit purge): production tags
+      v1.2.4–v1.2.6 point to commits outside `develop` and `master`, and `develop` no longer shares
+      recent history with `master` (2,322 commits ahead, same releases with different SHAs).
+      `pnpm release:patch:promote` fails in `publish-production-changelog.mjs` ("Unable to find a
+      production tag preceding v1.2.7"). Needs an owner decision before promoting v1.2.7.
 
 ## 9. Testnet data left by the review (clean up when done)
 
