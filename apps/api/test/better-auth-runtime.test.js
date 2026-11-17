@@ -439,3 +439,27 @@ test('email sign-in stays on the Nest Supabase route when Supabase owns email ac
     await app.close();
   }
 });
+
+test('email sign-in is rate limited per client IP before reaching Better Auth', async () => {
+  const { EMAIL_SIGN_IN_RATE_LIMIT } = require('../src/common/bootstrap/better-auth-runtime.ts');
+  const { app, forwarded } = await buildSignInApp({ AUTH_SIGNUP_PROVIDER: 'better-auth' });
+  try {
+    const attempt = (remoteAddress) =>
+      app.inject({
+        method: 'POST',
+        url: '/auth/sign-in/email',
+        remoteAddress,
+        payload: { email: 'ada@example.com', password: 'wrong-guess' },
+      });
+    for (let i = 0; i < EMAIL_SIGN_IN_RATE_LIMIT.max; i += 1) {
+      assert.equal((await attempt('203.0.113.7')).statusCode, 200);
+    }
+    const blocked = await attempt('203.0.113.7');
+    assert.equal(blocked.statusCode, 429);
+    assert.equal(forwarded.length, EMAIL_SIGN_IN_RATE_LIMIT.max);
+    // Another client is not affected.
+    assert.equal((await attempt('198.51.100.20')).statusCode, 200);
+  } finally {
+    await app.close();
+  }
+});

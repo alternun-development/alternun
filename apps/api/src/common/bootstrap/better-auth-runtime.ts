@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import fastifyRateLimit from '@fastify/rate-limit';
 import {
   type BetterAuthDevConfig,
   resolveBetterAuthDevConfig,
@@ -11,6 +12,8 @@ import { shouldProxyBetterAuthPath } from './better-auth-proxy';
 import { isBetterAuthEmailProvider } from '../../modules/auth-exchange/services/signup/signup.utils';
 
 const BETTER_AUTH_EMAIL_SIGN_IN_PATH = '/auth/sign-in/email';
+/** Email sign-in attempts per client IP and window, on each API instance. */
+export const EMAIL_SIGN_IN_RATE_LIMIT = { max: 10, windowMs: 60_000 } as const;
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
@@ -327,11 +330,23 @@ export function registerBetterAuthEmailSignIn(
     return;
   }
 
+  // Password guessing is throttled per client IP before Better Auth sees the request (Better Auth
+  // also applies its own limits). Only this route: the plugin is registered with global: false.
+  void app.register(fastifyRateLimit, { global: false });
+  let signInLimiter: ReturnType<FastifyInstance['rateLimit']> | undefined;
+
   app.addHook('preHandler', async (request, reply) => {
     const path = new URL(request.raw.url ?? '/', 'http://alternun.local').pathname;
     if (request.method !== 'POST' || path !== BETTER_AUTH_EMAIL_SIGN_IN_PATH) {
       return;
     }
+
+    signInLimiter ??= app.rateLimit({
+      max: EMAIL_SIGN_IN_RATE_LIMIT.max,
+      timeWindow: EMAIL_SIGN_IN_RATE_LIMIT.windowMs,
+    });
+    // Throws a 429 error once the IP is over the limit.
+    await signInLimiter.call(app, request, reply);
 
     await handleBetterAuthRuntimeRequest(request, reply, { ...options, skipPathGuards: true });
     return reply;

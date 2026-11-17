@@ -17,6 +17,7 @@
     "@aws-sdk/client-secrets-manager": "^3.940.0",
     "@better-auth/drizzle-adapter": "1.7.14",
     "@fastify/aws-lambda": "^5.1.4",
+    "@fastify/rate-limit": "10.3.0",
     "@fastify/swagger": "^9.5.0",
     "@fastify/swagger-ui": "^5.2.1",
     "@nestjs/common": "^10.4.22",
