@@ -243,3 +243,39 @@ test('reject and hide require a non-empty reason before the RPC', async () => {
   );
   assert.equal(fixture.calls.moderations.length, 0);
 });
+
+test('manage listing keeps the moderation reason; public listing never selects it', async () => {
+  const row = {
+    id: comment.id,
+    project_id: project.id,
+    author_display_name: 'Verified Guest',
+    body: comment.body,
+    status: 'hidden',
+    moderation_reason: 'Off-topic',
+    created_at: comment.createdAt,
+    updated_at: comment.updatedAt,
+  };
+  const selects: string[] = [];
+  const query = (data: unknown) => {
+    const chain: any = {
+      select: (columns: string) => {
+        selects.push(columns);
+        return chain;
+      },
+      eq: () => chain,
+      order: () => chain,
+      then: (resolve: (value: unknown) => unknown) => resolve({ data, error: null }),
+    };
+    return chain;
+  };
+  const repository = new MarketplaceCommentRepository({
+    from: () => query([row]),
+  } as never);
+
+  const managed = await repository.listAdmin(project.id, 'hidden');
+  assert.equal(managed[0]?.moderationReason, 'Off-topic');
+
+  const visible = await repository.listVisible(project.id);
+  assert.equal(selects[1]?.includes('moderation_reason'), false);
+  assert.equal('moderationReason' in (visible[0] ?? {}), false);
+});
