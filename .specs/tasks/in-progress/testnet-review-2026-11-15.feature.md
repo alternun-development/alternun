@@ -67,9 +67,13 @@ another admin's approval** — never auto-approved, never self-approved.
 - [x] Activity completions: an admin could award their own completion (writes Airs). The API now
       refuses it by app session, console identity, account or email (`d19392e1`).
 
-- [ ] In-app screen for "In review" Airs, for global admins / approvers (there are 5-day-old
-      reports pending; today approval only exists in the admin panel).
-- [ ] Review email: a real button, not a plain-text link.
+- [x] In-app screen for "In review" Airs: route `/airs-reports` (also rescues old email links,
+      `?report=<id>` opens that report), list with proof, recipient totals, approve/reject with
+      reason; Explorer header entry for approvers only; API `me/airs-reports` with the Airs session,
+      same approver table and self-approval refusal (`55dc5974`, `de0ea137`, `f5abeb00`).
+      Open question: approvers can open the proof of any report, not only pending ones.
+- [ ] Review email: a real button, not a plain-text link; consider linking to the app's
+      `/airs-reports` now that approval exists there.
 - [ ] No notification arrived for a new 40-Airs assignment.
 - [ ] Automatic-approval threshold: the 40-Airs case was a self-assignment, not the limit. Still
       confirm the daily/monthly limits and whether they should be configurable per project/enterprise
