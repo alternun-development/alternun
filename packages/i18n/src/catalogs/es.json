@@ -1298,7 +1298,11 @@
         "address": "Dirección",
         "coverage": "Cobertura",
         "contact": "Contacto público",
-        "contentOnly": "Tu rol puede editar el contenido; la ubicación y el contacto los edita el admin del proyecto."
+        "contentOnly": "Tu rol puede editar el contenido; la ubicación y el contacto los edita el admin del proyecto.",
+        "language": "Idioma del contenido",
+        "missing": "sin traducción",
+        "missingHint": "Este proyecto aún no tiene versión en {{language}}; quienes usan la app en {{language}} lo ven en {{fallback}}. Completa los campos para agregarla.",
+        "incomplete": "Completa nombre, tema, ubicación y descripción en {{language}}, o deja vacíos todos sus campos."
       },
       "images": {
         "logo": "Logo",
@@ -1404,6 +1408,7 @@
         },
         "conceptCount": "{{count}}/{{min}} caracteres mínimo",
         "lookupFirst": "Busca el correo en Airs para continuar.",
+        "noProjects": "Esta empresa todavía no tiene proyectos activos. Los clientes se agregan a un proyecto: cuando la empresa tenga uno, podrás agregarlos aquí.",
         "busy": {
           "lookup": "Buscando…",
           "add": "Agregando cliente…",

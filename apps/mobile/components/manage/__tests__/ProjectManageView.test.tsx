@@ -2,7 +2,14 @@
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { ProjectManageView, visibleTabs } from '../ProjectManageView';
-import { infoPatch } from '../ManageInfoSection';
+import {
+  contentLocales,
+  incompleteLocale,
+  infoDraft,
+  infoPatch,
+  initialLocale,
+  localeName,
+} from '../ManageInfoSection';
 import { commentActions } from '../ManageCommentsSection';
 import { ManageImagesSection, uploadErrorKey } from '../ManageImagesSection';
 import {
@@ -186,6 +193,36 @@ describe('ProjectManageView', () => {
     expect(c.revokeTeamMember).toHaveBeenCalledWith('m1', 'manage.team.removeReason');
   });
 
+  it('adds the English version from the language switcher, keeping Spanish', async () => {
+    const c = client(overview(['partner_operator'], { editContent: true }));
+    const r = await render(
+      <ProjectManageView
+        client={c}
+        palette={palette}
+        t={t}
+        onBack={jest.fn()}
+        canPickFiles
+        locale='en'
+      />
+    );
+    // Opens on the app language, which has no translation yet.
+    expect(input(r, 'manage-info-title').props.value).toBe('');
+    expect(byId(r, 'manage-info-missing').length).toBeGreaterThan(0);
+    await act(async () => input(r, 'manage-info-title').props.onChangeText('Gaira River'));
+    await press(r, 'manage-info-save');
+    // Incomplete: not sent, and the error points to English.
+    expect(c.updateProject).not.toHaveBeenCalled();
+    await act(async () => input(r, 'manage-info-theme').props.onChangeText('River'));
+    await act(async () => input(r, 'manage-info-location').props.onChangeText('Santa Marta'));
+    await act(async () => input(r, 'manage-info-description').props.onChangeText('Cleanup'));
+    await press(r, 'manage-info-save');
+    const patch = (c.updateProject as jest.Mock).mock.calls[0][0];
+    expect(patch.content.en).toMatchObject({ title: 'Gaira River', description: 'Cleanup' });
+    expect(patch.content.es.title).toBe('Río Gaira');
+    await press(r, 'manage-info-locale-es');
+    expect(input(r, 'manage-info-title').props.value).toBe('Río Gaira');
+  });
+
   it('shows the saved values right away, without waiting for the refetch', async () => {
     let resolveRefetch: (value: ManageOverview) => void = () => undefined;
     const first = overview(['partner_operator'], { editContent: true, editProfile: true });
@@ -224,11 +261,7 @@ describe('ProjectManageView', () => {
     const patch = infoPatch(
       stored as never,
       {
-        title: 'T',
-        theme: 'Th',
-        location: 'L',
-        description: 'D',
-        ways: 'a',
+        content: { es: { title: 'T', theme: 'Th', location: 'L', description: 'D', ways: 'a' } },
         alternateName: '',
         locationDetails: {
           municipality: 'Santa Marta',
@@ -264,11 +297,10 @@ describe('ProjectManageView', () => {
 describe('manage helpers', () => {
   it('sends only content for roles that cannot edit the profile', () => {
     const draft = {
-      title: ' T ',
-      theme: 'Th',
-      location: 'L',
-      description: 'D',
-      ways: 'a\n\n b ',
+      content: {
+        es: { title: ' T ', theme: 'Th', location: 'L', description: 'D', ways: 'a\n\n b ' },
+        en: { title: '', theme: '', location: '', description: '', ways: '' },
+      },
       alternateName: 'X',
       locationDetails: { municipality: 'M', department: '', address: '', coverage: '' },
       publicContact: {
@@ -283,9 +315,26 @@ describe('manage helpers', () => {
     const contentOnly = infoPatch(project, draft, false);
     expect(Object.keys(contentOnly)).toEqual(['content']);
     expect((contentOnly.content as any).es.waysToContribute).toEqual(['a', 'b']);
+    // An empty language is not sent, so it stays untranslated.
+    expect(Object.keys(contentOnly.content as object)).toEqual(['es']);
     const full = infoPatch(project, draft, true);
     expect(full.locationDetails).toEqual({ municipality: 'M' });
     expect(full.publicContact).toEqual({ email: 'e@x.test' });
+  });
+
+  it('offers Spanish and English and opens on the app language', () => {
+    expect(contentLocales(project as never)).toEqual(['es', 'en']);
+    expect(initialLocale(project as never, 'en')).toBe('en');
+    expect(initialLocale(project as never, 'es-CO')).toBe('es');
+    // Thai is not offered: the default language.
+    expect(initialLocale(project as never, 'th')).toBe('es');
+    expect(localeName('en')).toBe('English');
+    const draft = infoDraft(project as never);
+    expect(draft.content.en.title).toBe('');
+    // A half-filled language would be rejected by the API; an empty one is fine.
+    expect(incompleteLocale(project as never, draft)).toBeNull();
+    draft.content.en.title = 'Gaira River';
+    expect(incompleteLocale(project as never, draft)).toBe('en');
   });
 
   it('offers moderation actions by status and maps upload errors', () => {

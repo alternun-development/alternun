@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import ScreenShell from '../../components/common/ScreenShell';
 import { useAuth } from '../../components/auth/AppAuthProvider';
 import { useAppTranslation } from '../../components/i18n/useAppTranslation';
+import { useAppPreferences } from '../../components/settings/AppPreferencesProvider';
 import { ProjectManageView } from '../../components/manage/ProjectManageView';
 import { useManagePalette } from '../../components/manage/useManagePalette';
 import { createManageClient } from '../../utils/projectManage';
@@ -16,6 +17,7 @@ export default function ProjectManageScreen(): React.JSX.Element {
   const router = useRouter();
   const { client } = (useAuth as unknown as () => ManageScreenAuthContext)();
   const { t } = useAppTranslation('mobile');
+  const { language } = useAppPreferences();
   const projectId = Array.isArray(params.projectId)
     ? params.projectId[0] ?? ''
     : params.projectId ?? '';
@@ -39,6 +41,7 @@ export default function ProjectManageScreen(): React.JSX.Element {
         onBack={() => router.back()}
         canPickFiles={Platform.OS === 'web'}
         clientsClient={clientsClient}
+        locale={language}
       />
     </ScreenShell>
   );

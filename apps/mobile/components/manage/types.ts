@@ -25,6 +25,8 @@ export interface ManageSectionProps {
   onChanged: (message?: string) => void;
   /** The project as the server saved it, applied right away so nothing shows stale data. */
   onProjectSaved?: (project: ManagedProject) => void;
+  /** App language of the person; the content form opens on it. */
+  locale?: string;
 }
 
 export interface ProjectManageViewProps {
@@ -36,6 +38,8 @@ export interface ProjectManageViewProps {
   canPickFiles: boolean;
   /** Clients tab API; the tab shows only when given and the person can see clients. */
   clientsClient?: ClientsClient;
+  /** App language of the person; the content form opens on it. */
+  locale?: string;
 }
 
 export interface ManageImagesSectionProps extends ManageSectionProps {
@@ -44,12 +48,18 @@ export interface ManageImagesSectionProps extends ManageSectionProps {
   pickFile?: () => Promise<(Blob & { type: string; size: number }) | null>;
 }
 
-export interface InfoDraft {
+/** Translatable fields of the project, for one language. */
+export interface LocalizedInfoDraft {
   title: string;
   theme: string;
   location: string;
   description: string;
   ways: string;
+}
+
+export interface InfoDraft {
+  /** One block per language the form offers; an empty non-default block is left untranslated. */
+  content: Record<string, LocalizedInfoDraft>;
   alternateName: string;
   locationDetails: Record<'municipality' | 'department' | 'address' | 'coverage', string>;
   publicContact: Record<'web' | 'email' | 'phone' | 'whatsapp' | 'instagram' | 'facebook', string>;

@@ -82,6 +82,8 @@ function hasRole(principal: AdminPrincipal, ...roles: string[]): boolean {
   return principal.roles.some((role) => roles.includes(role));
 }
 
+const FALLBACK_LOCALE = 'en';
+
 function resolveLocale(
   content: ProjectContent,
   requested: string | undefined,
@@ -89,9 +91,13 @@ function resolveLocale(
   fallback: string
 ): string {
   const available = Object.keys(content);
+  // The language the app asked for wins over the browser's; missing translations fall back to
+  // English (the shared language, e.g. for Thai), then to the default language.
   const candidates = [
-    requested,
-    ...(acceptLanguage ?? '').split(',').map((part) => part.split(';')[0]?.trim()),
+    ...(requested
+      ? [requested]
+      : (acceptLanguage ?? '').split(',').map((part) => part.split(';')[0]?.trim())),
+    FALLBACK_LOCALE,
     fallback,
   ].filter((value): value is string => !!value);
   for (const candidate of candidates) {

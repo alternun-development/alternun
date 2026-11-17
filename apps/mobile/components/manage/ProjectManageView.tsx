@@ -38,6 +38,7 @@ export function ProjectManageView({
   onBack,
   canPickFiles,
   clientsClient,
+  locale,
 }: ProjectManageViewProps): React.JSX.Element {
   const [overview, setOverview] = useState<ManageOverview | null>(null);
   const toasts = useToasts();
@@ -84,7 +85,7 @@ export function ProjectManageView({
       current ? { ...current, project: { ...current.project, ...saved } } : current
     );
   const sectionProps = overview
-    ? { client, overview, palette, t, onChanged: changed, onProjectSaved: applySaved }
+    ? { client, overview, palette, t, onChanged: changed, onProjectSaved: applySaved, locale }
     : null;
 
   return (

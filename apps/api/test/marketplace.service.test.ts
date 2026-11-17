@@ -171,6 +171,24 @@ test('public service never returns draft or paused rows and resolves query local
   await assert.rejects(service.findBySlug(project.slug), expectApiError('PROJECT_NOT_FOUND', 404));
 });
 
+test('public service falls back to English for languages a project lacks, ignoring the browser', async () => {
+  const published = { ...project, status: 'published' as const };
+  const repository = {
+    listPublished: async () => [{ project: published, enterprise, media: [] }],
+  } as unknown as MarketplacePublicRepository;
+  const service = new MarketplacePublicService(repository);
+  // Thai app language: no Thai version, so English rather than the browser's Spanish.
+  assert.equal((await service.list('th', 'es-CO')).data[0].locale, 'en');
+  // Without English either, the project's default language.
+  const spanishOnly = { ...published, content: { es: content.es } };
+  const onlyEs = new MarketplacePublicService({
+    listPublished: async () => [{ project: spanishOnly, enterprise, media: [] }],
+  } as unknown as MarketplacePublicRepository);
+  assert.equal((await onlyEs.list('th')).data[0].locale, 'es');
+  // No app language: the browser's language still applies.
+  assert.equal((await service.list(undefined, 'es-CO,es;q=0.9')).data[0].locale, 'es');
+});
+
 test('public repository has a fixed published filter and is separate from admin repository', () => {
   const source = readFileSync(
     join(__dirname, '../src/modules/marketplace/marketplace.repository.ts'),

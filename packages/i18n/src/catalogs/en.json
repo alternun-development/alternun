@@ -1298,7 +1298,11 @@
         "address": "Address",
         "coverage": "Coverage",
         "contact": "Public contact",
-        "contentOnly": "Your role can edit the content; the project admin edits location and contact."
+        "contentOnly": "Your role can edit the content; the project admin edits location and contact.",
+        "language": "Content language",
+        "missing": "not translated",
+        "missingHint": "This project has no {{language}} version yet; people using the app in {{language}} see it in {{fallback}}. Fill in the fields to add it.",
+        "incomplete": "Fill in name, theme, location and description in {{language}}, or leave all of its fields empty."
       },
       "images": {
         "logo": "Logo",
@@ -1404,6 +1408,7 @@
         },
         "conceptCount": "{{count}}/{{min}} characters minimum",
         "lookupFirst": "Search the email in Airs to continue.",
+        "noProjects": "This enterprise has no active projects yet. Clients are added to a project: once the enterprise has one, you can add them here.",
         "busy": {
           "lookup": "Searching…",
           "add": "Adding client…",
