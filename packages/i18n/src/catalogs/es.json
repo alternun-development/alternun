@@ -1574,7 +1574,8 @@
       "admin": {
         "openPanel": "Panel admin de Alternun",
         "manageProject": "Administrar proyecto",
-        "manageEnterprise": "Administrar empresa"
+        "manageEnterprise": "Administrar empresa",
+        "airsReview": "Airs en revisión"
       },
       "profile": {
         "about": "Acerca de",
@@ -1803,6 +1804,46 @@
         "validationError": "Revisa los campos e inténtalo de nuevo.",
         "submitError": "No pudimos enviar tu propuesta. Inténtalo de nuevo.",
         "finePrint": "Guardaremos tu propuesta para que el equipo de Alternun pueda revisarla."
+      }
+    },
+    "airsReview": {
+      "title": "Airs en revisión",
+      "subtitle": "Asignaciones que superan los límites automáticos y esperan una decisión.",
+      "back": "Volver",
+      "loading": "Cargando…",
+      "denied": "Esta sección es para quienes aprueban Airs.",
+      "error": "No se pudo cargar. Intenta de nuevo.",
+      "retry": "Reintentar",
+      "empty": "No hay Airs en revisión por ahora.",
+      "focusMissing": "La asignación del enlace ya no está en revisión: ya fue aprobada, rechazada o cancelada.",
+      "amount": "{{count}} Airs",
+      "submittedOn": "Asignados el {{date}}",
+      "recipient": "Para",
+      "project": "Proyecto",
+      "concept": "Concepto",
+      "document": "Documento",
+      "noDocument": "Sin número de documento",
+      "viewProof": "Ver soporte",
+      "totalsTitle": "Airs que esta persona ya recibió",
+      "totalDay": "Hoy: {{total}} de {{limit}} Airs del límite diario automático",
+      "totalMonth": "Este mes: {{total}} de {{limit}} Airs del límite mensual automático",
+      "totalsError": "No se pudieron cargar los totales.",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "rejectReason": "Motivo del rechazo (obligatorio)",
+      "confirmReject": "Confirmar rechazo",
+      "cancel": "Cancelar",
+      "reasonRequired": "Escribe el motivo del rechazo.",
+      "reasonTooLong": "El motivo puede tener hasta {{max}} caracteres.",
+      "toasts": {
+        "approvedTitle": "Airs aprobados",
+        "rejectedTitle": "Airs rechazados",
+        "body": "{{count}} Airs para {{email}}"
+      },
+      "errors": {
+        "self": "No puedes aprobar ni rechazar Airs que son para ti o que tú asignaste.",
+        "changed": "Esta asignación cambió o ya tiene una decisión. Actualizamos la lista.",
+        "generic": "No se pudo completar. Intenta de nuevo."
       }
     }
   },

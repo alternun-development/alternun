@@ -10,6 +10,7 @@ import { resolveLegacyRoute, toQueryString } from '../../utils/legacyRoutes';
  * apps/mobile/utils/legacyRoutes.ts.
  */
 const ALLOWED_ROUTE_SEGMENTS = new Set([
+  'airs-reports',
   'auth',
   'auth-relay',
   'callback',

@@ -76,7 +76,7 @@ export function matchesClientFilter(item: ProjectClient, filter: ClientFilter): 
 }
 
 /** blob: URL on web; a data: URL where object URLs are not available (native). */
-function defaultLocalUrl(file: Blob): Promise<string> {
+export function defaultLocalUrl(file: Blob): Promise<string> {
   if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function')
     return Promise.resolve(URL.createObjectURL(file));
   return new Promise((resolve, reject) => {
@@ -87,7 +87,7 @@ function defaultLocalUrl(file: Blob): Promise<string> {
   });
 }
 
-function releaseLocalUrl(uri: string | undefined): void {
+export function releaseLocalUrl(uri: string | undefined): void {
   if (uri?.startsWith('blob:') && typeof URL.revokeObjectURL === 'function')
     URL.revokeObjectURL(uri);
 }

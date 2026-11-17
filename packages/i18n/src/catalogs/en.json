@@ -1574,7 +1574,8 @@
       "admin": {
         "openPanel": "Alternun admin panel",
         "manageProject": "Manage project",
-        "manageEnterprise": "Manage enterprise"
+        "manageEnterprise": "Manage enterprise",
+        "airsReview": "Airs in review"
       },
       "profile": {
         "about": "About",
@@ -1803,6 +1804,46 @@
         "validationError": "Review the fields and try again.",
         "submitError": "We couldn't send your proposal. Please try again.",
         "finePrint": "We will store your proposal so the Alternun team can review it."
+      }
+    },
+    "airsReview": {
+      "title": "Airs in review",
+      "subtitle": "Assignments above the automatic limits, waiting for a decision.",
+      "back": "Back",
+      "loading": "Loading…",
+      "denied": "This section is for people who approve Airs.",
+      "error": "It could not be loaded. Please try again.",
+      "retry": "Retry",
+      "empty": "No Airs in review right now.",
+      "focusMissing": "The assignment in the link is no longer in review: it was already approved, rejected or cancelled.",
+      "amount": "{{count}} Airs",
+      "submittedOn": "Assigned on {{date}}",
+      "recipient": "To",
+      "project": "Project",
+      "concept": "Reason",
+      "document": "Document",
+      "noDocument": "No document number",
+      "viewProof": "View file",
+      "totalsTitle": "Airs this person already received",
+      "totalDay": "Today: {{total}} of the {{limit}} Airs automatic daily limit",
+      "totalMonth": "This month: {{total}} of the {{limit}} Airs automatic monthly limit",
+      "totalsError": "The totals could not be loaded.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejectReason": "Reason for rejecting (required)",
+      "confirmReject": "Confirm rejection",
+      "cancel": "Cancel",
+      "reasonRequired": "Write the reason for rejecting.",
+      "reasonTooLong": "The reason can be up to {{max}} characters.",
+      "toasts": {
+        "approvedTitle": "Airs approved",
+        "rejectedTitle": "Airs rejected",
+        "body": "{{count}} Airs for {{email}}"
+      },
+      "errors": {
+        "self": "You can't approve or reject Airs addressed to you or assigned by you.",
+        "changed": "This assignment changed or already has a decision. The list was refreshed.",
+        "generic": "It could not be completed. Please try again."
       }
     }
   },
