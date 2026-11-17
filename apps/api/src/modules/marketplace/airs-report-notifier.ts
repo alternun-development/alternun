@@ -24,6 +24,56 @@ export function resolveAirsReportAppUrl(env: Record<string, string | undefined>)
   return (explicit || 'https://airs.alternun.co').replace(/\/+$/, '');
 }
 
+/**
+ * Base URL of the admin panel, where approvers decide. AIRS_ADMIN_URL overrides it; otherwise it
+ * sits next to the Airs app: airs.alternun.co -> admin.alternun.co,
+ * testnet.airs.alternun.co -> testnet.admin.alternun.co.
+ */
+export function resolveAirsReportAdminUrl(env: Record<string, string | undefined>): string {
+  const explicit = (env.AIRS_ADMIN_URL ?? '').trim();
+  if (explicit) return explicit.replace(/\/+$/, '');
+  try {
+    const app = new URL(resolveAirsReportAppUrl(env));
+    if (app.hostname === 'localhost' || app.hostname === '127.0.0.1') {
+      return 'http://localhost:5173';
+    }
+    const labels = app.hostname.split('.');
+    const airs = labels.indexOf('airs');
+    if (airs >= 0) {
+      labels[airs] = 'admin';
+      return `${app.protocol}//${labels.join('.')}`;
+    }
+  } catch {
+    // An unparsable app URL falls back to the production panel.
+  }
+  return 'https://admin.alternun.co';
+}
+
+/** True when the address belongs to the report's recipient or to whoever submitted it. */
+export function isReportParty(
+  email: string,
+  report: Pick<AirsReportRecord, 'recipientEmail'>,
+  submitterEmail?: string | null
+): boolean {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return false;
+  return [report.recipientEmail, submitterEmail ?? '']
+    .map((entry) => entry.trim().toLowerCase())
+    .includes(normalized);
+}
+
+/**
+ * Removes the people a report is about from a list of addresses: nobody approves Airs for
+ * themselves, so neither the recipient nor whoever submitted it is asked to review it.
+ */
+export function withoutReportParties(
+  emails: readonly string[],
+  report: Pick<AirsReportRecord, 'recipientEmail'>,
+  submitterEmail?: string | null
+): string[] {
+  return emails.filter((entry) => !isReportParty(entry, report, submitterEmail));
+}
+
 /** Support mailboxes come from configuration, never from the repository. */
 export function resolveAirsReportSupportEmails(env: Record<string, string | undefined>): string[] {
   const addresses: string[] = (env.AIRS_REPORT_SUPPORT_EMAILS ?? '')
@@ -108,24 +158,27 @@ export function createAirsReportWorkflowNotifier(
       report,
       projectName,
       appUrl: resolveAirsReportAppUrl(dependencies.env),
+      adminUrl: resolveAirsReportAdminUrl(dependencies.env),
     };
     const email = waiting
       ? renderAirsReportReviewRequestEmail(context)
       : renderAirsReportDecisionEmail(context);
 
-    const audience: string[] = [];
+    const submitter = await (
+      dependencies.submitterEmail?.(report.submittedBy.issuer, report.submittedBy.subject) ??
+      Promise.resolve(null)
+    ).catch(() => null);
+    let audience: string[] = [];
     if (waiting) {
       audience.push(
         ...(await (dependencies.approverEmails?.() ?? Promise.resolve([])).catch(() => []))
       );
-    } else {
-      const submitter = await (
-        dependencies.submitterEmail?.(report.submittedBy.issuer, report.submittedBy.subject) ??
-        Promise.resolve(null)
-      ).catch(() => null);
-      if (submitter) audience.push(submitter);
+    } else if (submitter) {
+      audience.push(submitter);
     }
     audience.push(...resolveAirsReportSupportEmails(dependencies.env));
+    // The review request carries the approval link: never to the recipient or the submitter.
+    if (waiting) audience = withoutReportParties(audience, report, submitter);
 
     const recipients = Array.from(
       new Set<string>(

@@ -1,4 +1,8 @@
-import type { AirsReportEmailContent, AirsReportEmailContext } from './airs-report-emails.types';
+import type {
+  AirsReportEmailContent,
+  AirsReportEmailContext,
+  AirsReportReviewEmailContext,
+} from './airs-report-emails.types';
 
 function escapeHtml(value: string): string {
   return value
@@ -173,11 +177,15 @@ function staffEmail(
   return { subject, text, html };
 }
 
-/** Email to the approvers and support: a report went over the automatic limits and waits. */
+/**
+ * Email to the approvers and support: a report went over the automatic limits and waits.
+ * The link opens that report in the admin panel, where approvers decide.
+ */
 export function renderAirsReportReviewRequestEmail(
-  context: AirsReportEmailContext
+  context: AirsReportReviewEmailContext
 ): AirsReportEmailContent {
-  const { report, projectName, appUrl } = context;
+  const { report, projectName, adminUrl } = context;
+  const reviewLink = `${adminUrl}/airs-reports?report=${encodeURIComponent(report.id)}`;
   const rows = (
     labels: [string, string, string, string, string, string]
   ): Array<[string, string]> => [
@@ -186,7 +194,7 @@ export function renderAirsReportReviewRequestEmail(
     [labels[2], report.concept],
     [labels[3], report.documentNumber ?? '-'],
     [labels[4], projectName ?? report.projectId],
-    [labels[5], `${appUrl}/airs-reports`],
+    [labels[5], reviewLink],
   ];
   return staffEmail(
     `Reporte de Airs por revisar: ${airsLabel(report.amount)} a ${

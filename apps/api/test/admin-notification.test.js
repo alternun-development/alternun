@@ -278,10 +278,12 @@ test('recording de-duplicates emails, skips bad ones and never throws', async ()
 
 function reportService(response, { inbox, approvers = ['approver@example.test'] } = {}) {
   const repository = {
+    find: async () => null,
     submit: async () => response,
     approve: async () => response,
     reject: async () => response,
     listApproverEmails: async () => approvers,
+    findSubmitterEmail: async () => null,
   };
   return new AirsReportService(
     repository,
@@ -332,6 +334,30 @@ test('a report waiting for review notifies the approvers and support; an automat
   } finally {
     delete process.env.AIRS_REPORT_SUPPORT_EMAILS;
   }
+});
+
+test('the review notice in the console skips the recipient and the submitter', async () => {
+  const inbox = recorder();
+  const service = new AirsReportService(
+    {
+      listApproverEmails: async () => [
+        'guest@example.test',
+        'submitter@example.test',
+        'approver@example.test',
+      ],
+      findSubmitterEmail: async () => 'Submitter@example.test',
+      submit: async () => ({
+        report: report({ status: 'pending_approval', decision: null }),
+        idempotent: false,
+      }),
+    },
+    {},
+    async () => {},
+    async () => {},
+    inbox
+  );
+  await service.submit(actor, 'r', PROJECT_ID, {});
+  assert.deepEqual(inbox.calls[0].audience.emails, ['approver@example.test']);
 });
 
 test('a decision notifies whoever submitted the report, with the rejection reason', async () => {

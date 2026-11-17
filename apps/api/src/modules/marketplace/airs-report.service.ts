@@ -14,7 +14,9 @@ import type { AirsReportNotifierDependencies } from './airs-report-emails.types'
 import {
   createAirsReportNotifier,
   createAirsReportWorkflowNotifier,
+  isReportParty,
   resolveAirsReportSupportEmails,
+  withoutReportParties,
   type AirsReportNotifyOptions,
 } from './airs-report-notifier';
 import { AdminNotificationService, adminNotificationEventFor } from './admin-notification.service';
@@ -108,8 +110,15 @@ export class AirsReportService {
     if (!this.inbox || !event) return;
     try {
       const support = resolveAirsReportSupportEmails(process.env);
+      // Nobody reviews their own report: the recipient and the submitter are left out.
       const approvers =
-        event === 'report_needs_review' ? await this.repository.listApproverEmails() : [];
+        event === 'report_needs_review'
+          ? withoutReportParties(
+              await this.repository.listApproverEmails(),
+              report,
+              await this.submitterEmail(report)
+            )
+          : [];
       const decided = event === 'report_approved' || event === 'report_rejected';
       await this.inbox.recordReportEvent(
         report,
@@ -122,6 +131,47 @@ export class AirsReportService {
       );
     } catch {
       // Intentionally ignored.
+    }
+  }
+
+  // Verified email of whoever submitted the report, or null when it cannot be resolved.
+  private async submitterEmail(report: AirsReportRecord): Promise<string | null> {
+    try {
+      return await this.repository.findSubmitterEmail(
+        report.submittedBy.issuer,
+        report.submittedBy.subject
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Nobody decides on Airs for themselves: the recipient of a report and whoever submitted it
+   * (by identity, or by the same email under another sign-in) cannot approve or reject it. The
+   * database applies the same rule; this check also covers the submitter's email.
+   */
+  private async refuseOwnReport(
+    principal: AdminPrincipal,
+    requestId: string,
+    reportId: string
+  ): Promise<void> {
+    const report = await this.repository.find(reportId);
+    // A missing report is answered by the database, with its own audit entry.
+    if (!report) return;
+    const sameIdentity =
+      report.submittedBy.issuer === principal.iss && report.submittedBy.subject === principal.sub;
+    if (
+      sameIdentity ||
+      isReportParty(principal.email ?? '', report, await this.submitterEmail(report))
+    ) {
+      await this.deny(
+        principal,
+        requestId,
+        'AIRS_REPORT_SELF_APPROVAL_DENIED',
+        reportId,
+        report.projectId
+      );
     }
   }
 
@@ -236,6 +286,7 @@ export class AirsReportService {
     reportId: string,
     snapshotHash: string
   ): Promise<AirsReportTransitionResponse> {
+    await this.refuseOwnReport(principal, requestId, reportId);
     const response = await this.repository.approve(
       reportId,
       snapshotHash,
@@ -253,6 +304,7 @@ export class AirsReportService {
     reportId: string,
     reason: string
   ): Promise<AirsReportTransitionResponse> {
+    await this.refuseOwnReport(principal, requestId, reportId);
     const response = await this.repository.reject(
       reportId,
       reason,

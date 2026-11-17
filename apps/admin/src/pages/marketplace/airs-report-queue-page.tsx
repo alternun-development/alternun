@@ -3,6 +3,7 @@ import { MarketplaceRequestError, requestMarketplace } from '../../marketplace/a
 import {
   airsReportActionPath,
   airsReportDetailPath,
+  airsReportIdFromSearch,
   airsReportQueuePath,
   airsReportRejectReasonError,
   formatAirs,
@@ -27,18 +28,32 @@ function formatDate(value: string): string {
     : new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
-function QueueItem({ report, busy, onApprove, onReject }: QueueItemProps): JSX.Element {
-  const [open, setOpen] = useState(false);
+function QueueItem({
+  report,
+  busy,
+  focused = false,
+  onApprove,
+  onReject,
+}: QueueItemProps): JSX.Element {
+  // A report opened from its review email (?report=<id>) shows its details right away.
+  const [open, setOpen] = useState(focused);
   const [detail, setDetail] = useState<DetailState>({ kind: 'loading' });
 
-  function toggle(): void {
-    const next = !open;
-    setOpen(next);
-    if (!next) return;
+  const loadDetail = useCallback(() => {
     setDetail({ kind: 'loading' });
     requestMarketplace<AirsReportDetail>(airsReportDetailPath(report.id))
       .then((data) => setDetail({ kind: 'success', data }))
       .catch((error: unknown) => setDetail({ kind: 'error', error }));
+  }, [report.id]);
+
+  useEffect(() => {
+    if (focused) loadDetail();
+  }, [focused, loadDetail]);
+
+  function toggle(): void {
+    const next = !open;
+    setOpen(next);
+    if (next) loadDetail();
   }
 
   // The hash approved is the one just reviewed; a changed report is refused by the server.
@@ -46,7 +61,7 @@ function QueueItem({ report, busy, onApprove, onReject }: QueueItemProps): JSX.E
     detail.kind === 'success' ? detail.data.report.snapshotHash : report.snapshotHash;
 
   return (
-    <article className='metric-card'>
+    <article aria-current={focused ? 'true' : undefined} className='metric-card'>
       <AirsReportStatusPill status={report.status} />
       <h4>{formatAirs(report.amount)}</h4>
       <p>
@@ -114,8 +129,20 @@ function QueueItem({ report, busy, onApprove, onReject }: QueueItemProps): JSX.E
   );
 }
 
+// The report linked from an email goes first; the rest keep the queue order.
+function focusFirst(reports: AirsReportRecord[], focusId?: string): AirsReportRecord[] {
+  const focused = reports.filter((report) => report.id === focusId);
+  return focused.length
+    ? [...focused, ...reports.filter((report) => report.id !== focusId)]
+    : reports;
+}
+
 export function AirsReportQueuePage(): JSX.Element {
   const roles = useMarketplaceRoles();
+  // Read once: the link from a review email is /airs-reports?report=<id>.
+  const [focusId] = useState(() =>
+    typeof window === 'undefined' ? undefined : airsReportIdFromSearch(window.location.search)
+  );
   const [state, setState] = useState<QueueState>({ kind: 'loading' });
   const [rejecting, setRejecting] = useState<AirsReportRecord>();
   const [reason, setReason] = useState('');
@@ -222,13 +249,17 @@ export function AirsReportQueuePage(): JSX.Element {
 
       {state.kind === 'success' ? (
         <section className='panel'>
+          {focusId && !state.data.some((report) => report.id === focusId) ? (
+            <SectionMessage>{copy.focusMissing}</SectionMessage>
+          ) : null}
           {state.data.length === 0 ? (
             <SectionMessage>{copy.empty}</SectionMessage>
           ) : (
             <div className='marketplace-card-grid'>
-              {state.data.map((report) => (
+              {focusFirst(state.data, focusId).map((report) => (
                 <QueueItem
                   busy={busy}
+                  focused={report.id === focusId}
                   key={report.id}
                   onApprove={(item, hash) => void approve(item, hash)}
                   onReject={(item) => {

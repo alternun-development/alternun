@@ -7,6 +7,7 @@ const {
 } = require('../src/modules/marketplace/airs-report-emails.ts');
 const {
   createAirsReportWorkflowNotifier,
+  resolveAirsReportAdminUrl,
 } = require('../src/modules/marketplace/airs-report-notifier.ts');
 const { AirsReportService } = require('../src/modules/marketplace/airs-report.service.ts');
 
@@ -44,6 +45,7 @@ const context = (overrides) => ({
   report: report(),
   projectName: 'Eco Turismo',
   appUrl: 'https://airs.example.test',
+  adminUrl: 'https://admin.example.test',
   ...overrides,
 });
 
@@ -63,16 +65,68 @@ const ENV = { AIRS_REPORT_SUPPORT_EMAILS: 'support@example.test,ops@example.test
 const approvers = async () => ['Approver.One@example.test', 'approver.two@example.test'];
 const submitter = async () => 'submitter@example.test';
 
-test('the review request names the report and links to the approvals page, in both languages', () => {
+test('the review request names the report and links to it in the admin panel, in both languages', () => {
   const email = renderAirsReportReviewRequestEmail(context());
+  const link = `https://admin.example.test/airs-reports?report=${report().id}`;
 
   assert.match(email.subject, /por revisar/);
   assert.match(email.subject, /to review/);
   assert.match(email.text, /Destinatario: guest@example\.test/);
   assert.match(email.text, /Recipient: guest@example\.test/);
-  assert.match(email.text, /Revisar en: https:\/\/airs\.example\.test\/airs-reports/);
-  assert.match(email.text, /Review at: https:\/\/airs\.example\.test\/airs-reports/);
+  assert.ok(email.text.includes(`Revisar en: ${link}`));
+  assert.ok(email.text.includes(`Review at: ${link}`));
+  assert.doesNotMatch(email.text, /airs\.example\.test/);
   assert.match(email.text, /Documento: INV-1/);
+});
+
+test('the admin panel URL sits next to the app unless AIRS_ADMIN_URL says otherwise', () => {
+  for (const [env, expected] of [
+    [
+      { AIRS_DASHBOARD_URL: 'https://testnet.airs.alternun.co' },
+      'https://testnet.admin.alternun.co',
+    ],
+    [{ AIRS_DASHBOARD_URL: 'https://airs.alternun.co/' }, 'https://admin.alternun.co'],
+    [
+      { EXPO_PUBLIC_ORIGIN: 'https://preview.airs.alternun.co' },
+      'https://preview.admin.alternun.co',
+    ],
+    [{}, 'https://admin.alternun.co'],
+    [{ AIRS_DASHBOARD_URL: 'http://localhost:8081' }, 'http://localhost:5173'],
+    [
+      {
+        AIRS_DASHBOARD_URL: 'https://testnet.airs.alternun.co',
+        AIRS_ADMIN_URL: 'https://panel.test/',
+      },
+      'https://panel.test',
+    ],
+  ]) {
+    assert.equal(resolveAirsReportAdminUrl(env), expected);
+  }
+});
+
+test('the review request reaches the admin panel and never the recipient or the submitter', async () => {
+  const mail = recorder();
+  const notify = createAirsReportWorkflowNotifier({
+    send: mail.send,
+    env: {
+      AIRS_DASHBOARD_URL: 'https://testnet.airs.alternun.co',
+      AIRS_REPORT_SUPPORT_EMAILS: 'support@example.test',
+    },
+    projectName: async () => null,
+    approverEmails: async () => [
+      'Guest@Example.test',
+      'submitter@example.test',
+      'boss@example.test',
+    ],
+    submitterEmail: submitter,
+  });
+
+  assert.deepEqual(await notify(report()), { sent: 2 });
+  assert.deepEqual(
+    mail.sent.map((entry) => entry.to),
+    ['boss@example.test', 'support@example.test']
+  );
+  assert.match(mail.sent[0].text, /https:\/\/testnet\.admin\.alternun\.co\/airs-reports\?report=/);
 });
 
 test('the decision email says approved or rejected and shows the rejection reason escaped', () => {
@@ -198,6 +252,7 @@ test('the service announces the workflow after submit, approve and reject, never
   const live = { report: report(), idempotent: false };
   const replay = { report: report(), idempotent: true };
   const repository = {
+    find: async () => null,
     submit: async () => live,
     approve: async () => live,
     reject: async () => live,
@@ -211,7 +266,12 @@ test('the service announces the workflow after submit, approve and reject, never
 
   seen.length = 0;
   const replayService = stubService(
-    { submit: async () => replay, approve: async () => replay, reject: async () => replay },
+    {
+      find: async () => null,
+      submit: async () => replay,
+      approve: async () => replay,
+      reject: async () => replay,
+    },
     async (value) => seen.push(value.id)
   );
   await replayService.submit(principal, 'req-1', report().projectId, {});
@@ -223,7 +283,12 @@ test('the service announces the workflow after submit, approve and reject, never
 test('a failing workflow email does not change the response', async () => {
   const live = { report: report(), idempotent: false };
   const service = stubService(
-    { submit: async () => live, approve: async () => live, reject: async () => live },
+    {
+      find: async () => null,
+      submit: async () => live,
+      approve: async () => live,
+      reject: async () => live,
+    },
     async () => {
       throw new Error('mail exploded');
     }

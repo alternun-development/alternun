@@ -184,6 +184,7 @@ test('a failed email never throws and never stops the others', async () => {
 
 function stubService(response, notify) {
   const repository = {
+    find: async () => null,
     submit: async () => response,
     approve: async () => response,
   };

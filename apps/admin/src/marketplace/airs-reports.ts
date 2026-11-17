@@ -45,6 +45,12 @@ export function airsReportDetailPath(reportId: string): string {
   return `${airsReportQueuePath}/${encodeURIComponent(reportId)}`;
 }
 
+/** Report id from a review link (/airs-reports?report=<id>), or undefined. */
+export function airsReportIdFromSearch(search: string): string | undefined {
+  const id = new URLSearchParams(search).get('report')?.trim();
+  return id ? id : undefined;
+}
+
 export function airsReportActionPath(reportId: string, action: 'approve' | 'reject'): string {
   return `${airsReportDetailPath(reportId)}/${action}`;
 }

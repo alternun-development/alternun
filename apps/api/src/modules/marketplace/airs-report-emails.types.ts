@@ -14,6 +14,11 @@ export interface AirsReportEmailContext {
   appUrl: string;
 }
 
+export interface AirsReportReviewEmailContext extends AirsReportEmailContext {
+  /** Base URL of the admin panel, where approvers decide, without a trailing slash. */
+  adminUrl: string;
+}
+
 export interface AirsReportEmailSend {
   (input: { to: string; email: AirsReportEmailContent }): Promise<{ sent: boolean }>;
 }

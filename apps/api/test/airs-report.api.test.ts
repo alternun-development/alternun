@@ -304,6 +304,58 @@ test('the review queue is limited to verified, allowlisted approvers', async () 
   }
 });
 
+test('nobody approves or rejects their own report, before the database is called', async () => {
+  const report = {
+    ...reportJson,
+    submittedBy: { issuer: 'issuer', subject: 'sub_admin-subject' },
+  };
+  const calls: string[] = [];
+  const stub = {
+    find: async () => report,
+    findSubmitterEmail: async () => 'submitter@example.test',
+    approve: async () => {
+      calls.push('approve');
+      return { report, idempotent: false };
+    },
+    reject: async () => {
+      calls.push('reject');
+      return { report, idempotent: false };
+    },
+  };
+  const admin = adminRepository();
+  const service = new AirsReportService(
+    stub as never,
+    admin as never,
+    async () => {},
+    async () => {}
+  );
+
+  // The submitter (same identity), the recipient, and the submitter under another sign-in.
+  for (const actor of [
+    principal('sub_admin', 'approver@example.test'),
+    principal('internal_admin', 'Guest@Example.test'),
+    principal('internal_admin', 'submitter@example.test'),
+  ]) {
+    await assert.rejects(
+      service.approve(actor, 'r', reportId, hash),
+      expectApiError('AIRS_REPORT_SELF_APPROVAL_DENIED', 403)
+    );
+    await assert.rejects(
+      service.reject(actor, 'r', reportId, 'No invoice'),
+      expectApiError('AIRS_REPORT_SELF_APPROVAL_DENIED', 403)
+    );
+  }
+  assert.deepEqual(calls, []);
+  assert.equal(admin.audits.length, 6);
+  assert.equal(admin.audits[0]?.reasonCode, 'AIRS_REPORT_SELF_APPROVAL_DENIED');
+  assert.equal(admin.audits[0]?.targetId, reportId);
+
+  // Another approver goes through to the database, which applies the rule again.
+  await service.approve(principal('internal_admin', 'approver@example.test'), 'r', reportId, hash);
+  await service.reject(principal('internal_admin', 'approver@example.test'), 'r', reportId, 'No');
+  assert.deepEqual(calls, ['approve', 'reject']);
+});
+
 test('report detail is visible to approvers and scoped submitters only', async () => {
   const client = fakeClient({
     approvers: ['approver@example.test'],

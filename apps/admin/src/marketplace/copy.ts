@@ -923,6 +923,8 @@ export const marketplaceCopy = {
       heading: 'Reports waiting for approval',
       intro: 'Approve or reject reports that went over the automatic limits.',
       empty: 'There are no reports waiting for approval.',
+      focusMissing:
+        'The report from your link is no longer waiting for approval: someone already decided on it, or it was cancelled.',
       notApprover: "You aren't on the approvers list. Ask the Alternum team to add you.",
       loading: 'Loading reports…',
       guest: 'Guest',

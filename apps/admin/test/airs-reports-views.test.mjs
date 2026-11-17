@@ -346,6 +346,14 @@ test('the approvals page renders its loading state without a session', () => {
   assert.match(html, new RegExp(marketplaceCopy.common.loading));
 });
 
+test('a review link opens one report by its id', () => {
+  assert.equal(reports.airsReportIdFromSearch('?report=report-1'), 'report-1');
+  assert.equal(reports.airsReportIdFromSearch('?report=%20r%2F2%20&x=1'), 'r/2');
+  assert.equal(reports.airsReportIdFromSearch('?report='), undefined);
+  assert.equal(reports.airsReportIdFromSearch(''), undefined);
+  assert.ok(marketplaceCopy.airsReports.queue.focusMissing);
+});
+
 test('the summary counts what is credited and what waits, and leaves out closed reports', () => {
   const summary = reports.summarizeAirsReports([
     { status: 'released', amount: 50 },
