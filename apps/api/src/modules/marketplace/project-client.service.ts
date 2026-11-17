@@ -307,13 +307,18 @@ export class ProjectClientService {
     }));
   }
 
-  /** The supporting file of any report, to an approver reviewing it. */
+  /**
+   * The supporting file of a report waiting for review, to an approver deciding on it. Once a
+   * report is decided its file is no longer an approver's business (the project still sees it).
+   */
   async approverProofFile(
     principal: AdminPrincipal,
     requestId: string,
     reportId: string
   ): Promise<ProjectClientProofFile> {
     await this.reports.requireApprover(principal, requestId);
+    const report = await this.reportRepository.find(reportId);
+    if (report?.status !== 'pending_approval') marketplaceError('AIRS_REPORT_NOT_FOUND');
     const file = await this.repository.readProof(reportId);
     if (!file) marketplaceError('AIRS_REPORT_NOT_FOUND');
     return file;

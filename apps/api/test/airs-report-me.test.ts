@@ -51,6 +51,8 @@ const report = {
   updatedAt: '2026-11-10T15:00:00.000Z',
 };
 const otherReport = { ...report, id: otherReportId, projectId: 'missing-project' };
+const decidedReportId = '30000000-0000-4000-8000-000000000003';
+const decidedReport = { ...report, id: decidedReportId, status: 'released' };
 
 // ─── Principal bridge ────────────────────────────────────────────────────────
 
@@ -116,7 +118,8 @@ const reportRepository = {
   isApprover: async (approver: { email?: string; emailVerified?: boolean }) =>
     approver.emailVerified === true && APPROVERS.includes(String(approver.email)),
   listByStatus: async () => [report, otherReport],
-  find: async (id: string) => [report, otherReport].find((item) => item.id === id) ?? null,
+  find: async (id: string) =>
+    [report, otherReport, decidedReport].find((item) => item.id === id) ?? null,
   findSubmitterEmail: async () => 'submitter@example.test',
   recipientTotals: async () => ({
     timeZone: 'America/Bogota',
@@ -157,7 +160,7 @@ const adminRepository = {
 const clientRepository = {
   proofReportIds: async () => new Set([reportId]),
   readProof: async (id: string) =>
-    id === reportId
+    id === reportId || id === decidedReportId
       ? { bytes: Buffer.from('%PDF-1.4'), contentType: 'application/pdf', fileName: 'soporte.pdf' }
       : null,
 };
@@ -280,6 +283,13 @@ test('approvers read the detail with the recipient totals and the file', async (
     'approver@example.test'
   );
   assert.equal(missing.statusCode, 404);
+  // Decided reports keep their file, but approvers no longer read it.
+  const decided = await inject(
+    'GET',
+    `/v1/me/airs-reports/${decidedReportId}/proof`,
+    'approver@example.test'
+  );
+  assert.equal(decided.statusCode, 404);
 });
 
 test('approvers approve with the snapshot hash and reject with a reason', async () => {
