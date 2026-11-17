@@ -99,7 +99,8 @@ describe('TipsSlider', () => {
       expect(r.root.findAll((n) => n.props.testID === 'explorer-tip-b').length).toBeGreaterThan(0);
       act(() => {
         host(r, 'explorer-tips-next').props.onPress();
-        jest.advanceTimersByTime(500);
+        // The tip changes right away; stay short of the next timer tick.
+        jest.advanceTimersByTime(300);
       });
       // Past the last tip it starts over.
       expect(r.root.findAll((n) => n.props.testID === 'explorer-tip-a').length).toBeGreaterThan(0);

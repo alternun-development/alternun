@@ -11,6 +11,7 @@ import type {
   ProfileLocation,
   Translate,
 } from './types';
+import { pluralKey, publicValue } from './publicDisplay';
 
 const CONTACT_FIELDS = ['web', 'email', 'phone', 'whatsapp', 'instagram', 'facebook'] as const;
 
@@ -49,9 +50,11 @@ export function formatAirs(product: EnterpriseProduct, t: Translate): string {
     : amount;
 }
 
+// Public pages leave out placeholders such as "POR CONFIRMAR" instead of showing them.
 function joinLocation(location: ProfileLocation | undefined): string {
   return [location?.address, location?.municipality, location?.department]
-    .filter((part): part is string => !!part && part.trim().length > 0)
+    .map(publicValue)
+    .filter(Boolean)
     .join(', ');
 }
 
@@ -107,7 +110,8 @@ export function LocationSection({
   t: Translate;
 }): React.JSX.Element | null {
   const place = joinLocation(location);
-  if (!place && !location?.coverage) return null;
+  const coverage = publicValue(location?.coverage);
+  if (!place && !coverage) return null;
   return (
     <Section testID='profile-location' title={t('explorer.profile.location')} palette={palette}>
       {place ? (
@@ -116,9 +120,9 @@ export function LocationSection({
           <Text style={[styles.body, { color: palette.text }]}>{place}</Text>
         </View>
       ) : null}
-      {location?.coverage ? (
+      {coverage ? (
         <Text style={[styles.body, { color: palette.muted }]}>
-          {t('explorer.profile.coverage')}: {location.coverage}
+          {t('explorer.profile.coverage')}: {coverage}
         </Text>
       ) : null}
     </Section>
@@ -137,7 +141,7 @@ export function ContactSection({
   openUrl: (url: string) => Promise<unknown>;
 }): React.JSX.Element | null {
   const entries = CONTACT_FIELDS.flatMap((field) => {
-    const value = contact?.[field]?.trim();
+    const value = publicValue(contact?.[field]);
     return value ? [{ field, value, href: contactHref(field, value) }] : [];
   });
   if (entries.length === 0) return null;
@@ -180,15 +184,18 @@ export function EventSection({
   palette: DetailPalette;
   t: Translate;
 }): React.JSX.Element | null {
-  if (!event?.date && !event?.venue) return null;
-  const venue = [event.venue?.name, joinLocation(event.venue)].filter(Boolean).join(' · ');
+  const date = publicValue(event?.date);
+  const venue = [publicValue(event?.venue?.name), joinLocation(event?.venue)]
+    .filter(Boolean)
+    .join(' · ');
+  if (!date && !venue) return null;
   return (
     <Section testID='profile-event' title={t('explorer.profile.event')} palette={palette}>
-      {event.date ? (
+      {date ? (
         <View style={styles.row}>
           <CalendarDays size={16} color={palette.muted} />
           <Text style={[styles.body, { color: palette.text }]}>
-            {t('explorer.profile.eventDate')}: {event.date}
+            {t('explorer.profile.eventDate')}: {date}
           </Text>
         </View>
       ) : null}
@@ -219,12 +226,12 @@ export function SitesSection({
       {sites.map((site, index) => (
         <View key={`${site.name}-${index}`} style={styles.item}>
           <Text style={[styles.itemTitle, { color: palette.text }]}>{site.name}</Text>
-          {site.address ? (
-            <Text style={[styles.body, { color: palette.muted }]}>{site.address}</Text>
+          {publicValue(site.address) ? (
+            <Text style={[styles.body, { color: palette.muted }]}>{publicValue(site.address)}</Text>
           ) : null}
           {typeof site.rooms === 'number' ? (
             <Text style={[styles.body, { color: palette.muted }]}>
-              {t('explorer.profile.rooms', { count: site.rooms })}
+              {t(pluralKey('explorer.profile.rooms', site.rooms), { count: site.rooms })}
             </Text>
           ) : null}
         </View>

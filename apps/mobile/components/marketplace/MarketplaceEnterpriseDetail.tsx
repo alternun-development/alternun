@@ -20,6 +20,7 @@ import {
   SitesSection,
 } from './ProfileSections';
 import { AdminEntryButton } from './AdminEntryButton';
+import { enterprisePlace } from './publicDisplay';
 import {
   adminEnterpriseUrl,
   canManageEnterprise,
@@ -117,6 +118,7 @@ export function MarketplaceEnterpriseDetailView({
       });
     return () => controller.abort();
   }, [loader, locale, requestVersion, slug]);
+  const place = enterprise ? enterprisePlace(enterprise, locale) : null;
 
   return (
     <ScrollView
@@ -225,10 +227,10 @@ export function MarketplaceEnterpriseDetailView({
               </Text>
             ) : null}
             <PartnershipBadge status={enterprise.partnershipStatus} palette={palette} t={t} />
-            {enterprise.countryCode ? (
-              <View style={styles.metaRow}>
+            {place ? (
+              <View testID='enterprise-detail-place' style={styles.metaRow}>
                 <MapPin size={16} color={palette.muted} />
-                <Text style={{ color: palette.muted }}>{enterprise.countryCode}</Text>
+                <Text style={{ color: palette.muted }}>{place}</Text>
               </View>
             ) : null}
             {enterprise.websiteUrl ? (

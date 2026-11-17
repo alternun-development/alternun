@@ -19,11 +19,12 @@ export function TipsSlider({
   const [paused, setPaused] = useState(false);
   const fade = useRef(new Animated.Value(1)).current;
 
+  // Swap the tip at once and fade it in from a visible floor. Fading the old tip fully out first
+  // left an empty green block with only its dots for part of every cycle (testnet review, 05).
   const go = (step: number): void => {
-    Animated.timing(fade, { toValue: 0, duration: 140, useNativeDriver: true }).start(() => {
-      setIndex((current) => wrapIndex(current + step, tips.length));
-      Animated.timing(fade, { toValue: 1, duration: 220, useNativeDriver: true }).start();
-    });
+    setIndex((current) => wrapIndex(current + step, tips.length));
+    fade.setValue(0.4);
+    Animated.timing(fade, { toValue: 1, duration: 260, useNativeDriver: true }).start();
   };
 
   useEffect(() => {

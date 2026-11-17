@@ -245,6 +245,25 @@ describe('Marketplace project detail', () => {
     expect(Linking.openURL).toHaveBeenCalledWith('https://www.youtube.com/watch?v=example');
     jest.restoreAllMocks();
   });
+  it('lists ways to take part as plain text and hides placeholder contact and location', async () => {
+    const renderer = await render(() =>
+      Promise.resolve({
+        ...project,
+        waysToContribute: ['Conoce el proyecto', 'Suma Airs con los aliados del proyecto'],
+        locationDetails: { address: 'POR CONFIRMAR', municipality: 'Pueblorrico' },
+        publicContact: { web: 'POR CONFIRMAR', email: 'por confirmar', phone: 'TBD' },
+      })
+    );
+    const ways = renderer.root.findByProps({ testID: 'project-detail-ways' });
+    // Nothing in the list is pressable, so nothing looks like a button.
+    expect(ways.findAll((node) => typeof node.props.onPress === 'function')).toHaveLength(0);
+    const content = JSON.stringify(renderer.toJSON());
+    expect(content).toContain('Suma Airs con los aliados del proyecto');
+    expect(content).toContain('Pueblorrico');
+    expect(content).not.toMatch(/por confirmar/i);
+    expect(renderer.root.findAllByProps({ testID: 'profile-contact' })).toHaveLength(0);
+  });
+
   it('omits media sections when none are available', async () => {
     const renderer = await render(() => Promise.resolve({ ...project, media: [] }));
     expect(renderer.root.findAllByProps({ testID: 'project-detail-gallery' })).toHaveLength(0);

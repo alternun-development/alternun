@@ -106,18 +106,25 @@ describe('profile sections', () => {
     }
   });
 
-  it('shows placeholders as text and opens real contact links', () => {
+  it('hides placeholders, shows unlinkable values as text and opens real contact links', () => {
     const openUrl = jest.fn(async () => undefined);
     const renderer = render(
       <ContactSection
-        contact={{ web: 'POR CONFIRMAR', email: 'info@batisbatis.org' }}
+        contact={{
+          web: 'POR CONFIRMAR',
+          phone: ' tbd ',
+          instagram: '@batis',
+          email: 'info@batisbatis.org',
+        }}
         palette={palette}
         t={t}
         openUrl={openUrl}
       />
     );
-    const web = renderer.root.findByProps({ testID: 'profile-contact-web' });
-    expect(web.props.onPress).toBeUndefined();
+    expect(renderer.root.findAllByProps({ testID: 'profile-contact-web' })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: 'profile-contact-phone' })).toHaveLength(0);
+    const instagram = renderer.root.findByProps({ testID: 'profile-contact-instagram' });
+    expect(instagram.props.onPress).toBeUndefined();
     act(() => {
       renderer.root.findByProps({ testID: 'profile-contact-email' }).props.onPress();
     });
@@ -154,9 +161,58 @@ describe('profile sections', () => {
     expect(content).toContain('La Estrella, Antioquia');
     expect(content).toContain('Club · Cajicá');
     expect(content).toContain('Hotel Taybo Kai');
-    expect(content).toContain('explorer.profile.rooms:{"count":26}');
+    expect(content).toContain('explorer.profile.rooms_other:{"count":26}');
+    expect(content).not.toContain('POR CONFIRMAR');
     expect(content).toContain('Podio');
     expect(content).toContain('explorer.profile.partnership.postponed');
+  });
+
+  it('leaves placeholder-only sections out of public pages', () => {
+    for (const element of [
+      <LocationSection
+        key='l'
+        location={{ address: 'POR CONFIRMAR', coverage: 'To be confirmed.' }}
+        palette={palette}
+        t={t}
+      />,
+      <ContactSection
+        key='c'
+        contact={{ web: 'POR CONFIRMAR', email: 'Por confirmar', phone: '' }}
+        palette={palette}
+        t={t}
+        openUrl={jest.fn()}
+      />,
+      <EventSection
+        key='e'
+        event={{ date: 'TBD', venue: { name: 'tbd' } }}
+        palette={palette}
+        t={t}
+      />,
+    ]) {
+      expect(render(element).toJSON()).toBeNull();
+    }
+    const renderer = render(
+      <>
+        <LocationSection
+          location={{
+            address: 'POR CONFIRMAR',
+            municipality: 'Pueblorrico',
+            department: 'Antioquia',
+          }}
+          palette={palette}
+          t={t}
+        />
+        <SitesSection
+          sites={[{ name: 'Sede', address: 'POR CONFIRMAR', rooms: 1 }]}
+          palette={palette}
+          t={t}
+        />
+      </>
+    );
+    const content = texts(renderer);
+    expect(content).toContain('Pueblorrico, Antioquia');
+    expect(content).toContain('explorer.profile.rooms_one:{"count":1}');
+    expect(content).not.toContain('POR CONFIRMAR');
   });
 
   it('handles partial data: coverage only, date-only events, bare sites and products', () => {

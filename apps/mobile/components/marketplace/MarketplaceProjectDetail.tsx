@@ -21,6 +21,7 @@ import type {
 } from './types';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { ContactSection, LocationSection } from './ProfileSections';
+import { publicValue } from './publicDisplay';
 import { AdminEntryButton } from './AdminEntryButton';
 import {
   adminProjectUrl,
@@ -332,31 +333,30 @@ export function MarketplaceProjectDetailView({
                   {project.alternateName}
                 </Text>
               ) : null}
-              <View style={styles.locationRow}>
-                <MapPin size={16} color={palette.muted} />
-                <Text style={{ color: palette.muted }}>{project.location}</Text>
-              </View>
+              {publicValue(project.location) ? (
+                <View style={styles.locationRow}>
+                  <MapPin size={16} color={palette.muted} />
+                  <Text style={{ color: palette.muted }}>{project.location.trim()}</Text>
+                </View>
+              ) : null}
               <Text style={[styles.description, { color: palette.muted }]}>
                 {project.description}
               </Text>
             </View>
           </View>
 
+          {/* Ways to take part are free text with nothing to open, so they read as a list,
+              not as pill-shaped chips that look pressable. */}
           {project.waysToContribute.length ? (
-            <View style={styles.section}>
+            <View testID='project-detail-ways' style={styles.section}>
               <Text style={[styles.sectionTitle, { color: palette.text }]}>
                 {t('explorer.detail.waysToContribute')}
               </Text>
-              <View style={styles.tags}>
+              <View style={styles.ways}>
                 {project.waysToContribute.map((way) => (
-                  <View
-                    key={way}
-                    style={[
-                      styles.tag,
-                      { borderColor: palette.border, backgroundColor: palette.surface },
-                    ]}
-                  >
-                    <Text style={{ color: palette.text }}>{way}</Text>
+                  <View key={way} style={styles.way}>
+                    <Leaf size={15} color={palette.primary} />
+                    <Text style={[styles.wayText, { color: palette.text }]}>{way}</Text>
                   </View>
                 ))}
               </View>
@@ -496,8 +496,9 @@ const styles = StyleSheet.create({
   description: { fontSize: 15, lineHeight: 23 },
   section: { gap: 12 },
   sectionTitle: { fontFamily: 'Sculpin-Bold', fontSize: 21 },
-  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tag: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 9 },
+  ways: { gap: 8 },
+  way: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  wayText: { fontSize: 15, lineHeight: 21, flexShrink: 1 },
   galleryRow: { gap: 12 },
   galleryImage: { width: 260, height: 180, borderRadius: 18 },
   video: { width: '100%', height: 220, borderRadius: 18, overflow: 'hidden' },

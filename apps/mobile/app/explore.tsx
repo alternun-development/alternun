@@ -51,6 +51,7 @@ import {
   rememberDirectoryView,
 } from '../components/marketplace/directoryPaging';
 import type { DirectoryView } from '../components/marketplace/types';
+import { pluralKey } from '../components/marketplace/publicDisplay';
 import {
   canvaEmbedUrl,
   isDirectVideoUrl,
@@ -824,7 +825,9 @@ export function MarketplaceProjectBrowser({
         <View style={[styles.marketCount, { borderColor: palette.border }]}>
           <SparklesIcon size={13} color={palette.primary} />
           <Text style={[styles.marketCountText, { color: palette.muted }]}>
-            {t('explorer.available', { count: visibleProjects.length })}
+            {t(pluralKey('explorer.available', visibleProjects.length), {
+              count: visibleProjects.length,
+            })}
           </Text>
         </View>
       </View>

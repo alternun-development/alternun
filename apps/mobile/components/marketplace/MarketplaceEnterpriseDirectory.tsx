@@ -9,6 +9,7 @@ import {
   getRememberedDirectoryView,
   rememberDirectoryView,
 } from './directoryPaging';
+import { enterprisePlace, pluralKey } from './publicDisplay';
 import type {
   DirectoryView,
   EnterprisePalette,
@@ -103,22 +104,29 @@ function EnterpriseLogo({
 
 function EnterpriseCard({
   enterprise,
+  locale,
   palette,
   t,
   view,
   onOpen,
 }: {
   enterprise: MarketplaceEnterprise;
+  locale: string;
   palette: EnterprisePalette;
   t: Translate;
   view: DirectoryView;
   onOpen: (slug: string) => void;
 }): React.JSX.Element {
-  const projectCount = t('explorer.enterprises.projectCount', { count: enterprise.projectCount });
-  const country = enterprise.countryCode ? (
+  const projectCount = t(pluralKey('explorer.enterprises.projectCount', enterprise.projectCount), {
+    count: enterprise.projectCount,
+  });
+  const place = enterprisePlace(enterprise, locale);
+  const country = place ? (
     <View style={styles.countryRow}>
       <MapPin size={14} color={palette.muted} />
-      <Text style={[styles.countryText, { color: palette.muted }]}>{enterprise.countryCode}</Text>
+      <Text numberOfLines={1} style={[styles.countryText, { color: palette.muted }]}>
+        {place}
+      </Text>
     </View>
   ) : null;
   const cardProps = {
@@ -161,7 +169,7 @@ function EnterpriseCard({
             {enterprise.displayName}
           </Text>
           <Text numberOfLines={1} style={[styles.compactMeta, { color: palette.primaryDeep }]}>
-            {enterprise.countryCode ? `${enterprise.countryCode} · ${projectCount}` : projectCount}
+            {place ? `${place} · ${projectCount}` : projectCount}
           </Text>
         </View>
         <ChevronRight size={17} color={palette.primaryDeep} />
@@ -372,6 +380,7 @@ export function MarketplaceEnterpriseBrowser({
               <EnterpriseCard
                 key={enterprise.id}
                 enterprise={enterprise}
+                locale={locale}
                 palette={palette}
                 t={t}
                 view={view}
@@ -404,7 +413,7 @@ const styles = StyleSheet.create({
   cardTitleBlock: { flex: 1, gap: 5 },
   cardTitle: { fontFamily: 'Sculpin-Bold', fontSize: 19 },
   countryRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  countryText: { fontSize: 13 },
+  countryText: { fontSize: 13, flexShrink: 1 },
   logoFallback: { alignItems: 'center', justifyContent: 'center' },
   listLayout: { gap: 14 },
   gridLayout: {

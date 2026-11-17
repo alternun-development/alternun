@@ -150,6 +150,31 @@ describe('Explorer enterprise directory', () => {
     expect(onOpenEnterprise).toHaveBeenCalledWith('forest-hotel');
   });
 
+  it('shows the city, else the country name, and a singular or plural project count', async () => {
+    const textOf = (renderer: ReactTestRenderer): string[] =>
+      renderer.root
+        .findAll((node) => (node.type as unknown) === 'Text')
+        .map((node) => [node.props.children].flat().join(''));
+    const inCity = {
+      ...enterprise,
+      location: { municipality: 'Pueblorrico', address: 'POR CONFIRMAR' },
+    };
+    const countryOnly = { ...enterprise, id: 'enterprise-2', slug: 'b', projectCount: 3 };
+    const { renderer } = await renderDirectory(() => Promise.resolve([inCity, countryOnly]));
+    const content = textOf(renderer);
+    expect(content).toContain('Pueblorrico');
+    expect(content).toContain('Colombia');
+    expect(content).not.toContain('CO');
+    expect(content).toContain('explorer.enterprises.projectCount_one');
+    expect(content).toContain('explorer.enterprises.projectCount_other');
+
+    const detailView = await renderDetail(() => Promise.resolve({ ...detail, ...inCity }));
+    expect(
+      detailView.renderer.root.findByProps({ testID: 'enterprise-detail-place' })
+    ).toBeTruthy();
+    expect(textOf(detailView.renderer)).toContain('Pueblorrico');
+  });
+
   it('filters companies and events from the search menu, which hides when there is one kind', async () => {
     const event = {
       ...enterprise,
