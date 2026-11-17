@@ -1327,8 +1327,11 @@
         "remove": "Remove",
         "removeReason": "Removed from Airs",
         "empty": "No one else is on the team yet.",
-        "notFound": "No verified Airs account uses that email.",
-        "readOnly": "Only the project admin can change the team."
+        "notFound": "No Airs account uses that email yet. The person must sign in to Airs at least once.",
+        "readOnly": "Only the project admin can change the team.",
+        "confirmRemove": "Remove this person from the team?",
+        "confirm": "Yes, remove",
+        "cancel": "Cancel"
       },
       "clients": {
         "intro": "Add people with an Airs account or invite them by email.",
@@ -1353,6 +1356,8 @@
         },
         "viewProof": "View file",
         "assignAirs": "Assign Airs",
+        "assignSubmit": "Assign Airs",
+        "assignCancel": "Cancel",
         "remove": "Remove",
         "removeReason": "Removed from Airs",
         "cancelInvitation": "Cancel invitation",
@@ -1395,7 +1400,8 @@
           "documentLong": "The document number can have up to {{max}} characters.",
           "review": "Check the highlighted fields to add the client.",
           "resendTooSoon": "It was sent a moment ago. You can send it again in a few minutes.",
-          "resendNotApplicable": "This assignment has nothing pending to send."
+          "resendNotApplicable": "This assignment has nothing pending to send.",
+          "reviewAssign": "Check the highlighted fields to assign the Airs."
         },
         "clear": "Clear search",
         "filterLabel": "Show",
@@ -1412,7 +1418,8 @@
         "busy": {
           "lookup": "Searching…",
           "add": "Adding client…",
-          "remove": "Removing…"
+          "remove": "Removing…",
+          "assign": "Assigning Airs…"
         },
         "toasts": {
           "addedTitle": "Client added",
@@ -1424,7 +1431,8 @@
           "resentTitle": "Email sent again",
           "remindedTitle": "Reminder sent",
           "remindedBody": "Admins got the request again by email and in the app.",
-          "cancelledAirs": "{{email}} · {{count}} pending Airs assignments were cancelled too."
+          "cancelledAirs": "{{email}} · {{count}} pending Airs assignments were cancelled too.",
+          "airsAssignedTitle": "Airs assigned"
         },
         "invitationStatus": {
           "pending": "Pending",
@@ -1465,6 +1473,8 @@
         "hide": "Hide",
         "restore": "Restore",
         "reasonPrompt": "Reason (required to reject or hide)",
+        "reasonRequired": "Write a reason to reject or hide this comment.",
+        "moderationReason": "Reason: {{reason}}",
         "status": {
           "pending": "Pending",
           "visible": "Visible",
@@ -1572,7 +1582,8 @@
         "coverage": "Coverage",
         "contact": "Contact",
         "sites": "Locations",
-        "rooms": "{{count}} rooms",
+        "rooms_one": "{{count}} room",
+        "rooms_other": "{{count}} rooms",
         "event": "Event",
         "eventDate": "Date",
         "venue": "Venue",
@@ -1609,7 +1620,8 @@
       "swipeHint": "Swipe to explore",
       "globalMarket": "GLOBAL MARKETPLACE",
       "projectsToActivate": "Projects to activate",
-      "available": "{{count}} available",
+      "available_one": "{{count}} available",
+      "available_other": "{{count}} available",
       "searchPlaceholder": "Search by project, country, or theme",
       "livePaths": "CHOOSE YOUR PATH",
       "active": "ACTIVE",
@@ -1645,9 +1657,10 @@
       },
       "enterprises": {
         "eyebrow": "ENTERPRISES",
-        "heading": "Enterprises creating impact",
+        "heading": "Companies where you earn Airs",
         "intro": "Meet the organizations behind published projects.",
-        "projectCount": "{{count}} published projects",
+        "projectCount_one": "{{count}} published project",
+        "projectCount_other": "{{count}} published projects",
         "loading": "Loading enterprises…",
         "empty": "No enterprises are available yet.",
         "searchPlaceholder": "Search enterprises by name",

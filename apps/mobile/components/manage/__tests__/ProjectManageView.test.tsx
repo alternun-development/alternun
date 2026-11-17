@@ -18,12 +18,17 @@ import {
   type ManageOverview,
 } from '../../../utils/projectManage';
 
+// Toasts the view shows right now.
+const mockToasts: Array<{ type: string; title: string }> = [];
 jest.mock('@alternun/ui', () => ({
   // SearchFilterBar only reads colors from the theme.
   useTheme: () => ({
     theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
   }),
-  ToastSystem: () => null,
+  ToastSystem: ({ toasts }: { toasts: Array<{ type: string; title: string }> }) => {
+    mockToasts.splice(0, mockToasts.length, ...toasts);
+    return null;
+  },
 }));
 
 jest.mock('../../i18n/useAppTranslation', () => ({
@@ -100,6 +105,12 @@ function client(over: ManageOverview, extra: Partial<ManageClient> = {}): Manage
   } as ManageClient;
 }
 
+// Unmounted after each test, so pending toast timers do not fire after the suite.
+const mounted: ReactTestRenderer[] = [];
+afterEach(() => {
+  act(() => mounted.splice(0).forEach((renderer) => renderer.unmount()));
+});
+
 async function render(element: React.JSX.Element): Promise<ReactTestRenderer> {
   let renderer: ReactTestRenderer | undefined;
   await act(async () => {
@@ -107,6 +118,7 @@ async function render(element: React.JSX.Element): Promise<ReactTestRenderer> {
     await Promise.resolve();
     await Promise.resolve();
   });
+  mounted.push(renderer!);
   return renderer!;
 }
 
@@ -180,6 +192,10 @@ describe('ProjectManageView', () => {
     const patch = (c.updateProject as jest.Mock).mock.calls[0][0];
     expect(patch.content.es.title).toBe('Fundación Río Gaira');
     expect(patch.publicContact).toEqual({ web: 'POR CONFIRMAR' });
+    // The confirmation is a toast, visible wherever the person is on the page.
+    expect(mockToasts).toEqual([
+      expect.objectContaining({ type: 'success', title: 'manage.saved' }),
+    ]);
 
     await press(r, 'project-manage-tab-team');
     // The owner (partner_operator) cannot be removed by another project admin.
@@ -189,7 +205,14 @@ describe('ProjectManageView', () => {
     await press(r, 'manage-team-role-project_moderator');
     await press(r, 'manage-team-add');
     expect(c.addTeamMember).toHaveBeenCalledWith('mod@x.test', 'project_moderator');
+    // Removing asks first; cancelling keeps the member.
     await press(r, 'manage-team-remove-m1');
+    expect(c.revokeTeamMember).not.toHaveBeenCalled();
+    expect(byId(r, 'manage-team-confirm-remove-m1').length).toBeGreaterThan(0);
+    await press(r, 'manage-team-keep-m1');
+    expect(byId(r, 'manage-team-confirm-remove-m1')).toHaveLength(0);
+    await press(r, 'manage-team-remove-m1');
+    await press(r, 'manage-team-confirm-remove-m1');
     expect(c.revokeTeamMember).toHaveBeenCalledWith('m1', 'manage.team.removeReason');
   });
 

@@ -5,6 +5,8 @@ import SearchFilterBar from '../common/SearchFilterBar';
 import { SectionHeading } from '../common/PageHeader';
 import { DirectoryPagination } from '../marketplace/DirectoryControls';
 import { ClientListItem } from './ClientListItem';
+import { ClientAirsFields, ClientAssignForm, clientFieldMessage } from './ClientAssignForm';
+import type { AssignFailure } from './ClientAssignForm.types';
 import { ProofViewer } from './ProofViewer';
 import { ManageField } from './ManageField';
 import { manageStyles } from './styles';
@@ -17,7 +19,6 @@ import type {
 import { ManageRequestError, pickImageFile } from '../../utils/projectManage';
 import {
   airsAmount,
-  CLIENT_LIMITS,
   clientFormProblems,
   PROOF_TYPES,
   serverFieldProblems,
@@ -127,6 +128,8 @@ export function ManageClientsSection({
   // Field messages show once the person tries to send; the API's own ones until edited.
   const [attempted, setAttempted] = useState(false);
   const [serverProblems, setServerProblems] = useState<Partial<Record<ClientField, string>>>({});
+  // The listed client (`<kind>-<id>`) whose row shows the form to assign Airs.
+  const [assigning, setAssigning] = useState<string | null>(null);
 
   const load = useCallback(() => {
     void client
@@ -139,6 +142,21 @@ export function ManageClientsSection({
   }, [client, t]);
 
   useEffect(load, [load]);
+
+  // Shows a client the API just returned right away; the refetch that follows only confirms it.
+  const showClient = (saved: ProjectClient): void =>
+    setListing((current) => {
+      if (!current) return current;
+      const same = (other: ProjectClient): boolean =>
+        other.projectId === saved.projectId &&
+        other.email.toLowerCase() === saved.email.toLowerCase();
+      return {
+        ...current,
+        clients: current.clients.some(same)
+          ? current.clients.map((other) => (same(other) ? saved : other))
+          : [saved, ...current.clients],
+      };
+    });
 
   const projectTitles = useMemo(
     () => new Map((listing?.projects ?? []).map((item) => [item.id, item.title])),
@@ -221,17 +239,7 @@ export function ManageClientsSection({
   const problems = clientFormProblems(draft, { needsName, assign: draft.assign });
   const fieldError = (field: ClientField): string | null => {
     const key = serverProblems[field] ?? (attempted ? problems[field] : undefined);
-    return key
-      ? t(key, {
-          min: CLIENT_LIMITS.conceptMin,
-          max:
-            field === 'name'
-              ? CLIENT_LIMITS.nameMax
-              : field === 'documentNumber'
-              ? CLIENT_LIMITS.documentMax
-              : CLIENT_LIMITS.conceptMax,
-        })
-      : null;
+    return key ? clientFieldMessage(t, field, key) : null;
   };
   const renderFieldError = (field: ClientField): React.JSX.Element | null => {
     const message = fieldError(field);
@@ -241,7 +249,6 @@ export function ManageClientsSection({
       </Text>
     ) : null;
   };
-  const conceptLength = draft.concept.trim().length;
 
   const search = (): Promise<void> => {
     if (problems.email) {
@@ -319,9 +326,47 @@ export function ManageClientsSection({
         ),
         message,
       });
+      showClient(result.client);
       load();
     });
   };
+
+  // Airs for a client already listed: sent from the client's own row.
+  async function assignAirs(
+    item: ProjectClient,
+    airs: { amount: number; concept: string; documentNumber: string },
+    file: ProofFile | null
+  ): Promise<AssignFailure | null> {
+    setBusyAction(`assign-${item.id}`);
+    setError(null);
+    setNotice(null);
+    try {
+      const result = await client.add(
+        item.projectId,
+        { email: item.email, ...(item.kind === 'member' ? {} : { name: item.name }), airs },
+        file
+      );
+      setAssigning(null);
+      onToast?.({
+        type: 'success',
+        title: t('manage.clients.toasts.airsAssignedTitle'),
+        message: resultMessage(result),
+      });
+      showClient(result.client);
+      load();
+      return null;
+    } catch (failure) {
+      const message = problem(failure);
+      onToast?.({ type: 'error', title: t('manage.clients.toasts.errorTitle'), message });
+      return {
+        message,
+        fields:
+          failure instanceof ManageRequestError ? serverFieldProblems(failure.fieldErrors) : {},
+      };
+    } finally {
+      setBusyAction(null);
+    }
+  }
 
   const remove = (item: ProjectClient): Promise<void> =>
     run(`remove-${item.id}`, async () => {
@@ -389,19 +434,6 @@ export function ManageClientsSection({
     viewerUri.current = undefined;
     setViewer(null);
   };
-
-  function assignTo(item: ProjectClient): void {
-    setProjectId(item.projectId);
-    setDraft({ ...EMPTY_DRAFT, email: item.email, name: item.name, assign: true });
-    setLookup({
-      email: item.email.toLowerCase(),
-      hasAccount: item.kind === 'member',
-      displayName: item.name,
-    });
-    setProof(null);
-    setAttempted(false);
-    setServerProblems({});
-  }
 
   // A cancelled invitation is sent again from the form, with its email and name filled in.
   function reinvite(item: ProjectClient): void {
@@ -476,13 +508,32 @@ export function ManageClientsSection({
           <ClientListItem
             key={`${item.kind}-${item.id}`}
             item={item}
+            assignForm={
+              can.assignAirs && assigning === `${item.kind}-${item.id}` ? (
+                <ClientAssignForm
+                  item={item}
+                  palette={palette}
+                  t={t}
+                  canPickFiles={canPickFiles}
+                  pickFile={pickFile}
+                  busy={busy && busyAction !== `assign-${item.id}`}
+                  submitting={busyAction === `assign-${item.id}`}
+                  onSubmit={(airs, file) => assignAirs(item, airs, file)}
+                  onCancel={() => setAssigning(null)}
+                />
+              ) : null
+            }
             palette={palette}
             t={t}
             projectTitle={multiProject ? projectTitles.get(item.projectId) : undefined}
             canEdit={!!can.editClients}
             canAssign={!!can.assignAirs}
             busyAction={busyAction}
-            onAssign={() => assignTo(item)}
+            onAssign={() =>
+              setAssigning((current) =>
+                current === `${item.kind}-${item.id}` ? null : `${item.kind}-${item.id}`
+              )
+            }
             onReinvite={() => reinvite(item)}
             onRemove={() => void remove(item)}
             onShowProof={(reportId) => void showProof(item, reportId)}
@@ -614,71 +665,18 @@ export function ManageClientsSection({
             </Pressable>
           ) : null}
           {lookup && draft.assign ? (
-            <>
-              <ManageField
-                testID='manage-clients-amount'
-                label={t('manage.clients.amount')}
-                value={draft.amount}
-                onChange={(value) => update({ amount: value })}
-                palette={palette}
-              />
-              {renderFieldError('amount')}
-              <ManageField
-                testID='manage-clients-concept'
-                label={t('manage.clients.concept')}
-                value={draft.concept}
-                onChange={(value) => update({ concept: value })}
-                palette={palette}
-              />
-              {renderFieldError('concept') ?? (
-                <Text
-                  testID='manage-clients-concept-count'
-                  style={[
-                    manageStyles.muted,
-                    {
-                      color:
-                        conceptLength >= CLIENT_LIMITS.conceptMin ? palette.muted : palette.text,
-                    },
-                  ]}
-                >
-                  {t('manage.clients.conceptCount', {
-                    count: conceptLength,
-                    min: CLIENT_LIMITS.conceptMin,
-                  })}
-                </Text>
-              )}
-              <ManageField
-                testID='manage-clients-document'
-                label={t('manage.clients.documentNumber')}
-                value={draft.documentNumber}
-                onChange={(value) => update({ documentNumber: value })}
-                palette={palette}
-              />
-              {renderFieldError('documentNumber')}
-              {canPickFiles ? (
-                <View style={manageStyles.row}>
-                  <Pressable
-                    testID='manage-clients-proof'
-                    accessibilityRole='button'
-                    disabled={busy}
-                    onPress={() => void attach()}
-                    style={chip(!!proof)}
-                  >
-                    <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
-                      {t(proof ? 'manage.clients.proofChange' : 'manage.clients.proofAttach')}
-                    </Text>
-                  </Pressable>
-                  {proof ? (
-                    <Text style={[manageStyles.muted, { color: palette.muted }]}>
-                      {proof.name ?? t('manage.clients.proofReady')}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-              <Text style={[manageStyles.muted, { color: palette.muted }]}>
-                {t('manage.clients.airsHint')}
-              </Text>
-            </>
+            <ClientAirsFields
+              idPrefix='manage-clients'
+              values={draft}
+              onChange={update}
+              fieldError={fieldError}
+              palette={palette}
+              t={t}
+              canPickFiles={canPickFiles}
+              busy={busy}
+              proof={proof}
+              onAttach={() => void attach()}
+            />
           ) : null}
 
           {formError ? (

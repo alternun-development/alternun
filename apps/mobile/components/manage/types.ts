@@ -1,3 +1,4 @@
+import type React from 'react';
 import type { HonorAwardClient } from '../../utils/honorAwards';
 import type { DetailPalette, Translate } from '../marketplace/types';
 import type {
@@ -149,6 +150,9 @@ export interface ClientListItemProps {
   canAssign: boolean;
   /** Action running in the section ('remove-<id>', 'proof-<id>', ...). */
   busyAction: string | null;
+  /** Form to assign Airs to this client, shown in the row while open. */
+  assignForm?: React.ReactNode;
+  /** Opens or closes the row's form to assign Airs. */
   onAssign: () => void;
   onReinvite: () => void;
   onRemove: () => void;

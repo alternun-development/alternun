@@ -24,6 +24,7 @@ export function ClientListItem({
   canEdit,
   canAssign,
   busyAction,
+  assignForm,
   onAssign,
   onReinvite,
   onRemove,
@@ -250,9 +251,13 @@ export function ClientListItem({
                 <Pressable
                   testID={`manage-client-assign-${item.id}`}
                   accessibilityRole='button'
+                  accessibilityState={{ expanded: !!assignForm }}
                   disabled={busy}
                   onPress={onAssign}
-                  style={chip}
+                  style={[
+                    chip,
+                    !!assignForm && { borderColor: palette.primary, backgroundColor: palette.mist },
+                  ]}
                 >
                   <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
                     {t('manage.clients.assignAirs')}
@@ -314,6 +319,7 @@ export function ClientListItem({
           )}
         </View>
       ) : null}
+      {assignForm}
     </View>
   );
 }

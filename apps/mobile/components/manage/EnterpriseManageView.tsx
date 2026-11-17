@@ -51,7 +51,6 @@ export function EnterpriseManageView({
   const toasts = useToasts();
   const [state, setState] = useState<'loading' | 'ready' | 'denied' | 'error'>('loading');
   const [tab, setTab] = useState<EnterpriseManageTab | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
 
   const load = useCallback(() => {
@@ -75,7 +74,8 @@ export function EnterpriseManageView({
   useEffect(load, [load, version]);
 
   const changed = (message?: string): void => {
-    if (message) setNotice(message);
+    // A toast, so the person sees it wherever they are on the page (e.g. at the save button).
+    if (message) toasts.show({ type: 'success', title: message });
     setVersion((value) => value + 1);
   };
   const tabs = overview ? enterpriseTabs(overview.can, !!clientsClient, !!honorAwardsClient) : [];
@@ -148,15 +148,6 @@ export function EnterpriseManageView({
               muted={palette.muted}
               align='flex-start'
             />
-
-            {notice ? (
-              <Text
-                testID='enterprise-manage-notice'
-                style={[manageStyles.muted, { color: palette.primaryDeep }]}
-              >
-                {notice}
-              </Text>
-            ) : null}
 
             <View
               accessibilityRole='tablist'

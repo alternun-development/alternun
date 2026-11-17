@@ -10,12 +10,17 @@ import type {
   EnterpriseManageOverview,
 } from '../../../utils/enterpriseManage';
 
+// Toasts the view shows right now.
+const mockToasts: Array<{ type: string; title: string }> = [];
 jest.mock('@alternun/ui', () => ({
   // SearchFilterBar only reads colors from the theme.
   useTheme: () => ({
     theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
   }),
-  ToastSystem: () => null,
+  ToastSystem: ({ toasts }: { toasts: Array<{ type: string; title: string }> }) => {
+    mockToasts.splice(0, mockToasts.length, ...toasts);
+    return null;
+  },
 }));
 
 jest.mock('../../i18n/useAppTranslation', () => ({
@@ -81,6 +86,12 @@ function client(extra: Partial<EnterpriseManageClient> = {}): EnterpriseManageCl
   };
 }
 
+// Unmounted after each test, so pending toast timers do not fire after the suite.
+const mounted: ReactTestRenderer[] = [];
+afterEach(() => {
+  act(() => mounted.splice(0).forEach((renderer) => renderer.unmount()));
+});
+
 async function render(element: React.JSX.Element): Promise<ReactTestRenderer> {
   let renderer: ReactTestRenderer | undefined;
   await act(async () => {
@@ -88,6 +99,7 @@ async function render(element: React.JSX.Element): Promise<ReactTestRenderer> {
     await Promise.resolve();
     await Promise.resolve();
   });
+  mounted.push(renderer!);
   return renderer!;
 }
 const pressable = (r: ReactTestRenderer, id: string) =>
@@ -155,6 +167,10 @@ describe('EnterpriseManageView', () => {
       description: 'Hoteles en El Rodadero',
       location: { municipality: 'Santa Marta' },
     });
+    // The confirmation is a toast, visible wherever the person is on the page.
+    expect(mockToasts).toEqual([
+      expect.objectContaining({ type: 'success', title: 'manage.saved' }),
+    ]);
 
     await press(r, 'enterprise-manage-tab-products');
     await act(async () => input(r, 'enterprise-product-p1-airsMax').props.onChangeText('10'));

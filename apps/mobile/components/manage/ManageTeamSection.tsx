@@ -22,6 +22,8 @@ export function ManageTeamSection({
   const [role, setRole] = useState<ManageRole | undefined>(roles[0]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Removing someone asks first, in their own row.
+  const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
 
   const load = useCallback(() => {
     void client
@@ -52,6 +54,7 @@ export function ManageTeamSection({
   }
 
   async function remove(member: TeamMember): Promise<void> {
+    setConfirmRemove(null);
     setBusy(true);
     setError(null);
     try {
@@ -92,12 +95,40 @@ export function ManageTeamSection({
                 {t(`profile.roles.labels.${member.role}`, undefined, member.role)}
               </Text>
             </View>
-            {roles.includes(member.role as ManageRole) ? (
+            {roles.includes(member.role as ManageRole) && confirmRemove === member.id ? (
+              <View style={manageStyles.row}>
+                <Text style={[manageStyles.muted, { color: palette.text }]}>
+                  {t('manage.team.confirmRemove')}
+                </Text>
+                <Pressable
+                  testID={`manage-team-confirm-remove-${member.id}`}
+                  accessibilityRole='button'
+                  disabled={busy}
+                  onPress={() => void remove(member)}
+                  style={[manageStyles.secondaryButton, { borderColor: '#f87171' }]}
+                >
+                  <Text style={[manageStyles.secondaryButtonText, { color: '#f87171' }]}>
+                    {t('manage.team.confirm')}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  testID={`manage-team-keep-${member.id}`}
+                  accessibilityRole='button'
+                  disabled={busy}
+                  onPress={() => setConfirmRemove(null)}
+                  style={[manageStyles.secondaryButton, { borderColor: palette.border }]}
+                >
+                  <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
+                    {t('manage.team.cancel')}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : roles.includes(member.role as ManageRole) ? (
               <Pressable
                 testID={`manage-team-remove-${member.id}`}
                 accessibilityRole='button'
                 disabled={busy}
-                onPress={() => void remove(member)}
+                onPress={() => setConfirmRemove(member.id)}
                 style={[manageStyles.secondaryButton, { borderColor: palette.border }]}
               >
                 <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>

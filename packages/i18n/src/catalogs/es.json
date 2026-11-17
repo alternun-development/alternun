@@ -1327,8 +1327,11 @@
         "remove": "Quitar",
         "removeReason": "Quitado desde Airs",
         "empty": "Aún no hay más personas en el equipo.",
-        "notFound": "No encontramos una cuenta de Airs verificada con ese correo.",
-        "readOnly": "Solo el admin del proyecto puede cambiar el equipo."
+        "notFound": "Ese correo aún no tiene cuenta en Airs. La persona debe iniciar sesión en Airs al menos una vez.",
+        "readOnly": "Solo el admin del proyecto puede cambiar el equipo.",
+        "confirmRemove": "¿Quitar a esta persona del equipo?",
+        "confirm": "Sí, quitar",
+        "cancel": "Cancelar"
       },
       "clients": {
         "intro": "Agrega personas con cuenta en Airs o invítalas por correo.",
@@ -1353,6 +1356,8 @@
         },
         "viewProof": "Ver soporte",
         "assignAirs": "Asignar Airs",
+        "assignSubmit": "Asignar Airs",
+        "assignCancel": "Cancelar",
         "remove": "Quitar",
         "removeReason": "Quitado desde Airs",
         "cancelInvitation": "Cancelar invitación",
@@ -1395,7 +1400,8 @@
           "documentLong": "El número de documento puede tener hasta {{max}} caracteres.",
           "review": "Revisa los campos marcados para poder agregar el cliente.",
           "resendTooSoon": "Ya se envió hace poco. Puedes volver a enviarlo en unos minutos.",
-          "resendNotApplicable": "Esta asignación no tiene nada pendiente por enviar."
+          "resendNotApplicable": "Esta asignación no tiene nada pendiente por enviar.",
+          "reviewAssign": "Revisa los campos marcados para asignar los Airs."
         },
         "clear": "Borrar búsqueda",
         "filterLabel": "Mostrar",
@@ -1412,7 +1418,8 @@
         "busy": {
           "lookup": "Buscando…",
           "add": "Agregando cliente…",
-          "remove": "Quitando…"
+          "remove": "Quitando…",
+          "assign": "Asignando Airs…"
         },
         "toasts": {
           "addedTitle": "Cliente agregado",
@@ -1424,7 +1431,8 @@
           "resentTitle": "Correo reenviado",
           "remindedTitle": "Recordatorio enviado",
           "remindedBody": "Los admins recibieron de nuevo la solicitud por correo y en la app.",
-          "cancelledAirs": "{{email}} · también se cancelaron {{count}} asignaciones de Airs pendientes."
+          "cancelledAirs": "{{email}} · también se cancelaron {{count}} asignaciones de Airs pendientes.",
+          "airsAssignedTitle": "Airs asignados"
         },
         "invitationStatus": {
           "pending": "Pendiente",
@@ -1465,6 +1473,8 @@
         "hide": "Ocultar",
         "restore": "Restaurar",
         "reasonPrompt": "Motivo (obligatorio para rechazar u ocultar)",
+        "reasonRequired": "Escribe un motivo para rechazar u ocultar este comentario.",
+        "moderationReason": "Motivo: {{reason}}",
         "status": {
           "pending": "Pendientes",
           "visible": "Visibles",
@@ -1572,7 +1582,8 @@
         "coverage": "Cobertura",
         "contact": "Contacto",
         "sites": "Sedes",
-        "rooms": "{{count}} habitaciones",
+        "rooms_one": "{{count}} habitación",
+        "rooms_other": "{{count}} habitaciones",
         "event": "Evento",
         "eventDate": "Fecha",
         "venue": "Lugar",
@@ -1609,7 +1620,8 @@
       "swipeHint": "Desliza para explorar",
       "globalMarket": "MERCADO GLOBAL",
       "projectsToActivate": "Proyectos para activar",
-      "available": "{{count}} disponible",
+      "available_one": "{{count}} disponible",
+      "available_other": "{{count}} disponibles",
       "searchPlaceholder": "Buscar por proyecto, país o tema",
       "livePaths": "ELIGE TU CAMINO",
       "active": "ACTIVO",
@@ -1645,9 +1657,10 @@
       },
       "enterprises": {
         "eyebrow": "EMPRESAS",
-        "heading": "Empresas que generan impacto",
+        "heading": "Empresas donde sumas Airs",
         "intro": "Conoce las organizaciones detrás de los proyectos publicados.",
-        "projectCount": "{{count}} proyectos publicados",
+        "projectCount_one": "{{count}} proyecto publicado",
+        "projectCount_other": "{{count}} proyectos publicados",
         "loading": "Cargando empresas…",
         "empty": "Aún no hay empresas disponibles.",
         "searchPlaceholder": "Buscar empresa por nombre",

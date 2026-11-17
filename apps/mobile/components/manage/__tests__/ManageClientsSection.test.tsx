@@ -445,15 +445,35 @@ describe('ManageClientsSection', () => {
     expect(texts(r)).toContain('manage.clients.errors.documentRequired');
   });
 
-  it('assigns Airs to a listed client, removes members and cancels invitations', async () => {
+  it('assigns Airs to a listed client in its row, removes members and cancels invitations', async () => {
+    const assigned = {
+      ...listing.clients[0],
+      reports: [
+        ...listing.clients[0].reports,
+        {
+          id: 'r2',
+          amount: 5,
+          concept: 'Visita guiada',
+          status: 'released' as const,
+          submittedAt: '',
+          hasProof: false,
+        },
+      ],
+    };
     const c = clientsClient({
+      // The refetch after assigning brings the new assignment.
+      list: jest
+        .fn()
+        .mockResolvedValueOnce(listing)
+        .mockResolvedValue({ ...listing, clients: [assigned, ...listing.clients.slice(1)] }),
       add: jest.fn(async () => ({
-        client: listing.clients[0],
+        client: assigned,
         alreadyClient: true,
         invitationSent: false,
         reportStatus: 'released' as const,
       })),
     });
+    const onToast = jest.fn();
     const r = await render(
       <ManageClientsSection
         client={c}
@@ -461,24 +481,142 @@ describe('ManageClientsSection', () => {
         palette={palette}
         t={t}
         canPickFiles={false}
+        onToast={onToast}
       />
     );
+    // The form opens in the client's row; the "Add client" form stays untouched.
     await press(r, 'manage-client-assign-m1');
-    expect(input(r, 'manage-clients-email-search-input').props.value).toBe('ana@x.test');
-    await type(r, 'manage-clients-amount', '5');
-    await type(r, 'manage-clients-concept', 'Visita guiada');
-    await press(r, 'manage-clients-add');
+    expect(byId(r, 'manage-client-airs-m1').length).toBeGreaterThan(0);
+    expect(input(r, 'manage-clients-email-search-input').props.value).toBe('');
+    expect(texts(r)).toContain('manage.clients.assignSubmit');
+
+    // Nothing is sent until the fields are valid; the problems show in the row.
+    await press(r, 'manage-client-airs-m1-submit');
+    expect(c.add).not.toHaveBeenCalled();
+    expect(byId(r, 'manage-client-airs-m1-amount-error').length).toBeGreaterThan(0);
+    expect(texts(r)).toContain('manage.clients.errors.reviewAssign');
+
+    await type(r, 'manage-client-airs-m1-amount', '5');
+    await type(r, 'manage-client-airs-m1-concept', 'Visita guiada');
+    await press(r, 'manage-client-airs-m1-submit');
     expect(c.add).toHaveBeenCalledWith(
       'p1',
       { email: 'ana@x.test', airs: { amount: 5, concept: 'Visita guiada', documentNumber: '' } },
       null
     );
-    expect(texts(r)).toContain('manage.clients.notices.airsAdded');
+    expect(onToast).toHaveBeenCalledWith({
+      type: 'success',
+      title: 'manage.clients.toasts.airsAssignedTitle',
+      message: 'manage.clients.notices.airsAdded',
+    });
+    // The form closes and the list shows the new assignment.
+    expect(byId(r, 'manage-client-airs-m1')).toHaveLength(0);
+    expect(byId(r, 'manage-client-report-r2').length).toBeGreaterThan(0);
 
     await press(r, 'manage-client-remove-m1');
     expect(c.remove).toHaveBeenCalledWith('p1', 'm1', 'manage.clients.removeReason');
     await press(r, 'manage-client-remove-i1');
     expect(c.cancelInvitation).toHaveBeenCalledWith('p2', 'i1');
+  });
+
+  it('assigns Airs to an invited client with its name, and closes or explains in the row', async () => {
+    const c = clientsClient({
+      add: jest.fn(async () => {
+        throw new ManageRequestError(400, 'VALIDATION_FAILED', [
+          'airs.concept must be longer than or equal to 10 characters',
+        ]);
+      }),
+    });
+    const onToast = jest.fn();
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true, assignAirs: true }}
+        palette={palette}
+        t={t}
+        canPickFiles
+        pickFile={async () => ({ type: 'image/png', size: 10, name: 'foto.png' } as never)}
+        onToast={onToast}
+      />
+    );
+    await press(r, 'manage-client-assign-i1');
+    await type(r, 'manage-client-airs-i1-amount', '8');
+    await type(r, 'manage-client-airs-i1-concept', 'Compra de café');
+    await press(r, 'manage-client-airs-i1-proof');
+    expect(texts(r)).toContain('foto.png');
+    await press(r, 'manage-client-airs-i1-submit');
+    expect(c.add).toHaveBeenCalledWith(
+      'p2',
+      {
+        email: 'luis@x.test',
+        name: 'Luis',
+        airs: { amount: 8, concept: 'Compra de café', documentNumber: '' },
+      },
+      { type: 'image/png', size: 10, name: 'foto.png' }
+    );
+    // The API's field problem stays in the row, which stays open.
+    expect(byId(r, 'manage-client-airs-i1-concept-error').length).toBeGreaterThan(0);
+    expect(byId(r, 'manage-client-airs-i1-error').length).toBeGreaterThan(0);
+    expect(onToast).toHaveBeenCalledWith({
+      type: 'error',
+      title: 'manage.clients.toasts.errorTitle',
+      message: 'manage.error',
+    });
+
+    await press(r, 'manage-client-airs-i1-cancel');
+    expect(byId(r, 'manage-client-airs-i1')).toHaveLength(0);
+    // The row's button opens and closes the form too.
+    await press(r, 'manage-client-assign-i1');
+    expect(byId(r, 'manage-client-airs-i1').length).toBeGreaterThan(0);
+    await press(r, 'manage-client-assign-i1');
+    expect(byId(r, 'manage-client-airs-i1')).toHaveLength(0);
+  });
+
+  it('lists a client as soon as it is added, before the refetch answers', async () => {
+    const added = {
+      id: 'm9',
+      kind: 'member' as const,
+      projectId: 'p1',
+      email: 'nueva@x.test',
+      name: 'Nueva',
+      since: '',
+      reports: [],
+    };
+    const list = jest
+      .fn()
+      .mockResolvedValueOnce({ projects: listing.projects, clients: [] })
+      // The refetch never answers here: the list must not depend on it.
+      .mockReturnValueOnce(new Promise(() => undefined));
+    const c = clientsClient({
+      list,
+      lookup: jest.fn(async () => ({
+        email: 'nueva@x.test',
+        hasAccount: true,
+        displayName: 'Nueva',
+      })),
+      add: jest.fn(async () => ({
+        client: added,
+        alreadyClient: false,
+        invitationSent: false,
+        reportStatus: null,
+      })),
+    });
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true }}
+        palette={palette}
+        t={t}
+        canPickFiles={false}
+      />
+    );
+    expect(texts(r)).toContain('manage.clients.empty');
+    await type(r, 'manage-clients-email-search-input', 'nueva@x.test');
+    await press(r, 'manage-clients-lookup');
+    await press(r, 'manage-clients-add');
+    expect(byId(r, 'manage-client-m9').length).toBeGreaterThan(0);
+    expect(texts(r)).not.toContain('manage.clients.empty');
+    expect(list).toHaveBeenCalledTimes(2);
   });
 
   it('shows the invitation history and invites a cancelled client again', async () => {
