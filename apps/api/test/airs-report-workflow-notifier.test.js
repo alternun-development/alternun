@@ -297,3 +297,28 @@ test('a failing workflow email does not change the response', async () => {
   assert.equal(await service.reject(principal, 'req-3', report().id, 'Not enough proof'), live);
   assert.equal(await service.submit(principal, 'req-1', report().projectId, {}), live);
 });
+
+test('a self-assigned report says another admin must decide, not that it went over the limits', async () => {
+  const mail = recorder();
+  const notify = createAirsReportWorkflowNotifier({
+    send: mail.send,
+    env: ENV,
+    projectName: async () => null,
+    approverEmails: async () => ['admin@example.test', 'boss@example.test'],
+    // The submitter is the recipient.
+    submitterEmail: async () => 'Admin@Example.test',
+  });
+
+  await notify(report({ recipientEmail: 'admin@example.test' }));
+  const recipients = mail.sent.map((entry) => entry.to);
+  assert.ok(!recipients.includes('admin@example.test'));
+  assert.ok(recipients.includes('boss@example.test'));
+  assert.match(mail.sent[0].text, /a su propia cuenta\. Otro admin debe aprobarlos/);
+  assert.match(mail.sent[0].text, /their own account\. Another admin has to approve/);
+  assert.doesNotMatch(mail.sent[0].text, /superó los límites/);
+
+  assert.match(
+    renderAirsReportReviewRequestEmail(context()).text,
+    /superó los límites automáticos/
+  );
+});

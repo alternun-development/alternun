@@ -218,6 +218,7 @@ export class ProjectClientService {
         addedBy: actorEmail,
         appUrl: resolveAirsReportAppUrl(this.env),
         reminder,
+        selfAssigned: !!actorEmail && actorEmail === client.email.trim().toLowerCase(),
       });
       await this.repository.createNotifications(
         recipients.map((recipient) => ({

@@ -6,7 +6,10 @@ import {
   MarketplaceApiError,
   marketplaceError,
 } from '../src/modules/marketplace/marketplace.errors';
-import { renderProjectClientInvitationEmail } from '../src/modules/marketplace/airs-report-emails';
+import {
+  renderProjectClientInvitationEmail,
+  renderProjectClientNoticeEmail,
+} from '../src/modules/marketplace/airs-report-emails';
 import { ProjectClientService } from '../src/modules/marketplace/project-client.service';
 
 const PROJECT = '11111111-1111-4111-8111-111111111111';
@@ -648,4 +651,23 @@ test('a pending invitation can be sent again, only while it is pending', async (
     service.resendInvitation(principal(), 'req', PROJECT, 'inv-4'),
     isError('CLIENT_INVITATION_NOT_PENDING')
   );
+});
+
+test('the client notice says a self-assignment waits for another admin', () => {
+  const base = {
+    projectId: PROJECT,
+    projectName: 'Río',
+    clientName: 'Ada',
+    clientEmail: 'ada@alternun.example',
+    clientKind: 'member' as const,
+    alreadyClient: true,
+    airs: { amount: 40, concept: 'Siembra', status: 'pending_approval' },
+    addedBy: 'ada@alternun.example',
+    appUrl: 'https://airs.example',
+  };
+  assert.match(
+    renderProjectClientNoticeEmail({ ...base, selfAssigned: true }).text,
+    /es el mismo cliente: otro admin debe aprobarlos/
+  );
+  assert.match(renderProjectClientNoticeEmail(base).text, /superó los límites automáticos/);
 });

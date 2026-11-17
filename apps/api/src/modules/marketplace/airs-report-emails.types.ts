@@ -17,6 +17,8 @@ export interface AirsReportEmailContext {
 export interface AirsReportReviewEmailContext extends AirsReportEmailContext {
   /** Base URL of the admin panel, where approvers decide, without a trailing slash. */
   adminUrl: string;
+  /** The submitter assigned the Airs to their own account: another admin has to approve. */
+  selfAssigned?: boolean;
 }
 
 export interface AirsReportEmailSend {

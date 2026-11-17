@@ -1040,6 +1040,8 @@ export const marketplaceCopy = {
     AIRS_REPORT_TRANSITION_INVALID: 'This report has already changed. Refresh and try again.',
     AIRS_REPORT_SELF_APPROVAL_DENIED:
       "You can't approve a report you sent or one addressed to you.",
+    COMPLETION_SELF_APPROVAL_DENIED:
+      "You can't award your own activity completion. Another admin has to approve it.",
     AIRS_REPORT_APPROVER_NOT_ALLOWED: "You aren't on the approvers list.",
     AIRS_REPORT_SNAPSHOT_MISMATCH:
       'This report changed after you opened it. Refresh and review it again.',

@@ -178,13 +178,14 @@ function staffEmail(
 }
 
 /**
- * Email to the approvers and support: a report went over the automatic limits and waits.
+ * Email to the approvers and support: a report went over the automatic limits, or was assigned
+ * to the submitter's own account, and waits.
  * The link opens that report in the admin panel, where approvers decide.
  */
 export function renderAirsReportReviewRequestEmail(
   context: AirsReportReviewEmailContext
 ): AirsReportEmailContent {
-  const { report, projectName, adminUrl } = context;
+  const { report, projectName, adminUrl, selfAssigned } = context;
   const reviewLink = `${adminUrl}/airs-reports?report=${encodeURIComponent(report.id)}`;
   const rows = (
     labels: [string, string, string, string, string, string]
@@ -203,12 +204,16 @@ export function renderAirsReportReviewRequestEmail(
     [
       {
         heading: 'Reporte de Airs por revisar',
-        intro: 'Un reporte superó los límites automáticos y espera a un aprobador.',
+        intro: selfAssigned
+          ? 'Un admin se asignó Airs a su propia cuenta. Otro admin debe aprobarlos o rechazarlos.'
+          : 'Un reporte superó los límites automáticos y espera a un aprobador.',
         rows: rows(['Destinatario', 'Monto', 'Motivo', 'Documento', 'Proyecto', 'Revisar en']),
       },
       {
         heading: 'Airs report to review',
-        intro: 'A report went over the automatic limits and is waiting for an approver.',
+        intro: selfAssigned
+          ? 'An admin assigned Airs to their own account. Another admin has to approve or reject them.'
+          : 'A report went over the automatic limits and is waiting for an approver.',
         rows: rows(['Recipient', 'Amount', 'Reason', 'Document', 'Project', 'Review at']),
       },
     ]
@@ -370,6 +375,8 @@ export function renderProjectClientNoticeEmail(context: {
   appUrl: string;
   /** A reminder sent again from the Clients tab. */
   reminder?: boolean;
+  /** Whoever assigned the Airs is the client: another admin has to approve them. */
+  selfAssigned?: boolean;
 }): AirsReportEmailContent {
   const project = context.projectName ?? 'un proyecto';
   const projectEn = context.projectName ?? 'a project';
@@ -396,10 +403,12 @@ export function renderProjectClientNoticeEmail(context: {
   const introEn = airsOnly
     ? `${whoEn} assigned Airs to ${context.clientName}, a client of ${projectEn}.`
     : `${whoEn} added ${context.clientName} as a client of ${projectEn}.`;
-  const pendingEs =
-    'Esta asignación superó los límites automáticos y espera la aprobación de un admin global de Alternun en el panel admin.';
-  const pendingEn =
-    'This assignment went over the automatic limits and waits for an Alternun global admin to approve it in the admin panel.';
+  const pendingEs = context.selfAssigned
+    ? 'Quien asignó estos Airs es el mismo cliente: otro admin debe aprobarlos o rechazarlos.'
+    : 'Esta asignación superó los límites automáticos y espera la aprobación de un admin global de Alternun en el panel admin.';
+  const pendingEn = context.selfAssigned
+    ? 'Whoever assigned these Airs is the client: another admin has to approve or reject them.'
+    : 'This assignment went over the automatic limits and waits for an Alternun global admin to approve it in the admin panel.';
 
   const rows = (index: 0 | 1): Array<[string, string]> => {
     const labels =

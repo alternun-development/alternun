@@ -154,20 +154,22 @@ export function createAirsReportWorkflowNotifier(
     if (!waiting && !decided) return result;
 
     const projectName = await dependencies.projectName(report.projectId).catch(() => null);
+    const submitter = await (
+      dependencies.submitterEmail?.(report.submittedBy.issuer, report.submittedBy.subject) ??
+      Promise.resolve(null)
+    ).catch(() => null);
     const context = {
       report,
       projectName,
       appUrl: resolveAirsReportAppUrl(dependencies.env),
       adminUrl: resolveAirsReportAdminUrl(dependencies.env),
+      // Airs assigned to the submitter's own account always wait for another admin.
+      selfAssigned: !!submitter && isReportParty(submitter, report),
     };
     const email = waiting
       ? renderAirsReportReviewRequestEmail(context)
       : renderAirsReportDecisionEmail(context);
 
-    const submitter = await (
-      dependencies.submitterEmail?.(report.submittedBy.issuer, report.submittedBy.subject) ??
-      Promise.resolve(null)
-    ).catch(() => null);
     let audience: string[] = [];
     if (waiting) {
       audience.push(
