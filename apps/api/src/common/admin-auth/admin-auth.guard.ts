@@ -99,7 +99,7 @@ type VerifiedIssuerClaims = Record<string, unknown> & {
   exp: number;
   iat: number;
   iss: string;
-  nbf: number;
+  nbf?: number;
   sub: string;
 };
 
@@ -433,10 +433,10 @@ function validateVerifiedClaims(claims: Record<string, unknown>): VerifiedIssuer
 
   if (
     typeof claims.exp !== 'number' ||
-    typeof claims.nbf !== 'number' ||
+    // nbf is optional (RFC 7519 §4.1.5) and Authentik never sets it, so only enforce it when present.
+    (claims.nbf !== undefined && (typeof claims.nbf !== 'number' || claims.nbf > now)) ||
     typeof claims.iat !== 'number' ||
     claims.exp <= now ||
-    claims.nbf > now ||
     typeof claims.iss !== 'string' ||
     !claims.iss.trim() ||
     typeof claims.sub !== 'string' ||
@@ -451,7 +451,7 @@ function validateVerifiedClaims(claims: Record<string, unknown>): VerifiedIssuer
     exp: claims.exp,
     iat: claims.iat,
     iss: claims.iss,
-    nbf: claims.nbf,
+    ...(typeof claims.nbf === 'number' ? { nbf: claims.nbf } : {}),
     sub: claims.sub,
   };
 }

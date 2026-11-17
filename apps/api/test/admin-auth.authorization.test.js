@@ -111,6 +111,8 @@ function signAuthentikAdminToken({
   expiresInSeconds = 60 * 15,
   expiresAt,
   includeTokenUse = true,
+  notBefore,
+  includeNotBefore = true,
 } = {}) {
   const issuedAt = Math.floor(Date.now() / 1000);
   const payload = {
@@ -120,7 +122,7 @@ function signAuthentikAdminToken({
     email: 'partner@example.com',
     email_verified: true,
     iat: issuedAt,
-    nbf: issuedAt,
+    ...(includeNotBefore ? { nbf: notBefore ?? issuedAt } : {}),
     exp: expiresAt ?? issuedAt + expiresInSeconds,
     roles,
     alternun_roles: roles,
@@ -448,6 +450,51 @@ test('resolveRuntimeOptions accepts RS256 Authentik tokens through the configure
     email: 'partner@example.com',
     emailVerified: true,
   });
+});
+
+function useAuthentikJwks() {
+  process.env.ADMIN_AUTH_ISSUER = AUTHENTIK_ISSUER;
+  process.env.ADMIN_AUTH_JWKS_URL = AUTHENTIK_JWKS_URL;
+  global.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        keys: [{ ...rsaJwk, alg: 'RS256', kid: 'alternun-admin-rsa', use: 'sig' }],
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } }
+    );
+}
+
+// Authentik access tokens carry iss, sub, aud (the client id), exp and iat, but never nbf.
+test('an Authentik access token without nbf is accepted', async () => {
+  const adminAuth = loadAdminAuthContract();
+  useAuthentikJwks();
+  process.env.ADMIN_AUTH_AUDIENCE = 'alternun-admin';
+
+  const principal = await adminAuth.authenticateAdminPrincipal(
+    `Bearer ${signAuthentikAdminToken({
+      audience: 'alternun-admin',
+      includeNotBefore: false,
+      includeTokenUse: false,
+    })}`,
+    adminAuth.resolveAdminRuntimeOptions()
+  );
+
+  assert.equal(principal?.sub, 'partner-user-1');
+  assert.deepEqual(principal?.roles, ['partner_operator']);
+});
+
+test('an Authentik token whose nbf is in the future is rejected with 401', async () => {
+  const adminAuth = loadAdminAuthContract();
+  useAuthentikJwks();
+  process.env.ADMIN_AUTH_AUDIENCE = 'alternun-app';
+
+  await assert.rejects(
+    adminAuth.authenticateAdminPrincipal(
+      `Bearer ${signAuthentikAdminToken({ notBefore: Math.floor(Date.now() / 1000) + 600 })}`,
+      adminAuth.resolveAdminRuntimeOptions()
+    ),
+    (error) => error?.getStatus?.() === 401
+  );
 });
 
 test('an Authentik token that expires exactly now is rejected with 401', async () => {
