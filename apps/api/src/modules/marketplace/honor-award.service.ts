@@ -27,7 +27,16 @@ const TEXT_LIMITS: ReadonlyArray<[keyof HonorAwardRecipeInput, number]> = [
   ['venueLocation', 160],
 ];
 const IMAGE_FIELDS = ['badgeImageUrl', 'frontImageUrl', 'backImageUrl'] as const;
-const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+// Linear-time check (no backtracking between overlapping character classes): one @, a dot in the
+// domain, no spaces. Callers also cap the length before testing.
+function isEmail(value: string): boolean {
+  if (value.length > 320 || /\s/.test(value)) return false;
+  const at = value.indexOf('@');
+  if (at < 1 || at !== value.lastIndexOf('@')) return false;
+  const domain = value.slice(at + 1);
+  const dot = domain.lastIndexOf('.');
+  return dot > 0 && dot < domain.length - 1;
+}
 const ART_PRESET_PATTERN = /^[a-z0-9_]{1,40}$/;
 const REFERENCE_MAX = 80;
 
@@ -221,7 +230,7 @@ export class HonorAwardService {
     let target: { userId: string } | { enterpriseId: string };
     if (recipient.recipientType === 'user') {
       const email = recipient.email.trim().toLowerCase();
-      if (!EMAIL_PATTERN.test(email) || email.length > 320) invalid();
+      if (!isEmail(email)) invalid();
       const userId = await this.repository.findUserIdByEmail(email);
       if (!userId) marketplaceError('HONOR_AWARD_RECIPIENT_NOT_FOUND');
       target = { userId };
@@ -322,7 +331,7 @@ export class HonorAwardService {
     }
     if (!recipe.isActive) marketplaceError('HONOR_AWARD_NOT_CLAIMABLE');
     const email = input.email.trim().toLowerCase();
-    if (!EMAIL_PATTERN.test(email) || email.length > 320) invalid();
+    if (!isEmail(email)) invalid();
     const trimmedNote = input.note?.trim();
     const note = trimmedNote ? trimmedNote : null;
     if (note && note.length > 300) invalid();
@@ -360,7 +369,7 @@ export class HonorAwardService {
   ): Promise<HonorAwardGuestSummary> {
     await this.requireAllyGranter(principal, requestId, enterpriseId);
     const normalized = email.trim().toLowerCase();
-    if (!EMAIL_PATTERN.test(normalized) || normalized.length > 320) invalid();
+    if (!isEmail(normalized)) invalid();
     const userId = await this.repository.findUserIdByEmail(normalized);
     if (!userId) return { found: false, total: 0, byRecipe: [] };
     const grants = await this.repository.listPartnerGrantsForUser(enterpriseId, userId);

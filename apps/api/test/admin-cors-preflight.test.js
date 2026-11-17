@@ -81,3 +81,13 @@ for (const origin of [
     assert.equal(response.headers['access-control-allow-credentials'], undefined);
   });
 }
+
+test('the CORS origin header only ever carries a configured origin', () => {
+  const trusted = ['https://testnet.airs.alternun.co/'];
+  assert.equal(
+    resolveBetterAuthTrustedOrigin('https://testnet.airs.alternun.co', trusted),
+    'https://testnet.airs.alternun.co'
+  );
+  assert.equal(resolveBetterAuthTrustedOrigin('https://evil.example', trusted), null);
+  assert.equal(resolveBetterAuthTrustedOrigin('null', [...trusted, 'null']), null);
+});

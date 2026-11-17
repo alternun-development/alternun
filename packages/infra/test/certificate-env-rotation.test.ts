@@ -31,11 +31,10 @@ void test('build defaults preserve rotating AIRS certificates supplied by CodeBu
       const expected = [`${generation}-production`, `${generation}-dev`];
       const result = spawnSync(
         'bash',
+        // The command is a constant; the loader path travels in the environment, not the command.
         [
           '-c',
-          'source "$1"; load_infra_env; printf "%s\\n" "$INFRA_EXPO_CERT_ARN_PRODUCTION" "$INFRA_EXPO_CERT_ARN_DEV"',
-          'certificate-env-test',
-          path.join(infraDir, 'scripts/_load-infra-env.sh'),
+          'source "$INFRA_ENV_LOADER"; load_infra_env; printf "%s\\n" "$INFRA_EXPO_CERT_ARN_PRODUCTION" "$INFRA_EXPO_CERT_ARN_DEV"',
         ],
         {
           encoding: 'utf8',
@@ -43,6 +42,7 @@ void test('build defaults preserve rotating AIRS certificates supplied by CodeBu
             PATH: process.env.PATH,
             ...defaults,
             INFRA_ENV_FILE: envFile,
+            INFRA_ENV_LOADER: path.join(infraDir, 'scripts/_load-infra-env.sh'),
             INFRA_EXPO_CERT_ARN_PRODUCTION: expected[0],
             INFRA_EXPO_CERT_ARN_DEV: expected[1],
           },

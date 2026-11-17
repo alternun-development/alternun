@@ -289,6 +289,18 @@ export function createBetterAuthDevAuth(config: BetterAuthDevConfig) {
       buildEmailVerificationOtpPlugin(),
     ],
     socialProviders,
+    // Explicit, not only "on in production": guessing passwords or flooding OTP mail must be
+    // throttled on every stage. Memory storage is per Lambda instance (best effort).
+    rateLimit: {
+      enabled: true,
+      window: 60,
+      max: 100,
+      customRules: {
+        '/sign-in/email': { window: 60, max: 5 },
+        '/sign-up/email': { window: 60, max: 5 },
+        '/email-otp/send-verification-otp': { window: 60, max: 3 },
+      },
+    },
     emailAndPassword: {
       enabled: true,
       autoSignIn: false,

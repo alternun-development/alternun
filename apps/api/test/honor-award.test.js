@@ -447,3 +447,17 @@ test('the presets and references migration keeps one grant per reservation', () 
   assert.ok(sql.includes('add column reference text'));
   assert.ok(sql.includes('honor_award_grants_recipe_reference_uidx'));
 });
+
+test('guest emails are validated in linear time and malformed ones refused', async () => {
+  const { service } = allyBuild({ users: {} });
+  const lookup = (email) =>
+    service.guestSummary(principal('partner_operator'), 'req', ENTERPRISE_ID, email);
+  for (const bad of ['ada', 'ada@', '@example.com', 'a@b@c.com', 'ada@example', 'a da@x.co']) {
+    await assert.rejects(lookup(bad), code('HONOR_AWARD_INPUT_INVALID'));
+  }
+  // A long input with no structure must be refused fast (it used to backtrack).
+  const started = Date.now();
+  await assert.rejects(lookup(`a@${'a.'.repeat(5000)}`), code('HONOR_AWARD_INPUT_INVALID'));
+  assert.ok(Date.now() - started < 200);
+  assert.deepEqual(await lookup('ada@example.com'), { found: false, total: 0, byRecipe: [] });
+});
