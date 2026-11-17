@@ -72,12 +72,11 @@ export function resolveBetterAuthTrustedOrigin(
     return null;
   }
 
-  // Echo the configured origin, never the request's own value, so the header can only ever
-  // carry an allowlisted origin.
-  const trusted = trustedOrigins
+  // Allowlist membership check: only an origin that is configured as trusted is ever echoed.
+  const allowlist = trustedOrigins
     .map((trustedOrigin) => normalizeOrigin(trustedOrigin))
-    .find((trustedOrigin) => trustedOrigin === normalizedRequestOrigin);
-  return trusted ?? null;
+    .filter((trustedOrigin): trustedOrigin is string => trustedOrigin !== null);
+  return allowlist.includes(normalizedRequestOrigin) ? normalizedRequestOrigin : null;
 }
 
 export function applyBetterAuthCorsHeaders(
