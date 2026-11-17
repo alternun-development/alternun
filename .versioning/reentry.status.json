@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-14T11:38:10.744Z",
+  "lastUpdated": "2026-11-17T20:31:18.572Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Verify avatar flip/tier reveal and notification backoff on testnet after v1.2.5",
+      "description": "Commit infra ADMIN_AUTH_* fix (secret-scan false positive on backend-api.ts), then pnpm release patch + release:patch:promote to deploy testnet and update PR #313; backfill English project content",
       "id": "next",
       "priority": 1
     }
