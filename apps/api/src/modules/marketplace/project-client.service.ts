@@ -10,7 +10,7 @@ import type { AirsReportEmailContent } from './airs-report-emails.types';
 import { resolveAirsReportAppUrl } from './airs-report-notifier';
 import { AirsReportRepository } from './airs-report.repository';
 import { AirsReportService } from './airs-report.service';
-import type { AirsReportRecord } from './airs-report.types';
+import type { AirsReportRecord, AirsReportReviewItem } from './airs-report.types';
 import { MarketplaceParticipantRepository } from './marketplace-participant.repository';
 import { MarketplaceParticipantService } from './marketplace-participant.service';
 import { MarketplaceApiError, marketplaceError } from './marketplace.errors';
@@ -288,6 +288,51 @@ export class ProjectClientService {
     const file = await this.repository.readProof(reportId);
     if (!file) marketplaceError('CLIENT_NOT_FOUND');
     return file;
+  }
+
+  /**
+   * Airs in review for the in-app approver screen: the review queue (approvers only) with each
+   * project's title and whether a supporting file was attached.
+   */
+  async reviewQueue(principal: AdminPrincipal, requestId: string): Promise<AirsReportReviewItem[]> {
+    const reports = await this.reports.reviewQueue(principal, requestId);
+    const [withProof, titles] = await Promise.all([
+      this.repository.proofReportIds(reports.map((report) => report.id)),
+      this.projectTitles(Array.from(new Set<string>(reports.map((report) => report.projectId)))),
+    ]);
+    return reports.map((report) => ({
+      ...report,
+      projectTitle: titles.get(report.projectId) ?? null,
+      hasProof: withProof.has(report.id),
+    }));
+  }
+
+  /** The supporting file of any report, to an approver reviewing it. */
+  async approverProofFile(
+    principal: AdminPrincipal,
+    requestId: string,
+    reportId: string
+  ): Promise<ProjectClientProofFile> {
+    await this.reports.requireApprover(principal, requestId);
+    const file = await this.repository.readProof(reportId);
+    if (!file) marketplaceError('AIRS_REPORT_NOT_FOUND');
+    return file;
+  }
+
+  // A title that cannot be read only leaves the project name out of the screen.
+  private async projectTitles(projectIds: string[]): Promise<Map<string, string>> {
+    const titles = new Map<string, string>();
+    await Promise.all(
+      projectIds.map(async (projectId) => {
+        try {
+          const project = await this.adminRepository.findProject(projectId);
+          if (project) titles.set(projectId, projectTitle(project));
+        } catch {
+          // Intentionally ignored.
+        }
+      })
+    );
+    return titles;
   }
 
   async cancelInvitation(

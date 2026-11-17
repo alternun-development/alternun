@@ -254,9 +254,19 @@ export class AirsReportService {
     );
   }
 
-  async reviewQueue(principal: AdminPrincipal, requestId: string): Promise<AirsReportRecord[]> {
-    if (!(await this.repository.isApprover(approverFrom(principal))))
+  /** Whether the person is on the approver list (verified email). Read only, no audit entry. */
+  canApprove(principal: AdminPrincipal): Promise<boolean> {
+    return this.repository.isApprover(approverFrom(principal));
+  }
+
+  /** Refuses (and audits) anyone who is not an approver. */
+  async requireApprover(principal: AdminPrincipal, requestId: string): Promise<void> {
+    if (!(await this.canApprove(principal)))
       await this.deny(principal, requestId, 'AIRS_REPORT_APPROVER_NOT_ALLOWED');
+  }
+
+  async reviewQueue(principal: AdminPrincipal, requestId: string): Promise<AirsReportRecord[]> {
+    await this.requireApprover(principal, requestId);
     return this.repository.listByStatus('pending_approval');
   }
 

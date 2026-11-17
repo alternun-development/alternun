@@ -47,6 +47,7 @@ import { PROJECT_PROPOSAL_EMAIL_SENDER, ProjectProposalService } from './project
 import { sendAirsEmail } from '../airs/airs.email';
 import {
   AirsReportAdminController,
+  AirsReportMeController,
   AirsReportProjectAdminController,
 } from './airs-report.controller';
 import { AirsReportRepository } from './airs-report.repository';
@@ -109,6 +110,7 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     EnterpriseApplicationController,
     AirsReportProjectAdminController,
     AirsReportAdminController,
+    AirsReportMeController,
     ProjectTypeAdminController,
     ProjectTypeAssignmentController,
     AdminNotificationController,

@@ -58,6 +58,25 @@ export class ProjectManageAccess {
     return { enterprise, ...access };
   }
 
+  /**
+   * Same bridge for the in-app review of Airs in review, which belongs to no project. Whether the
+   * person may approve is decided by the review service (approver list, never their own report).
+   */
+  async resolveApprover(token: string): Promise<AdminPrincipal> {
+    const userId = await this.resolveUser(token);
+    const email = await this.access.findVerifiedEmail(userId);
+    const globalRole = email ? await this.access.findGlobalRole(email) : null;
+    return {
+      iss: memberIssuer(this.env),
+      aud: APP_AUDIENCE,
+      sub: `airs-user:${userId}`,
+      roles: globalRole ? [globalRole] : [],
+      organizationIds: [],
+      email: email ?? undefined,
+      emailVerified: Boolean(email),
+    };
+  }
+
   private async principalFor(
     userId: string,
     enterpriseId: string,
