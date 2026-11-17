@@ -43,6 +43,7 @@ function setup(
     notify: [],
     notices: [],
     audit: [],
+    listProjectsScopes: [],
   };
   const members: any[] = [];
   const invitations: any[] = [];
@@ -155,17 +156,20 @@ function setup(
       defaultLocale: 'es',
       content: { es: { title: 'Río <Gaira>' } },
     }),
-    listProjects: async () => [
-      {
-        id: PROJECT,
-        slug: 'rio',
-        status: 'published',
-        defaultLocale: 'es',
-        content: { es: { title: 'Río' } },
-      },
-      { id: OTHER, slug: 'otro', status: 'published', defaultLocale: 'es', content: {} },
-      { id: 'archived', slug: 'old', status: 'archived', defaultLocale: 'es', content: {} },
-    ],
+    listProjects: async (scope?: unknown) => {
+      calls.listProjectsScopes.push(scope);
+      return [
+        {
+          id: PROJECT,
+          slug: 'rio',
+          status: 'published',
+          defaultLocale: 'es',
+          content: { es: { title: 'Río' } },
+        },
+        { id: OTHER, slug: 'otro', status: 'published', defaultLocale: 'es', content: {} },
+        { id: 'archived', slug: 'old', status: 'archived', defaultLocale: 'es', content: {} },
+      ];
+    },
   };
   const service = new ProjectClientService(
     repository as any,
@@ -394,7 +398,7 @@ test('invitations are cancelled only within their project; members are removed w
 });
 
 test('the enterprise list gathers the readable projects and skips archived or out-of-scope ones', async () => {
-  const { service, invitations } = setup({ denied: [OTHER], reports: [] });
+  const { service, invitations, calls } = setup({ denied: [OTHER], reports: [] });
   invitations.push({
     id: 'inv-1',
     email: 'x@example.com',
@@ -407,6 +411,10 @@ test('the enterprise list gathers the readable projects and skips archived or ou
   assert.equal(result.clients.length, 1);
   assert.equal(result.clients[0].projectId, PROJECT);
   assert.deepEqual(result.clients[0].reports, []);
+  // Projects the enterprise is only linked to count too (e.g. Hoteles Taybo on a foundation's project).
+  assert.deepEqual(calls.listProjectsScopes, [
+    { enterpriseIds: ['ent-1'], projectIds: [], includeLinked: true },
+  ]);
 });
 
 test('the invitation email speaks of Airs and positive impact in both languages', () => {

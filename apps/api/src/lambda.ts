@@ -163,6 +163,23 @@ export function normalizeLambdaResponseHeaders(
     : { headers: normalizedHeaders };
 }
 
+// Bodies the Lambda proxy can return as text; anything else (images, PDFs) goes base64-encoded,
+// since decoding binary bytes as UTF-8 corrupts them.
+const TEXT_CONTENT_TYPE =
+  /^(text\/|application\/(json|javascript|xml|x-www-form-urlencoded)|[^;]*\+(json|xml)\b)/i;
+
+export function encodeLambdaResponseBody(
+  contentType: unknown,
+  payload: Buffer
+): { body: string; isBase64Encoded: boolean } {
+  const type = Array.isArray(contentType)
+    ? String(contentType[0] ?? '')
+    : String(contentType ?? '');
+  if (!type.trim() || TEXT_CONTENT_TYPE.test(type.trim()))
+    return { body: payload.toString('utf8'), isBase64Encoded: false };
+  return { body: payload.toString('base64'), isBase64Encoded: true };
+}
+
 export async function handler(
   event: APIGatewayProxyEventV2,
   context: Context
@@ -216,17 +233,22 @@ export async function handler(
     console.log('[handler] Got response', { statusCode: response.statusCode });
 
     const responseEnvelope = normalizeLambdaResponseHeaders(response.headers);
+    const responseBody = encodeLambdaResponseBody(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      response.headers['content-type'],
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+      response.rawPayload
+    );
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result = {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
       statusCode: response.statusCode,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-      body: response.body,
+      body: responseBody.body,
       headers: responseEnvelope.headers,
       ...(responseEnvelope.cookies ? { cookies: responseEnvelope.cookies } : {}),
-      isBase64Encoded: false,
+      isBase64Encoded: responseBody.isBase64Encoded,
     };
 
     // eslint-disable-next-line no-console

@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-floating-promises, @typescript-eslint/require-await, @typescript-eslint/no-unsafe-argument, @typescript-eslint/unbound-method */
 import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
+import { Platform } from 'react-native';
 import { ManageClientsSection } from '../ManageClientsSection';
+import { ProofViewer } from '../ProofViewer';
 import { ProjectManageView } from '../ProjectManageView';
 import { EnterpriseManageView, enterpriseTabs } from '../EnterpriseManageView';
 import { ManageRequestError } from '../../../utils/projectManage';
@@ -223,6 +225,28 @@ describe('ManageClientsSection', () => {
     expect(texts(r)).toContain('manage.clients.proof.private');
     await press(r, 'manage-client-proof-close');
     expect(byId(r, 'manage-client-proof-image')).toHaveLength(0);
+  });
+
+  it('fills the viewer with a PDF on web instead of a zero-height frame', async () => {
+    const os = Platform.OS;
+    Object.defineProperty(Platform, 'OS', { value: 'web', configurable: true });
+    try {
+      const r = await render(
+        <ProofViewer
+          viewer={{ status: 'ready', uri: 'blob:proof', type: 'application/pdf' }}
+          palette={palette}
+          t={t}
+          onClose={jest.fn()}
+        />
+      );
+      const frame = r.root.findAll(
+        (n) => n.type === 'iframe' && n.props['data-testid'] === 'manage-client-proof-pdf'
+      )[0];
+      expect(frame.props.src).toBe('blob:proof');
+      expect(frame.props.style).toMatchObject({ flex: 1, width: '100%' });
+    } finally {
+      Object.defineProperty(Platform, 'OS', { value: os, configurable: true });
+    }
   });
 
   it('explains when a supporting file cannot be loaded', async () => {
@@ -776,5 +800,70 @@ describe('Clients tab', () => {
       />
     );
     expect(byId(r, 'manage-clients-project-p2').length).toBeGreaterThan(0);
+  });
+
+  it('searches an email in the enterprise view against the chosen project', async () => {
+    const c = clientsClient();
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true }}
+        palette={palette}
+        t={t}
+        canPickFiles
+        multiProject
+      />
+    );
+    await press(r, 'manage-clients-project-p2');
+    await type(r, 'manage-clients-email-search-input', 'Nuevo@x.test');
+    await press(r, 'manage-clients-lookup');
+    expect(c.lookup).toHaveBeenCalledWith('p2', 'Nuevo@x.test');
+    expect(byId(r, 'manage-clients-lookup-result').length).toBeGreaterThan(0);
+  });
+
+  it('explains that an enterprise without projects cannot add clients yet', async () => {
+    const c = clientsClient({ list: jest.fn(async () => ({ projects: [], clients: [] })) });
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true }}
+        palette={palette}
+        t={t}
+        canPickFiles
+        multiProject
+      />
+    );
+    expect(byId(r, 'manage-clients-no-projects').length).toBeGreaterThan(0);
+    expect(byId(r, 'manage-clients-form')).toHaveLength(0);
+    expect(texts(r)).toContain('manage.clients.noProjects');
+  });
+
+  it('keeps the search button off until the client list says which project to use', async () => {
+    let resolveList: (value: ClientsListing) => void = () => undefined;
+    const c = clientsClient({
+      list: jest.fn(
+        () =>
+          new Promise<ClientsListing>((resolve) => {
+            resolveList = resolve;
+          })
+      ),
+    });
+    const r = await render(
+      <ManageClientsSection
+        client={c}
+        can={{ editClients: true }}
+        palette={palette}
+        t={t}
+        canPickFiles
+        multiProject
+      />
+    );
+    await type(r, 'manage-clients-email-search-input', 'nuevo@x.test');
+    expect(pressable(r, 'manage-clients-lookup').props.disabled).toBe(true);
+    await act(async () => {
+      resolveList(listing);
+      await Promise.resolve();
+    });
+    expect(pressable(r, 'manage-clients-lookup').props.disabled).toBe(false);
   });
 });

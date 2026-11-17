@@ -169,7 +169,10 @@ function pickColumns(input: Row, columns: Record<string, string>): Row {
 function primaryEnterpriseId(row: Row): string {
   return (
     text(row.enterprise_id) ||
-    text(rowArray(row.enterprise_projects).find((item) => item.is_primary)?.enterprise_id)
+    text(
+      rowArray(row.related_enterprises ?? row.enterprise_projects).find((item) => item.is_primary)
+        ?.enterprise_id
+    )
   );
 }
 
@@ -652,6 +655,8 @@ export class MarketplaceAdminRepository {
   async listProjects(scope?: {
     enterpriseIds: readonly string[];
     projectIds: readonly string[];
+    /** Also projects the enterprises are linked to without owning them. */
+    includeLinked?: boolean;
   }): Promise<ProjectRecord[]> {
     const select =
       '*, enterprise_projects!inner(*), related_enterprises:enterprise_projects(*), project_media(*)';
@@ -668,10 +673,11 @@ export class MarketplaceAdminRepository {
 
     const rows: Row[] = [];
     if (scope.enterpriseIds.length > 0) {
-      const { data, error } = await this.client
-        .from('projects')
-        .select(select)
-        .eq('enterprise_projects.is_primary', true)
+      const query = this.client.from('projects').select(select);
+      const { data, error } = await (scope.includeLinked
+        ? query
+        : query.eq('enterprise_projects.is_primary', true)
+      )
         .in('enterprise_projects.enterprise_id', [...scope.enterpriseIds])
         .order('sort_order')
         .order('created_at', { ascending: false });

@@ -501,7 +501,15 @@ export function ManageClientsSection({
         />
       </View>
 
-      {can.editClients ? (
+      {can.editClients && listing && listing.projects.length === 0 ? (
+        // Clients always belong to a project: without one there is nothing to search or add to.
+        <Text
+          testID='manage-clients-no-projects'
+          style={[manageStyles.muted, { color: palette.muted }]}
+        >
+          {t('manage.clients.noProjects')}
+        </Text>
+      ) : can.editClients ? (
         <View testID='manage-clients-form' style={card}>
           <SectionHeading title={t('manage.clients.addTitle')} color={palette.text} />
           {multiProject && (listing?.projects.length ?? 0) > 1 ? (
@@ -552,11 +560,14 @@ export function ManageClientsSection({
               <Pressable
                 testID='manage-clients-lookup'
                 accessibilityRole='button'
-                disabled={busy || !email}
+                disabled={busy || !email || !projectId}
                 onPress={() => void search()}
                 style={[
                   styles.lookup,
-                  { backgroundColor: palette.fill, opacity: busy || !email ? 0.6 : 1 },
+                  {
+                    backgroundColor: palette.fill,
+                    opacity: busy || !email || !projectId ? 0.6 : 1,
+                  },
                 ]}
               >
                 {busyAction === 'lookup' ? (

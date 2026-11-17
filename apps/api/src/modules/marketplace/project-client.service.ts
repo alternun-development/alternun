@@ -71,7 +71,10 @@ export class ProjectClientService {
     return this.compose(projectId);
   }
 
-  /** Clients of every project of the enterprise the person can read, with the project names. */
+  /**
+   * Clients of every project of the enterprise the person can read, with the project names.
+   * Includes projects the enterprise is only linked to (e.g. a hotel allied to a foundation's project).
+   */
   async listForEnterprise(
     principal: AdminPrincipal,
     requestId: string,
@@ -80,6 +83,7 @@ export class ProjectClientService {
     const projects = await this.adminRepository.listProjects({
       enterpriseIds: [enterpriseId],
       projectIds: [],
+      includeLinked: true,
     });
     const readable: Array<{ id: string; title: string }> = [];
     const clients: ProjectClientRecord[] = [];

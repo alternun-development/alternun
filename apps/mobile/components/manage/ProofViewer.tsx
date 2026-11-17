@@ -83,7 +83,7 @@ export function ProofViewer({ viewer, palette, t, onClose }: ProofViewerProps): 
                   'data-testid': 'manage-client-proof-pdf',
                   src: viewer.uri,
                   title: t('manage.clients.proof.title'),
-                  style: { border: 0, width: '100%', height: '100%', borderRadius: 12 },
+                  style: { border: 0, flex: 1, width: '100%', minHeight: 0, borderRadius: 12 },
                 })
               ) : (
                 <Text style={[manageStyles.muted, styles.message, { color: palette.muted }]}>
@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
   },
   body: { flex: 1, borderWidth: 1, borderRadius: 14, overflow: 'hidden' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
-  media: { width: '100%', height: '100%' },
+  // flex instead of a percentage height, which can resolve to 0 inside the flexed body on web.
+  media: { flex: 1, width: '100%' },
   message: { padding: 16 },
 });

@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { normalizeLambdaRequestHeaders } = require('../src/lambda.ts');
+const { encodeLambdaResponseBody, normalizeLambdaRequestHeaders } = require('../src/lambda.ts');
 
 const lambdaPath = path.resolve('src/lambda.ts');
 
@@ -44,4 +44,29 @@ test('lambda proxy forwards API Gateway source IP as Fastify remoteAddress', () 
   const source = fs.readFileSync(lambdaPath, 'utf8');
   assert.match(source, /event\.requestContext\?\.http\?\.sourceIp\?\.trim\(\)/);
   assert.match(source, /remoteAddress \? \{ remoteAddress \} : \{\}/);
+});
+
+test('lambda proxy returns binary bodies (proof images, PDFs) base64-encoded and intact', () => {
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0xff, 0xfe, 0x80]);
+  for (const type of ['image/png', 'application/pdf', 'application/octet-stream']) {
+    const encoded = encodeLambdaResponseBody(type, png);
+    assert.equal(encoded.isBase64Encoded, true, type);
+    assert.deepEqual(Buffer.from(encoded.body, 'base64'), png, type);
+  }
+});
+
+test('lambda proxy keeps text bodies as plain text', () => {
+  const json = Buffer.from('{"ok":"sí"}');
+  for (const type of [
+    'application/json; charset=utf-8',
+    'text/html',
+    'application/problem+json',
+    'image/svg+xml',
+    undefined,
+  ]) {
+    assert.deepEqual(encodeLambdaResponseBody(type, json), {
+      body: '{"ok":"sí"}',
+      isBase64Encoded: false,
+    });
+  }
 });
