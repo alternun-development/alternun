@@ -1,6 +1,6 @@
-import { useTheme } from '@alternun/ui';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import type { DetailPalette } from '../marketplace/types';
+import { useAppTheme } from '../theme/useAppTheme';
 
 const DARK: DetailPalette = {
   background: '#050f0c',
@@ -18,8 +18,9 @@ const LIGHT: DetailPalette = {
   surface: 'rgba(255, 255, 255, 0.85)',
   border: 'rgba(11, 90, 95, 0.12)',
   text: '#0b2d31',
-  muted: 'rgba(11, 45, 49, 0.6)',
-  primary: '#0d9488',
+  // Stronger than the explore palette: admin forms are dense and need AA contrast on white cards.
+  muted: 'rgba(11, 45, 49, 0.75)',
+  primary: '#0f766e',
   primaryDeep: '#0b5a5f',
   fill: '#0f766e',
   mist: 'rgba(8, 127, 99, 0.11)',
@@ -28,7 +29,7 @@ const LIGHT: DetailPalette = {
 /** Palette of the in-app manage views; cards use the shared theme surfaces like the profile. */
 export function useManagePalette(): DetailPalette {
   const { themeMode } = useAppPreferences();
-  const { theme } = useTheme();
+  const theme = useAppTheme();
   return {
     ...(themeMode === 'dark' ? DARK : LIGHT),
     surface: theme.cardBg,

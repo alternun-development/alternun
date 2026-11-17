@@ -13,6 +13,8 @@ jest.mock('@alternun/ui', () => ({
   useTheme: () => ({
     theme: new Proxy({}, { get: (_target, key) => (key === 'isDark' ? false : '#000') }),
   }),
+  darkTheme: { cardBg: '#000', cardBorder: '#000' },
+  lightTheme: { cardBg: '#fff', cardBorder: '#fff' },
 }));
 
 const mockPush = jest.fn();

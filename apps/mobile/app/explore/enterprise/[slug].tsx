@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTheme } from '@alternun/ui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ScreenShell from '../../../components/common/ScreenShell';
 import { useAppTranslation } from '../../../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../../../components/settings/AppPreferencesProvider';
+import { useAppTheme } from '../../../components/theme/useAppTheme';
 import { MarketplaceEnterpriseDetailView } from '../../../components/marketplace/MarketplaceEnterpriseDetail';
 import type { DetailPalette } from '../../../components/marketplace/types';
 import { useAdminAccess } from '../../../hooks/useAdminAccess';
@@ -15,7 +15,7 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
   const { language, themeMode } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const slug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
-  const { theme } = useTheme();
+  const theme = useAppTheme();
   const basePalette: DetailPalette =
     themeMode === 'dark'
       ? {

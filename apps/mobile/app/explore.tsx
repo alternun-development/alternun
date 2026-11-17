@@ -37,6 +37,7 @@ import {
 } from 'lucide-react-native';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
 import { useAppPreferences } from '../components/settings/AppPreferencesProvider';
+import { useAppTheme } from '../components/theme/useAppTheme';
 import ScreenShell from '../components/common/ScreenShell';
 import { MarketplaceEnterpriseBrowser } from '../components/marketplace/MarketplaceEnterpriseDirectory';
 import {
@@ -68,7 +69,6 @@ import type {
 import { resolveMobileApiBaseUrl } from '../utils/runtimeConfig';
 import { resolveAdminPanelUrl } from '../utils/adminAccess';
 import { useAdminAccess } from '../hooks/useAdminAccess';
-import { useTheme } from '@alternun/ui';
 import { ExpandableCtaCard } from '../components/explore/ExpandableCtaCard';
 import { EnterpriseApplicationForm } from '../components/explore/EnterpriseApplicationForm';
 import { TipsSlider } from '../components/explore/TipsSlider';
@@ -1155,7 +1155,7 @@ export default function ExplorarScreen(): React.JSX.Element {
   const entrance = useRef(new Animated.Value(0)).current;
   const explorerScrollRef = useRef<ScrollView>(null);
 
-  const { theme } = useTheme();
+  const theme = useAppTheme();
   const basePalette: Palette = isDark
     ? {
         background: '#050f0c',
