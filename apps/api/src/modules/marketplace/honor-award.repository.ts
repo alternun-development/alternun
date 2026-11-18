@@ -6,6 +6,7 @@ import { MARKETPLACE_SUPABASE } from './marketplace.repository';
 import type {
   CreateHonorAwardRecipeInput,
   HonorAwardAudience,
+  HonorAwardCatalogItem,
   HonorAwardGrantRecord,
   HonorAwardRecipeInput,
   HonorAwardRecipeRecord,
@@ -17,10 +18,10 @@ type Row = Record<string, unknown>;
 /** Who owns a grant: a person or an enterprise. */
 export type HonorAwardOwner = { userId: string } | { enterpriseId: string };
 
-const VIEW_SELECT =
-  'id, status, awarded_at, claimed_at, recipe:honor_award_recipes!inner(*, ' +
-  'project:projects(id, slug, default_locale, content), ' +
-  'partner:enterprises!partner_enterprise_id(id, slug, display_name, description, logo_url, website_url, country_code))';
+const RECIPE_LINKS =
+  'project:projects(id, slug, status, default_locale, content), ' +
+  'partner:enterprises!partner_enterprise_id(id, slug, display_name, description, logo_url, website_url, country_code)';
+const VIEW_SELECT = `id, status, awarded_at, claimed_at, recipe:honor_award_recipes!inner(*, ${RECIPE_LINKS})`;
 
 function failDatabase(error: { code?: string } | null): never {
   if (error?.code === '23505') marketplaceError('HONOR_AWARD_ALREADY_GRANTED');
@@ -85,16 +86,30 @@ export function mapHonorAwardGrant(row: Row): HonorAwardGrantRecord {
   };
 }
 
-function projectTitle(project: Row): string {
+function projectContent(project: Row): Row {
   const content = record(project.content) ?? {};
   const locale = String(project.default_locale ?? '');
-  const localized = record(content[locale]) ?? record(Object.values(content)[0]);
-  const title = typeof localized?.title === 'string' ? localized.title.trim() : '';
-  return title || String(project.slug ?? '');
+  return record(content[locale]) ?? record(Object.values(content)[0]) ?? {};
 }
 
-export function mapHonorAwardView(row: Row): HonorAwardView {
-  const recipeRow = record(row.recipe) ?? {};
+function contentText(content: Row, key: string): string | null {
+  const value = content[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function mapProjectSummary(project: Row): HonorAwardView['project'] {
+  const content = projectContent(project);
+  return {
+    id: String(project.id ?? ''),
+    slug: String(project.slug ?? ''),
+    title: contentText(content, 'title') ?? String(project.slug ?? ''),
+    location: contentText(content, 'location'),
+    description: contentText(content, 'description'),
+  };
+}
+
+/** The public side of a recipe row with its project and ally. */
+function mapRecipeParts(recipeRow: Row): HonorAwardCatalogItem {
   const recipe = mapHonorAwardRecipe(recipeRow);
   const project = record(recipeRow.project);
   const partner = record(recipeRow.partner);
@@ -117,18 +132,8 @@ export function mapHonorAwardView(row: Row): HonorAwardView {
     artPreset: recipe.artPreset,
   };
   return {
-    id: String(row.id ?? ''),
-    status: row.status === 'claimed' ? 'claimed' : 'pending',
-    awardedAt: String(row.awarded_at ?? ''),
-    claimedAt: text(row.claimed_at),
     recipe: publicRecipe,
-    project: project
-      ? {
-          id: String(project.id ?? ''),
-          slug: String(project.slug ?? ''),
-          title: projectTitle(project),
-        }
-      : null,
+    project: project ? mapProjectSummary(project) : null,
     partner: partner
       ? {
           id: String(partner.id ?? ''),
@@ -141,6 +146,23 @@ export function mapHonorAwardView(row: Row): HonorAwardView {
         }
       : null,
   };
+}
+
+export function mapHonorAwardView(row: Row): HonorAwardView {
+  return {
+    id: String(row.id ?? ''),
+    status: row.status === 'claimed' ? 'claimed' : 'pending',
+    awardedAt: String(row.awarded_at ?? ''),
+    claimedAt: text(row.claimed_at),
+    ...mapRecipeParts(record(row.recipe) ?? {}),
+  };
+}
+
+/** A recipe offered in the catalog: unpublished projects are left out. */
+export function mapHonorAwardCatalogItem(recipeRow: Row): HonorAwardCatalogItem {
+  const item = mapRecipeParts(recipeRow);
+  const project = record(recipeRow.project);
+  return project && project.status !== 'published' ? { ...item, project: null } : item;
 }
 
 function recipeColumns(input: HonorAwardRecipeInput): Row {
@@ -326,6 +348,19 @@ export class HonorAwardRepository {
       .maybeSingle();
     if (error) failDatabase(error);
     return data ? mapHonorAwardView(data as unknown as Row) : null;
+  }
+
+  /** Active medals for people, with their project and ally, for the legacy catalog. */
+  async listUserCatalog(): Promise<HonorAwardCatalogItem[]> {
+    const { data, error } = await this.client
+      .from('honor_award_recipes')
+      .select(`*, ${RECIPE_LINKS}`)
+      .eq('audience', 'user')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .order('title', { ascending: true });
+    if (error) failDatabase(error);
+    return ((data ?? []) as Row[]).map(mapHonorAwardCatalogItem);
   }
 
   /** Active honor awards for people that an ally backs: the ones it can give. */

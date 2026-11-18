@@ -9,7 +9,10 @@ const {
   checkRecipeInput,
   normalizeRecipeInput,
 } = require('../src/modules/marketplace/honor-award.service.ts');
-const { mapHonorAwardView } = require('../src/modules/marketplace/honor-award.repository.ts');
+const {
+  mapHonorAwardCatalogItem,
+  mapHonorAwardView,
+} = require('../src/modules/marketplace/honor-award.repository.ts');
 const { checkMedalHonorRecipe } = require('../src/modules/marketplace/medal.service.ts');
 
 const RECIPE_ID = '50000000-0000-4000-8000-000000000001';
@@ -203,6 +206,34 @@ test('claiming only works on a pending award of the same owner', async () => {
   );
 });
 
+test('the legacy catalog lists active medals for people the person does not hold', async () => {
+  const held = { recipe: { id: RECIPE_ID } };
+  const other = { recipe: { id: 'recipe-2' }, project: null, partner: null };
+  const { service } = build();
+  service.repository.listUserCatalog = async () => [{ recipe: { id: RECIPE_ID } }, other];
+  service.repository.listViews = async (owner, claimedOnly) => {
+    assert.deepEqual([owner, claimedOnly], [{ userId: 'user-1' }, false]);
+    return [held];
+  };
+  assert.deepEqual(await service.listCatalogForUser('user-1'), [other]);
+});
+
+test('catalog items keep published projects and hide the others', () => {
+  const row = (status) => ({
+    id: RECIPE_ID,
+    kind: 'medal',
+    audience: 'user',
+    title: 'Manglar Verde',
+    is_active: true,
+    project: { id: PROJECT_ID, slug: 'batis', status, default_locale: 'es', content: {} },
+    partner: null,
+  });
+  assert.equal(mapHonorAwardCatalogItem(row('published')).project.slug, 'batis');
+  assert.equal(mapHonorAwardCatalogItem(row('draft')).project, null);
+  assert.equal('id' in mapHonorAwardCatalogItem(row('draft')), false);
+  assert.equal(mapHonorAwardCatalogItem(row('draft')).recipe.title, 'Manglar Verde');
+});
+
 test('enterprise pages only show claimed awards of active enterprises', async () => {
   const { service, calls } = build({
     enterprises: {
@@ -246,7 +277,13 @@ test('award views carry the recipe, the project title and the ally, without admi
         id: PROJECT_ID,
         slug: 'fundacion-batis',
         default_locale: 'es',
-        content: { es: { title: 'Fundación Batis' } },
+        content: {
+          es: {
+            title: 'Fundación Batis',
+            location: 'Puerto Colombia, Atlántico',
+            description: 'Bosque de mangle rojo.',
+          },
+        },
       },
       partner: [{ id: ENTERPRISE_ID, slug: 'swing', display_name: 'Swing Golf', logo_url: null }],
     },
@@ -258,6 +295,8 @@ test('award views carry the recipe, the project title and the ally, without admi
     id: PROJECT_ID,
     slug: 'fundacion-batis',
     title: 'Fundación Batis',
+    location: 'Puerto Colombia, Atlántico',
+    description: 'Bosque de mangle rojo.',
   });
   assert.equal(view.partner.displayName, 'Swing Golf');
 });

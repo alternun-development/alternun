@@ -101,6 +101,9 @@ export interface HonorAwardProjectSummary {
   id: string;
   slug: string;
   title: string;
+  /** Where the project is, from its content in the default locale. */
+  location: string | null;
+  description: string | null;
 }
 
 export interface HonorAwardPartnerSummary {
@@ -113,6 +116,9 @@ export interface HonorAwardPartnerSummary {
   /** ISO country of the ally, shown under its name on the card (e.g. "CO"). */
   countryCode: string | null;
 }
+
+/** A medal for people the person does not hold yet: shown locked in their legacy. */
+export type HonorAwardCatalogItem = Pick<HonorAwardView, 'recipe' | 'project' | 'partner'>;
 
 /** An award as the app shows it: the grant with its recipe, project and ally. */
 export interface HonorAwardView {

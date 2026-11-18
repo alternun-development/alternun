@@ -11,6 +11,7 @@ import {
   HONOR_AWARD_TIERS,
   type CreateHonorAwardRecipeInput,
   type EnterpriseHonorAwardGrantInput,
+  type HonorAwardCatalogItem,
   type HonorAwardGrantRecord,
   type HonorAwardGuestSummary,
   type HonorAwardRecipeInput,
@@ -385,6 +386,16 @@ export class HonorAwardService {
   /** Pending and claimed awards of a person or enterprise, newest first. */
   listForOwner(owner: HonorAwardOwner): Promise<HonorAwardView[]> {
     return this.repository.listViews(owner, false);
+  }
+
+  /** Active medals for people that this person does not hold yet (shown locked). */
+  async listCatalogForUser(userId: string): Promise<HonorAwardCatalogItem[]> {
+    const [catalog, held] = await Promise.all([
+      this.repository.listUserCatalog(),
+      this.repository.listViews({ userId }, false),
+    ]);
+    const heldRecipes = new Set(held.map((view) => view.recipe.id));
+    return catalog.filter((item) => !heldRecipes.has(item.recipe.id));
   }
 
   /** What anyone can see on an enterprise page: only the awards it already claimed. */

@@ -352,6 +352,15 @@ export class HonorAwardMeController {
     return this.service.listForOwner({ userId });
   }
 
+  @Get('catalog')
+  @ApiOperation({
+    summary: 'Active medals for people that the signed-in person does not hold yet.',
+  })
+  async catalog(@Headers('authorization') authorization: string | undefined) {
+    const userId = await resolveUserId(bearer(authorization));
+    return this.service.listCatalogForUser(userId);
+  }
+
   @Post(':grantId/claim')
   @HttpCode(200)
   @ApiOperation({ summary: 'Claim a pending honor award.' })
