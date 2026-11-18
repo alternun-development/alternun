@@ -1,3 +1,21 @@
+## [1.2.8](https://github.com/alternun-development/alternun/compare/v1.2.7-dev.0...v1.2.8) (2026-11-18)
+
+### Bug Fixes
+
+- **airs-reports:** approvers read proof files only while the report is in review ([e204e1f](https://github.com/alternun-development/alternun/commit/e204e1fc7627caa18f8c67c04768412f2f9fb7d4)), closes [#315](https://github.com/alternun-development/alternun/issues/315)
+- **airs:** self-assigned Airs always need another admin ([d19392e](https://github.com/alternun-development/alternun/commit/d19392e1c083cafb60ec960b539d8af274d51ff3)), closes [#315](https://github.com/alternun-development/alternun/issues/315)
+- **mobile:** pin expo-modules-core to the app's Expo SDK in Metro and Jest ([734a052](https://github.com/alternun-development/alternun/commit/734a05284628c1e3d9093914a98fc18d318b85af)), closes [#315](https://github.com/alternun-development/alternun/issues/315)
+- **security:** CORS origin echoed only after an allowlist membership check ([837524b](https://github.com/alternun-development/alternun/commit/837524bb15d16dadf563e3990c1914f41eade460)), closes [#74](https://github.com/alternun-development/alternun/issues/74) [#315](https://github.com/alternun-development/alternun/issues/315)
+- **security:** rate-limit email sign-in per client IP with @fastify/rate-limit ([1214da8](https://github.com/alternun-development/alternun/commit/1214da875f385626d7d99892568e91d314e16c0a)), closes [#75](https://github.com/alternun-development/alternun/issues/75) [#315](https://github.com/alternun-development/alternun/issues/315)
+
+### Features
+
+- **api:** in-app review of Airs in review for approvers ([55dc597](https://github.com/alternun-development/alternun/commit/55dc597432a3ea405891e2ded7342d388d48cea8)), closes [#315](https://github.com/alternun-development/alternun/issues/315)
+- **api:** legacy medal catalog and project details on honor awards ([2440c48](https://github.com/alternun-development/alternun/commit/2440c4854cf53f3554e70c633496ccd01cba063c))
+- **mobile:** Airs in review entry point in the Explorer header ([f5abeb0](https://github.com/alternun-development/alternun/commit/f5abeb00bc54af168e5a037e9c566783b1379ffa)), closes [#315](https://github.com/alternun-development/alternun/issues/315)
+- **mobile:** Airs in review screen for approvers ([de0ea13](https://github.com/alternun-development/alternun/commit/de0ea137190da39eb2e152faf2b5e9a875a456ae)), closes [#315](https://github.com/alternun-development/alternun/issues/315)
+- **mobile:** legacy mission medals and a shared share system ([465af63](https://github.com/alternun-development/alternun/commit/465af6353008951258dfabc70090d085700c787d))
+
 ## 1.2.7 (2026-11-17)
 
 ### Bug Fixes
