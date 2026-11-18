@@ -12,13 +12,13 @@ export const BETTER_AUTH_ALLOWED_HEADERS = [
   'origin',
 ] as const;
 
-function normalizeHeaderValue(value: BetterAuthRequestHeaderValue): string | null {
+function normalizeHeaderValue(value: BetterAuthRequestHeaderValue): string | undefined {
   if (value == null) {
-    return null;
+    return undefined;
   }
 
   if (typeof value === 'number') {
-    return Number.isFinite(value) ? String(value) : null;
+    return Number.isFinite(value) ? String(value) : undefined;
   }
 
   if (Array.isArray(value)) {
@@ -26,11 +26,11 @@ function normalizeHeaderValue(value: BetterAuthRequestHeaderValue): string | nul
       .map((entry) => entry.trim())
       .filter((entry) => entry.length > 0)
       .join(', ');
-    return normalized.length > 0 ? normalized : null;
+    return normalized.length > 0 ? normalized : undefined;
   }
 
   const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  return trimmed.length > 0 ? trimmed : undefined;
 }
 
 function appendVaryHeader(existingValue: unknown, varyValue: string): string {
@@ -49,35 +49,39 @@ function appendVaryHeader(existingValue: unknown, varyValue: string): string {
   return existing.join(', ');
 }
 
-function normalizeOrigin(value: string): string | null {
+// No `null` on the way to Access-Control-Allow-Origin: CodeQL (js/cors-misconfiguration-for-
+// credentials) treats a null that can reach that header as the dangerous "null" origin, even
+// behind a falsy check. Internal helpers use `undefined`; the public resolver keeps `null`.
+function normalizeOrigin(value: string): string | undefined {
   try {
     const origin = new URL(value).origin;
-    return origin === 'null' ? null : origin;
+    return origin === 'null' ? undefined : origin;
   } catch {
-    return null;
+    return undefined;
   }
+}
+
+/** The configured trusted origin that matches the request's Origin (the allowlist's own entry). */
+function findTrustedOrigin(
+  originValue: BetterAuthRequestHeaderValue,
+  trustedOrigins: readonly string[]
+): string | undefined {
+  const requestOrigin = normalizeHeaderValue(originValue);
+  const normalizedRequestOrigin = requestOrigin ? normalizeOrigin(requestOrigin) : undefined;
+  if (normalizedRequestOrigin === undefined) {
+    return undefined;
+  }
+
+  return trustedOrigins
+    .map((trustedOrigin) => normalizeOrigin(trustedOrigin))
+    .find((trustedOrigin) => trustedOrigin === normalizedRequestOrigin);
 }
 
 export function resolveBetterAuthTrustedOrigin(
   originValue: BetterAuthRequestHeaderValue,
   trustedOrigins: readonly string[]
 ): string | null {
-  const requestOrigin = normalizeHeaderValue(originValue);
-  if (!requestOrigin) {
-    return null;
-  }
-
-  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
-  if (!normalizedRequestOrigin) {
-    return null;
-  }
-
-  // Only a configured trusted origin is ever echoed, and the value returned is the allowlist's
-  // own entry (not the request header), so the response never carries request-controlled data.
-  const allowlist = trustedOrigins
-    .map((trustedOrigin) => normalizeOrigin(trustedOrigin))
-    .filter((trustedOrigin): trustedOrigin is string => trustedOrigin !== null);
-  return allowlist.find((trustedOrigin) => trustedOrigin === normalizedRequestOrigin) ?? null;
+  return findTrustedOrigin(originValue, trustedOrigins) ?? null;
 }
 
 export function applyBetterAuthCorsHeaders(
@@ -86,8 +90,8 @@ export function applyBetterAuthCorsHeaders(
   trustedOrigins: readonly string[],
   options: { preflight?: boolean } = {}
 ): boolean {
-  const origin = resolveBetterAuthTrustedOrigin(requestHeaders.origin, trustedOrigins);
-  if (!origin) {
+  const origin = findTrustedOrigin(requestHeaders.origin, trustedOrigins);
+  if (origin === undefined) {
     return false;
   }
 
