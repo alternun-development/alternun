@@ -2,11 +2,7 @@
 
 ### Bug Fixes
 
-- **repo:** fix(security): echo the allowlisted CORS origin, not the request header
-
-### Bug Fixes
-
-- **security:** echo the allowlisted CORS origin, not the request header ([6531d42](https://github.com/alternun-development/alternun/commit/6531d4230aa9d5641f602d8eda3616787f8e131b)), closes [#313](https://github.com/alternun-development/alternun/issues/313)
+- **security:** echo the allowlisted CORS origin, not the request header ([6531d42](https://github.com/alternun-development/alternun/commit/6531d4230aa9d5641f602d8eda3616787f8e131b))
 
 ## [1.2.8](https://github.com/alternun-development/alternun/compare/v1.1.124...v1.2.8) (2026-11-18)
 
