@@ -1,3 +1,13 @@
+## [1.2.9](https://github.com/alternun-development/alternun/compare/v1.2.8...v1.2.9) (2026-11-18)
+
+### Bug Fixes
+
+- **repo:** fix(security): echo the allowlisted CORS origin, not the request header
+
+### Bug Fixes
+
+- **security:** echo the allowlisted CORS origin, not the request header ([6531d42](https://github.com/alternun-development/alternun/commit/6531d4230aa9d5641f602d8eda3616787f8e131b)), closes [#313](https://github.com/alternun-development/alternun/issues/313)
+
 ## [1.2.8](https://github.com/alternun-development/alternun/compare/v1.1.124...v1.2.8) (2026-11-18)
 
 ### Features
@@ -433,7 +443,7 @@
 - **api,repo:** better-auth-dev.server, pnpm-lock ([f30761a](https://github.com/alternun-development/alternun/commit/f30761a8a361b915be054769cc29d9a9d3650745))
 - **admin,api,docs:** app, build, release, version.development ([26e8f80](https://github.com/alternun-development/alternun/commit/26e8f8064f87d14a729fae5acf1e7509f58d73ba))
 - **web:** build ([93846ba](https://github.com/alternun-development/alternun/commit/93846ba9bdbc1824628264dee0b417d380ac2d26))
-- **web:** next-env.d, _document ([b70b4cb](https://github.com/alternun-development/alternun/commit/b70b4cbd2ee55a872330f099212bbcaf04e68504))
+- **web:** next-env.d, \_document ([b70b4cb](https://github.com/alternun-development/alternun/commit/b70b4cbd2ee55a872330f099212bbcaf04e68504))
 - **web:** StaticErrorPage ([549c29c](https://github.com/alternun-development/alternun/commit/549c29c0ad3f62e2c50c504dcbff64110f79aefd))
 - **web:** pages ([85150f7](https://github.com/alternun-development/alternun/commit/85150f732a304ac99556bd2bd9dde26fbc6f5e12))
 - **auth:** scope better auth cookies to stage domains ([996225f](https://github.com/alternun-development/alternun/commit/996225f57681f6fe9325083e36ae14fe92dcf7ad))
@@ -720,11 +730,11 @@
 - **docs,repo,infra:** authentication-and-session-flow, alternun-authentik-social-login-incident-2026-04, README, bootstrap-authentik-integrations ([c9b7566](https://github.com/alternun-development/alternun/commit/c9b756646d9f217ae0911361bb243a65088b37e6))
 - **mobile:** DashboardSummaryCards ([e036f4e](https://github.com/alternun-development/alternun/commit/e036f4eae69d1fc11f65390798635166812eda08))
 - **mobile,auth,update:** Dashboard, DashboardSummaryCards, TopNav ([1b21fbf](https://github.com/alternun-development/alternun/commit/1b21fbfc321a82aa7694b3cd6b6fac2707c3ecc9))
-- **mobile,auth,update:** _layout, HorizontalCardScroller, Dashboard, NotificationDropdown ([def1a29](https://github.com/alternun-development/alternun/commit/def1a29874c8194d86366d91d003a6dd4a7101a5))
-- **mobile,ui:** _layout.web, beneficios, compensaciones, mis-atn ([9322b57](https://github.com/alternun-development/alternun/commit/9322b57fbab6ad2cb58ad9ac3716a0f97fc7ca03))
-- **mobile,ui:** _layout, AppInfoFooter, Dashboard, ParticleBubbles ([a6e6a58](https://github.com/alternun-development/alternun/commit/a6e6a587acf58e410613bf4bd19f983712a515a9))
+- **mobile,auth,update:** \_layout, HorizontalCardScroller, Dashboard, NotificationDropdown ([def1a29](https://github.com/alternun-development/alternun/commit/def1a29874c8194d86366d91d003a6dd4a7101a5))
+- **mobile,ui:** \_layout.web, beneficios, compensaciones, mis-atn ([9322b57](https://github.com/alternun-development/alternun/commit/9322b57fbab6ad2cb58ad9ac3716a0f97fc7ca03))
+- **mobile,ui:** \_layout, AppInfoFooter, Dashboard, ParticleBubbles ([a6e6a58](https://github.com/alternun-development/alternun/commit/a6e6a587acf58e410613bf4bd19f983712a515a9))
 - **repo:** restore direct source auth login stages ([84f2ed7](https://github.com/alternun-development/alternun/commit/84f2ed72d1dddbe15dd4f01efbf804e3946e786a))
-- **mobile,auth,i18n:** _layout, AppInfoFooter, Dashboard, HeroStats ([1d60825](https://github.com/alternun-development/alternun/commit/1d60825eed8bfb21be6cf3d61fb6f37e3e1d5c7a))
+- **mobile,auth,i18n:** \_layout, AppInfoFooter, Dashboard, HeroStats ([1d60825](https://github.com/alternun-development/alternun/commit/1d60825eed8bfb21be6cf3d61fb6f37e3e1d5c7a))
 - **repo:** split authentik web callback flow ([6364462](https://github.com/alternun-development/alternun/commit/6364462d1900b7ed3eb25b773f357ed29cf88e22))
 - **repo,admin,api:** CHANGELOG, app, tsconfig ([0be5790](https://github.com/alternun-development/alternun/commit/0be5790d861c84c7c5759f0ad6c899d2b7011730))
 - **mobile:** clean up TopNav — remove top-bar pills, move wallet into dropdown ([e63fdd2](https://github.com/alternun-development/alternun/commit/e63fdd286bfdb4edfd684ebcd9f892287e04ec5f))
@@ -908,7 +918,7 @@
 - **reentry:** sync after v1.1.106-dev.0 release ([462bce8](https://github.com/alternun-development/alternun/commit/462bce86adaf24f32d48a4a0924ed03cf2c6376b))
 - **reentry:** note testnet admin CORS follow-up ([e79c71f](https://github.com/alternun-development/alternun/commit/e79c71fdfa4515c8eb77816d7cd2899068172fa2))
 - **reentry:** set next step after #279 release ([bd03b3c](https://github.com/alternun-development/alternun/commit/bd03b3c0cae6f0d076d005d2f1420f426c5a9c40))
-- **docs:** deploy GitHub Pages from master only, drop v* tag trigger ([fe0ef5c](https://github.com/alternun-development/alternun/commit/fe0ef5cdb16ac3a9000d4a0d24589e8b35655eec))
+- **docs:** deploy GitHub Pages from master only, drop v\* tag trigger ([fe0ef5c](https://github.com/alternun-development/alternun/commit/fe0ef5cdb16ac3a9000d4a0d24589e8b35655eec))
 - **versioning:** update reentry next step for the FP liquid bar ([af9ef76](https://github.com/alternun-development/alternun/commit/af9ef767cda561e5c4c09f86da495d8641d36525))
 - **mobile:** cover AirsIntroVideoCard picture-in-picture control ([5c24c54](https://github.com/alternun-development/alternun/commit/5c24c54a4811ef184c262ae59e723b722b1f5144))
 - **versioning:** refresh reentry status after PR integration batch ([44efb83](https://github.com/alternun-development/alternun/commit/44efb837918c2cdadf782504a08c4800e3f1e727))
@@ -978,7 +988,7 @@
 - **mobile:** mi-perfil, AirsDashboardProvider, Dashboard, HeroStats ([094ac7e](https://github.com/alternun-development/alternun/commit/094ac7eddd7ac192547a81c6c0a5ded19cf201b2))
 - **repo:** sync v1.1.14 production release artifact ([a04c386](https://github.com/alternun-development/alternun/commit/a04c386b04bde9bde1562d1a2cfa85a0f8d97d2f))
 - **repo:** sync v1.1.14-dev.0 release artifacts ([d338a39](https://github.com/alternun-development/alternun/commit/d338a39d4b58192defdb61dda1add80c08b171c6))
-- **api,mobile,repo:** airs-uuid-overloads.migration.test, _layout, _layout.web, mi-perfil ([f18a954](https://github.com/alternun-development/alternun/commit/f18a954c7ecd1ad17709571c1867358969e9959a))
+- **api,mobile,repo:** airs-uuid-overloads.migration.test, \_layout, \_layout.web, mi-perfil ([f18a954](https://github.com/alternun-development/alternun/commit/f18a954c7ecd1ad17709571c1867358969e9959a))
 - **repo:** fix airs referral verification and activity scope/filter behavior ([23eef2c](https://github.com/alternun-development/alternun/commit/23eef2ca83675f703c52f917cc3b97e83cc46e97))
 - **api,mobile:** improve airs pagination and api coverage ([01969f8](https://github.com/alternun-development/alternun/commit/01969f8bdc3f30707146962897feef200fbf9fd6))
 - **repo:** sync release v1.1.13 ([b7b7ef4](https://github.com/alternun-development/alternun/commit/b7b7ef49c015d4fb043cfadd7e028e0e934e5a5a))
@@ -1008,7 +1018,7 @@
 - **repo:** set develop to 1.1.2-dev.0 after production release --no-validate-reentry ([340cc2c](https://github.com/alternun-development/alternun/commit/340cc2c2e4873c75986534667f23ceaacba7b36c))
 - **repo:** sync roadmap --no-validate-reentry ([0e2b10c](https://github.com/alternun-development/alternun/commit/0e2b10c9d698750f6148effbd695a9d121bf87d8))
 - **repo:** sync version files for v1.1.2 --no-validate-reentry ([618ffc0](https://github.com/alternun-development/alternun/commit/618ffc01338891c88ad260cd5a67cb4f9c0c68b6))
-- **guard:** block release/* and promote/* branch pushes in pre-push hook ([c4ea6ec](https://github.com/alternun-development/alternun/commit/c4ea6ec89d677c2a3f1bb661fd8a8f347aab639f))
+- **guard:** block release/_ and promote/_ branch pushes in pre-push hook ([c4ea6ec](https://github.com/alternun-development/alternun/commit/c4ea6ec89d677c2a3f1bb661fd8a8f347aab639f))
 - **repo:** sync development version to 1.1.1-dev.0 after production release ([2a1bb85](https://github.com/alternun-development/alternun/commit/2a1bb8585d9a8b8a3d601ae2e516570c93baf144))
 - **repo:** sync README and version.production for v1.1.1 ([f248b1b](https://github.com/alternun-development/alternun/commit/f248b1b1281b01267eea5efcc68463dc2296ab3e))
 - **mobile:** expand walletApiClient coverage to 100% lines ([cd0b253](https://github.com/alternun-development/alternun/commit/cd0b253ff6b3df625261a409d13637f30503b598))
@@ -1053,8 +1063,8 @@
 - **api,repo:** referrals.service, referrals.service.test, sync_auth_user_to_app_users, auth-sync-bidirectional.test ([c820fe6](https://github.com/alternun-development/alternun/commit/c820fe69a0ccbc568fb20414791feda7271da664))
 - **mobile,repo:** auth, AUTH_SYNC_TRIGGERS, sync_auth_user_to_app_users, 20260503_0001_auth_referral_attribution ([6fe7691](https://github.com/alternun-development/alternun/commit/6fe7691dc67a1c33dc00b32c1b499126f6b5f665))
 - **infra:** sst-deploy, sst-deploy-env-bootstrap.test, verify-authentik-runtime, verify-authentik-runtime.test ([163c33c](https://github.com/alternun-development/alternun/commit/163c33cb8477cc314016fc72947494f7c3f49018))
-- **infra:** _load-infra-env, sst-deploy-env-bootstrap.test ([2a31733](https://github.com/alternun-development/alternun/commit/2a31733ec214f0b30fc79b31dc34ba6aea2731e3))
-- **infra:** _load-infra-env, sst-deploy-env-bootstrap.test ([3a4238f](https://github.com/alternun-development/alternun/commit/3a4238fbf1ab13f59c8061f456f795090526e61b))
+- **infra:** \_load-infra-env, sst-deploy-env-bootstrap.test ([2a31733](https://github.com/alternun-development/alternun/commit/2a31733ec214f0b30fc79b31dc34ba6aea2731e3))
+- **infra:** \_load-infra-env, sst-deploy-env-bootstrap.test ([3a4238f](https://github.com/alternun-development/alternun/commit/3a4238fbf1ab13f59c8061f456f795090526e61b))
 - **infra:** sst-deploy, sst-log-diagnostics.test ([8f721cc](https://github.com/alternun-development/alternun/commit/8f721cc28ceceb3c1e643bf8f82b840d5fb794d8))
 - **api,mobile:** referrals.service, referrals.controller.test, referrals.service.test, auth ([9f31ab7](https://github.com/alternun-development/alternun/commit/9f31ab72a904a6110378634ee256e2afcc9422dc))
 - **infra:** ensure-secrets, sst-deploy, sst-log-diagnostics.test ([c9a9ce5](https://github.com/alternun-development/alternun/commit/c9a9ce56fb8cece1547d87722824e02ca9c56b7a))
@@ -1127,7 +1137,7 @@
 - **api,web,auth:** auth-exchange.controller, auth-exchange.module, signup-request.dto, signup-response.dto ([4233382](https://github.com/alternun-development/alternun/commit/4233382daafae6846832e2ba864746800afe207f))
 - **mobile,infra:** AuthResetPasswordScreen, buildspec, bootstrap-ssm-parameters, resolve-ssm-env ([37af163](https://github.com/alternun-development/alternun/commit/37af16358f8d9700f43a31e4c73c8097a5dd3c8c))
 - **mobile:** build, validate-exported-auth-bundle, validate-exported-auth-bundle.test ([beb5e57](https://github.com/alternun-development/alternun/commit/beb5e57c2896b5afe5b61ebce125ec4711b08efe))
-- **api,mobile,auth:** .env, _layout, _layout.web ([6f5422b](https://github.com/alternun-development/alternun/commit/6f5422b7cf4e1808062d869d5425c77180ea12ce))
+- **api,mobile,auth:** .env, \_layout, \_layout.web ([6f5422b](https://github.com/alternun-development/alternun/commit/6f5422b7cf4e1808062d869d5425c77180ea12ce))
 - **api:** supabase-signup.service, supabase-signup.service.test ([e97bd28](https://github.com/alternun-development/alternun/commit/e97bd28e9106a3588efed14c0f9b35069bd59610))
 - **repo,api,mobile:** README, dev-better-auth, auth-exchange.controller, social-signin.service ([86a355a](https://github.com/alternun-development/alternun/commit/86a355ac8b02c0d9ffffd8780742374de9525605))
 - **api:** lambda, request-path, request-path.test ([b699ba3](https://github.com/alternun-development/alternun/commit/b699ba356902118ceb9ed2125dfb6f886e0c1ef7))
@@ -1150,8 +1160,8 @@
 - **repo:** Potential fix for pull request finding 'CodeQL / Client-side cross-site scripting' ([593be81](https://github.com/alternun-development/alternun/commit/593be81465844d4cf1338ec8c9a91dc2f551168b))
 - **mobile,infra:** AIRS-logo-dark-realistic, AIRS-logo-light-realistic, README, buildspec ([c47cd87](https://github.com/alternun-development/alternun/commit/c47cd87969cc65f78969586bad5125523143aa21))
 - **repo,api:** pnpm-lock, fastify-compat.test ([ba381a7](https://github.com/alternun-development/alternun/commit/ba381a74b2027bdedd3dff35f54bc6a609fdd76c))
-- **infra:** _pipeline-safety, predeploy-checks, sst-deploy, destructive-cleanup-guards.test ([66d607b](https://github.com/alternun-development/alternun/commit/66d607b93c4876c006bef5ca0da21ef6fd2d4ad6))
-- **infra:** .env, README, buildspec, _pipeline-safety ([c4ef778](https://github.com/alternun-development/alternun/commit/c4ef7788e90a3c68b22ebe67a69778ee2e8b10a2))
+- **infra:** \_pipeline-safety, predeploy-checks, sst-deploy, destructive-cleanup-guards.test ([66d607b](https://github.com/alternun-development/alternun/commit/66d607b93c4876c006bef5ca0da21ef6fd2d4ad6))
+- **infra:** .env, README, buildspec, \_pipeline-safety ([c4ef778](https://github.com/alternun-development/alternun/commit/c4ef7788e90a3c68b22ebe67a69778ee2e8b10a2))
 - **infra:** postdeploy-reachability-check, resolve-ssm-env, sst-deploy, buildspec-auth-env.test ([9203ac9](https://github.com/alternun-development/alternun/commit/9203ac9c78c398e4333a59bc8d0cd8b3efdc503e))
 - **infra:** sst-deploy, redirect-aliases.test ([092807f](https://github.com/alternun-development/alternun/commit/092807f393cfc5f0aaad9ac56819a90ff4558166))
 - **mobile,infra:** AirsIntroExperience, HeroVideoNative, sst-deploy, redirect-aliases.test ([3e9d1c3](https://github.com/alternun-development/alternun/commit/3e9d1c37b6042e5c49ce5468fb64b321c6130397))
