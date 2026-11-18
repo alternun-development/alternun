@@ -126,11 +126,7 @@ Current version: **1.2.10**
 
 ### Bug Fixes
 
-- **repo:** fix(security): keep null off the CORS origin path flagged by CodeQL
-
-### Bug Fixes
-
-- **security:** keep null off the CORS origin path flagged by CodeQL ([9009a65](https://github.com/alternun-development/alternun/commit/9009a652cb25899ed8fe54b7cd19624d2c422dbb)), closes [#313](https://github.com/alternun-development/alternun/issues/313)
+- **security:** keep null off the CORS origin path flagged by CodeQL ([9009a65](https://github.com/alternun-development/alternun/commit/9009a652cb25899ed8fe54b7cd19624d2c422dbb))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
