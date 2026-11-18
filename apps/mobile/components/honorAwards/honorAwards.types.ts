@@ -2,6 +2,7 @@ import type { ImageSourcePropType } from 'react-native';
 import type {
   HonorAward,
   HonorAwardAllyDesk,
+  HonorAwardCatalogItem,
   HonorAwardClient,
   HonorAwardKind,
   HonorAwardScope,
@@ -23,7 +24,13 @@ export interface HonorTierPalette {
   banner: string;
 }
 
-export type HonorSlot = { kind: 'award'; award: HonorAward } | { kind: 'empty'; key: string };
+export type HonorSlot =
+  | { kind: 'award'; award: HonorAward }
+  /** The sample Manglar Verde medal, while the person has none. */
+  | { kind: 'demo' }
+  /** A medal in Airs the person can still earn. */
+  | { kind: 'locked'; item: HonorAwardCatalogItem }
+  | { kind: 'empty'; key: string };
 
 export type Translate = (
   key: string,
@@ -41,6 +48,8 @@ export interface HonorAwardEmblemProps {
   placeholder?: boolean;
   /** Built-in art ("golf_mangrove", "coast") when there is no image. */
   artPreset?: string | null;
+  /** Not claimed yet: drawn in greyscale. */
+  grayscale?: boolean;
 }
 
 export interface HonorCrestPalette {
@@ -58,6 +67,7 @@ export interface HonorCrestPalette {
 /** Art bundled with the app for a preset: the medal of each tier and the back photo. */
 export interface HonorPresetArt {
   badge: Record<HonorAwardTier, ImageSourcePropType>;
+  badgeGray?: Record<HonorAwardTier, ImageSourcePropType>;
   back?: ImageSourcePropType;
 }
 
@@ -72,6 +82,8 @@ export interface HonorAwardPartnerMarkProps {
   /** Card width, used to scale the mark. */
   width: number;
   locale?: string;
+  /** One color for the whole wordmark (white on the dark mission view). */
+  color?: string;
 }
 
 export interface HonorAwardCrestProps {
@@ -87,6 +99,22 @@ export interface HonorAwardCardProps {
   width: number;
 }
 
+export interface HonorMedalPocketProps {
+  award: HonorAward;
+  /** Pocket width; the medal rises above it. */
+  width: number;
+}
+
+export interface HonorMedalActionsProps {
+  award: HonorAward;
+  /** Preview: no sharing. */
+  demo: boolean;
+  /** A medal not earned yet: no sharing, and a note on how to get it. */
+  locked?: boolean;
+  onViewMission: () => void;
+  onClose: () => void;
+}
+
 export interface HonorAwardClaimCinematicProps {
   award: HonorAward | null;
   onInspect: (award: HonorAward) => void;
@@ -100,6 +128,10 @@ export interface HonorAwardInspectModalProps {
   onClose: () => void;
   /** Preview: no sharing and no links. */
   demo?: boolean;
+  /** The medal view (default) or straight to the mission, as after a claim. */
+  initialStage?: 'medal' | 'mission';
+  /** A medal not earned yet: links stay, sharing goes. */
+  locked?: boolean;
 }
 
 export interface HonorAwardsInfoModalProps {
@@ -136,4 +168,13 @@ export interface HonorAwardsSectionProps {
 export type LoadState =
   | { kind: 'loading' }
   | { kind: 'error' }
-  | { kind: 'ready'; awards: HonorAward[] };
+  | { kind: 'ready'; awards: HonorAward[]; catalog: HonorAwardCatalogItem[] };
+
+/** Copy of the sample medal, translated by the caller. */
+export interface HonorDemoCopy {
+  classification: string;
+  purpose: string;
+  partnerDescription: string;
+  projectLocation: string;
+  projectDescription: string;
+}

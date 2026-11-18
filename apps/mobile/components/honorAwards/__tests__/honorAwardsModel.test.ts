@@ -6,7 +6,7 @@ import {
   sortHonorAwards,
   type HonorAward,
 } from '../../../utils/honorAwards';
-import { buildHonorSlots, formatHonorDate, honorText } from '../honorAwardTheme';
+import { buildHonorSlots, formatHonorDate, honorText, lockedHonorAward } from '../honorAwardTheme';
 
 function award(id: string, status: HonorAward['status'], awardedAt: string): HonorAward {
   return {
@@ -73,6 +73,26 @@ describe('honor awards client', () => {
     expect(calls[1][1].method).toBe('POST');
   });
 
+  it('lists the medals still to earn only for the signed-in person', async () => {
+    const fetcher = jest.fn(async () => jsonResponse(200, []));
+    const me = createHonorAwardClient(
+      { kind: 'me' },
+      async () => 'token',
+      fetcher as unknown as typeof fetch,
+      'https://api.test'
+    );
+    await me.catalog?.();
+    expect(fetcher).toHaveBeenCalledWith(
+      'https://api.test/v1/me/honor-awards/catalog',
+      expect.objectContaining({ method: 'GET' })
+    );
+    const publicClient = createHonorAwardClient(
+      { kind: 'enterprise-public', slug: 's' },
+      async () => null
+    );
+    expect('catalog' in publicClient).toBe(false);
+  });
+
   it('reads public awards without a token and never claims them', async () => {
     const fetcher = jest.fn(async () => jsonResponse(200, []));
     const client = createHonorAwardClient(
@@ -130,6 +150,31 @@ describe('honor award slots and copy', () => {
     expect(six.filter((slot) => slot.kind === 'award')).toHaveLength(6);
   });
 
+  it('puts the sample first while there are no medals, then the locked ones, then empty', () => {
+    const item = (id: string) => ({
+      ...award('x', 'claimed', ''),
+      recipe: { ...award('x', 'claimed', '').recipe, id },
+    });
+    const locked = [item('r'), item('r2')].map(({ recipe, project, partner }) => ({
+      recipe,
+      project,
+      partner,
+    }));
+    expect(buildHonorSlots([], { demo: true, locked }).map((slot) => slot.kind)).toEqual([
+      'demo',
+      'locked',
+      'locked',
+      'empty',
+      'empty',
+    ]);
+    // A held medal (recipe "r") is neither repeated as locked nor replaced by the sample.
+    expect(
+      buildHonorSlots([award('a', 'claimed', '')], { demo: true, locked }).map((slot) => slot.kind)
+    ).toEqual(['award', 'locked', 'empty', 'empty', 'empty']);
+    const shaped = lockedHonorAward(locked[1]);
+    expect(shaped).toMatchObject({ id: 'locked-r2', status: 'pending', claimedAt: null });
+  });
+
   it('formats dates and keeps unparsable values', () => {
     expect(formatHonorDate(null)).toBe('');
     expect(formatHonorDate('not a date')).toBe('not a date');
@@ -165,19 +210,83 @@ describe('honor award art and demo', () => {
     expect(crest.isHonorArtPreset(null)).toBe(false);
   });
 
-  it('previews a different tier in each empty slot with the golf medal art', () => {
-    expect([0, 1, 2, 3, 4].map(demo.demoTierForSlot)).toEqual([
-      'gold',
-      'silver',
-      'bronze',
-      'generic',
-      'gold',
-    ]);
-    const sample = demo.buildDemoHonorAward('silver', { classification: 'C', purpose: 'P' });
-    expect(sample.recipe.tier).toBe('silver');
+  it('previews the generic golf medal (mission medals have no tiers)', () => {
+    const sample = demo.buildDemoHonorAward({
+      classification: 'C',
+      purpose: 'P',
+      partnerDescription: 'D',
+      projectLocation: 'L',
+      projectDescription: 'PD',
+    });
+    expect(sample.recipe.tier).toBe('generic');
     expect(sample.recipe.artPreset).toBe('golf_mangrove');
-    expect(sample.recipe.airsAmount).toBe(10);
+    expect(sample.recipe.airsAmount).toBe(5);
     expect(sample.partner?.slug).toBe('');
+    expect(sample.partner?.description).toBe('D');
+    expect(sample.project).toMatchObject({ slug: '', location: 'L', description: 'PD' });
+  });
+});
+
+describe('sharing a legacy medal', () => {
+  /* eslint-disable @typescript-eslint/no-var-requires */
+  const { honorShareContent } =
+    require('../honorAwardShare') as typeof import('../honorAwardShare');
+  const { presetBadge } = require('../honorAwardArt') as typeof import('../honorAwardArt');
+  /* eslint-enable @typescript-eslint/no-var-requires */
+  const t = (_key: string, _params?: unknown, fallback?: string) => fallback ?? '';
+  const base = award('a', 'claimed', '');
+
+  it('links to the project and attaches the bundled medal', () => {
+    const content = honorShareContent(
+      {
+        ...base,
+        recipe: {
+          ...base.recipe,
+          title: 'Manglar Verde',
+          tier: 'generic',
+          artPreset: 'golf_mangrove',
+        },
+        project: { id: 'p', slug: 'batis', title: 'Batis' },
+        partner: {
+          id: 'e',
+          slug: 's',
+          displayName: 'Swing Golf',
+          description: null,
+          logoUrl: null,
+          websiteUrl: null,
+        },
+      },
+      t
+    );
+    expect(content.message).toBe(
+      'Obtuve la medalla de legado "Manglar Verde" en Airs · Swing Golf.'
+    );
+    expect(content.url).toMatch(/\/explore\/batis$/);
+    expect(content.image).toEqual({
+      source: presetBadge('golf_mangrove', 'generic'),
+      fileName: 'airs-manglar-verde.webp',
+    });
+  });
+
+  it('prefers the medal image of the recipe, then the card, then no image', () => {
+    const withBadge = honorShareContent(
+      {
+        ...base,
+        recipe: { ...base.recipe, title: 'Café Ñame', badgeImageUrl: 'https://cdn/m.JPG?v=2' },
+      },
+      t
+    );
+    expect(withBadge.image).toEqual({
+      source: 'https://cdn/m.JPG?v=2',
+      fileName: 'airs-cafe-name.jpg',
+    });
+    expect(withBadge.url).not.toContain('/explore/');
+    const withCard = honorShareContent(
+      { ...base, recipe: { ...base.recipe, frontImageUrl: 'https://cdn/card' } },
+      t
+    );
+    expect(withCard.image?.fileName).toBe('airs-manglar-verde.png');
+    expect(honorShareContent(base, t).image).toBeNull();
   });
 });
 

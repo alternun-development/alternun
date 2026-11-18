@@ -1,5 +1,5 @@
-import { Copy, Share2, X } from 'lucide-react-native';
-import React, { useEffect } from 'react';
+import { X } from 'lucide-react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
   Modal,
   Platform,
@@ -12,19 +12,20 @@ import {
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useAppTranslation } from '../i18n/useAppTranslation';
+import ShareActions from '../share/ShareActions';
+import type { ShareContent } from '../share/share.types';
+import type { QrSvgRef } from './ReferralQrModal.types';
 import type { ColorPalette } from './AchievementBadge';
 
 interface ReferralQrModalProps {
   visible: boolean;
   referralCode: string;
   referralLink: string;
-  displayLink: string;
   hasValidLink: boolean;
-  copied: boolean;
+  /** The text shared with the link. */
+  shareMessage: string;
   isDark: boolean;
   c: ColorPalette;
-  onCopy: () => void;
-  onShare: () => void;
   onClose: () => void;
 }
 
@@ -32,13 +33,10 @@ export function ReferralQrModal({
   visible,
   referralCode,
   referralLink,
-  displayLink,
   hasValidLink,
-  copied,
+  shareMessage,
   isDark,
   c,
-  onCopy,
-  onShare,
   onClose,
 }: ReferralQrModalProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
@@ -46,12 +44,27 @@ export function ReferralQrModal({
   const modalBackground = isDark ? '#10201c' : '#ffffff';
   const qrSize = Math.max(156, Math.min(240, width - 112));
   const closeLabel = t('profile.referral.closeQr', undefined, 'Close referral QR code');
-  const copyLabel = t('profile.referral.copy', undefined, 'Copy');
-  const shareLabel = t('profile.referral.share', undefined, 'Share');
-  const shareAccessibilityLabel = t(
-    'profile.referral.shareTitle',
-    undefined,
-    'Share your referral link'
+  const qrRef = useRef<QrSvgRef | null>(null);
+  const shareTitle = t('profile.referral.shareTitle', undefined, 'Share your referral link');
+  // The shared system: the link, social networks and the QR code saved as an image.
+  const shareContent = useMemo<ShareContent>(
+    () => ({
+      title: shareTitle,
+      message: shareMessage,
+      url: referralLink,
+      image: {
+        fileName: `airs-referral-${referralCode || 'qr'}.png`,
+        load: () =>
+          new Promise<string>((resolve, reject) => {
+            if (!qrRef.current) {
+              reject(new Error('QR code unavailable'));
+              return;
+            }
+            qrRef.current.toDataURL((base64) => resolve(`data:image/png;base64,${base64}`));
+          }),
+      },
+    }),
+    [referralCode, referralLink, shareMessage, shareTitle]
   );
 
   useEffect(() => {
@@ -133,6 +146,9 @@ export function ReferralQrModal({
                 style={styles.qrSurface}
               >
                 <QRCode
+                  getRef={(ref: unknown) => {
+                    qrRef.current = ref as QrSvgRef | null;
+                  }}
                   value={referralLink}
                   size={qrSize}
                   color='#111827'
@@ -156,53 +172,23 @@ export function ReferralQrModal({
               <Text selectable style={[styles.code, { color: c.text }]}>
                 {referralCode}
               </Text>
-              {hasValidLink ? (
-                <Text selectable style={[styles.link, { color: c.muted }]}>
-                  {displayLink}
-                </Text>
-              ) : null}
             </View>
 
-            <View style={styles.actions}>
-              <Pressable
-                accessibilityRole='button'
-                accessibilityLabel={copyLabel}
-                accessibilityState={{ disabled: !hasValidLink }}
+            {visible ? (
+              <ShareActions
+                key={referralLink}
+                content={shareContent}
+                showLink={hasValidLink}
                 disabled={!hasValidLink}
-                onPress={onCopy}
-                style={[
-                  styles.action,
-                  {
-                    borderColor: c.cardBorder,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
-                    opacity: hasValidLink ? 1 : 0.45,
-                  },
-                ]}
-              >
-                <Copy size={16} color={c.accent} strokeWidth={2.2} />
-                <Text style={[styles.actionText, { color: c.accent }]}>
-                  {copied ? t('profile.referral.copied', undefined, 'Copied') : copyLabel}
-                </Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole='button'
-                accessibilityLabel={shareAccessibilityLabel}
-                accessibilityState={{ disabled: !hasValidLink }}
-                disabled={!hasValidLink}
-                onPress={onShare}
-                style={[
-                  styles.action,
-                  {
-                    borderColor: `${c.accent}40`,
-                    backgroundColor: `${c.accent}14`,
-                    opacity: hasValidLink ? 1 : 0.45,
-                  },
-                ]}
-              >
-                <Share2 size={16} color={c.accent} strokeWidth={2.2} />
-                <Text style={[styles.actionText, { color: c.accent }]}>{shareLabel}</Text>
-              </Pressable>
-            </View>
+                palette={{
+                  text: c.text,
+                  muted: c.muted,
+                  border: c.cardBorder,
+                  accent: c.accent,
+                  surface: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
+                }}
+              />
+            ) : null}
           </ScrollView>
         </View>
       </View>
@@ -282,29 +268,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0.5,
-  },
-  link: {
-    fontFamily: 'monospace',
-    fontSize: 11,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  action: {
-    flex: 1,
-    minHeight: 44,
-    borderWidth: 1,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  actionText: {
-    fontSize: 12,
-    fontWeight: '800',
   },
 });

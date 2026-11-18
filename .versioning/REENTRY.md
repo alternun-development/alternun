@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Release: pnpm release patch + pnpm release:patch:promote to deploy testnet (admin auth env, Lambda base64, Airs emails) and refresh PR #313; then #315 §2 in-app Airs approval screen
+Next micro-step: After PR #313 merge: confirm dash-prod pipeline + /health version, deploy /v1/me/honor-awards/catalog; test legacy medal share/download and referral QR download on iOS/Android
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

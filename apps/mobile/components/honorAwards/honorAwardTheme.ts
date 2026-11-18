@@ -1,4 +1,4 @@
-import type { HonorAward, HonorAwardTier } from '../../utils/honorAwards';
+import type { HonorAward, HonorAwardCatalogItem, HonorAwardTier } from '../../utils/honorAwards';
 import type { HonorSlot, HonorTierPalette, Translate } from './honorAwards.types';
 
 export const HONOR_TIER_PALETTES: Record<HonorAwardTier, HonorTierPalette> = {
@@ -38,12 +38,23 @@ export const HOLO_STOPS = ['#c9b6ff', '#f6c4ea', '#bfe6ff', '#c8f5e3', '#e3d1ff'
 /** Slots shown per row; empty ones are placeholders for awards still to earn. */
 export const HONOR_SLOT_COUNT = 5;
 
-/** The awards, then empty placeholders up to a full row (or the next full row). */
+/**
+ * The awards; the sample medal while there are none (when asked for); the medals still to
+ * earn, locked; then empty placeholders up to a full row (or the next full row).
+ */
 export function buildHonorSlots(
   awards: readonly HonorAward[],
+  options: { demo?: boolean; locked?: readonly HonorAwardCatalogItem[] } = {},
   perRow = HONOR_SLOT_COUNT
 ): HonorSlot[] {
-  const filled: HonorSlot[] = awards.map((award) => ({ kind: 'award', award }));
+  const held = new Set(awards.map((award) => award.recipe.id));
+  const filled: HonorSlot[] = [
+    ...awards.map((award): HonorSlot => ({ kind: 'award', award })),
+    ...(options.demo && awards.length === 0 ? [{ kind: 'demo' } as HonorSlot] : []),
+    ...(options.locked ?? [])
+      .filter((item) => !held.has(item.recipe.id))
+      .map((item): HonorSlot => ({ kind: 'locked', item })),
+  ];
   const total = Math.max(perRow, Math.ceil(filled.length / perRow) * perRow);
   const empty: HonorSlot[] = Array.from({ length: total - filled.length }, (_, index) => ({
     kind: 'empty',
@@ -77,15 +88,12 @@ export function honorText(
   return t(key, params, interpolated);
 }
 
-/** Colors of the card templates (Propuesta Badges V3): frame, title and tier label per tier. */
-export const HONOR_CARD_COLORS: Record<
-  HonorAwardTier,
-  { frame: string; title: string; tierLabel: string }
-> = {
-  generic: { frame: '#4a7c3a', title: '#4f8a3c', tierLabel: '#3f6f31' },
-  gold: { frame: '#d6b13f', title: '#c99a2e', tierLabel: '#a47414' },
-  silver: { frame: '#aebcc2', title: '#7d8b93', tierLabel: '#3f4a55' },
-  bronze: { frame: '#d9844f', title: '#d9844f', tierLabel: '#b4552a' },
+/** Colors of the card templates (Propuesta Badges V3): frame and title per tier. */
+export const HONOR_CARD_COLORS: Record<HonorAwardTier, { frame: string; title: string }> = {
+  generic: { frame: '#4a7c3a', title: '#4f8a3c' },
+  gold: { frame: '#d6b13f', title: '#c99a2e' },
+  silver: { frame: '#aebcc2', title: '#7d8b93' },
+  bronze: { frame: '#d9844f', title: '#d9844f' },
 };
 
 /** "Octubre 30 - 2026": the obtained date as the card templates write it. */
@@ -117,6 +125,23 @@ const COUNTRY_NAMES: Readonly<Record<string, string>> = {
   US: 'United States',
   VE: 'Venezuela',
 };
+
+/** A medal still to earn, shaped as an award so the medal and mission views can show it. */
+export function lockedHonorAward(item: HonorAwardCatalogItem): HonorAward {
+  return {
+    id: `locked-${item.recipe.id}`,
+    status: 'pending',
+    awardedAt: '',
+    claimedAt: null,
+    ...item,
+  };
+}
+
+/** "Swing Golf Colombia": the ally and its country, as the medal view writes it. */
+export function honorPartnerLine(partner: HonorAward['partner']): string {
+  if (!partner) return '';
+  return [partner.displayName, honorCountryName(partner.countryCode)].filter(Boolean).join(' ');
+}
 
 /** Country name for an ISO code; the code itself when it is not known. */
 export function honorCountryName(code: string | null | undefined): string {

@@ -22,17 +22,29 @@ export const HONOR_PRESET_ART: Readonly<Record<string, HonorPresetArt | undefine
       silver: require('../../assets/badges/honor/manglar-verde/silver.webp') as ImageSourcePropType,
       bronze: require('../../assets/badges/honor/manglar-verde/bronze.webp') as ImageSourcePropType,
     },
+    // Grey versions for medals not claimed yet (filters are not available on every platform).
+    badgeGray: {
+      generic:
+        require('../../assets/badges/honor/manglar-verde/generic-gray.webp') as ImageSourcePropType,
+      gold: require('../../assets/badges/honor/manglar-verde/gold-gray.webp') as ImageSourcePropType,
+      silver:
+        require('../../assets/badges/honor/manglar-verde/silver-gray.webp') as ImageSourcePropType,
+      bronze:
+        require('../../assets/badges/honor/manglar-verde/bronze-gray.webp') as ImageSourcePropType,
+    },
     back: require('../../assets/badges/honor/manglar-verde/back.webp') as ImageSourcePropType,
   },
 };
 
-/** The bundled medal of a preset and tier, if the design file has one. */
+/** The bundled medal of a preset and tier (in grey when asked), if the design file has one. */
 export function presetBadge(
   preset: string | null | undefined,
-  tier: HonorAwardTier
+  tier: HonorAwardTier,
+  gray = false
 ): ImageSourcePropType | null {
   if (!preset) return null;
-  return HONOR_PRESET_ART[preset]?.badge[tier] ?? null;
+  const art = HONOR_PRESET_ART[preset];
+  return (gray ? art?.badgeGray?.[tier] : art?.badge[tier]) ?? null;
 }
 
 /** The bundled back photo of a preset, if any. */

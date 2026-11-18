@@ -649,15 +649,10 @@ export function ReferralCard({ user, isDark, c }: ReferralCardProps): React.JSX.
         visible={qrModalOpen}
         referralCode={referralCode}
         referralLink={referralLink}
-        displayLink={truncateMiddle(referralLink)}
         hasValidLink={hasValidReferralLink}
-        copied={copied}
+        shareMessage={shareMessage}
         isDark={isDark}
         c={c}
-        onCopy={handleCopy}
-        onShare={() => {
-          void handleShare();
-        }}
         onClose={() => setQrModalOpen(false)}
       />
     </GlassCard>

@@ -10,8 +10,8 @@ const MINT = '#1de9b6';
 const PERSON_STEPS: ReadonlyArray<[string, string]> = [
   ['step1', 'Participa en una misión o actividad de un aliado de Airs.'],
   ['step2', 'El aliado registra tu participación con el correo de tu cuenta de Airs.'],
-  ['step3', 'El galardón aparece en tu perfil por reclamar: tócalo para reclamarlo.'],
-  ['step4', 'Después puedes inspeccionarlo, ver la misión y compartirlo.'],
+  ['step3', 'La medalla aparece en tu legado por reclamar: tócala para reclamarla.'],
+  ['step4', 'Después puedes ver la misión y compartir tu medalla.'],
 ];
 
 const ALLY_STEPS: ReadonlyArray<[string, string]> = [
@@ -47,7 +47,11 @@ export default function HonorAwardsInfoModal({
       <View style={styles.backdrop}>
         <View style={styles.sheet} accessibilityViewIsModal>
           <View style={styles.header}>
-            <Text style={styles.title}>{honorText(t, key('title'), 'Galardones de honor')}</Text>
+            <Text style={styles.title}>
+              {ally
+                ? honorText(t, key('allyTitle'), 'Galardones de honor')
+                : honorText(t, key('title'), 'Legado: medallas de misión')}
+            </Text>
             <Pressable
               accessibilityRole='button'
               accessibilityLabel={honorText(t, 'profile.honorAwards.inspect.close', 'Cerrar')}
@@ -69,13 +73,13 @@ export default function HonorAwardsInfoModal({
                 : honorText(
                     t,
                     key('whatBody'),
-                    'Son medallas y trofeos especiales que reconocen tu participación en misiones de impacto positivo junto a aliados de Airs: torneos, estadías en hoteles aliados, eventos y otras actividades.'
+                    'Tu legado reúne las medallas de las misiones de impacto positivo en las que participas junto a aliados de Airs: torneos, estadías en hoteles aliados, eventos y otras actividades.'
                   )}
             </Text>
             <Text style={styles.heading}>
               {ally
                 ? honorText(t, key('allyHowTitle'), '¿Cómo funcionan?')
-                : honorText(t, key('howTitle'), '¿Cómo obtengo uno?')}
+                : honorText(t, key('howTitle'), '¿Cómo obtengo una medalla?')}
             </Text>
             {steps.map(([name, fallback], index) => (
               <View key={name} style={styles.step}>
@@ -87,16 +91,8 @@ export default function HonorAwardsInfoModal({
                 </Text>
               </View>
             ))}
-            <Text style={styles.heading}>{honorText(t, key('tiersTitle'), 'Niveles')}</Text>
-            <Text style={styles.text}>
-              {honorText(
-                t,
-                key('tiersBody'),
-                'Hay galardones de oro, plata y bronce, según el reconocimiento que defina cada misión, y medallas de participación.'
-              )}
-            </Text>
             <Text style={styles.heading}>
-              {honorText(t, key('showsTitle'), '¿Qué muestra cada galardón?')}
+              {honorText(t, key('showsTitle'), '¿Qué muestra cada medalla?')}
             </Text>
             <Text style={styles.text}>
               {honorText(
@@ -109,8 +105,8 @@ export default function HonorAwardsInfoModal({
               <Text style={[styles.text, styles.hint]}>
                 {honorText(
                   t,
-                  key('demoHint'),
-                  'Toca un espacio disponible para ver una demostración.'
+                  key('legacyHint'),
+                  'Las medallas con candado son misiones disponibles en Airs: tócalas para ver cómo obtenerlas. Si aún no tienes medallas, toca la de ejemplo para ver cómo se ve.'
                 )}
               </Text>
             )}

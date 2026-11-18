@@ -13,7 +13,9 @@ const GREEN = '#4a9a3a';
 export default function HonorAwardPartnerMark({
   partner,
   width,
+  color,
 }: HonorAwardPartnerMarkProps): React.JSX.Element {
+  const ink = color ?? INK;
   const scale = width / 316;
   if (partner.logoUrl) {
     return (
@@ -30,13 +32,13 @@ export default function HonorAwardPartnerMark({
   const country = honorCountryName(partner.countryCode);
   return (
     <View accessibilityLabel={partner.displayName} style={{ alignItems: 'center' }}>
-      <Text numberOfLines={1} style={{ fontSize: 27 * scale, fontWeight: '900', color: INK }}>
+      <Text numberOfLines={1} style={{ fontSize: 27 * scale, fontWeight: '900', color: ink }}>
         {words.join(' ')}
-        {last ? <Text style={{ color: GREEN }}>{` ${last}`}</Text> : null}
+        {last ? <Text style={{ color: color ?? GREEN }}>{` ${last}`}</Text> : null}
       </Text>
       {country ? (
         <Text
-          style={{ fontSize: 13 * scale, fontWeight: '700', color: INK, marginTop: -2 * scale }}
+          style={{ fontSize: 13 * scale, fontWeight: '700', color: ink, marginTop: -2 * scale }}
         >
           {country}
         </Text>

@@ -1,30 +1,21 @@
-import type { HonorAward, HonorAwardTier } from '../../utils/honorAwards';
-
-const DEMO_TIERS: readonly HonorAwardTier[] = ['gold', 'silver', 'bronze', 'generic'];
-const DEMO_AIRS: Record<HonorAwardTier, number> = { gold: 15, silver: 10, bronze: 5, generic: 5 };
-
-/** Each empty slot previews a different tier: gold, silver, bronze, generic, then again. */
-export function demoTierForSlot(index: number): HonorAwardTier {
-  return DEMO_TIERS[((index % DEMO_TIERS.length) + DEMO_TIERS.length) % DEMO_TIERS.length];
-}
+import type { HonorAward } from '../../utils/honorAwards';
+import type { HonorDemoCopy } from './honorAwards.types';
 
 /**
- * A sample award (the Manglar Verde golf medal) used only to preview the claim animation and
- * the card from an empty slot. Nothing is saved and the screens label it as a demo.
+ * A sample legacy medal (Manglar Verde) used only to preview the claim and the mission from an
+ * empty slot. Mission medals have a single design (no gold, silver or bronze), so the sample is
+ * the generic one. Nothing is saved and the screens label it as a demo.
  */
-export function buildDemoHonorAward(
-  tier: HonorAwardTier,
-  copy: { classification: string; purpose: string }
-): HonorAward {
+export function buildDemoHonorAward(copy: HonorDemoCopy): HonorAward {
   return {
-    id: `demo-${tier}`,
+    id: 'demo-generic',
     status: 'claimed',
     awardedAt: '2026-10-30T12:00:00Z',
     claimedAt: '2026-10-30T12:00:00Z',
     recipe: {
-      id: `demo-${tier}`,
+      id: 'demo-generic',
       kind: 'medal',
-      tier,
+      tier: 'generic',
       audience: 'user',
       title: 'Manglar Verde',
       classification: copy.classification,
@@ -33,18 +24,24 @@ export function buildDemoHonorAward(
       eventYear: 2026,
       venueName: 'Club El Rincón de Cajicá',
       venueLocation: 'Cajicá, Cundinamarca – CO.',
-      airsAmount: DEMO_AIRS[tier],
+      airsAmount: 5,
       badgeImageUrl: null,
       frontImageUrl: null,
       backImageUrl: null,
       artPreset: 'golf_mangrove',
     },
-    project: { id: 'demo-project', slug: '', title: 'Fundación Batis' },
+    project: {
+      id: 'demo-project',
+      slug: '',
+      title: 'Fundación Batis',
+      location: copy.projectLocation,
+      description: copy.projectDescription,
+    },
     partner: {
       id: 'demo-partner',
       slug: '',
       displayName: 'Swing Golf',
-      description: null,
+      description: copy.partnerDescription,
       logoUrl: null,
       websiteUrl: null,
       countryCode: 'CO',

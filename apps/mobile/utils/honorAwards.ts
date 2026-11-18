@@ -31,7 +31,14 @@ export interface HonorAward {
   awardedAt: string;
   claimedAt: string | null;
   recipe: HonorAwardRecipe;
-  project: { id: string; slug: string; title: string } | null;
+  project: {
+    id: string;
+    slug: string;
+    title: string;
+    /** From the project content; older API versions leave them out. */
+    location?: string | null;
+    description?: string | null;
+  } | null;
   partner: {
     id: string;
     slug: string;
@@ -43,6 +50,9 @@ export interface HonorAward {
     countryCode?: string | null;
   } | null;
 }
+
+/** A medal for people the person does not hold yet: shown locked in their legacy. */
+export type HonorAwardCatalogItem = Pick<HonorAward, 'recipe' | 'project' | 'partner'>;
 
 export class HonorAwardRequestError extends Error {
   constructor(readonly status: number, readonly code?: string) {
@@ -82,6 +92,8 @@ export interface HonorAwardClient {
   list(): Promise<HonorAward[]>;
   claim(awardId: string): Promise<HonorAward>;
   readonly canClaim: boolean;
+  /** Only for the signed-in person: the medals they can still earn. */
+  catalog?(): Promise<HonorAwardCatalogItem[]>;
   /** Only for an ally's manage view. */
   readonly desk?: HonorAwardAllyDesk;
 }
@@ -139,6 +151,7 @@ export function createHonorAwardClient(
       if (!needsAuth) return Promise.reject(new HonorAwardRequestError(403, 'READ_ONLY'));
       return request<HonorAward>(`/${encodeURIComponent(awardId)}/claim`, 'POST');
     },
+    ...(scope.kind === 'me' ? { catalog: () => request<HonorAwardCatalogItem[]>('/catalog') } : {}),
     ...(scope.kind === 'enterprise-manage'
       ? {
           desk: {

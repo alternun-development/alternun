@@ -119,6 +119,29 @@ it('opens from the referral code and encodes the exact API referral link', async
   expect(qrProps.size + 8 + 40).toBeLessThanOrEqual(320 - 32);
 });
 
+it('shares the referral link and the QR image through the shared share actions', async () => {
+  const ShareActions = require('../../share/ShareActions').default;
+  await mountCard();
+  act(() => findAction('Show referral QR code').props.onPress());
+
+  const actions = tree.root.findByType(ShareActions).props;
+  expect(actions.disabled).toBe(false);
+  expect(actions.showLink).toBe(true);
+  expect(actions.content).toMatchObject({
+    title: 'Share your referral link',
+    message: `Join me on Airs By Alternun: ${VALID_LINK}`,
+    url: VALID_LINK,
+  });
+  expect(actions.content.image.fileName).toMatch(/^airs-referral-.+\.png$/);
+
+  // The QR code renders itself to a PNG for "Descargar".
+  const qrProps = mockQRCode.mock.calls.at(-1)[0];
+  act(() => qrProps.getRef({ toDataURL: (callback) => callback('QUJD') }));
+  await expect(actions.content.image.load()).resolves.toBe('data:image/png;base64,QUJD');
+  act(() => qrProps.getRef(null));
+  await expect(actions.content.image.load()).rejects.toThrow('QR code unavailable');
+});
+
 it('closes with the X, backdrop, onRequestClose, and Escape on web', async () => {
   Platform.OS = 'web';
   let keydown;

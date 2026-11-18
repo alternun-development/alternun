@@ -1050,15 +1050,9 @@
         "shareTitle": "Share your milestone",
         "shareHint": "Share the personalized image through your device, or use its public preview link on X, Facebook and LinkedIn. For Instagram, attach the saved image and paste your caption.",
         "share": "Share image…",
-        "download": "Save image",
-        "copy": "Copy caption",
-        "copied": "Caption copied.",
-        "copyError": "Select the caption above to copy it.",
         "preparing": "Preparing your image…",
         "retry": "Retry image",
         "imageError": "The image could not be prepared. Please retry.",
-        "attach": "Image saved. Attach it to your post and paste the caption below.",
-        "shareError": "Unable to open sharing. You can still copy the caption or save the image where available.",
         "unlockTitle": "How to unlock",
         "unlockAirs": "Reach {{amount}} AIRS by participating in eligible activities from the dashboard. AIRS count once credited to your balance.",
         "recognition": "This badge unlocks after your achievement is confirmed. If you have already completed it, contact the Alternun team for help.",
@@ -1079,15 +1073,12 @@
         "createImage": "Create share image",
         "publishHint": "Create a public image with your display name and this earned badge to share on social media.",
         "previewHint": "Your post link includes the personalized image preview. The social network controls when it appears.",
-        "shareApps": "Share with apps",
-        "appsHint": "Choose an installed app from your device’s share menu. For Instagram, share the image or save it to attach to a post.",
-        "socialLinks": "Social links",
-        "linksHint": "Share the public preview link. To attach the image in an app, use Share with apps.",
-        "saveCaption": "Save & caption",
-        "browserFallback": "Choose a social link, or save the image and copy your caption.",
-        "downloadError": "Unable to save the image. Try Share with apps instead."
+        "appsHint": "Choose an installed app from your device’s share menu. For Instagram, share the image or save it to attach to a post."
       },
       "honorAwards": {
+        "legacyTitle": "Legacy",
+        "legacySubtitle": "(Mission medals)",
+        "legacyInfoButton": "What is your legacy?",
         "subtitle": "Medals and trophies that recognize your positive impact journey.",
         "enterpriseSubtitle": "Recognition this ally has received on Airs.",
         "pendingNote": "Awards to claim: {{count}}",
@@ -1099,23 +1090,14 @@
         "supportedBy": "Supported by:",
         "airsAmount": "+{{amount}} Airs",
         "obtained": "Earned: {{date}}",
-        "shareMessage": "I earned the \"{{title}}\" award on Airs{{partner}}.",
-        "tiers": {
-          "gold": "Gold medal",
-          "silver": "Silver medal",
-          "bronze": "Bronze medal"
-        },
-        "kinds": {
-          "medal": "Medal",
-          "trophy": "Trophy"
-        },
+        "shareMessage": "I earned the \"{{title}}\" legacy medal on Airs{{partner}}.",
         "claim": {
-          "headline": "Award unlocked!",
-          "inspect": "Inspect",
+          "headline": "New legacy medal!",
+          "inspect": "View mission",
           "continue": "Continue"
         },
         "inspect": {
-          "flip": "Tap to see the back",
+          "flip": "Click to see the back",
           "share": "Share",
           "viewMission": "View mission",
           "close": "Close",
@@ -1123,39 +1105,44 @@
         },
         "mission": {
           "purpose": "Purpose:",
-          "visitPartner": "Visit page",
+          "visitPartner": "Visit site / page",
           "projectData": "Project details:",
           "viewProject": "View project"
         },
         "infoButton": "What are honor awards?",
         "info": {
-          "title": "Honor awards",
+          "title": "Legacy: mission medals",
+          "allyTitle": "Honor awards",
           "whatTitle": "What are they?",
-          "whatBody": "Special medals and trophies that recognize your part in positive impact missions with Airs allies: tournaments, stays at partner hotels, events and other activities.",
+          "whatBody": "Your legacy gathers the medals of the positive impact missions you take part in with Airs allies: tournaments, stays at partner hotels, events and other activities.",
           "allyWhatBody": "Recognition your organization receives on Airs for its milestones as an ally, and medals you can give your customers or guests for joining your missions.",
-          "howTitle": "How do I get one?",
+          "howTitle": "How do I earn a medal?",
           "allyHowTitle": "How do they work?",
           "step1": "Join a mission or activity of an Airs ally.",
           "step2": "The ally records your participation with the email of your Airs account.",
-          "step3": "The award shows on your profile, ready to claim: tap it to claim it.",
-          "step4": "Then you can inspect it, see the mission and share it.",
+          "step3": "The medal shows up in your legacy ready to claim: tap it to claim it.",
+          "step4": "Then you can see the mission and share your medal.",
           "allyStep1": "The Airs team creates the awards of your alliance, for example one medal per hotel.",
           "allyStep2": "From here you give them with the email of the person's Airs account. For stays, add the reservation number: one is given per stay.",
           "allyStep3": "The person claims it on their profile and sees your organization and the project you support.",
           "allyStep4": "Awards your organization claims show on its public page.",
-          "tiersTitle": "Tiers",
-          "tiersBody": "There are gold, silver and bronze awards, based on the recognition each mission defines, and participation medals.",
-          "showsTitle": "What does each award show?",
+          "showsTitle": "What does each medal show?",
           "showsBody": "The mission, the ally that supports it, the positive impact project you contributed to and the related Airs.",
-          "demoHint": "Tap an open slot to see a demo."
+          "demoHint": "Tap an open slot to see a demo.",
+          "legacyHint": "Locked medals are missions available on Airs: tap them to see how to earn them. If you don't have any medals yet, tap the sample to see how one looks."
         },
         "demo": {
           "ribbon": "Demo",
-          "headline": "This is what earning an award looks like",
-          "note": "Demo: this is how your award will look when you earn it.",
+          "headline": "This is what a legacy medal looks like",
+          "note": "Demo: this is how your medal will look once you earn it.",
           "slotLabel": "Open slot: see a demo",
           "classification": "Compensation mission",
-          "purpose": "As a tournament participant, you contributed to the conservation of the mangrove forest in the Colombian Caribbean, together with Fundación Batis."
+          "purpose": "As a tournament participant, you contributed to the conservation of the mangrove forest in the Colombian Caribbean, together with Fundación Batis.",
+          "partnerDescription": "Organizes and promotes golf tournaments and sports events in Colombia. We help athletes reach their dreams and goals.",
+          "projectLocation": "KM5 Finca La Granja, Antigua Vía Férrea, Puerto Colombia, Atlántico.",
+          "projectDescription": "Red mangrove forest (Rhizophora mangle) in the Colombian Caribbean.",
+          "sampleLabel": "Sample medal: see demo",
+          "sampleTag": "Sample"
         },
         "desk": {
           "grantTitle": "Give an award",
@@ -1180,6 +1167,14 @@
         "card": {
           "stamp": "• Airs project {{year}} • Positive environmental impact",
           "obtainedLabel": "Earned:"
+        },
+        "demoSlotHint": "Tap the sample medal to see how it looks.",
+        "locked": {
+          "note": "You don't have this medal yet: take part in the mission to earn it.",
+          "slotLabel": "{{title}}: medal to earn"
+        },
+        "share": {
+          "title": "Share your legacy medal"
         }
       },
       "statsInfo": {
@@ -1844,6 +1839,25 @@
         "self": "You can't approve or reject Airs addressed to you or assigned by you.",
         "changed": "This assignment changed or already has a decision. The list was refreshed.",
         "generic": "It could not be completed. Please try again."
+      }
+    },
+    "share": {
+      "button": "Share",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyLink": "Copy link",
+      "on": "Share on {{network}}",
+      "download": "Download image",
+      "downloadShort": "Download",
+      "close": "Close",
+      "notices": {
+        "copied": "Link copied.",
+        "copyError": "We couldn't copy the link.",
+        "shareError": "We couldn't open the share menu. Copy the link or download the image.",
+        "downloaded": "Image ready.",
+        "downloadError": "We couldn't save the image.",
+        "instagramHint": "Instagram doesn't post from a link: we saved the image so you can add it to your story or post.",
+        "imageUnavailable": "The image isn't available; you can share the link."
       }
     }
   },

@@ -65,9 +65,16 @@ function award(id, status, overrides = {}) {
   };
 }
 
-function makeClient({ awards = [], canClaim = true, fail = false, claimFails = false } = {}) {
+function makeClient({
+  awards = [],
+  canClaim = true,
+  fail = false,
+  claimFails = false,
+  catalog,
+} = {}) {
   return {
     canClaim,
+    ...(catalog ? { catalog: jest.fn(catalog) } : {}),
     list: jest.fn(() => (fail ? Promise.reject(new Error('down')) : Promise.resolve(awards))),
     claim: jest.fn((id) =>
       claimFails ? Promise.reject(new Error('nope')) : Promise.resolve(award(id, 'claimed'))
@@ -102,6 +109,29 @@ it('shows the awards and empty placeholders up to a full row', async () => {
   expect(texts(tree).filter((value) => value === 'Espacio disponible')).toHaveLength(4);
 });
 
+it('draws pending and locked medals in greyscale, claimed ones in color', async () => {
+  const Emblem = require('../HonorAwardEmblem').default;
+  const lockedRecipe = { ...award('x', 'claimed').recipe, id: 'r2', title: 'Coral Vivo' };
+  const tree = await render({
+    client: makeClient({
+      awards: [
+        award('p', 'pending'),
+        award('c', 'claimed', { recipe: { ...award('c', 'claimed').recipe, id: 'r3' } }),
+      ],
+      catalog: () => Promise.resolve([{ recipe: lockedRecipe, project: null, partner: null }]),
+    }),
+  });
+  const gray = tree.root
+    .findAllByType(Emblem)
+    .filter((node) => !node.props.placeholder)
+    .map((node) => [node.props.title, Boolean(node.props.grayscale)]);
+  expect(gray).toEqual([
+    ['Manglar Verde', true],
+    ['Manglar Verde', false],
+    ['Coral Vivo', true],
+  ]);
+});
+
 it('claims a pending award and plays the claim animation with it', async () => {
   const client = makeClient({ awards: [award('a', 'pending')] });
   const tree = await render({ client });
@@ -121,10 +151,11 @@ it('claims a pending award and plays the claim animation with it', async () => {
   expect(HonorAwardClaimCinematic.mock.calls.at(-1)[0].award).toBeNull();
 });
 
-it('opens the card view for a claimed award', async () => {
+it('opens the medal view for a claimed award', async () => {
   const tree = await render({ client: makeClient({ awards: [award('a', 'claimed')] }) });
   await act(async () => awardButton(tree, 'Manglar Verde').props.onPress());
   expect(HonorAwardInspectModal.mock.calls.at(-1)[0].award.id).toBe('a');
+  expect(HonorAwardInspectModal.mock.calls.at(-1)[0].initialStage).toBe('medal');
 });
 
 it('tells the person when a claim fails', async () => {
@@ -166,29 +197,77 @@ it('public pages stay hidden until the ally has an award, and never offer claims
 it('opens the explanation from the info button', async () => {
   const tree = await render({ client: makeClient() });
   expect(HonorAwardsInfoModal.mock.calls.at(-1)[0].visible).toBe(false);
-  await act(async () => awardButton(tree, '¿Qué son los galardones de honor?').props.onPress());
+  await act(async () => awardButton(tree, '¿Qué es el legado?').props.onPress());
   const info = HonorAwardsInfoModal.mock.calls.at(-1)[0];
   expect(info.visible).toBe(true);
   expect(info.audience).toBe('person');
 });
 
-it('previews the claim of a sample golf medal from an empty slot', async () => {
+it('shows the sample medal first when the person has none, and previews it', async () => {
   const tree = await render({ client: makeClient() });
-  expect(texts(tree)).toContain('Toca un espacio disponible para ver una demostración.');
-  const slots = pressables(tree).filter(
-    (node) => node.props.accessibilityLabel === 'Espacio disponible: ver demostración'
-  );
-  expect(slots).toHaveLength(5);
-  await act(async () => slots[1].props.onPress());
+  expect(texts(tree)).toContain('Toca la medalla de ejemplo para ver cómo se ve.');
+  const sample = awardButton(tree, 'Medalla de ejemplo: ver demostración');
+  // The other placeholders are plain: nothing happens on them.
+  expect(texts(tree).filter((value) => value === 'Espacio disponible')).toHaveLength(4);
+  expect(
+    pressables(tree).filter((node) => node.props.accessibilityLabel?.startsWith('Espacio'))
+  ).toHaveLength(0);
+  await act(async () => sample.props.onPress());
   const preview = HonorAwardClaimCinematic.mock.calls.at(-1)[0];
   expect(preview.demo).toBe(true);
-  expect(preview.award.recipe.tier).toBe('silver');
+  expect(preview.award.recipe.tier).toBe('generic');
   expect(preview.award.recipe.artPreset).toBe('golf_mangrove');
 
   await act(async () => preview.onInspect(preview.award));
   const inspect = HonorAwardInspectModal.mock.calls.at(-1)[0];
   expect(inspect.demo).toBe(true);
-  expect(inspect.award.id).toBe('demo-silver');
+  expect(inspect.initialStage).toBe('mission');
+  expect(inspect.award.id).toBe('demo-generic');
+});
+
+it('shows the medals still to earn as locked and opens them without sharing', async () => {
+  const lockedItem = {
+    ...award('x', 'claimed'),
+    recipe: { ...award('x', 'claimed').recipe, id: 'r2', title: 'Coral Vivo' },
+  };
+  const client = makeClient({
+    awards: [award('a', 'claimed')],
+    catalog: () => Promise.resolve([{ recipe: lockedItem.recipe, project: null, partner: null }]),
+  });
+  const tree = await render({ client });
+  expect(client.catalog).toHaveBeenCalled();
+  expect(texts(tree)).not.toContain('Toca la medalla de ejemplo para ver cómo se ve.');
+  expect(awardButton(tree, 'Medalla de ejemplo: ver demostración')).toBeUndefined();
+  await act(async () => awardButton(tree, 'Coral Vivo: medalla por obtener').props.onPress());
+  const inspect = HonorAwardInspectModal.mock.calls.at(-1)[0];
+  expect(inspect.locked).toBe(true);
+  expect(inspect.demo).toBe(false);
+  expect(inspect.award.id).toBe('locked-r2');
+  expect(texts(tree).filter((value) => value === 'Espacio disponible')).toHaveLength(3);
+});
+
+it('still shows the person their medals when the catalog fails', async () => {
+  const tree = await render({
+    client: makeClient({
+      awards: [award('a', 'claimed')],
+      catalog: () => Promise.reject(new Error('down')),
+    }),
+  });
+  expect(texts(tree)).toContain('Swing Golf');
+  expect(texts(tree).filter((value) => value === 'Espacio disponible')).toHaveLength(4);
+});
+
+it('lets allies preview the sample from an empty slot', async () => {
+  const tree = await render({
+    client: makeClient(),
+    scope: { kind: 'enterprise-manage', enterpriseId: 'e' },
+  });
+  const slots = pressables(tree).filter(
+    (node) => node.props.accessibilityLabel === 'Espacio disponible: ver demostración'
+  );
+  expect(slots).toHaveLength(5);
+  await act(async () => slots[0].props.onPress());
+  expect(HonorAwardClaimCinematic.mock.calls.at(-1)[0].demo).toBe(true);
 });
 
 it('explains honor awards to allies on their pages', async () => {

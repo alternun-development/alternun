@@ -1050,15 +1050,9 @@
         "shareTitle": "Comparte tu logro",
         "shareHint": "Comparte la imagen personalizada desde tu dispositivo o usa su enlace público en X, Facebook y LinkedIn. En Instagram, adjunta la imagen guardada y pega tu texto.",
         "share": "Compartir imagen…",
-        "download": "Guardar imagen",
-        "copy": "Copiar texto",
-        "copied": "Texto copiado.",
-        "copyError": "Selecciona el texto de arriba para copiarlo.",
         "preparing": "Preparando tu imagen…",
         "retry": "Reintentar imagen",
         "imageError": "No se pudo preparar la imagen. Inténtalo de nuevo.",
-        "attach": "Imagen guardada. Adjúntala a tu publicación y pega el texto.",
-        "shareError": "No se pudo abrir el menú de compartir. Puedes copiar el texto o guardar la imagen si está disponible.",
         "unlockTitle": "Cómo desbloquearla",
         "unlockAirs": "Alcanza {{amount}} AIRS participando en actividades elegibles desde el dashboard. Los AIRS cuentan cuando se acreditan en tu saldo.",
         "recognition": "Esta insignia se desbloquea cuando se confirma tu logro. Si ya lo completaste, contacta al equipo de Alternun para recibir ayuda.",
@@ -1079,15 +1073,12 @@
         "createImage": "Crear imagen para compartir",
         "publishHint": "Crea una imagen pública con tu nombre y esta insignia obtenida para compartirla en redes sociales.",
         "previewHint": "El enlace incluye la vista previa de tu imagen personalizada. La red social determina cuándo aparece.",
-        "shareApps": "Compartir con apps",
-        "appsHint": "Elige una app instalada en el menú de tu dispositivo. Para Instagram, comparte la imagen o guárdala para adjuntarla a una publicación.",
-        "socialLinks": "Enlaces sociales",
-        "linksHint": "Comparte el enlace con vista previa. Para adjuntar la imagen en una app, usa Compartir con apps.",
-        "saveCaption": "Guardar y texto",
-        "browserFallback": "Elige un enlace social o guarda la imagen y copia el texto.",
-        "downloadError": "No se pudo guardar la imagen. Prueba Compartir con apps."
+        "appsHint": "Elige una app instalada en el menú de tu dispositivo. Para Instagram, comparte la imagen o guárdala para adjuntarla a una publicación."
       },
       "honorAwards": {
+        "legacyTitle": "Legado",
+        "legacySubtitle": "(Medallas de misión)",
+        "legacyInfoButton": "¿Qué es el legado?",
         "subtitle": "Medallas y trofeos que reconocen tu trayectoria de impacto positivo.",
         "enterpriseSubtitle": "Reconocimientos que este aliado ha recibido en Airs.",
         "pendingNote": "Galardones por reclamar: {{count}}",
@@ -1099,23 +1090,14 @@
         "supportedBy": "Con el apoyo de:",
         "airsAmount": "+{{amount}} Airs",
         "obtained": "Obtenida: {{date}}",
-        "shareMessage": "Obtuve el galardón \"{{title}}\" en Airs{{partner}}.",
-        "tiers": {
-          "gold": "Medalla de oro",
-          "silver": "Medalla de plata",
-          "bronze": "Medalla de bronce"
-        },
-        "kinds": {
-          "medal": "Medalla",
-          "trophy": "Trofeo"
-        },
+        "shareMessage": "Obtuve la medalla de legado \"{{title}}\" en Airs{{partner}}.",
         "claim": {
-          "headline": "¡Galardón desbloqueado!",
-          "inspect": "Inspeccionar",
+          "headline": "¡Nueva medalla de legado!",
+          "inspect": "Ver misión",
           "continue": "Continuar"
         },
         "inspect": {
-          "flip": "Toca para ver el reverso",
+          "flip": "Clic para ver reverso",
           "share": "Compartir",
           "viewMission": "Ver misión",
           "close": "Cerrar",
@@ -1123,39 +1105,44 @@
         },
         "mission": {
           "purpose": "Propósito:",
-          "visitPartner": "Visitar página",
+          "visitPartner": "Visitar sitio / página",
           "projectData": "Datos del proyecto:",
           "viewProject": "Ver proyecto"
         },
         "infoButton": "¿Qué son los galardones de honor?",
         "info": {
-          "title": "Galardones de honor",
+          "title": "Legado: medallas de misión",
+          "allyTitle": "Galardones de honor",
           "whatTitle": "¿Qué son?",
-          "whatBody": "Son medallas y trofeos especiales que reconocen tu participación en misiones de impacto positivo junto a aliados de Airs: torneos, estadías en hoteles aliados, eventos y otras actividades.",
+          "whatBody": "Tu legado reúne las medallas de las misiones de impacto positivo en las que participas junto a aliados de Airs: torneos, estadías en hoteles aliados, eventos y otras actividades.",
           "allyWhatBody": "Reconocimientos que tu organización recibe en Airs por sus hitos como aliado, y medallas que puedes otorgar a tus clientes o huéspedes por participar en tus misiones.",
-          "howTitle": "¿Cómo obtengo uno?",
+          "howTitle": "¿Cómo obtengo una medalla?",
           "allyHowTitle": "¿Cómo funcionan?",
           "step1": "Participa en una misión o actividad de un aliado de Airs.",
           "step2": "El aliado registra tu participación con el correo de tu cuenta de Airs.",
-          "step3": "El galardón aparece en tu perfil por reclamar: tócalo para reclamarlo.",
-          "step4": "Después puedes inspeccionarlo, ver la misión y compartirlo.",
+          "step3": "La medalla aparece en tu legado por reclamar: tócala para reclamarla.",
+          "step4": "Después puedes ver la misión y compartir tu medalla.",
           "allyStep1": "El equipo de Airs crea los galardones de tu alianza, por ejemplo una medalla por hotel.",
           "allyStep2": "Desde aquí los otorgas con el correo de la cuenta de Airs de la persona. En estadías, agrega el número de reserva: se otorga uno por estadía.",
           "allyStep3": "La persona lo reclama en su perfil y ve a tu organización y el proyecto que apoyas.",
           "allyStep4": "Los galardones que reclama tu organización se muestran en su página pública.",
-          "tiersTitle": "Niveles",
-          "tiersBody": "Hay galardones de oro, plata y bronce, según el reconocimiento que defina cada misión, y medallas de participación.",
-          "showsTitle": "¿Qué muestra cada galardón?",
+          "showsTitle": "¿Qué muestra cada medalla?",
           "showsBody": "La misión, el aliado que la apoya, el proyecto de impacto positivo al que aportaste y los Airs asociados.",
-          "demoHint": "Toca un espacio disponible para ver una demostración."
+          "demoHint": "Toca un espacio disponible para ver una demostración.",
+          "legacyHint": "Las medallas con candado son misiones disponibles en Airs: tócalas para ver cómo obtenerlas. Si aún no tienes medallas, toca la de ejemplo para ver cómo se ve."
         },
         "demo": {
           "ribbon": "Demostración",
-          "headline": "Así se ve al obtener un galardón",
-          "note": "Demostración: así se verá tu galardón cuando lo obtengas.",
+          "headline": "Así se ve una medalla de legado",
+          "note": "Demostración: así se verá tu medalla cuando la obtengas.",
           "slotLabel": "Espacio disponible: ver demostración",
           "classification": "Misión de compensación",
-          "purpose": "Como participante del torneo, sumaste a la conservación del bosque de manglar en el Caribe colombiano, junto a la Fundación Batis."
+          "purpose": "Como participante del torneo, sumaste a la conservación del bosque de manglar en el Caribe colombiano, junto a la Fundación Batis.",
+          "partnerDescription": "Organización y promoción de torneos de golf y eventos deportivos en Colombia. Ayudamos a los deportistas a alcanzar sus sueños y metas.",
+          "projectLocation": "KM5 Finca La Granja, Antigua Vía Férrea, Puerto Colombia, Atlántico.",
+          "projectDescription": "Bosque de mangle rojo (Rhizophora mangle) en el Caribe colombiano.",
+          "sampleLabel": "Medalla de ejemplo: ver demostración",
+          "sampleTag": "Ejemplo"
         },
         "desk": {
           "grantTitle": "Otorgar un galardón",
@@ -1180,6 +1167,14 @@
         "card": {
           "stamp": "• Proyecto Airs {{year}} • Impacto positivo ambiental",
           "obtainedLabel": "Obtenida:"
+        },
+        "demoSlotHint": "Toca la medalla de ejemplo para ver cómo se ve.",
+        "locked": {
+          "note": "Aún no tienes esta medalla: participa en la misión para obtenerla.",
+          "slotLabel": "{{title}}: medalla por obtener"
+        },
+        "share": {
+          "title": "Comparte tu medalla de legado"
         }
       },
       "statsInfo": {
@@ -1844,6 +1839,25 @@
         "self": "No puedes aprobar ni rechazar Airs que son para ti o que tú asignaste.",
         "changed": "Esta asignación cambió o ya tiene una decisión. Actualizamos la lista.",
         "generic": "No se pudo completar. Intenta de nuevo."
+      }
+    },
+    "share": {
+      "button": "Compartir",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copyLink": "Copiar enlace",
+      "on": "Compartir en {{network}}",
+      "download": "Descargar imagen",
+      "downloadShort": "Descargar",
+      "close": "Cerrar",
+      "notices": {
+        "copied": "Enlace copiado.",
+        "copyError": "No pudimos copiar el enlace.",
+        "shareError": "No pudimos abrir el menú para compartir. Copia el enlace o descarga la imagen.",
+        "downloaded": "Imagen lista.",
+        "downloadError": "No pudimos guardar la imagen.",
+        "instagramHint": "Instagram no publica desde un enlace: guardamos la imagen para que la subas a tu historia o publicación.",
+        "imageUnavailable": "La imagen no está disponible; puedes compartir el enlace."
       }
     }
   },

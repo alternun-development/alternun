@@ -15,12 +15,6 @@ export const HONOR_CARD_RATIO = 1.4;
 /** Width the templates are drawn at; every size scales from it. */
 const TEMPLATE_WIDTH = 316;
 
-const TIER_FALLBACK: Record<string, string> = {
-  gold: 'Medalla de oro',
-  silver: 'Medalla de plata',
-  bronze: 'Medalla de bronce',
-};
-
 /**
  * One face of an honor award card, laid out like the "Galardones de honor" templates.
  * Every element comes from the recipe, its ally and the grant, so new missions only need
@@ -56,10 +50,6 @@ export default function HonorAwardCard({
   }
 
   if (side === 'front') {
-    const tierLabel =
-      recipe.tier === 'generic'
-        ? null
-        : honorText(t, `profile.honorAwards.tiers.${recipe.tier}`, TIER_FALLBACK[recipe.tier]);
     return (
       <View style={[styles.card, frame]}>
         <Image source={HONOR_FOIL} style={StyleSheet.absoluteFill} resizeMode='cover' />
@@ -78,16 +68,6 @@ export default function HonorAwardCard({
           >
             {recipe.title}
           </Text>
-          {tierLabel ? (
-            <Text
-              style={[
-                styles.tierLabel,
-                { color: colors.tierLabel, fontSize: 10.5 * s, letterSpacing: 0.4 * s },
-              ]}
-            >
-              {tierLabel.toUpperCase()}
-            </Text>
-          ) : null}
           <View style={styles.emblem}>
             <HonorAwardEmblem
               tier={recipe.tier}
@@ -129,7 +109,11 @@ export default function HonorAwardCard({
     t,
     'profile.honorAwards.card.stamp',
     '• Proyecto Airs {{year}} • Impacto positivo ambiental',
-    { year: recipe.eventYear ?? new Date(award.awardedAt).getUTCFullYear() }
+    {
+      year:
+        recipe.eventYear ??
+        (new Date(award.awardedAt).getUTCFullYear() || new Date().getUTCFullYear()),
+    }
   ).toUpperCase();
   return (
     <View style={[styles.card, frame]}>
@@ -234,7 +218,6 @@ const styles = StyleSheet.create({
   front: { flex: 1, alignItems: 'center' },
   overline: { color: NAVY, fontWeight: '600' },
   title: { fontWeight: '800', textAlign: 'center' },
-  tierLabel: { fontWeight: '800', marginTop: 1 },
   emblem: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   divider: {
     alignSelf: 'stretch',

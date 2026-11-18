@@ -9,6 +9,8 @@ export interface CinematicRevealProps {
   /** Draws the medal or badge at the given size. */
   renderArt: (size: number) => React.ReactNode;
   onRequestClose: () => void;
+  /** The turning light rays behind the art (on by default). */
+  showRays?: boolean;
   /** Revealed under the art once it lands (titles, text, buttons). */
   children: React.ReactNode;
 }

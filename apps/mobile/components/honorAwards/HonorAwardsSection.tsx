@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SectionContainer } from '@alternun/ui';
-import { Info } from 'lucide-react-native';
+import { Info, Lock } from 'lucide-react-native';
 import { createHonorAwardClient, sortHonorAwards, type HonorAward } from '../../utils/honorAwards';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
@@ -9,8 +9,13 @@ import HonorAwardClaimCinematic from './HonorAwardClaimCinematic';
 import HonorAwardEmblem from './HonorAwardEmblem';
 import HonorAwardInspectModal from './HonorAwardInspectModal';
 import HonorAwardsInfoModal from './HonorAwardsInfoModal';
-import { buildDemoHonorAward, demoTierForSlot } from './honorAwardDemo';
-import { buildHonorSlots, HONOR_TIER_PALETTES, honorText } from './honorAwardTheme';
+import { buildDemoHonorAward } from './honorAwardDemo';
+import {
+  buildHonorSlots,
+  HONOR_TIER_PALETTES,
+  honorText,
+  lockedHonorAward,
+} from './honorAwardTheme';
 import type { HonorAwardsSectionProps, LoadState } from './honorAwards.types';
 
 function PendingGlow({ color }: { color: string }): React.JSX.Element {
@@ -48,8 +53,10 @@ function PendingGlow({ color }: { color: string }): React.JSX.Element {
 }
 
 /**
- * "Galardones de honor": the medals and trophies of a person or an ally. Pending awards glow
- * until they are claimed (which plays the claim animation); claimed ones open the card view.
+ * A person's legacy (mission medals) or an ally's "Galardones de honor". Pending awards glow
+ * until they are claimed (which plays the claim animation); claimed ones open the medal view.
+ * In a legacy, a person with no medals sees the sample medal first, then the medals still to
+ * earn (locked), then empty placeholders.
  */
 export default function HonorAwardsSection({
   scope,
@@ -72,16 +79,21 @@ export default function HonorAwardsSection({
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [claimError, setClaimError] = useState(false);
   const [celebrating, setCelebrating] = useState<{ award: HonorAward; demo: boolean } | null>(null);
-  const [inspecting, setInspecting] = useState<{ award: HonorAward; demo: boolean } | null>(null);
+  const [inspecting, setInspecting] = useState<{
+    award: HonorAward;
+    demo: boolean;
+    stage: 'medal' | 'mission';
+    locked?: boolean;
+  } | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
 
   const load = useCallback(() => {
     let active = true;
     setState({ kind: 'loading' });
-    client
-      .list()
-      .then((awards) => {
-        if (active) setState({ kind: 'ready', awards: sortHonorAwards(awards) });
+    // The catalog only adds locked medals: if it fails, the person still sees their own.
+    Promise.all([client.list(), client.catalog ? client.catalog().catch(() => []) : []])
+      .then(([awards, catalog]) => {
+        if (active) setState({ kind: 'ready', awards: sortHonorAwards(awards), catalog });
       })
       .catch(() => {
         if (active) setState({ kind: 'error' });
@@ -101,7 +113,7 @@ export default function HonorAwardsSection({
       setState((current) =>
         current.kind === 'ready'
           ? {
-              kind: 'ready',
+              ...current,
               awards: sortHonorAwards(
                 current.awards.map((item) => (item.id === claimed.id ? claimed : item))
               ),
@@ -116,16 +128,35 @@ export default function HonorAwardsSection({
     }
   }
 
+  // A person's collection is their legacy: the mission medals. Allies keep "Galardones de honor".
+  const legacy = scope.kind === 'me';
   const awards = state.kind === 'ready' ? state.awards : [];
   if (hideWhenEmpty && (state.kind !== 'ready' || awards.length === 0)) return null;
-  const slots = buildHonorSlots(awards);
+  const slots = buildHonorSlots(
+    awards,
+    legacy ? { demo: true, locked: state.kind === 'ready' ? state.catalog : [] } : {}
+  );
   const pendingCount = awards.filter((award) => award.status === 'pending').length;
-  const hasEmptySlots = slots.some((slot) => slot.kind === 'empty');
+  const hint = legacy
+    ? slots.some((slot) => slot.kind === 'demo')
+      ? honorText(
+          t,
+          'profile.honorAwards.demoSlotHint',
+          'Toca la medalla de ejemplo para ver cómo se ve.'
+        )
+      : null
+    : slots.some((slot) => slot.kind === 'empty')
+    ? honorText(
+        t,
+        'profile.honorAwards.info.demoHint',
+        'Toca un espacio disponible para ver una demostración.'
+      )
+    : null;
 
-  /** An empty slot previews the claim of a sample golf medal; nothing is saved. */
-  function previewDemo(index: number): void {
+  /** The sample medal (or an ally's empty slot) previews the claim; nothing is saved. */
+  function previewDemo(): void {
     setCelebrating({
-      award: buildDemoHonorAward(demoTierForSlot(index), {
+      award: buildDemoHonorAward({
         classification: honorText(
           t,
           'profile.honorAwards.demo.classification',
@@ -136,23 +167,58 @@ export default function HonorAwardsSection({
           'profile.honorAwards.demo.purpose',
           'Como participante del torneo, sumaste a la conservación del bosque de manglar en el Caribe colombiano, junto a la Fundación Batis.'
         ),
+        partnerDescription: honorText(
+          t,
+          'profile.honorAwards.demo.partnerDescription',
+          'Organización y promoción de torneos de golf y eventos deportivos en Colombia. Ayudamos a los deportistas a alcanzar sus sueños y metas.'
+        ),
+        projectLocation: honorText(
+          t,
+          'profile.honorAwards.demo.projectLocation',
+          'KM5 Finca La Granja, Antigua Vía Férrea, Puerto Colombia, Atlántico.'
+        ),
+        projectDescription: honorText(
+          t,
+          'profile.honorAwards.demo.projectDescription',
+          'Bosque de mangle rojo (Rhizophora mangle) en el Caribe colombiano.'
+        ),
       }),
       demo: true,
     });
   }
 
+  const sectionTitle =
+    title ??
+    (legacy
+      ? honorText(t, 'profile.honorAwards.legacyTitle', 'Legado')
+      : honorText(t, 'profile.sections.honorAwards', 'Galardones de honor'));
+  const bodyText =
+    subtitle ??
+    (legacy
+      ? null
+      : honorText(
+          t,
+          'profile.honorAwards.subtitle',
+          'Medallas y trofeos que reconocen tu trayectoria de impacto positivo.'
+        ));
+
   return (
     <SectionContainer
-      title={title ?? honorText(t, 'profile.sections.honorAwards', 'Galardones de honor')}
+      title={sectionTitle}
+      subtitle={
+        legacy
+          ? honorText(t, 'profile.honorAwards.legacySubtitle', '(Medallas de misión)')
+          : undefined
+      }
       style={{ margin: 12 }}
       trailing={
         <Pressable
           accessibilityRole='button'
-          accessibilityLabel={honorText(
-            t,
-            'profile.honorAwards.infoButton',
-            '¿Qué son los galardones de honor?'
-          )}
+          accessibilityLabel={
+            legacy
+              ? honorText(t, 'profile.honorAwards.legacyInfoButton', '¿Qué es el legado?')
+              : honorText(t, 'profile.honorAwards.infoButton', '¿Qué son los galardones de honor?')
+          }
           hitSlop={10}
           onPress={() => setInfoOpen(true)}
           style={[styles.infoButton, { borderColor: c.border ?? 'rgba(255,255,255,0.25)' }]}
@@ -161,14 +227,7 @@ export default function HonorAwardsSection({
         </Pressable>
       }
     >
-      <Text style={[styles.subtitle, { color: c.muted }]}>
-        {subtitle ??
-          honorText(
-            t,
-            'profile.honorAwards.subtitle',
-            'Medallas y trofeos que reconocen tu trayectoria de impacto positivo.'
-          )}
-      </Text>
+      {bodyText ? <Text style={[styles.subtitle, { color: c.muted }]}>{bodyText}</Text> : null}
       {pendingCount > 0 && client.canClaim ? (
         <Text style={[styles.pendingNote, { color: c.accent ?? '#1de9b6' }]}>
           {honorText(t, 'profile.honorAwards.pendingNote', 'Galardones por reclamar: {{count}}', {
@@ -201,7 +260,92 @@ export default function HonorAwardsSection({
 
       {state.kind === 'ready' ? (
         <View style={styles.grid}>
-          {slots.map((slot, index) => {
+          {slots.map((slot) => {
+            if (slot.kind === 'demo') {
+              return (
+                <Pressable
+                  key='demo'
+                  accessibilityRole='button'
+                  accessibilityLabel={honorText(
+                    t,
+                    'profile.honorAwards.demo.sampleLabel',
+                    'Medalla de ejemplo: ver demostración'
+                  )}
+                  onPress={previewDemo}
+                  style={styles.slot}
+                >
+                  <HonorAwardEmblem
+                    tier='generic'
+                    title='Manglar Verde'
+                    artPreset='golf_mangrove'
+                    size={56}
+                  />
+                  <Text numberOfLines={2} style={[styles.slotLabel, { color: c.text }]}>
+                    Manglar Verde
+                  </Text>
+                  <Text style={[styles.slotYear, { color: c.muted }]}>
+                    {honorText(t, 'profile.honorAwards.demo.sampleTag', 'Ejemplo')}
+                  </Text>
+                </Pressable>
+              );
+            }
+            if (slot.kind === 'locked') {
+              const { recipe, partner } = slot.item;
+              return (
+                <Pressable
+                  key={`locked-${recipe.id}`}
+                  accessibilityRole='button'
+                  accessibilityLabel={honorText(
+                    t,
+                    'profile.honorAwards.locked.slotLabel',
+                    '{{title}}: medalla por obtener',
+                    { title: recipe.title }
+                  )}
+                  onPress={() =>
+                    setInspecting({
+                      award: lockedHonorAward(slot.item),
+                      demo: false,
+                      stage: 'medal',
+                      locked: true,
+                    })
+                  }
+                  style={styles.slot}
+                >
+                  <View style={styles.emblemBox}>
+                    <View style={styles.lockedArt}>
+                      <HonorAwardEmblem
+                        tier={recipe.tier}
+                        kind={recipe.kind}
+                        title={recipe.title}
+                        imageUrl={recipe.badgeImageUrl}
+                        artPreset={recipe.artPreset}
+                        size={56}
+                        grayscale
+                      />
+                    </View>
+                    <View style={styles.lockBadge}>
+                      <Lock size={11} color='#ffffff' />
+                    </View>
+                  </View>
+                  <Text numberOfLines={2} style={[styles.slotLabel, { color: c.muted }]}>
+                    {partner?.displayName ?? recipe.title}
+                  </Text>
+                  {recipe.eventYear ? (
+                    <Text style={[styles.slotYear, { color: c.muted }]}>{recipe.eventYear}</Text>
+                  ) : null}
+                </Pressable>
+              );
+            }
+            if (slot.kind === 'empty' && legacy) {
+              return (
+                <View key={slot.key} style={styles.slot}>
+                  <HonorAwardEmblem tier='generic' size={56} placeholder />
+                  <Text numberOfLines={2} style={[styles.slotLabel, { color: c.muted }]}>
+                    {honorText(t, 'profile.honorAwards.emptySlot', 'Espacio disponible')}
+                  </Text>
+                </View>
+              );
+            }
             if (slot.kind === 'empty') {
               return (
                 <Pressable
@@ -212,7 +356,7 @@ export default function HonorAwardsSection({
                     'profile.honorAwards.demo.slotLabel',
                     'Espacio disponible: ver demostración'
                   )}
-                  onPress={() => previewDemo(index)}
+                  onPress={previewDemo}
                   style={styles.slot}
                 >
                   <HonorAwardEmblem tier='generic' size={56} placeholder />
@@ -234,22 +378,23 @@ export default function HonorAwardsSection({
                 accessibilityState={{ busy: claimingId === award.id }}
                 disabled={claimingId !== null || (pending && !client.canClaim)}
                 onPress={() =>
-                  claimable ? void claim(award) : setInspecting({ award, demo: false })
+                  claimable
+                    ? void claim(award)
+                    : setInspecting({ award, demo: false, stage: 'medal' })
                 }
                 style={styles.slot}
               >
                 <View style={styles.emblemBox}>
                   {pending ? <PendingGlow color={palette.glow} /> : null}
-                  <View style={{ opacity: pending ? 0.75 : 1 }}>
-                    <HonorAwardEmblem
-                      tier={award.recipe.tier}
-                      kind={award.recipe.kind}
-                      title={award.recipe.title}
-                      imageUrl={award.recipe.badgeImageUrl}
-                      artPreset={award.recipe.artPreset}
-                      size={56}
-                    />
-                  </View>
+                  <HonorAwardEmblem
+                    tier={award.recipe.tier}
+                    kind={award.recipe.kind}
+                    title={award.recipe.title}
+                    imageUrl={award.recipe.badgeImageUrl}
+                    artPreset={award.recipe.artPreset}
+                    size={56}
+                    grayscale={pending}
+                  />
                   {claimingId === award.id ? (
                     <ActivityIndicator style={StyleSheet.absoluteFill} color='#ffffff' />
                   ) : null}
@@ -273,14 +418,8 @@ export default function HonorAwardsSection({
           })}
         </View>
       ) : null}
-      {state.kind === 'ready' && hasEmptySlots ? (
-        <Text style={[styles.demoHint, { color: c.muted }]}>
-          {honorText(
-            t,
-            'profile.honorAwards.info.demoHint',
-            'Toca un espacio disponible para ver una demostración.'
-          )}
-        </Text>
+      {state.kind === 'ready' && hint ? (
+        <Text style={[styles.demoHint, { color: c.muted }]}>{hint}</Text>
       ) : null}
 
       <HonorAwardClaimCinematic
@@ -288,13 +427,15 @@ export default function HonorAwardsSection({
         demo={celebrating?.demo ?? false}
         onClose={() => setCelebrating(null)}
         onInspect={(award) => {
-          setInspecting({ award, demo: celebrating?.demo ?? false });
+          setInspecting({ award, demo: celebrating?.demo ?? false, stage: 'mission' });
           setCelebrating(null);
         }}
       />
       <HonorAwardInspectModal
         award={inspecting?.award ?? null}
         demo={inspecting?.demo ?? false}
+        initialStage={inspecting?.stage ?? 'medal'}
+        locked={inspecting?.locked ?? false}
         onClose={() => setInspecting(null)}
       />
       <HonorAwardsInfoModal
@@ -314,6 +455,20 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 14 },
   slot: { width: '19%', minWidth: 62, alignItems: 'center', gap: 4 },
   emblemBox: { alignItems: 'center', justifyContent: 'center' },
+  lockedArt: { opacity: 0.6 },
+  lockBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: 2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#0e2a26',
+    borderWidth: 1,
+    borderColor: 'rgba(29,191,156,0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   glow: { position: 'absolute', width: 64, height: 64, borderRadius: 32 },
   slotLabel: { fontSize: 10, textAlign: 'center', fontWeight: '600' },
   slotYear: { fontSize: 10, fontWeight: '700' },

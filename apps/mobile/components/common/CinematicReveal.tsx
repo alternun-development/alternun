@@ -48,6 +48,7 @@ export default function CinematicReveal({
   accessibilityLabel,
   renderArt,
   onRequestClose,
+  showRays = true,
   children,
 }: CinematicRevealProps): React.JSX.Element {
   const { motionLevel } = useAppPreferences();
@@ -156,7 +157,7 @@ export default function CinematicReveal({
     }, 900);
 
     sequence.start();
-    if (full) rays.start();
+    if (full && showRays) rays.start();
     return () => {
       clearTimeout(hapticTimer);
       sequence.stop();
@@ -173,6 +174,7 @@ export default function CinematicReveal({
     rayTurn,
     reveal,
     sheen,
+    showRays,
     spin,
   ]);
 
@@ -192,12 +194,14 @@ export default function CinematicReveal({
       statusBarTranslucent
     >
       <Animated.View style={[styles.backdrop, { opacity: backdrop }]}>
-        <Animated.View
-          pointerEvents='none'
-          style={[styles.center, { transform: [{ rotate: rotateRays }], opacity: backdrop }]}
-        >
-          <Rays size={raySize} color={glow} />
-        </Animated.View>
+        {showRays ? (
+          <Animated.View
+            pointerEvents='none'
+            style={[styles.center, { transform: [{ rotate: rotateRays }], opacity: backdrop }]}
+          >
+            <Rays size={raySize} color={glow} />
+          </Animated.View>
+        ) : null}
 
         <Animated.View
           pointerEvents='none'

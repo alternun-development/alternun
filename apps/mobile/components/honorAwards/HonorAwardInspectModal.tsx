@@ -3,43 +3,88 @@ import {
   Animated,
   Easing,
   Image,
+  Linking,
   Modal,
   Pressable,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, ExternalLink, FileText, Share2, X } from 'lucide-react-native';
+import { ArrowLeft, Compass, Repeat, Sprout, X } from 'lucide-react-native';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
-import HonorAwardCard from './HonorAwardCard';
-import { HONOR_TIER_PALETTES, honorText } from './honorAwardTheme';
+import HonorAwardCard, { HONOR_CARD_RATIO } from './HonorAwardCard';
+import HonorAwardMedalPocket, { HonorMedalActions } from './HonorAwardMedalPocket';
+import HonorAwardPartnerMark from './HonorAwardPartnerMark';
+import { honorText } from './honorAwardTheme';
 import type { HonorAwardInspectModalProps } from './honorAwards.types';
 
 const MINT = '#1de9b6';
+/** From this sheet width the card sits in its own column, as in the design. */
+const TWO_COLUMNS = 400;
 
-/** Card view (tap to flip front/back) and the mission detail of an award. */
+function SectionHeading({ label }: { label: string }): React.JSX.Element {
+  return (
+    <View style={styles.heading}>
+      <Text style={styles.headingText}>{label}</Text>
+      <View style={styles.headingLine} />
+    </View>
+  );
+}
+
+/** Concentric rings with a compass: the project mark when the project has no logo. */
+function ProjectMark({ size }: { size: number }): React.JSX.Element {
+  return (
+    <View style={[styles.projectMark, { width: size, height: size }]}>
+      <Svg width={size} height={size} viewBox='0 0 100 100'>
+        {[48, 40, 32, 24].map((r, index) => (
+          <Circle
+            key={r}
+            cx={50}
+            cy={50}
+            r={r}
+            fill='none'
+            stroke={MINT}
+            strokeWidth={1.2}
+            opacity={0.12 + index * 0.12}
+          />
+        ))}
+        <Circle cx={50} cy={50} r={13} fill='none' stroke='#ffffff' strokeWidth={1.6} />
+      </Svg>
+      <View style={styles.projectMarkIcon}>
+        <Compass size={size * 0.17} color='#ffffff' />
+      </View>
+    </View>
+  );
+}
+
+/**
+ * A legacy medal: first the medal on its holographic pocket (share it or see the mission),
+ * then the mission: the flippable card on the left; the purpose, the ally and the project.
+ */
 export default function HonorAwardInspectModal({
   award,
   onClose,
   demo = false,
+  initialStage = 'medal',
+  locked = false,
 }: HonorAwardInspectModalProps): React.JSX.Element | null {
-  const { t } = useAppTranslation('mobile');
+  const { t, locale } = useAppTranslation('mobile');
   const { motionLevel } = useAppPreferences();
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const [stage, setStage] = useState<'card' | 'mission'>('card');
+  const [stage, setStage] = useState<'medal' | 'mission'>(initialStage);
   const [showBack, setShowBack] = useState(false);
   const flip = useRef(new Animated.Value(0)).current;
   const entrance = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!award) return;
-    setStage('card');
+    setStage(initialStage);
     setShowBack(false);
     flip.setValue(0);
     entrance.setValue(motionLevel === 'off' ? 1 : 0);
@@ -51,11 +96,11 @@ export default function HonorAwardInspectModal({
         useNativeDriver: true,
       }).start();
     }
-  }, [award, entrance, flip, motionLevel]);
+  }, [award, entrance, flip, initialStage, motionLevel]);
 
   if (!award) return null;
-  const palette = HONOR_TIER_PALETTES[award.recipe.tier];
-  const cardWidth = Math.min(300, width - 64);
+  const { recipe, partner, project } = award;
+  const flipLabel = honorText(t, 'profile.honorAwards.inspect.flip', 'Clic para ver reverso');
 
   function toggleSide(): void {
     const next = !showBack;
@@ -77,213 +122,226 @@ export default function HonorAwardInspectModal({
     router.push(path as never);
   }
 
-  async function share(): Promise<void> {
-    if (!award) return;
-    const message = honorText(
-      t,
-      'profile.honorAwards.shareMessage',
-      'Obtuve el galardón "{{title}}" en Airs{{partner}}.',
-      {
-        title: award.recipe.title,
-        partner: award.partner ? ` · ${award.partner.displayName}` : '',
-      }
-    );
-    try {
-      await Share.share({ message });
-    } catch {
-      // Sharing is optional: closing the sheet or an unsupported browser is not an error.
+  function visitPartner(): void {
+    if (!partner) return;
+    if (partner.websiteUrl) {
+      void Linking.openURL(partner.websiteUrl).catch(() => {});
+      return;
     }
+    go(`/explore/enterprise/${partner.slug}`);
   }
 
+  if (stage === 'medal') {
+    const entranceScale = entrance.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
+    return (
+      <Modal transparent visible animationType='fade' onRequestClose={onClose}>
+        <View style={styles.backdrop}>
+          <Animated.View
+            style={[
+              styles.medalStage,
+              { opacity: entrance, transform: [{ scale: entranceScale }] },
+            ]}
+          >
+            <HonorAwardMedalPocket award={award} width={Math.min(264, width - 80)} />
+            <HonorMedalActions
+              award={award}
+              demo={demo}
+              locked={locked}
+              onViewMission={() => setStage('mission')}
+              onClose={onClose}
+            />
+          </Animated.View>
+        </View>
+      </Modal>
+    );
+  }
+
+  const sheetWidth = Math.min(760, width - 24);
+  const wide = sheetWidth >= TWO_COLUMNS;
+  const cardWidth = wide
+    ? Math.min(220, Math.max(112, sheetWidth * 0.27))
+    : Math.min(220, sheetWidth - 96);
+  const asideWidth = sheetWidth >= 600 ? 140 : 108;
   const frontRotate = flip.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   const backRotate = flip.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
-  const entranceScale = entrance.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
+  const canVisitPartner = !demo && !!partner && (!!partner.websiteUrl || !!partner.slug);
 
   return (
     <Modal transparent visible animationType='fade' onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        {stage === 'card' ? (
-          <Animated.View
-            style={[styles.cardStage, { opacity: entrance, transform: [{ scale: entranceScale }] }]}
-          >
+        <View style={[styles.missionSheet, { width: sheetWidth }]}>
+          <View style={styles.missionHeader}>
             <Pressable
               accessibilityRole='button'
-              accessibilityLabel={honorText(
-                t,
-                'profile.honorAwards.inspect.flip',
-                'Toca para ver el reverso'
-              )}
-              onPress={toggleSide}
-              style={{ width: cardWidth, height: cardWidth * 1.4 }}
+              accessibilityLabel={honorText(t, 'profile.honorAwards.inspect.back', 'Volver')}
+              onPress={() => setStage('medal')}
+              style={styles.iconButton}
             >
-              <Animated.View
-                style={[
-                  styles.face,
-                  { transform: [{ perspective: 1000 }, { rotateY: frontRotate }] },
-                ]}
-              >
-                <HonorAwardCard award={award} side='front' width={cardWidth} />
-              </Animated.View>
-              <Animated.View
-                style={[
-                  styles.face,
-                  { transform: [{ perspective: 1000 }, { rotateY: backRotate }] },
-                ]}
-              >
-                <HonorAwardCard award={award} side='back' width={cardWidth} />
-              </Animated.View>
+              <ArrowLeft size={18} color='#ffffff' />
             </Pressable>
-            <Text style={styles.hint}>
-              {honorText(t, 'profile.honorAwards.inspect.flip', 'Toca para ver el reverso')}
-            </Text>
-            {demo ? (
-              <Text style={styles.demoNote}>
-                {honorText(
-                  t,
-                  'profile.honorAwards.demo.note',
-                  'Demostración: así se verá tu galardón cuando lo obtengas.'
-                )}
-              </Text>
-            ) : null}
-            <View style={styles.actions}>
-              {demo ? null : (
-                <Pressable
-                  accessibilityRole='button'
-                  onPress={() => void share()}
-                  style={[styles.pill, { borderColor: '#7c83ff' }]}
-                >
-                  <Share2 size={16} color='#c9ccff' />
-                  <Text style={[styles.pillText, { color: '#c9ccff' }]}>
-                    {honorText(t, 'profile.honorAwards.inspect.share', 'Compartir')}
-                  </Text>
-                </Pressable>
-              )}
-              <Pressable
-                accessibilityRole='button'
-                onPress={() => setStage('mission')}
-                style={[styles.pill, { borderColor: MINT }]}
-              >
-                <FileText size={16} color={MINT} />
-                <Text style={[styles.pillText, { color: MINT }]}>
-                  {honorText(t, 'profile.honorAwards.inspect.viewMission', 'Ver misión')}
-                </Text>
-              </Pressable>
-            </View>
             <Pressable
               accessibilityRole='button'
               accessibilityLabel={honorText(t, 'profile.honorAwards.inspect.close', 'Cerrar')}
               onPress={onClose}
-              style={styles.close}
+              style={styles.iconButton}
             >
               <X size={18} color='#ffffff' />
             </Pressable>
-          </Animated.View>
-        ) : (
-          <View style={styles.missionSheet}>
-            <View style={styles.missionHeader}>
-              <Pressable
-                accessibilityRole='button'
-                accessibilityLabel={honorText(t, 'profile.honorAwards.inspect.back', 'Volver')}
-                onPress={() => setStage('card')}
-                style={styles.iconButton}
-              >
-                <ArrowLeft size={18} color='#ffffff' />
-              </Pressable>
-              <Pressable
-                accessibilityRole='button'
-                accessibilityLabel={honorText(t, 'profile.honorAwards.inspect.close', 'Cerrar')}
-                onPress={onClose}
-                style={styles.iconButton}
-              >
-                <X size={18} color='#ffffff' />
-              </Pressable>
-            </View>
-            <ScrollView contentContainerStyle={styles.missionBody}>
-              <Text style={styles.missionTitle}>{award.recipe.title}</Text>
-              {award.recipe.classification ? (
-                <Text style={styles.missionClassification}>{award.recipe.classification}</Text>
+          </View>
+          <ScrollView
+            contentContainerStyle={[styles.missionBody, wide ? styles.missionBodyWide : null]}
+          >
+            <Pressable
+              accessibilityRole='button'
+              accessibilityLabel={flipLabel}
+              onPress={toggleSide}
+              style={[styles.cardColumn, wide ? null : styles.cardColumnStacked]}
+            >
+              <View style={{ width: cardWidth, height: cardWidth * HONOR_CARD_RATIO }}>
+                <Animated.View
+                  style={[
+                    styles.face,
+                    { transform: [{ perspective: 1000 }, { rotateY: frontRotate }] },
+                  ]}
+                >
+                  <HonorAwardCard award={award} side='front' width={cardWidth} />
+                </Animated.View>
+                <Animated.View
+                  style={[
+                    styles.face,
+                    { transform: [{ perspective: 1000 }, { rotateY: backRotate }] },
+                  ]}
+                >
+                  <HonorAwardCard award={award} side='back' width={cardWidth} />
+                </Animated.View>
+              </View>
+              <View style={styles.flipChip}>
+                <Repeat size={10} color='#b8f5e4' />
+                <Text style={styles.flipChipText}>{flipLabel}</Text>
+              </View>
+            </Pressable>
+
+            <View style={styles.details}>
+              <Text style={styles.missionTitle}>{recipe.title}</Text>
+              {recipe.classification ? (
+                <Text style={styles.missionClassification}>{recipe.classification}</Text>
               ) : null}
-              {award.recipe.airsAmount > 0 ? (
-                <View style={[styles.airsChip, { backgroundColor: palette.frame }]}>
+              {recipe.airsAmount > 0 ? (
+                <View style={styles.airsChip}>
                   <Text style={styles.airsChipText}>
                     {honorText(t, 'profile.honorAwards.airsAmount', '+{{amount}} Airs', {
-                      amount: award.recipe.airsAmount,
+                      amount: recipe.airsAmount,
                     })}
                   </Text>
                 </View>
               ) : null}
-              {award.recipe.purpose ? (
-                <View style={styles.block}>
-                  <Text style={styles.blockLabel}>
+              {recipe.purpose ? (
+                <View style={styles.purpose}>
+                  <Text style={styles.purposeLabel}>
                     {honorText(t, 'profile.honorAwards.mission.purpose', 'Propósito:')}
                   </Text>
-                  <Text style={styles.blockText}>{award.recipe.purpose}</Text>
+                  <Text style={styles.bodyText}>{recipe.purpose}</Text>
                 </View>
               ) : null}
 
-              {award.partner ? (
+              {partner ? (
                 <View style={styles.block}>
-                  <Text style={styles.sectionLabel}>
-                    {honorText(t, 'profile.honorAwards.supportedBy', 'Con el apoyo de:')}
-                  </Text>
-                  <View style={styles.partnerRow}>
-                    {award.partner.logoUrl ? (
-                      <Image source={{ uri: award.partner.logoUrl }} style={styles.partnerLogo} />
-                    ) : null}
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.partnerName}>{award.partner.displayName}</Text>
-                      {award.partner.description ? (
-                        <Text numberOfLines={4} style={styles.blockText}>
-                          {award.partner.description}
-                        </Text>
+                  <SectionHeading
+                    label={honorText(t, 'profile.honorAwards.supportedBy', 'Con el apoyo de:')}
+                  />
+                  <View style={styles.blockRow}>
+                    <View style={[styles.blockAside, { width: asideWidth }]}>
+                      {partner.logoUrl ? (
+                        <Image
+                          accessibilityLabel={partner.displayName}
+                          source={{ uri: partner.logoUrl }}
+                          style={{ width: asideWidth, height: asideWidth * 0.42 }}
+                          resizeMode='contain'
+                        />
+                      ) : (
+                        <HonorAwardPartnerMark
+                          partner={partner}
+                          width={asideWidth * 1.8}
+                          locale={locale}
+                          color='#ffffff'
+                        />
+                      )}
+                      {canVisitPartner ? (
+                        <Pressable
+                          accessibilityRole='link'
+                          onPress={visitPartner}
+                          style={styles.visitPill}
+                        >
+                          <Text style={styles.visitPillText}>
+                            {honorText(
+                              t,
+                              'profile.honorAwards.mission.visitPartner',
+                              'Visitar sitio / página'
+                            )}
+                          </Text>
+                        </Pressable>
                       ) : null}
                     </View>
-                  </View>
-                  {demo || !award.partner.slug ? null : (
-                    <Pressable
-                      accessibilityRole='link'
-                      onPress={() => go(`/explore/enterprise/${award.partner?.slug ?? ''}`)}
-                      style={[styles.linkPill, { borderColor: '#ffffff' }]}
-                    >
-                      <ExternalLink size={14} color='#ffffff' />
-                      <Text style={styles.linkText}>
-                        {honorText(t, 'profile.honorAwards.mission.visitPartner', 'Visitar página')}
+                    {partner.description ? (
+                      <Text style={[styles.smallText, styles.blockMain]}>
+                        {partner.description}
                       </Text>
-                    </Pressable>
-                  )}
+                    ) : null}
+                  </View>
                 </View>
               ) : null}
 
-              {award.project ? (
+              {project ? (
                 <View style={styles.block}>
-                  <Text style={styles.sectionLabel}>
-                    {honorText(t, 'profile.honorAwards.mission.projectData', 'Datos del proyecto:')}
-                  </Text>
-                  <Text style={styles.partnerName}>{award.project.title}</Text>
-                  {award.recipe.venueName ? (
-                    <Text style={styles.blockText}>
-                      {[award.recipe.venueName, award.recipe.venueLocation]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Text>
-                  ) : null}
-                  {demo || !award.project.slug ? null : (
-                    <Pressable
-                      accessibilityRole='link'
-                      onPress={() => go(`/explore/${award.project?.slug ?? ''}`)}
-                      style={[styles.linkPill, { borderColor: MINT }]}
-                    >
-                      <ExternalLink size={14} color={MINT} />
-                      <Text style={[styles.linkText, { color: MINT }]}>
-                        {honorText(t, 'profile.honorAwards.mission.viewProject', 'Ver proyecto')}
-                      </Text>
-                    </Pressable>
-                  )}
+                  <SectionHeading
+                    label={honorText(
+                      t,
+                      'profile.honorAwards.mission.projectData',
+                      'Datos del proyecto:'
+                    )}
+                  />
+                  <View style={styles.blockRow}>
+                    <View style={[styles.blockAside, { width: asideWidth }]}>
+                      <ProjectMark size={Math.min(96, asideWidth)} />
+                    </View>
+                    <View style={styles.blockMain}>
+                      <Text style={styles.projectName}>{project.title}</Text>
+                      {project.location ? (
+                        <Text style={styles.smallText}>{project.location}</Text>
+                      ) : null}
+                      {project.description ? (
+                        <>
+                          <View style={styles.dashed} />
+                          <Text style={styles.smallText}>{project.description}</Text>
+                        </>
+                      ) : null}
+                      {demo || !project.slug ? null : (
+                        <Pressable
+                          accessibilityRole='link'
+                          onPress={() => go(`/explore/${project.slug}`)}
+                          style={styles.projectButton}
+                        >
+                          <View style={styles.projectButtonPill}>
+                            <Text style={styles.projectButtonText}>
+                              {honorText(
+                                t,
+                                'profile.honorAwards.mission.viewProject',
+                                'Ver proyecto'
+                              )}
+                            </Text>
+                          </View>
+                          <View style={styles.projectButtonBadge}>
+                            <Sprout size={15} color={MINT} />
+                          </View>
+                        </Pressable>
+                      )}
+                    </View>
+                  </View>
                 </View>
               ) : null}
-            </ScrollView>
-          </View>
-        )}
+            </View>
+          </ScrollView>
+        </View>
       </View>
     </Modal>
   );
@@ -295,47 +353,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(2,8,7,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    padding: 12,
   },
-  cardStage: { alignItems: 'center' },
-  face: { ...StyleSheet.absoluteFillObject, backfaceVisibility: 'hidden' },
-  hint: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 10 },
-  demoNote: {
-    color: '#1de9b6',
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: 6,
-    textAlign: 'center',
-  },
-  actions: { flexDirection: 'row', gap: 12, marginTop: 14 },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 1.5,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  pillText: { fontWeight: '700' },
-  close: {
-    marginTop: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.6)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  medalStage: { alignItems: 'center' },
   missionSheet: {
-    width: '100%',
-    maxWidth: 520,
-    maxHeight: '92%',
-    backgroundColor: '#04140f',
+    maxHeight: '94%',
+    backgroundColor: '#04110d',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(29,233,182,0.25)',
+    borderColor: 'rgba(29,233,182,0.2)',
     overflow: 'hidden',
   },
   missionHeader: { flexDirection: 'row', justifyContent: 'space-between', padding: 12 },
@@ -347,40 +373,88 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  missionBody: { paddingHorizontal: 20, paddingBottom: 24, gap: 8 },
-  missionTitle: { color: MINT, fontSize: 28, fontWeight: '800' },
-  missionClassification: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  missionBody: { paddingHorizontal: 18, paddingBottom: 28, gap: 20 },
+  missionBodyWide: { flexDirection: 'row', alignItems: 'flex-start', gap: 22 },
+  cardColumn: { alignItems: 'center', gap: 10, paddingTop: 4 },
+  cardColumnStacked: { alignSelf: 'center' },
+  face: { ...StyleSheet.absoluteFillObject, backfaceVisibility: 'hidden' },
+  flipChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#0f5a49',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  flipChipText: { color: '#b8f5e4', fontSize: 9, fontWeight: '600' },
+  details: { flex: 1, gap: 2 },
+  missionTitle: { color: MINT, fontSize: 28, fontWeight: '800', lineHeight: 32 },
+  missionClassification: { color: '#ffffff', fontSize: 18, fontWeight: '500' },
   airsChip: {
     alignSelf: 'flex-start',
+    backgroundColor: MINT,
     borderRadius: 999,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 5,
-    marginTop: 4,
+    marginTop: 10,
   },
-  airsChipText: { color: '#ffffff', fontWeight: '800' },
-  block: {
-    marginTop: 14,
-    gap: 6,
+  airsChipText: { color: '#04140f', fontWeight: '800', fontSize: 17 },
+  purpose: { marginTop: 18, gap: 4 },
+  purposeLabel: { color: '#ffffff', fontWeight: '800', fontSize: 15 },
+  bodyText: { color: 'rgba(255,255,255,0.88)', fontSize: 13, lineHeight: 19 },
+  smallText: { color: 'rgba(255,255,255,0.85)', fontSize: 11.5, lineHeight: 16 },
+  block: { marginTop: 26, gap: 16 },
+  heading: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  headingText: { color: MINT, fontWeight: '700', fontSize: 13 },
+  headingLine: { flex: 1, height: 1, backgroundColor: 'rgba(29,233,182,0.7)' },
+  blockRow: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
+  blockAside: { alignItems: 'center', gap: 8 },
+  blockMain: { flex: 1, gap: 2 },
+  visitPill: {
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  visitPillText: { color: '#ffffff', fontWeight: '500', fontSize: 10.5 },
+  projectMark: { alignItems: 'center', justifyContent: 'center' },
+  projectMarkIcon: { position: 'absolute' },
+  projectName: { color: '#ffffff', fontSize: 12.5, fontWeight: '800' },
+  dashed: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(29,233,182,0.18)',
-    paddingTop: 12,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(255,255,255,0.55)',
+    marginVertical: 10,
   },
-  blockLabel: { color: '#ffffff', fontWeight: '800' },
-  blockText: { color: 'rgba(255,255,255,0.82)', fontSize: 13, lineHeight: 19 },
-  sectionLabel: { color: MINT, fontWeight: '700', fontSize: 13 },
-  partnerRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  partnerLogo: { width: 48, height: 48, borderRadius: 10, backgroundColor: '#ffffff' },
-  partnerName: { color: '#ffffff', fontSize: 17, fontWeight: '800' },
-  linkPill: {
+  // "Ver proyecto": a white outline pill with a mint badge that overlaps its left end.
+  projectButton: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginTop: 4,
+    marginTop: 14,
+    paddingLeft: 14,
   },
-  linkText: { color: '#ffffff', fontWeight: '700', fontSize: 12 },
+  projectButtonPill: {
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    borderRadius: 999,
+    paddingLeft: 26,
+    paddingRight: 16,
+    paddingVertical: 4,
+  },
+  projectButtonText: { color: '#ffffff', fontWeight: '600', fontSize: 11.5 },
+  projectButtonBadge: {
+    position: 'absolute',
+    left: 0,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 1.5,
+    borderColor: MINT,
+    backgroundColor: '#04110d',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

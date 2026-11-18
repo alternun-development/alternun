@@ -41,7 +41,13 @@ const award = {
     frontImageUrl: null,
     backImageUrl: null,
   },
-  project: { id: 'p', slug: 'fundacion-batis', title: 'Fundación Batis' },
+  project: {
+    id: 'p',
+    slug: 'fundacion-batis',
+    title: 'Fundación Batis',
+    location: 'Puerto Colombia, Atlántico.',
+    description: 'Bosque de mangle rojo.',
+  },
   partner: {
     id: 'e',
     slug: 'torneo-swing-golf',
@@ -49,6 +55,7 @@ const award = {
     description: 'Torneos de golf en Colombia.',
     logoUrl: null,
     websiteUrl: null,
+    countryCode: 'CO',
   },
 };
 
@@ -70,7 +77,7 @@ beforeEach(() => {
 });
 
 describe('claim animation', () => {
-  it('reveals the award with its tier, ally and Airs, and offers inspect or continue', () => {
+  it('reveals the medal on its pocket with the ally, sharing and the mission', () => {
     const onInspect = jest.fn();
     const onClose = jest.fn();
     let tree;
@@ -80,16 +87,12 @@ describe('claim animation', () => {
       );
     });
     expect(texts(tree)).toEqual(
-      expect.arrayContaining([
-        '¡Galardón desbloqueado!',
-        'Manglar Verde',
-        'Medalla de plata · Swing Golf',
-        '+10 Airs',
-      ])
+      expect.arrayContaining(['Manglar Verde', 'Swing Golf Colombia', 'Compartir', 'Ver misión'])
     );
-    act(() => button(tree, 'Inspeccionar').props.onPress());
+    expect(texts(tree).join(' ')).not.toMatch(/plata|oro|bronce/i);
+    act(() => button(tree, 'Ver misión').props.onPress());
     expect(onInspect).toHaveBeenCalledWith(award);
-    act(() => button(tree, 'Continuar').props.onPress());
+    act(() => button(tree, 'Cerrar').props.onPress());
     expect(onClose).toHaveBeenCalled();
     act(() => tree.unmount());
   });
@@ -105,6 +108,9 @@ describe('claim animation', () => {
     });
     act(() => jest.advanceTimersByTime(3000));
     expect(texts(tree)).toContain('Manglar Verde');
+    // Only the coin spin: no turning light rays behind legacy medals.
+    const CinematicReveal = require('../../common/CinematicReveal').default;
+    expect(tree.root.findByType(CinematicReveal).props.showRays).toBe(false);
     act(() =>
       tree.update(
         <HonorAwardClaimCinematic award={null} onInspect={jest.fn()} onClose={jest.fn()} />
@@ -117,55 +123,141 @@ describe('claim animation', () => {
 });
 
 describe('inspect view', () => {
-  it('shows both faces of the card and opens the mission detail with links', () => {
+  it('shows the medal, then the mission with the flippable card and links', () => {
     const onClose = jest.fn();
     let tree;
     act(() => {
       tree = renderer.create(<HonorAwardInspectModal award={award} onClose={onClose} />);
     });
+    expect(tree.root.findAllByType(HonorAwardCard)).toHaveLength(0);
+    expect(texts(tree)).toEqual(
+      expect.arrayContaining(['Manglar Verde', 'Swing Golf Colombia', 'Compartir', 'Ver misión'])
+    );
+
+    act(() => button(tree, 'Ver misión').props.onPress());
     expect(tree.root.findAllByType(HonorAwardCard).map((node) => node.props.side)).toEqual([
       'front',
       'back',
     ]);
     expect(texts(tree)).toEqual(
-      expect.arrayContaining(['MISIÓN:', 'MEDALLA DE PLATA', 'Club El Rincón de Cajicá'])
-    );
-
-    act(() => button(tree, 'Toca para ver el reverso').props.onPress());
-    act(() => button(tree, 'Ver misión').props.onPress());
-    expect(texts(tree)).toEqual(
       expect.arrayContaining([
+        'MISIÓN:',
+        'Club El Rincón de Cajicá',
         'Misión de compensación',
+        '+10 Airs',
         'Propósito:',
-        'Swing Golf',
+        'Con el apoyo de:',
+        'Torneos de golf en Colombia.',
+        'Datos del proyecto:',
         'Fundación Batis',
+        'Puerto Colombia, Atlántico.',
+        'Bosque de mangle rojo.',
       ])
     );
+    expect(texts(tree).join(' ')).not.toMatch(/MEDALLA DE PLATA/);
+    act(() => button(tree, 'Clic para ver reverso').props.onPress());
 
+    act(() => button(tree, 'Visitar sitio / página').props.onPress());
+    expect(mockPush).toHaveBeenCalledWith('/explore/enterprise/torneo-swing-golf');
     act(() => button(tree, 'Ver proyecto').props.onPress());
     expect(onClose).toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith('/explore/fundacion-batis');
-    act(() => button(tree, 'Visitar página').props.onPress());
-    expect(mockPush).toHaveBeenCalledWith('/explore/enterprise/torneo-swing-golf');
 
     act(() => button(tree, 'Volver').props.onPress());
-    expect(tree.root.findAllByType(HonorAwardCard)).toHaveLength(2);
+    expect(tree.root.findAllByType(HonorAwardCard)).toHaveLength(0);
+    act(() => tree.unmount());
+  });
+
+  it('opens the ally website when it has one, and can start on the mission', () => {
+    const { Linking } = require('react-native');
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const withSite = {
+      ...award,
+      partner: { ...award.partner, websiteUrl: 'https://swinggolf.co' },
+    };
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardInspectModal award={withSite} initialStage='mission' onClose={jest.fn()} />
+      );
+    });
+    act(() => button(tree, 'Visitar sitio / página').props.onPress());
+    expect(openURL).toHaveBeenCalledWith('https://swinggolf.co');
+    expect(mockPush).not.toHaveBeenCalled();
+    openURL.mockRestore();
+    act(() => tree.unmount());
+  });
+});
+
+describe('sharing a medal', () => {
+  it('opens the shared share sheet with the medal, its message and the project link', () => {
+    const ShareSheet = require('../../share/ShareSheet').default;
+    let tree;
+    act(() => {
+      tree = renderer.create(<HonorAwardInspectModal award={award} onClose={jest.fn()} />);
+    });
+    expect(tree.root.findByType(ShareSheet).props.visible).toBe(false);
+    act(() => button(tree, 'Compartir').props.onPress());
+    const sheet = tree.root.findByType(ShareSheet).props;
+    expect(sheet.visible).toBe(true);
+    expect(sheet.content).toMatchObject({
+      title: 'Comparte tu medalla de legado',
+      message: 'Obtuve la medalla de legado "Manglar Verde" en Airs · Swing Golf.',
+    });
+    expect(sheet.content.url).toMatch(/\/explore\/fundacion-batis$/);
+    act(() => sheet.onClose());
+    expect(tree.root.findByType(ShareSheet).props.visible).toBe(false);
+    act(() => tree.unmount());
+  });
+});
+
+describe('locked medal', () => {
+  it('explains how to earn it, hides sharing and keeps the mission links', () => {
+    let tree;
+    act(() => {
+      tree = renderer.create(<HonorAwardInspectModal award={award} locked onClose={jest.fn()} />);
+    });
+    expect(texts(tree)).toContain(
+      'Aún no tienes esta medalla: participa en la misión para obtenerla.'
+    );
+    expect(texts(tree)).not.toContain('Compartir');
+    act(() => button(tree, 'Ver misión').props.onPress());
+    act(() => button(tree, 'Ver proyecto').props.onPress());
+    expect(mockPush).toHaveBeenCalledWith('/explore/fundacion-batis');
+    act(() => tree.unmount());
+  });
+
+  it('draws the card back without an obtained date', () => {
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardCard
+          award={{
+            ...award,
+            awardedAt: '',
+            claimedAt: null,
+            recipe: { ...award.recipe, eventYear: null },
+          }}
+          side='back'
+          width={300}
+        />
+      );
+    });
+    expect(texts(tree).join(' ')).not.toMatch(/NaN|Obtenida/);
     act(() => tree.unmount());
   });
 });
 
 describe('demo mode', () => {
-  it('labels the preview and changes the headline', () => {
+  it('labels the preview and hides sharing', () => {
     let tree;
     act(() => {
       tree = renderer.create(
         <HonorAwardClaimCinematic award={award} demo onInspect={jest.fn()} onClose={jest.fn()} />
       );
     });
-    expect(texts(tree)).toEqual(
-      expect.arrayContaining(['Demostración', 'Así se ve al obtener un galardón'])
-    );
-    expect(texts(tree)).not.toContain('¡Galardón desbloqueado!');
+    expect(texts(tree)).toContain('Demostración: así se verá tu medalla cuando la obtengas.');
+    expect(texts(tree)).not.toContain('Compartir');
     act(() => tree.unmount());
   });
 
@@ -174,11 +266,11 @@ describe('demo mode', () => {
     act(() => {
       tree = renderer.create(<HonorAwardInspectModal award={award} demo onClose={jest.fn()} />);
     });
-    expect(texts(tree)).toContain('Demostración: así se verá tu galardón cuando lo obtengas.');
+    expect(texts(tree)).toContain('Demostración: así se verá tu medalla cuando la obtengas.');
     expect(texts(tree)).not.toContain('Compartir');
     act(() => button(tree, 'Ver misión').props.onPress());
     expect(texts(tree)).not.toContain('Ver proyecto');
-    expect(texts(tree)).not.toContain('Visitar página');
+    expect(texts(tree)).not.toContain('Visitar sitio / página');
     act(() => tree.unmount());
   });
 });
@@ -212,6 +304,45 @@ describe('medal art', () => {
     act(() => tree.unmount());
   });
 
+  it('draws the empty legacy slot with the Airs mark in a ring', () => {
+    const { Circle, Path } = require('react-native-svg');
+    let tree;
+    act(() => {
+      tree = renderer.create(<HonorAwardEmblem tier='generic' size={56} placeholder />);
+    });
+    expect(tree.root.findAllByType(Path)).toHaveLength(2);
+    expect(tree.root.findAllByType(Circle)).toHaveLength(2);
+    expect(tree.root.findAllByType(SvgText)).toHaveLength(0);
+    act(() => tree.unmount());
+  });
+
+  it('shows medals not claimed yet in greyscale', () => {
+    const { Image, View } = require('react-native');
+    const { presetBadge } = require('../honorAwardArt');
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardEmblem tier='generic' artPreset='golf_mangrove' size={56} grayscale />
+      );
+    });
+    expect(tree.root.findByType(Image).props.source).toBe(
+      presetBadge('golf_mangrove', 'generic', true)
+    );
+    expect(presetBadge('golf_mangrove', 'generic', true)).not.toBe(
+      presetBadge('golf_mangrove', 'generic')
+    );
+    act(() =>
+      tree.update(
+        <HonorAwardEmblem tier='generic' imageUrl='https://cdn/m.png' size={56} grayscale />
+      )
+    );
+    const style = [].concat(tree.root.findAllByType(View)[0].props.style);
+    expect(style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ filter: 'grayscale(1)' })])
+    );
+    act(() => tree.unmount());
+  });
+
   it('keeps the generic shield for unknown presets', () => {
     let tree;
     act(() => {
@@ -236,14 +367,18 @@ describe('info modal', () => {
     });
     expect(texts(tree)).toEqual(
       expect.arrayContaining([
-        '¿Cómo obtengo uno?',
+        'Legado: medallas de misión',
+        '¿Cómo obtengo una medalla?',
         'Participa en una misión o actividad de un aliado de Airs.',
-        'Toca un espacio disponible para ver una demostración.',
+        'Las medallas con candado son misiones disponibles en Airs: tócalas para ver cómo obtenerlas. Si aún no tienes medallas, toca la de ejemplo para ver cómo se ve.',
       ])
     );
     act(() => tree.update(<HonorAwardsInfoModal visible audience='ally' onClose={jest.fn()} />));
-    expect(texts(tree)).toContain('¿Cómo funcionan?');
-    expect(texts(tree)).not.toContain('Toca un espacio disponible para ver una demostración.');
+    expect(texts(tree)).toEqual(
+      expect.arrayContaining(['Galardones de honor', '¿Cómo funcionan?'])
+    );
+    expect(texts(tree).join(' ')).not.toMatch(/oro, plata y bronce/);
+    expect(texts(tree).join(' ')).not.toMatch(/candado/);
     act(() =>
       tree.update(<HonorAwardsInfoModal visible={false} audience='ally' onClose={jest.fn()} />)
     );
