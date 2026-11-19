@@ -124,9 +124,13 @@ Current version: **1.2.11**
 
 ## 📋 Latest Changes (v1.2.11)
 
-### Bug Fixes
+### Documentation
 
-- **repo:** feat(honor-awards): Swing Golf V4 medals, sends with Airs and claim codes
+- **honor-awards:** model, sending with Airs, claim code security and operations ([317b97d](https://github.com/alternun-development/alternun/commit/317b97d01421cda5e3ded7a9d4a5fa92f8f3ed22))
+
+### Changes
+
+- **reentry:** next step after v1.2.11-dev.0 ([b92c54b](https://github.com/alternun-development/alternun/commit/b92c54b11cf3426806a699b342255b3bfdbb516a))
 
 ### Features
 
