@@ -13,6 +13,7 @@ export type HonorAwardRecipe = {
   purpose: string | null;
   eventName: string | null;
   eventYear: number | null;
+  eventDates: string | null;
   venueName: string | null;
   venueLocation: string | null;
   airsAmount: number;
@@ -55,6 +56,7 @@ export type HonorAwardRecipeValues = {
   purpose: string;
   eventName: string;
   eventYear: string;
+  eventDates: string;
   venueName: string;
   venueLocation: string;
   airsAmount: string;

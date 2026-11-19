@@ -1,14 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SectionContainer } from '@alternun/ui';
-import { Info, Lock } from 'lucide-react-native';
-import { createHonorAwardClient, sortHonorAwards, type HonorAward } from '../../utils/honorAwards';
+import { Info, Lock, Ticket } from 'lucide-react-native';
+import {
+  createHonorAwardClient,
+  sortHonorAwards,
+  type HonorAward,
+  type HonorAwardRedeemResult,
+} from '../../utils/honorAwards';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import HonorAwardClaimCinematic from './HonorAwardClaimCinematic';
 import HonorAwardEmblem from './HonorAwardEmblem';
 import HonorAwardInspectModal from './HonorAwardInspectModal';
 import HonorAwardsInfoModal from './HonorAwardsInfoModal';
+import HonorAwardRedeemModal from './HonorAwardRedeemModal';
 import { buildDemoHonorAward } from './honorAwardDemo';
 import {
   buildHonorSlots,
@@ -86,6 +92,7 @@ export default function HonorAwardsSection({
     locked?: boolean;
   } | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [redeemOpen, setRedeemOpen] = useState(false);
 
   const load = useCallback(() => {
     let active = true;
@@ -128,6 +135,21 @@ export default function HonorAwardsSection({
     }
   }
 
+  /** After a code: refresh the legacy and, when the medal was given, play its claim. */
+  async function afterRedeem(result: HonorAwardRedeemResult): Promise<void> {
+    try {
+      const [list, catalog] = await Promise.all([
+        client.list(),
+        client.catalog ? client.catalog().catch(() => []) : [],
+      ]);
+      setState({ kind: 'ready', awards: sortHonorAwards(list), catalog });
+      const given = result.grantId ? list.find((award) => award.id === result.grantId) : null;
+      if (given && given.status === 'pending') await claim(given);
+    } catch {
+      load();
+    }
+  }
+
   // A person's collection is their legacy: the mission medals. Allies keep "Galardones de honor".
   const legacy = scope.kind === 'me';
   const awards = state.kind === 'ready' ? state.awards : [];
@@ -160,7 +182,7 @@ export default function HonorAwardsSection({
         classification: honorText(
           t,
           'profile.honorAwards.demo.classification',
-          'Misión de compensación'
+          'Misión de impacto positivo'
         ),
         purpose: honorText(
           t,
@@ -212,19 +234,37 @@ export default function HonorAwardsSection({
       }
       style={{ margin: 12 }}
       trailing={
-        <Pressable
-          accessibilityRole='button'
-          accessibilityLabel={
-            legacy
-              ? honorText(t, 'profile.honorAwards.legacyInfoButton', '¿Qué es el legado?')
-              : honorText(t, 'profile.honorAwards.infoButton', '¿Qué son los galardones de honor?')
-          }
-          hitSlop={10}
-          onPress={() => setInfoOpen(true)}
-          style={[styles.infoButton, { borderColor: c.border ?? 'rgba(255,255,255,0.25)' }]}
-        >
-          <Info size={18} color={c.accent ?? '#1de9b6'} />
-        </Pressable>
+        <View style={styles.headerActions}>
+          {client.redeem ? (
+            <Pressable
+              accessibilityRole='button'
+              onPress={() => setRedeemOpen(true)}
+              style={[styles.redeemButton, { borderColor: c.accent ?? '#1de9b6' }]}
+            >
+              <Ticket size={15} color={c.accent ?? '#1de9b6'} />
+              <Text style={[styles.redeemText, { color: c.text }]}>
+                {honorText(t, 'profile.honorAwards.redeem.button', 'Reclamar medalla')}
+              </Text>
+            </Pressable>
+          ) : null}
+          <Pressable
+            accessibilityRole='button'
+            accessibilityLabel={
+              legacy
+                ? honorText(t, 'profile.honorAwards.legacyInfoButton', '¿Qué es el legado?')
+                : honorText(
+                    t,
+                    'profile.honorAwards.infoButton',
+                    '¿Qué son los galardones de honor?'
+                  )
+            }
+            hitSlop={10}
+            onPress={() => setInfoOpen(true)}
+            style={[styles.infoButton, { borderColor: c.border ?? 'rgba(255,255,255,0.25)' }]}
+          >
+            <Info size={18} color={c.accent ?? '#1de9b6'} />
+          </Pressable>
+        </View>
       }
     >
       {bodyText ? <Text style={[styles.subtitle, { color: c.muted }]}>{bodyText}</Text> : null}
@@ -438,6 +478,14 @@ export default function HonorAwardsSection({
         locked={inspecting?.locked ?? false}
         onClose={() => setInspecting(null)}
       />
+      {client.redeem ? (
+        <HonorAwardRedeemModal
+          visible={redeemOpen}
+          redeem={(code) => client.redeem?.(code) ?? Promise.reject(new Error('READ_ONLY'))}
+          onRedeemed={(result) => void afterRedeem(result)}
+          onClose={() => setRedeemOpen(false)}
+        />
+      ) : null}
       <HonorAwardsInfoModal
         visible={infoOpen}
         audience={scope.kind === 'me' ? 'person' : 'ally'}
@@ -450,6 +498,17 @@ export default function HonorAwardsSection({
 const styles = StyleSheet.create({
   subtitle: { fontSize: 13, marginBottom: 6 },
   pendingNote: { fontSize: 13, fontWeight: '700', marginBottom: 6 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  redeemButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  redeemText: { fontSize: 13, fontWeight: '700' },
   loader: { marginVertical: 18 },
   error: { fontSize: 13, marginVertical: 8 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 14 },
@@ -470,7 +529,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   glow: { position: 'absolute', width: 64, height: 64, borderRadius: 32 },
-  slotLabel: { fontSize: 10, textAlign: 'center', fontWeight: '600' },
+  // Stretch so long names wrap inside the slot instead of spilling over its neighbors.
+  slotLabel: { alignSelf: 'stretch', fontSize: 10, textAlign: 'center', fontWeight: '600' },
   slotYear: { fontSize: 10, fontWeight: '700' },
   claimBadge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   claimBadgeText: { color: '#ffffff', fontSize: 10, fontWeight: '800' },

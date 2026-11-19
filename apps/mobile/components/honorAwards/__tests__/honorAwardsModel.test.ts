@@ -327,6 +327,73 @@ describe('ally desk client', () => {
     expect(JSON.parse(String(calls[2][1].body))).toEqual({ email: 'ada@example.com' });
     expect(summary?.total).toBe(2);
   });
+
+  it('sends the name for new people and manages claim codes', async () => {
+    const calls: Array<[string, RequestInit]> = [];
+    const fetcher = jest.fn(async (url: string, init: RequestInit) => {
+      calls.push([url, init]);
+      return jsonResponse(
+        200,
+        url.endsWith('/codes') && init.method === 'POST'
+          ? { code: 'ABCD-EFGH-JKMN', record: {} }
+          : []
+      );
+    });
+    const client = createHonorAwardClient(
+      { kind: 'enterprise-manage', enterpriseId: 'e1' },
+      async () => 'token',
+      fetcher as unknown as typeof fetch,
+      'https://api.test'
+    );
+    await client.desk?.grant({ recipeId: 'r1', email: 'new@example.com', recipientName: ' Ana ' });
+    await client.desk?.listCodes();
+    const created = await client.desk?.createCode({
+      recipeId: 'r1',
+      label: ' Torneo ',
+      maxRedemptions: 100,
+      validDays: 3,
+    });
+    await client.desk?.revokeCode('c/1');
+    const base = 'https://api.test/v1/me/enterprises/e1/manage/honor-awards';
+    expect(calls.map(([url, init]) => `${init.method} ${url}`)).toEqual([
+      `POST ${base}/grants`,
+      `GET ${base}/codes`,
+      `POST ${base}/codes`,
+      `POST ${base}/codes/c%2F1/revoke`,
+    ]);
+    expect(JSON.parse(String(calls[0][1].body))).toEqual({
+      recipeId: 'r1',
+      email: 'new@example.com',
+      recipientName: 'Ana',
+    });
+    expect(JSON.parse(String(calls[2][1].body))).toEqual({
+      recipeId: 'r1',
+      maxRedemptions: 100,
+      validDays: 3,
+      label: 'Torneo',
+    });
+    expect(created?.code).toBe('ABCD-EFGH-JKMN');
+  });
+
+  it('lets only the signed-in person redeem a code', async () => {
+    const fetcher = jest.fn(async () => jsonResponse(200, { grantId: 'g1' }));
+    const me = createHonorAwardClient(
+      { kind: 'me' },
+      async () => 't',
+      fetcher as unknown as typeof fetch,
+      'https://api.test'
+    );
+    await me.redeem?.(' abcd-efgh-jkmn ');
+    expect(fetcher).toHaveBeenCalledWith(
+      'https://api.test/v1/me/honor-awards/redeem',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ code: 'abcd-efgh-jkmn' }) })
+    );
+    const publicClient = createHonorAwardClient(
+      { kind: 'enterprise-public', slug: 's' },
+      async () => null
+    );
+    expect('redeem' in publicClient).toBe(false);
+  });
 });
 
 describe('card template details', () => {

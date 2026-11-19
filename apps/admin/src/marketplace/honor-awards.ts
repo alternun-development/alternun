@@ -11,7 +11,7 @@ export const HONOR_AWARD_TIERS = ['generic', 'gold', 'silver', 'bronze'] as cons
 export const HONOR_AWARD_KINDS = ['medal', 'trophy'] as const;
 export const HONOR_AWARD_AUDIENCES = ['user', 'enterprise'] as const;
 /** Built-in art the app can draw; empty means the generic shield. */
-export const HONOR_ART_PRESETS = ['golf_mangrove', 'coast'] as const;
+export const HONOR_ART_PRESETS = ['golf_mangrove', 'golf_mangrove_community', 'coast'] as const;
 
 export const honorAwardRecipesPath = '/v1/admin/honor-awards/recipes';
 
@@ -36,6 +36,7 @@ export const emptyHonorAwardRecipe: HonorAwardRecipeValues = {
   purpose: '',
   eventName: '',
   eventYear: '',
+  eventDates: '',
   venueName: '',
   venueLocation: '',
   airsAmount: '0',
@@ -58,6 +59,7 @@ const TEXT_LIMITS: ReadonlyArray<[keyof HonorAwardRecipeValues, number]> = [
   ['classification', 80],
   ['purpose', 500],
   ['eventName', 120],
+  ['eventDates', 80],
   ['venueName', 120],
   ['venueLocation', 160],
 ];
@@ -74,6 +76,7 @@ export function recipeToValues(recipe: HonorAwardRecipe): HonorAwardRecipeValues
     purpose: recipe.purpose ?? '',
     eventName: recipe.eventName ?? '',
     eventYear: recipe.eventYear == null ? '' : String(recipe.eventYear),
+    eventDates: recipe.eventDates ?? '',
     venueName: recipe.venueName ?? '',
     venueLocation: recipe.venueLocation ?? '',
     airsAmount: String(recipe.airsAmount),
@@ -119,6 +122,7 @@ export function buildHonorAwardRecipeBody(values: HonorAwardRecipeValues): Recor
     purpose: optional(values.purpose),
     eventName: optional(values.eventName),
     eventYear: values.eventYear.trim() ? Number(values.eventYear.trim()) : null,
+    eventDates: optional(values.eventDates),
     venueName: optional(values.venueName),
     venueLocation: optional(values.venueLocation),
     airsAmount: Number(values.airsAmount.trim() || '0'),

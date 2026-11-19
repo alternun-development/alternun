@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-18T18:48:42.835Z",
+  "lastUpdated": "2026-11-19T18:14:39.958Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "After PR #313 merge: confirm dash-prod pipeline + /health version, deploy /v1/me/honor-awards/catalog; test legacy medal share/download and referral QR download on iOS/Android",
+      "description": "Confirm with Caro (+14 Airs fixed, Swing Golf signed) and give Swing Golf a partner_operator; then pilot claim codes for the 21-22 Nov tournament",
       "id": "next",
       "priority": 1
     }

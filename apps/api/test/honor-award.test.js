@@ -100,15 +100,21 @@ test('recipe input is trimmed, blank optional text becomes null and limits are e
     title: '  Manglar Verde ',
     purpose: '   ',
     venueName: ' Club ',
+    eventDates: ' Noviembre 21 y 22 - 2026 ',
   });
   assert.equal(normalized.title, 'Manglar Verde');
   assert.equal(normalized.purpose, null);
   assert.equal(normalized.venueName, 'Club');
+  assert.equal(normalized.eventDates, 'Noviembre 21 y 22 - 2026');
 
   assert.throws(() => checkRecipeInput({ title: '' }), code('HONOR_AWARD_INPUT_INVALID'));
   assert.throws(() => checkRecipeInput({ tier: 'platinum' }), code('HONOR_AWARD_INPUT_INVALID'));
   assert.throws(() => checkRecipeInput({ eventYear: 1999 }), code('HONOR_AWARD_INPUT_INVALID'));
   assert.throws(() => checkRecipeInput({ airsAmount: -1 }), code('HONOR_AWARD_INPUT_INVALID'));
+  assert.throws(
+    () => checkRecipeInput({ eventDates: 'x'.repeat(81) }),
+    code('HONOR_AWARD_INPUT_INVALID')
+  );
   assert.doesNotThrow(() =>
     checkRecipeInput({ title: 'Ok', tier: 'bronze', eventYear: 2026, airsAmount: 5 })
   );
@@ -387,7 +393,8 @@ test('an ally gives its own honor award for a stay, with the reservation as refe
       reference: ' RES-100 ',
     }
   );
-  assert.equal(grant.userId, 'user-1');
+  assert.deepEqual(grant, { kind: 'grant', grantId: GRANT_ID });
+  assert.equal(calls.grants[0].userId, 'user-1');
   assert.equal(calls.grants[0].reference, 'RES-100');
   assert.equal(calls.audits.at(-1).enterpriseId, ENTERPRISE_ID);
   assert.equal(calls.audits.at(-1).action, 'honor_award.granted');

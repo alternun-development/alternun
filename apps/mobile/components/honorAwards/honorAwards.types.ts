@@ -5,6 +5,8 @@ import type {
   HonorAwardCatalogItem,
   HonorAwardClient,
   HonorAwardKind,
+  HonorAwardRecipe,
+  HonorAwardRedeemResult,
   HonorAwardScope,
   HonorAwardTier,
 } from '../../utils/honorAwards';
@@ -69,6 +71,12 @@ export interface HonorPresetArt {
   badge: Record<HonorAwardTier, ImageSourcePropType>;
   badgeGray?: Record<HonorAwardTier, ImageSourcePropType>;
   back?: ImageSourcePropType;
+  /** Background of the front instead of the holographic foil (the community medal's grass). */
+  front?: ImageSourcePropType;
+  /** Text color on that front: white and mint over a dark background. */
+  frontInk?: 'light';
+  /** The ally's mark drawn on the card: ink for the foil, white for dark backgrounds. */
+  partnerMark?: { dark: ImageSourcePropType; light: ImageSourcePropType };
 }
 
 export interface HonorAwardStampProps {
@@ -82,8 +90,10 @@ export interface HonorAwardPartnerMarkProps {
   /** Card width, used to scale the mark. */
   width: number;
   locale?: string;
-  /** One color for the whole wordmark (white on the dark mission view). */
-  color?: string;
+  /** White mark, for dark backgrounds (the mission view, the grass front). */
+  light?: boolean;
+  /** Recipe art preset: its bundled ally mark is used when the ally has no logo. */
+  artPreset?: string | null;
 }
 
 export interface HonorAwardCrestProps {
@@ -97,12 +107,16 @@ export interface HonorAwardCardProps {
   award: HonorAward;
   side: 'front' | 'back';
   width: number;
+  /** A medal the person does not hold yet: its art in grey. */
+  grayscale?: boolean;
 }
 
 export interface HonorMedalPocketProps {
   award: HonorAward;
   /** Pocket width; the medal rises above it. */
   width: number;
+  /** A medal the person does not hold yet: grey medal on a silver pocket. */
+  grayscale?: boolean;
 }
 
 export interface HonorMedalActionsProps {
@@ -144,6 +158,24 @@ export interface HonorAwardsInfoModalProps {
 export interface HonorAwardsAllyDeskProps {
   desk: HonorAwardAllyDesk;
   c: HonorAwardsPalette;
+}
+
+/** Whether a claim code can still be redeemed, and if not why. */
+export type HonorClaimCodeState = 'active' | 'expired' | 'exhausted' | 'revoked';
+
+export interface HonorAwardCodesPanelProps {
+  desk: HonorAwardAllyDesk;
+  /** The ally's awards a code can be for. */
+  recipes: HonorAwardRecipe[];
+  c: HonorAwardsPalette;
+}
+
+export interface HonorAwardRedeemModalProps {
+  visible: boolean;
+  redeem: (code: string) => Promise<HonorAwardRedeemResult>;
+  /** After a redemption: the award to claim now (null when it waits for an approver). */
+  onRedeemed: (result: HonorAwardRedeemResult) => void;
+  onClose: () => void;
 }
 
 export interface HonorAwardsPalette {

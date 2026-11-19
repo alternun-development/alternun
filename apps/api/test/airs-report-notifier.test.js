@@ -57,6 +57,28 @@ test('the recipient email for an existing account says the Airs were credited', 
   assert.match(email.text, /^Hola:/);
 });
 
+test('a report with a galardón medal shows the award and its art in the email', () => {
+  const honorAward = {
+    title: 'Manglar Verde',
+    eventName: 'Tour Callaway Colombia',
+    imageUrl: 'https://cdn.example.test/manglar-verde.png',
+  };
+  const credited = renderAirsReportRecipientEmail(
+    context({ report: report({ status: 'released' }), honorAward })
+  );
+  assert.match(credited.subject, /^Recibiste el galardón Manglar Verde y 1,250 Airs/);
+  assert.match(credited.text, /recibiste el galardón Manglar Verde · Tour Callaway Colombia/);
+  assert.match(credited.text, /claim it in your profile, under Legacy/);
+  assert.match(credited.html, /<img src="https:\/\/cdn\.example\.test\/manglar-verde\.png"/);
+
+  const waiting = renderAirsReportRecipientEmail(context({ honorAward }));
+  assert.match(waiting.text, /al crear tu cuenta lo reclamas/);
+
+  const plain = renderAirsReportRecipientEmail(context({ report: report({ status: 'released' }) }));
+  assert.doesNotMatch(plain.html, /<img/);
+  assert.doesNotMatch(plain.text, /galardón/);
+});
+
 test('email content escapes anything the issuer typed', () => {
   const hostile = '<script>alert(1)</script> "x" & \'y\'';
   const recipient = renderAirsReportRecipientEmail(

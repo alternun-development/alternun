@@ -109,6 +109,13 @@ class HonorAwardRecipeFieldsDto {
   @Max(2100)
   eventYear?: number | null;
 
+  @ApiPropertyOptional({ maxLength: 80, description: 'Event dates as printed on the card.' })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsString()
+  @MaxLength(80)
+  eventDates?: string | null;
+
   @ApiPropertyOptional({ maxLength: 120 })
   @IsOptional()
   @ValidateIf((_, value) => value !== null)
@@ -239,6 +246,15 @@ export class EnterpriseGrantHonorAwardDto {
   @MaxLength(320)
   email!: string;
 
+  @ApiPropertyOptional({
+    maxLength: 120,
+    description: 'Name of the person when the email has no Airs account yet.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  recipientName?: string;
+
   @ApiPropertyOptional({ maxLength: 80, description: 'For example the reservation number.' })
   @IsOptional()
   @IsString()
@@ -250,6 +266,38 @@ export class EnterpriseGrantHonorAwardDto {
   @IsString()
   @MaxLength(300)
   note?: string;
+}
+
+export class CreateHonorAwardClaimCodeDto {
+  @ApiProperty({ description: 'Honor award recipe backed by this ally.' })
+  @IsUUID('4')
+  recipeId!: string;
+
+  @ApiPropertyOptional({ maxLength: 80, description: 'For example "Torneo 21 y 22 de noviembre".' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  label?: string;
+
+  @ApiProperty({ minimum: 1, maximum: 10000, description: 'How many people can redeem it.' })
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  maxRedemptions!: number;
+
+  @ApiProperty({ minimum: 1, maximum: 365, description: 'Days it stays valid from now.' })
+  @IsInt()
+  @Min(1)
+  @Max(365)
+  validDays!: number;
+}
+
+export class RedeemHonorAwardCodeDto {
+  @ApiProperty({ maxLength: 64, description: 'The code, e.g. 7K2M-QX9D-4HVT.' })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(64)
+  code!: string;
 }
 
 export class HonorAwardGuestLookupDto {
@@ -361,6 +409,20 @@ export class HonorAwardMeController {
     return this.service.listCatalogForUser(userId);
   }
 
+  @Post('redeem')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Redeem a claim code: the honor award and its Airs (through an Airs report).',
+  })
+  async redeem(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Body() body: RedeemHonorAwardCodeDto
+  ) {
+    const userId = await resolveUserId(bearer(authorization));
+    return this.service.redeemClaimCode(userId, body.code, requestId(request));
+  }
+
   @Post(':grantId/claim')
   @HttpCode(200)
   @ApiOperation({ summary: 'Claim a pending honor award.' })
@@ -430,6 +492,51 @@ export class EnterpriseHonorAwardController {
       enterpriseId
     );
     return this.service.grantFromEnterprise(principal, requestId(request), enterprise.id, body);
+  }
+
+  @Get('codes')
+  @ApiOperation({ summary: "This ally's claim codes (never the codes themselves)." })
+  async claimCodes(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string
+  ) {
+    const { principal, enterprise } = await this.access.resolveEnterprise(
+      bearer(authorization),
+      enterpriseId
+    );
+    return this.service.listClaimCodes(principal, requestId(request), enterprise.id);
+  }
+
+  @Post('codes')
+  @ApiOperation({ summary: 'Create a claim code; the code is in this response only.' })
+  async createClaimCode(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string,
+    @Body() body: CreateHonorAwardClaimCodeDto
+  ) {
+    const { principal, enterprise } = await this.access.resolveEnterprise(
+      bearer(authorization),
+      enterpriseId
+    );
+    return this.service.createClaimCode(principal, requestId(request), enterprise.id, body);
+  }
+
+  @Post('codes/:codeId/revoke')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Revoke a claim code: it can no longer be redeemed.' })
+  async revokeClaimCode(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('enterpriseId', new ParseUUIDPipe({ version: '4' })) enterpriseId: string,
+    @Param('codeId', new ParseUUIDPipe({ version: '4' })) codeId: string
+  ) {
+    const { principal, enterprise } = await this.access.resolveEnterprise(
+      bearer(authorization),
+      enterpriseId
+    );
+    return this.service.revokeClaimCode(principal, requestId(request), enterprise.id, codeId);
   }
 
   @Post('guests/lookup')

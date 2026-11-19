@@ -101,10 +101,15 @@ export function createAirsReportNotifier(
     }
 
     const projectName = await dependencies.projectName(report.projectId).catch(() => null);
+    const honorAward =
+      report.medalId && dependencies.honorAward
+        ? await dependencies.honorAward(report.medalId).catch(() => null)
+        : null;
     const context = {
       report,
       projectName,
       appUrl: resolveAirsReportAppUrl(dependencies.env),
+      honorAward,
     };
 
     // A caller that writes to the recipient itself (e.g. the client invitation) skips this one.

@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import HonorAwardClaimCinematic from '../HonorAwardClaimCinematic';
 import HonorAwardInspectModal from '../HonorAwardInspectModal';
 import HonorAwardCard from '../HonorAwardCard';
@@ -30,12 +30,13 @@ const award = {
     tier: 'silver',
     audience: 'user',
     title: 'Manglar Verde',
-    classification: 'Misión de compensación',
+    classification: 'Misión de impacto positivo',
     purpose: 'Como participante del torneo, sumaste a la conservación del manglar.',
-    eventName: 'Tour Colombia FCG Callaway',
+    eventName: 'Tour Callaway Colombia',
     eventYear: 2026,
-    venueName: 'Club El Rincón de Cajicá',
-    venueLocation: 'Cajicá, Cundinamarca – CO.',
+    eventDates: 'Noviembre 21 y 22 - 2026',
+    venueName: 'Pueblo Viejo Country Club',
+    venueLocation: 'Cota, Cundinamarca – CO.',
     airsAmount: 10,
     badgeImageUrl: null,
     frontImageUrl: null,
@@ -59,8 +60,14 @@ const award = {
   },
 };
 
-const texts = (tree) =>
-  tree.root.findAllByType(Text).map((node) => [].concat(node.props.children).join(''));
+const flatten = (children) =>
+  []
+    .concat(children)
+    .map((child) =>
+      child && typeof child === 'object' ? flatten(child.props?.children) : child ?? ''
+    )
+    .join('');
+const texts = (tree) => tree.root.findAllByType(Text).map((node) => flatten(node.props.children));
 const button = (tree, label) =>
   tree.root.find(
     (node) =>
@@ -142,8 +149,8 @@ describe('inspect view', () => {
     expect(texts(tree)).toEqual(
       expect.arrayContaining([
         'MISIÓN:',
-        'Club El Rincón de Cajicá',
-        'Misión de compensación',
+        'Pueblo Viejo Country Club',
+        'Misión de impacto positivo',
         '+10 Airs',
         'Propósito:',
         'Con el apoyo de:',
@@ -244,6 +251,102 @@ describe('locked medal', () => {
       );
     });
     expect(texts(tree).join(' ')).not.toMatch(/NaN|Obtenida/);
+    act(() => tree.unmount());
+  });
+});
+
+describe('Swing Golf cards (V4 designs)', () => {
+  const allText = (tree) => texts(tree).join(' ');
+  const torneo = {
+    ...award,
+    recipe: { ...award.recipe, tier: 'generic', artPreset: 'golf_mangrove' },
+  };
+  const comunidad = {
+    ...award,
+    claimedAt: '2026-11-25T15:00:00Z',
+    recipe: {
+      ...award.recipe,
+      tier: 'generic',
+      artPreset: 'golf_mangrove_community',
+      purpose:
+        'Como parte de la comunidad Swing Golf Colombia, sumaste a la conservación del manglar.',
+      eventName: 'Comunidad Swing Golf',
+      eventDates: null,
+      venueName: null,
+      venueLocation: null,
+      airsAmount: 14,
+    },
+  };
+  const render = (value, side) => {
+    let tree;
+    act(() => {
+      tree = renderer.create(<HonorAwardCard award={value} side={side} width={316} />);
+    });
+    return tree;
+  };
+  const markImage = (tree) =>
+    tree.root.findAll(
+      (node) => node.type === 'Image' && node.props.accessibilityLabel === 'Swing Golf'
+    );
+
+  it('tournament back: venue, event dates and +5 Airs in the design order', () => {
+    const tree = render({ ...torneo, recipe: { ...torneo.recipe, airsAmount: 5 } }, 'back');
+    expect(texts(tree)).toEqual(
+      expect.arrayContaining([
+        'Misión de impacto positivo:',
+        'Pueblo Viejo Country Club',
+        'Cota, Cundinamarca – CO.',
+        '+5 Airs',
+        'Fecha: Noviembre 21 y 22 - 2026',
+      ])
+    );
+    expect(allText(tree)).not.toMatch(/Obtenida/);
+    expect(markImage(tree)).toHaveLength(1);
+    act(() => tree.unmount());
+  });
+
+  it('community front: grass, white text and the community event line', () => {
+    const tree = render(comunidad, 'front');
+    expect(texts(tree)).toEqual(
+      expect.arrayContaining(['MISIÓN:', 'Manglar Verde', 'COMUNIDAD SWING GOLF', '• 2026 •'])
+    );
+    const event = tree.root
+      .findAllByType(Text)
+      .find((node) => node.props.children === 'COMUNIDAD SWING GOLF');
+    expect(StyleSheet.flatten(event.props.style).color).toBe('#ffffff');
+    expect(markImage(tree)).toHaveLength(1);
+    act(() => tree.unmount());
+  });
+
+  it('community back: no venue, the year it was obtained and +14 Airs', () => {
+    const tree = render(comunidad, 'back');
+    expect(texts(tree)).toEqual(
+      expect.arrayContaining(['Misión de impacto positivo:', '+14 Airs', 'Obtenida: 2026'])
+    );
+    expect(allText(tree)).not.toMatch(/Pueblo Viejo|Fecha/);
+    act(() => tree.unmount());
+  });
+
+  it('keeps the card mark even when the ally uploaded a logo', () => {
+    const withLogo = {
+      ...comunidad,
+      partner: { ...comunidad.partner, logoUrl: 'https://cdn.example/logo.png' },
+    };
+    const tree = render(withLogo, 'front');
+    const images = tree.root.findAll((node) => node.type === 'Image');
+    expect(images.some((node) => node.props.source?.uri === 'https://cdn.example/logo.png')).toBe(
+      false
+    );
+    expect(markImage(tree)).toHaveLength(1);
+    act(() => tree.unmount());
+  });
+
+  it('keeps the full obtained date for medals without a year', () => {
+    const tree = render(
+      { ...comunidad, recipe: { ...comunidad.recipe, eventYear: null, artPreset: null } },
+      'back'
+    );
+    expect(texts(tree)).toContain('Obtenida: Noviembre 25 - 2026');
     act(() => tree.unmount());
   });
 });

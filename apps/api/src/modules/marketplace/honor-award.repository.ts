@@ -7,6 +7,7 @@ import type {
   CreateHonorAwardRecipeInput,
   HonorAwardAudience,
   HonorAwardCatalogItem,
+  HonorAwardClaimCodeRecord,
   HonorAwardGrantRecord,
   HonorAwardRecipeInput,
   HonorAwardRecipeRecord,
@@ -53,6 +54,7 @@ export function mapHonorAwardRecipe(row: Row): HonorAwardRecipeRecord {
     purpose: text(row.purpose),
     eventName: text(row.event_name),
     eventYear: typeof row.event_year === 'number' ? row.event_year : null,
+    eventDates: text(row.event_dates),
     venueName: text(row.venue_name),
     venueLocation: text(row.venue_location),
     airsAmount: Number(row.airs_amount ?? 0),
@@ -123,6 +125,7 @@ function mapRecipeParts(recipeRow: Row): HonorAwardCatalogItem {
     purpose: recipe.purpose,
     eventName: recipe.eventName,
     eventYear: recipe.eventYear,
+    eventDates: recipe.eventDates,
     venueName: recipe.venueName,
     venueLocation: recipe.venueLocation,
     airsAmount: recipe.airsAmount,
@@ -178,6 +181,7 @@ function recipeColumns(input: HonorAwardRecipeInput): Row {
   assign('purpose', input.purpose);
   assign('event_name', input.eventName);
   assign('event_year', input.eventYear);
+  assign('event_dates', input.eventDates);
   assign('venue_name', input.venueName);
   assign('venue_location', input.venueLocation);
   assign('airs_amount', input.airsAmount);
@@ -429,4 +433,149 @@ export class HonorAwardRepository {
     if (error) failDatabase(error);
     return Boolean(data);
   }
+
+  /** The project medal that gives this recipe through an Airs report, with its art. */
+  async findHonorMedal(
+    recipeId: string,
+    projectId: string
+  ): Promise<{ id: string; name: string; imageUrl: string } | null> {
+    const { data, error } = await this.client
+      .from('project_medals')
+      .select('id, name, image_url')
+      .eq('honor_recipe_id', recipeId)
+      .eq('project_id', projectId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) failDatabase(error);
+    const row = data as Row | null;
+    return row
+      ? { id: String(row.id), name: String(row.name ?? ''), imageUrl: String(row.image_url ?? '') }
+      : null;
+  }
+
+  /** Whether the person already holds this award (pending or claimed). */
+  async holdsRecipe(userId: string, recipeId: string): Promise<boolean> {
+    const { data, error } = await this.client
+      .from('honor_award_grants')
+      .select('id')
+      .eq('recipe_id', recipeId)
+      .eq('user_id', userId)
+      .neq('status', 'revoked')
+      .limit(1);
+    if (error) failDatabase(error);
+    return ((data ?? []) as Row[]).length > 0;
+  }
+
+  /** A report with this medal for this email still open (waiting for review or the sign-up). */
+  async hasOpenMedalReport(email: string, medalId: string): Promise<boolean> {
+    const { data, error } = await this.client
+      .from('airs_reports')
+      .select('id')
+      .eq('recipient_email', email)
+      .eq('medal_id', medalId)
+      .in('status', ['pending_approval', 'awaiting_claim'])
+      .limit(1);
+    if (error) failDatabase(error);
+    return ((data ?? []) as Row[]).length > 0;
+  }
+
+  async listClaimCodes(enterpriseId: string): Promise<HonorAwardClaimCodeRecord[]> {
+    const { data, error } = await this.client
+      .from('honor_award_claim_codes')
+      .select(`${CLAIM_CODE_COLUMNS}, recipe:honor_award_recipes!inner(title, event_name)`)
+      .eq('enterprise_id', enterpriseId)
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (error) failDatabase(error);
+    return ((data ?? []) as Row[]).map(mapClaimCode);
+  }
+
+  async insertClaimCode(code: {
+    recipeId: string;
+    enterpriseId: string;
+    codeHash: string;
+    hint: string;
+    label: string | null;
+    maxRedemptions: number;
+    expiresAt: string;
+    creator: { issuer: string; subject: string; roles: string[]; email: string };
+  }): Promise<HonorAwardClaimCodeRecord> {
+    const { data, error } = await this.client
+      .from('honor_award_claim_codes')
+      .insert({
+        recipe_id: code.recipeId,
+        enterprise_id: code.enterpriseId,
+        code_hash: code.codeHash,
+        code_hint: code.hint,
+        label: code.label,
+        max_redemptions: code.maxRedemptions,
+        expires_at: code.expiresAt,
+        created_by_issuer: code.creator.issuer,
+        created_by_subject: code.creator.subject,
+        created_by_roles: code.creator.roles,
+        created_by_email: code.creator.email,
+      })
+      .select(`${CLAIM_CODE_COLUMNS}, recipe:honor_award_recipes!inner(title, event_name)`)
+      .single();
+    if (error) failDatabase(error);
+    return mapClaimCode(data as Row);
+  }
+
+  /** Revokes an active code of this enterprise; null when there is none. */
+  async revokeClaimCode(
+    codeId: string,
+    enterpriseId: string,
+    actor: { issuer: string; subject: string }
+  ): Promise<HonorAwardClaimCodeRecord | null> {
+    const { data, error } = await this.client
+      .from('honor_award_claim_codes')
+      .update({
+        revoked_at: new Date().toISOString(),
+        revoked_by_issuer: actor.issuer,
+        revoked_by_subject: actor.subject,
+      })
+      .eq('id', codeId)
+      .eq('enterprise_id', enterpriseId)
+      .is('revoked_at', null)
+      .select(`${CLAIM_CODE_COLUMNS}, recipe:honor_award_recipes!inner(title, event_name)`)
+      .maybeSingle();
+    if (error) failDatabase(error);
+    return data ? mapClaimCode(data as Row) : null;
+  }
+
+  /** Redeems a code for a person (all checks and the Airs report run in one SQL function). */
+  async redeemClaimCode(userId: string, codeHash: string, requestId: string): Promise<Row> {
+    const { data, error } = await this.client.rpc('honor_award_redeem_code', {
+      p_user_id: userId,
+      p_code_hash: codeHash,
+      p_request_id: requestId,
+    });
+    if (error) failDatabase(error);
+    return record(data) ?? {};
+  }
+}
+
+const CLAIM_CODE_COLUMNS =
+  'id, recipe_id, enterprise_id, code_hint, label, max_redemptions, redemption_count, ' +
+  'starts_at, expires_at, created_at, revoked_at';
+
+function mapClaimCode(row: Row): HonorAwardClaimCodeRecord {
+  const recipe = record(row.recipe);
+  return {
+    id: String(row.id ?? ''),
+    recipeId: String(row.recipe_id ?? ''),
+    recipeTitle: String(recipe?.title ?? ''),
+    recipeEventName: text(recipe?.event_name),
+    enterpriseId: String(row.enterprise_id ?? ''),
+    hint: String(row.code_hint ?? ''),
+    label: text(row.label),
+    maxRedemptions: Number(row.max_redemptions ?? 0),
+    redemptionCount: Number(row.redemption_count ?? 0),
+    startsAt: String(row.starts_at ?? ''),
+    expiresAt: String(row.expires_at ?? ''),
+    createdAt: String(row.created_at ?? ''),
+    revokedAt: text(row.revoked_at),
+  };
 }

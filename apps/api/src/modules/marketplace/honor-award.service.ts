@@ -1,10 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { hasPermission, type AdminPrincipal } from '../../common/admin-auth/admin-auth.guard';
 import { marketplaceError } from './marketplace.errors';
 import { MarketplaceAdminRepository } from './marketplace.repository';
 import { actorFromPrincipal } from './marketplace.types';
 import { validateMedalImageUrl } from './medal.service';
 import { HonorAwardRepository, type HonorAwardOwner } from './honor-award.repository';
+import { AirsReportService } from './airs-report.service';
+import {
+  claimCodeHint,
+  generateClaimCode,
+  hashClaimCode,
+  normalizeClaimCode,
+} from './honor-award-codes';
 import {
   HONOR_AWARD_AUDIENCES,
   HONOR_AWARD_KINDS,
@@ -12,7 +19,12 @@ import {
   type CreateHonorAwardRecipeInput,
   type EnterpriseHonorAwardGrantInput,
   type HonorAwardCatalogItem,
+  type HonorAwardClaimCodeCreated,
+  type HonorAwardClaimCodeInput,
+  type HonorAwardClaimCodeRecord,
   type HonorAwardGrantRecord,
+  type HonorAwardRedeemResult,
+  type HonorAwardSendResult,
   type HonorAwardGuestSummary,
   type HonorAwardRecipeInput,
   type HonorAwardRecipeRecord,
@@ -24,6 +36,7 @@ const TEXT_LIMITS: ReadonlyArray<[keyof HonorAwardRecipeInput, number]> = [
   ['classification', 80],
   ['purpose', 500],
   ['eventName', 120],
+  ['eventDates', 80],
   ['venueName', 120],
   ['venueLocation', 160],
 ];
@@ -104,7 +117,9 @@ export function checkRecipeInput(input: HonorAwardRecipeInput): void {
 export class HonorAwardService {
   constructor(
     private readonly repository: HonorAwardRepository,
-    private readonly adminRepository: MarketplaceAdminRepository
+    private readonly adminRepository: MarketplaceAdminRepository,
+    // Optional so unit tests of the recipe and grant rules can leave it out.
+    @Optional() private readonly airsReports?: AirsReportService
   ) {}
 
   private async requireManager(principal: AdminPrincipal, requestId: string): Promise<void> {
@@ -316,30 +331,71 @@ export class HonorAwardService {
   }
 
   /**
-   * An ally gives one of its honor awards to a person by account email, for example a hotel
-   * medal for a stay with the reservation number as reference (one grant per reservation).
+   * An ally gives one of its honor awards to a person by email. An award with Airs goes through
+   * an Airs report of the award's project (daily and monthly limits, approvers, ledger and the
+   * recipient email with the award art); the award is given when the report is released, also
+   * to people who sign up later. An award without Airs is given right away, once per person or
+   * once per reference (e.g. a reservation number).
    */
   async grantFromEnterprise(
     principal: AdminPrincipal,
     requestId: string,
     enterpriseId: string,
     input: EnterpriseHonorAwardGrantInput
-  ): Promise<HonorAwardGrantRecord> {
+  ): Promise<HonorAwardSendResult> {
     await this.requireAllyGranter(principal, requestId, enterpriseId);
-    const recipe = await this.repository.findRecipe(input.recipeId);
-    if (!recipe || recipe.partnerEnterpriseId !== enterpriseId || recipe.audience !== 'user') {
-      marketplaceError('HONOR_AWARD_NOT_FOUND');
-    }
-    if (!recipe.isActive) marketplaceError('HONOR_AWARD_NOT_CLAIMABLE');
+    const recipe = await this.requireAllyRecipe(enterpriseId, input.recipeId);
     const email = input.email.trim().toLowerCase();
     if (!isEmail(email)) invalid();
     const trimmedNote = input.note?.trim();
     const note = trimmedNote ? trimmedNote : null;
     if (note && note.length > 300) invalid();
     const reference = normalizeReference(input.reference);
+    const trimmedName = input.recipientName?.trim();
+    const recipientName = trimmedName ? trimmedName : undefined;
+    if (recipientName && recipientName.length > 120) invalid();
     const userId = await this.repository.findUserIdByEmail(email);
-    if (!userId) marketplaceError('HONOR_AWARD_RECIPIENT_NOT_FOUND');
 
+    if (recipe.airsAmount > 0) {
+      const medal = recipe.projectId
+        ? await this.repository.findHonorMedal(recipe.id, recipe.projectId)
+        : null;
+      if (!recipe.projectId || !medal || !this.airsReports) {
+        marketplaceError('HONOR_AWARD_AIRS_NOT_CONFIGURED');
+      }
+      // Without a reference the award is given once per person, as in the direct grant.
+      if (!reference) {
+        const holds = userId ? await this.repository.holdsRecipe(userId, recipe.id) : false;
+        const waiting = holds ? true : await this.repository.hasOpenMedalReport(email, medal.id);
+        if (waiting) marketplaceError('HONOR_AWARD_ALREADY_GRANTED');
+      }
+      const response = await this.airsReports.submit(principal, requestId, recipe.projectId, {
+        recipientEmail: email,
+        recipientName,
+        amount: recipe.airsAmount,
+        concept: honorAwardConcept(recipe),
+        medalId: medal.id,
+        documentNumber: reference ?? `GALARDON-${recipe.id.slice(0, 8).toUpperCase()}`,
+      });
+      await this.adminRepository.audit({
+        actor: actorFromPrincipal(principal),
+        action: 'honor_award.sent',
+        targetType: 'airs_report',
+        targetId: response.report.id,
+        enterpriseId,
+        requestId,
+        result: 'allowed',
+        afterState: { recipeId: recipe.id, reportStatus: response.report.status },
+      });
+      return {
+        kind: 'airs_report',
+        reportId: response.report.id,
+        reportStatus: response.report.status,
+        airsAmount: recipe.airsAmount,
+      };
+    }
+
+    if (!userId) marketplaceError('HONOR_AWARD_RECIPIENT_NOT_FOUND');
     const created = await this.repository.insertGrant({
       recipeId: recipe.id,
       recipientType: 'user',
@@ -358,7 +414,144 @@ export class HonorAwardService {
       result: 'allowed',
       afterState: { ...created },
     });
-    return created;
+    return { kind: 'grant', grantId: created.id };
+  }
+
+  /** An active award for people backed by this ally, or a not-found error. */
+  private async requireAllyRecipe(
+    enterpriseId: string,
+    recipeId: string
+  ): Promise<HonorAwardRecipeRecord> {
+    const recipe = await this.repository.findRecipe(recipeId);
+    if (!recipe || recipe.partnerEnterpriseId !== enterpriseId || recipe.audience !== 'user') {
+      marketplaceError('HONOR_AWARD_NOT_FOUND');
+    }
+    if (!recipe.isActive) marketplaceError('HONOR_AWARD_NOT_CLAIMABLE');
+    return recipe;
+  }
+
+  /** The ally's claim codes, newest first (never the codes themselves). */
+  async listClaimCodes(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string
+  ): Promise<HonorAwardClaimCodeRecord[]> {
+    await this.requireAllyGranter(principal, requestId, enterpriseId);
+    return this.repository.listClaimCodes(enterpriseId);
+  }
+
+  /**
+   * A new claim code for one of the ally's awards. The code is returned once; only its hash is
+   * kept. It is redeemed as if its creator gave the award, so the creator needs a verified email
+   * (Airs reports by an unverified submitter are never auto-approved) and keeps needing their
+   * access: each redemption checks it again.
+   */
+  async createClaimCode(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string,
+    input: HonorAwardClaimCodeInput
+  ): Promise<HonorAwardClaimCodeCreated> {
+    await this.requireAllyGranter(principal, requestId, enterpriseId);
+    const recipe = await this.requireAllyRecipe(enterpriseId, input.recipeId);
+    if (recipe.airsAmount > 0) {
+      const medal = recipe.projectId
+        ? await this.repository.findHonorMedal(recipe.id, recipe.projectId)
+        : null;
+      if (!medal) marketplaceError('HONOR_AWARD_AIRS_NOT_CONFIGURED');
+    }
+    const trimmedLabel = input.label?.trim();
+    const label = trimmedLabel ? trimmedLabel : null;
+    if (label && label.length > 80) invalid();
+    if (!Number.isInteger(input.maxRedemptions) || input.maxRedemptions < 1) invalid();
+    if (input.maxRedemptions > 10_000) invalid();
+    if (!Number.isInteger(input.validDays) || input.validDays < 1 || input.validDays > 365) {
+      invalid();
+    }
+    const email = principal.email?.trim().toLowerCase();
+    if (!email || principal.emailVerified !== true) {
+      marketplaceError('HONOR_CODE_CREATOR_EMAIL_REQUIRED');
+    }
+
+    const code = generateClaimCode();
+    const normalized = normalizeClaimCode(code) as string;
+    const actor = actorFromPrincipal(principal);
+    const record = await this.repository.insertClaimCode({
+      recipeId: recipe.id,
+      enterpriseId,
+      codeHash: hashClaimCode(normalized),
+      hint: claimCodeHint(normalized),
+      label,
+      maxRedemptions: input.maxRedemptions,
+      expiresAt: new Date(Date.now() + input.validDays * 86_400_000).toISOString(),
+      creator: { issuer: actor.issuer, subject: actor.subject, roles: [...actor.roles], email },
+    });
+    await this.adminRepository.audit({
+      actor,
+      action: 'honor_award.code_created',
+      targetType: 'honor_award_claim_code',
+      targetId: record.id,
+      enterpriseId,
+      requestId,
+      result: 'allowed',
+      afterState: { ...record },
+    });
+    return { code, record };
+  }
+
+  async revokeClaimCode(
+    principal: AdminPrincipal,
+    requestId: string,
+    enterpriseId: string,
+    codeId: string
+  ): Promise<HonorAwardClaimCodeRecord> {
+    await this.requireAllyGranter(principal, requestId, enterpriseId);
+    const actor = actorFromPrincipal(principal);
+    const revoked = await this.repository.revokeClaimCode(codeId, enterpriseId, actor);
+    if (!revoked) marketplaceError('HONOR_CODE_NOT_FOUND');
+    await this.adminRepository.audit({
+      actor,
+      action: 'honor_award.code_revoked',
+      targetType: 'honor_award_claim_code',
+      targetId: revoked.id,
+      enterpriseId,
+      requestId,
+      result: 'allowed',
+      afterState: { ...revoked },
+    });
+    return revoked;
+  }
+
+  /**
+   * A person redeems a code. The checks (window, uses, one per person, attempt limit, the
+   * creator's access) and the Airs report run in one SQL function; the emails follow.
+   */
+  async redeemClaimCode(
+    userId: string,
+    code: string,
+    requestId: string
+  ): Promise<HonorAwardRedeemResult> {
+    const normalized = normalizeClaimCode(code);
+    // A malformed code never reaches the database, but it is answered like an unknown one.
+    if (!normalized) marketplaceError('HONOR_CODE_INVALID');
+    const result = await this.repository.redeemClaimCode(
+      userId,
+      hashClaimCode(normalized),
+      requestId
+    );
+    if (result.ok !== true) {
+      marketplaceError(
+        typeof result.reasonCode === 'string' ? result.reasonCode : 'HONOR_CODE_INVALID'
+      );
+    }
+    const reportId = typeof result.reportId === 'string' ? result.reportId : null;
+    if (reportId) await this.airsReports?.notifyReport(reportId);
+    return {
+      recipeId: String(result.recipeId ?? ''),
+      airsAmount: Number(result.airsAmount ?? 0),
+      reportStatus: typeof result.reportStatus === 'string' ? result.reportStatus : null,
+      grantId: typeof result.grantId === 'string' ? result.grantId : null,
+    };
   }
 
   /** How many of this ally's honor awards a person holds, e.g. stays at its hotels. */
@@ -412,4 +605,11 @@ export class HonorAwardService {
     if (!view) marketplaceError('HONOR_AWARD_NOT_FOUND');
     return view;
   }
+}
+
+/** "Galardón Manglar Verde · Tour Callaway Colombia": the reason on the Airs report. */
+export function honorAwardConcept(
+  recipe: Pick<HonorAwardRecipeRecord, 'title' | 'eventName'>
+): string {
+  return ['Galardón', recipe.title].join(' ') + (recipe.eventName ? ` · ${recipe.eventName}` : '');
 }

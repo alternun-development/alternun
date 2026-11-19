@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, {
+  ClipPath,
+  Defs,
+  Image as SvgImage,
+  LinearGradient,
+  Path,
+  Stop,
+} from 'react-native-svg';
 import { FileText, X } from 'lucide-react-native';
 import ShareButton from '../share/ShareButton';
 import ShareSheet from '../share/ShareSheet';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import HonorAwardEmblem from './HonorAwardEmblem';
+import { HONOR_FOIL } from './honorAwardArt';
 import { honorShareContent } from './honorAwardShare';
-import { HOLO_STOPS, honorPartnerLine, honorText } from './honorAwardTheme';
+import { honorPartnerLine, honorText } from './honorAwardTheme';
 import type { HonorMedalActionsProps, HonorMedalPocketProps } from './honorAwards.types';
 
 const MINT = '#1de9b6';
 const NAVY = '#2b2f7a';
 const LILAC = '#5b5fc7';
+/** A medal not held yet: a silver pocket instead of the foil. */
+const GRAY_STOPS = ['#eceef1', '#c9ccd3', '#e4e6ea', '#b9bdc6'] as const;
 /** Holographic pocket (100 × 100): rounded on top, pointed at the bottom. */
 const POCKET =
   'M8 0 H92 Q100 0 100 8 V58 Q100 63 96 66.5 L57 96 Q50 101 43 96 L4 66.5 Q0 63 0 58 V8 Q0 0 8 0 Z';
@@ -29,40 +39,70 @@ export function honorPocketHeight(width: number): number {
 export default function HonorAwardMedalPocket({
   award,
   width,
+  grayscale = false,
 }: HonorMedalPocketProps): React.JSX.Element {
   const { recipe, partner } = award;
   const partnerLine = honorPartnerLine(partner);
   const rise = width * RISE;
   const s = width / 256;
+  // Ids per state: several pockets can be on screen (the medal view and the share preview).
+  const id = grayscale ? 'honor-pocket-gray' : 'honor-pocket-foil';
   return (
     <View accessibilityLabel={recipe.title} style={{ width, height: honorPocketHeight(width) }}>
       <View style={[styles.pocket, { top: rise }]}>
         <Svg width={width} height={width} viewBox='0 0 100 100' preserveAspectRatio='none'>
           <Defs>
-            <LinearGradient id='honor-pocket-holo' x1='0' y1='0' x2='1' y2='1'>
-              {HOLO_STOPS.map((color, index) => (
+            <ClipPath id={`${id}-clip`}>
+              <Path d={POCKET} />
+            </ClipPath>
+            <LinearGradient id={`${id}-gray`} x1='0' y1='0' x2='1' y2='1'>
+              {GRAY_STOPS.map((color, index) => (
                 <Stop
-                  key={color}
-                  offset={String(index / (HOLO_STOPS.length - 1))}
+                  key={`${color}-${index}`}
+                  offset={String(index / (GRAY_STOPS.length - 1))}
                   stopColor={color}
                 />
               ))}
             </LinearGradient>
-            <LinearGradient id='honor-pocket-sheen' x1='0' y1='0' x2='1' y2='0.6'>
+            <LinearGradient id={`${id}-sheen`} x1='0' y1='0' x2='1' y2='0.6'>
               <Stop offset='0.25' stopColor='#ffffff' stopOpacity={0} />
-              <Stop offset='0.45' stopColor='#ffffff' stopOpacity={0.55} />
+              <Stop offset='0.45' stopColor='#ffffff' stopOpacity={0.45} />
               <Stop offset='0.6' stopColor='#ffffff' stopOpacity={0} />
             </LinearGradient>
           </Defs>
-          <Path d={POCKET} fill='url(#honor-pocket-holo)' />
-          <Path d={POCKET} fill='url(#honor-pocket-sheen)' />
+          {grayscale ? (
+            <Path d={POCKET} fill={`url(#${id}-gray)`} />
+          ) : (
+            // The same holographic foil as the cards, cut to the pocket.
+            <SvgImage
+              href={HONOR_FOIL}
+              x={0}
+              y={0}
+              width={100}
+              height={100}
+              preserveAspectRatio='xMidYMid slice'
+              clipPath={`url(#${id}-clip)`}
+            />
+          )}
+          <Path d={POCKET} fill={`url(#${id}-sheen)`} />
         </Svg>
-        <View style={[styles.copy, { top: width * 0.62 }]}>
-          <Text numberOfLines={2} style={[styles.title, { fontSize: 19 * s }]}>
+        <View style={[styles.copy, { top: width * 0.6, left: width * 0.1, right: width * 0.1 }]}>
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={[styles.title, grayscale && styles.grayText, { fontSize: 19 * s }]}
+          >
             {recipe.title}
           </Text>
           {partnerLine ? (
-            <Text numberOfLines={1} style={[styles.partner, { fontSize: 14 * s }]}>
+            <Text
+              numberOfLines={2}
+              style={[
+                styles.partner,
+                grayscale && styles.grayText,
+                { fontSize: 12.5 * s, lineHeight: 15 * s },
+              ]}
+            >
               {partnerLine}
             </Text>
           ) : null}
@@ -76,6 +116,7 @@ export default function HonorAwardMedalPocket({
           imageUrl={recipe.badgeImageUrl}
           artPreset={recipe.artPreset}
           size={width * EMBLEM}
+          grayscale={grayscale}
         />
       </View>
     </View>
@@ -153,11 +194,25 @@ export function HonorMedalActions({
 const styles = StyleSheet.create({
   pocket: { position: 'absolute', left: 0, right: 0 },
   emblem: { position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center' },
-  copy: { position: 'absolute', left: 12, right: 12, alignItems: 'center' },
-  title: { color: NAVY, fontWeight: '800', textAlign: 'center' },
-  partner: { color: LILAC, fontWeight: '600', textAlign: 'center' },
-  actionsBox: { alignItems: 'center' },
-  demoNote: { color: MINT, fontSize: 12, fontWeight: '700', marginTop: 8, textAlign: 'center' },
+  copy: { position: 'absolute', alignItems: 'center' },
+  // Stretch so the text wraps inside the pocket (centered text otherwise grows past it on web).
+  title: { alignSelf: 'stretch', color: NAVY, fontFamily: 'Sculpin-Bold', textAlign: 'center' },
+  partner: {
+    alignSelf: 'stretch',
+    color: LILAC,
+    fontFamily: 'Sculpin-Medium',
+    textAlign: 'center',
+  },
+  grayText: { color: '#5d616b' },
+  actionsBox: { alignItems: 'center', alignSelf: 'stretch', maxWidth: 320 },
+  demoNote: {
+    alignSelf: 'stretch',
+    color: MINT,
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 8,
+    textAlign: 'center',
+  },
   actions: { flexDirection: 'row', gap: 12, marginTop: 12 },
   pill: {
     flexDirection: 'row',

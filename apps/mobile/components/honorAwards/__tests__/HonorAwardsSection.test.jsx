@@ -5,6 +5,7 @@ import HonorAwardsSection from '../HonorAwardsSection';
 import HonorAwardClaimCinematic from '../HonorAwardClaimCinematic';
 import HonorAwardInspectModal from '../HonorAwardInspectModal';
 import HonorAwardsInfoModal from '../HonorAwardsInfoModal';
+import HonorAwardRedeemModal from '../HonorAwardRedeemModal';
 
 jest.mock('@alternun/ui', () => ({
   // The header action (info button) renders before the content, as in the real container.
@@ -20,6 +21,7 @@ jest.mock('../HonorAwardClaimCinematic', () => ({
 }));
 jest.mock('../HonorAwardInspectModal', () => ({ __esModule: true, default: jest.fn(() => null) }));
 jest.mock('../HonorAwardsInfoModal', () => ({ __esModule: true, default: jest.fn(() => null) }));
+jest.mock('../HonorAwardRedeemModal', () => ({ __esModule: true, default: jest.fn(() => null) }));
 jest.mock('../../settings/AppPreferencesProvider', () => ({
   useAppPreferences: () => ({ motionLevel: 'off' }),
 }));
@@ -276,4 +278,61 @@ it('explains honor awards to allies on their pages', async () => {
     scope: { kind: 'enterprise-public', slug: 'swing' },
   });
   expect(HonorAwardsInfoModal.mock.calls.at(-1)[0].audience).toBe('ally');
+});
+
+describe('claiming a medal with a code', () => {
+  it('opens the code modal and plays the claim of the medal it gave', async () => {
+    const given = award('g-new', 'pending');
+    const client = makeClient();
+    client.redeem = jest.fn(() => Promise.resolve({}));
+    // First load: nothing; after the code: the new medal waiting to be claimed.
+    client.list.mockResolvedValueOnce([]).mockResolvedValueOnce([given]);
+    const tree = await render({ client });
+    const button = pressables(tree).find(
+      (node) =>
+        node.findAll((child) => child.type === Text && child.props.children === 'Reclamar medalla')
+          .length > 0
+    );
+    act(() => button.props.onPress());
+    const modal = HonorAwardRedeemModal.mock.calls.at(-1)[0];
+    expect(modal.visible).toBe(true);
+    await modal.redeem('ABCD-EFGH-JKMN');
+    expect(client.redeem).toHaveBeenCalledWith('ABCD-EFGH-JKMN');
+    await act(async () => {
+      modal.onRedeemed({
+        recipeId: 'r',
+        airsAmount: 5,
+        reportStatus: 'released',
+        grantId: 'g-new',
+      });
+    });
+    expect(client.claim).toHaveBeenCalledWith('g-new');
+    expect(HonorAwardClaimCinematic.mock.calls.at(-1)[0].award.id).toBe('g-new');
+  });
+
+  it('only reloads when the medal waits for an approver, and is absent for allies', async () => {
+    const client = makeClient();
+    client.redeem = jest.fn();
+    const tree = await render({ client });
+    const modal = HonorAwardRedeemModal.mock.calls.at(-1)[0];
+    await act(async () => {
+      modal.onRedeemed({
+        recipeId: 'r',
+        airsAmount: 5,
+        reportStatus: 'pending_approval',
+        grantId: null,
+      });
+    });
+    expect(client.list).toHaveBeenCalledTimes(2);
+    expect(client.claim).not.toHaveBeenCalled();
+    act(() => tree.unmount());
+
+    HonorAwardRedeemModal.mockClear();
+    const ally = await render({
+      scope: { kind: 'enterprise-manage', enterpriseId: 'e' },
+      client: makeClient(),
+    });
+    expect(texts(ally)).not.toContain('Reclamar medalla');
+    expect(HonorAwardRedeemModal).not.toHaveBeenCalled();
+  });
 });

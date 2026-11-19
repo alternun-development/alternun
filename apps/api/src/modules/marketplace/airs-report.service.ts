@@ -78,6 +78,7 @@ export class AirsReportService {
       },
       approverEmails: () => this.repository.listApproverEmails(),
       submitterEmail: (issuer, subject) => this.repository.findSubmitterEmail(issuer, subject),
+      honorAward: (medalId) => this.repository.findHonorAwardForMedal(medalId),
     };
     this.notifyIssued = notifyIssued ?? createAirsReportNotifier(dependencies);
     this.notifyWorkflow = notifyWorkflow ?? createAirsReportWorkflowNotifier(dependencies);
@@ -101,6 +102,12 @@ export class AirsReportService {
       }
     }
     await this.leaveInboxNotice(response.report);
+  }
+
+  /** Emails and inbox notice of a report created outside submit (an honor award claim code). */
+  async notifyReport(reportId: string): Promise<void> {
+    const report = await this.repository.find(reportId).catch(() => null);
+    if (report) await this.announce({ report, idempotent: false });
   }
 
   // The console inbox: approvers for a report that needs review, the person who submitted it for a

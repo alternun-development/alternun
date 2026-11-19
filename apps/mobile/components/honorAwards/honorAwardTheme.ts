@@ -90,7 +90,7 @@ export function honorText(
 
 /** Colors of the card templates (Propuesta Badges V3): frame and title per tier. */
 export const HONOR_CARD_COLORS: Record<HonorAwardTier, { frame: string; title: string }> = {
-  generic: { frame: '#4a7c3a', title: '#4f8a3c' },
+  generic: { frame: '#5a854c', title: '#5a854c' },
   gold: { frame: '#d6b13f', title: '#c99a2e' },
   silver: { frame: '#aebcc2', title: '#7d8b93' },
   bronze: { frame: '#d9844f', title: '#d9844f' },

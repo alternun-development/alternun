@@ -40,7 +40,6 @@ export default function HonorAwardStamp({ text, size }: HonorAwardStampProps): R
           <Stop offset='1' stopColor='#f6c4ea' />
         </LinearGradient>
       </Defs>
-      <Circle cx={50} cy={50} r={48} fill='rgba(3,30,24,0.55)' stroke={MINT} strokeWidth={1.4} />
       <SvgText fill={MINT} fontSize={6.7} fontWeight='800' letterSpacing={0.35}>
         <TextPath href={`#${ringId}`} startOffset='0%'>
           {text}

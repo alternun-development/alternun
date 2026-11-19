@@ -12,6 +12,15 @@ export interface AirsReportEmailContext {
   projectName: string | null;
   /** Base URL of the Airs app, without a trailing slash. */
   appUrl: string;
+  /** The honor award (galardón) that comes with the report's medal, shown with its art. */
+  honorAward?: AirsReportHonorAward | null;
+}
+
+export interface AirsReportHonorAward {
+  title: string;
+  eventName: string | null;
+  /** https art of the medal. */
+  imageUrl: string;
 }
 
 export interface AirsReportReviewEmailContext extends AirsReportEmailContext {
@@ -32,6 +41,8 @@ export interface AirsReportNotifierDependencies {
   projectName: (projectId: string) => Promise<string | null>;
   /** Active Grant Approver emails; the review request goes to them. */
   approverEmails?: () => Promise<string[]>;
+  /** The honor award given with a report's medal, for the recipient email; null when none. */
+  honorAward?: (medalId: string) => Promise<AirsReportHonorAward | null>;
   /** Verified email of whoever submitted a report, or null when unknown. */
   submitterEmail?: (issuer: string, subject: string) => Promise<string | null>;
 }

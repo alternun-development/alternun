@@ -49,6 +49,7 @@ const TEXT_FIELDS: ReadonlyArray<[TextField, boolean]> = [
   ['purpose', true],
   ['eventName', false],
   ['eventYear', false],
+  ['eventDates', false],
   ['venueName', false],
   ['venueLocation', false],
   ['airsAmount', false],

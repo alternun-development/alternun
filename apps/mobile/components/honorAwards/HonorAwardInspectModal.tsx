@@ -20,6 +20,7 @@ import { useAppPreferences } from '../settings/AppPreferencesProvider';
 import HonorAwardCard, { HONOR_CARD_RATIO } from './HonorAwardCard';
 import HonorAwardMedalPocket, { HonorMedalActions } from './HonorAwardMedalPocket';
 import HonorAwardPartnerMark from './HonorAwardPartnerMark';
+import { presetArt } from './honorAwardArt';
 import { honorText } from './honorAwardTheme';
 import type { HonorAwardInspectModalProps } from './honorAwards.types';
 
@@ -142,7 +143,11 @@ export default function HonorAwardInspectModal({
               { opacity: entrance, transform: [{ scale: entranceScale }] },
             ]}
           >
-            <HonorAwardMedalPocket award={award} width={Math.min(264, width - 80)} />
+            <HonorAwardMedalPocket
+              award={award}
+              width={Math.min(264, width - 80)}
+              grayscale={locked}
+            />
             <HonorMedalActions
               award={award}
               demo={demo}
@@ -164,6 +169,7 @@ export default function HonorAwardInspectModal({
   const asideWidth = sheetWidth >= 600 ? 140 : 108;
   const frontRotate = flip.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   const backRotate = flip.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] });
+  const hasPresetMark = !!presetArt(recipe.artPreset)?.partnerMark;
   const canVisitPartner = !demo && !!partner && (!!partner.websiteUrl || !!partner.slug);
 
   return (
@@ -204,7 +210,7 @@ export default function HonorAwardInspectModal({
                     { transform: [{ perspective: 1000 }, { rotateY: frontRotate }] },
                   ]}
                 >
-                  <HonorAwardCard award={award} side='front' width={cardWidth} />
+                  <HonorAwardCard award={award} side='front' width={cardWidth} grayscale={locked} />
                 </Animated.View>
                 <Animated.View
                   style={[
@@ -251,7 +257,8 @@ export default function HonorAwardInspectModal({
                   />
                   <View style={styles.blockRow}>
                     <View style={[styles.blockAside, { width: asideWidth }]}>
-                      {partner.logoUrl ? (
+                      {/* The card's own white mark reads on this dark sheet; then the ally logo. */}
+                      {partner.logoUrl && !hasPresetMark ? (
                         <Image
                           accessibilityLabel={partner.displayName}
                           source={{ uri: partner.logoUrl }}
@@ -261,9 +268,11 @@ export default function HonorAwardInspectModal({
                       ) : (
                         <HonorAwardPartnerMark
                           partner={partner}
-                          width={asideWidth * 1.8}
+                          // The bundled mark fills the column; the text wordmark is smaller.
+                          width={asideWidth * (hasPresetMark ? 1.4 : 1.8)}
                           locale={locale}
-                          color='#ffffff'
+                          artPreset={recipe.artPreset}
+                          light
                         />
                       )}
                       {canVisitPartner ? (
@@ -389,8 +398,8 @@ const styles = StyleSheet.create({
   },
   flipChipText: { color: '#b8f5e4', fontSize: 9, fontWeight: '600' },
   details: { flex: 1, gap: 2 },
-  missionTitle: { color: MINT, fontSize: 28, fontWeight: '800', lineHeight: 32 },
-  missionClassification: { color: '#ffffff', fontSize: 18, fontWeight: '500' },
+  missionTitle: { color: MINT, fontSize: 28, fontFamily: 'Sculpin-Bold', lineHeight: 34 },
+  missionClassification: { color: '#ffffff', fontSize: 18, fontFamily: 'Sculpin-Medium' },
   airsChip: {
     alignSelf: 'flex-start',
     backgroundColor: MINT,
@@ -399,9 +408,9 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     marginTop: 10,
   },
-  airsChipText: { color: '#04140f', fontWeight: '800', fontSize: 17 },
+  airsChipText: { color: '#04140f', fontFamily: 'Sculpin-Bold', fontSize: 17 },
   purpose: { marginTop: 18, gap: 4 },
-  purposeLabel: { color: '#ffffff', fontWeight: '800', fontSize: 15 },
+  purposeLabel: { color: '#ffffff', fontFamily: 'Sculpin-Bold', fontSize: 15 },
   bodyText: { color: 'rgba(255,255,255,0.88)', fontSize: 13, lineHeight: 19 },
   smallText: { color: 'rgba(255,255,255,0.85)', fontSize: 11.5, lineHeight: 16 },
   block: { marginTop: 26, gap: 16 },

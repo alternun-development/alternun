@@ -21,6 +21,8 @@ export interface HonorAwardRecipeRecord {
   purpose: string | null;
   eventName: string | null;
   eventYear: number | null;
+  /** Dates as the card back prints them, e.g. "Noviembre 21 y 22 - 2026". */
+  eventDates: string | null;
   venueName: string | null;
   venueLocation: string | null;
   airsAmount: number;
@@ -46,6 +48,7 @@ export interface HonorAwardRecipeInput {
   purpose?: string | null;
   eventName?: string | null;
   eventYear?: number | null;
+  eventDates?: string | null;
   venueName?: string | null;
   venueLocation?: string | null;
   airsAmount?: number;
@@ -86,8 +89,60 @@ export type HonorAwardRecipientInput =
 export interface EnterpriseHonorAwardGrantInput {
   recipeId: string;
   email: string;
+  /** Needed when the email has no Airs account yet: the Airs wait for them to sign up. */
+  recipientName?: string;
   reference?: string;
   note?: string;
+}
+
+/**
+ * What a send did. An award with Airs goes through an Airs report (limits, approvers, ledger,
+ * email): "released" means credited and the award is waiting to be claimed in the app,
+ * "pending_approval" waits for an approver, "awaiting_claim" waits for the person to sign up.
+ */
+export type HonorAwardSendResult =
+  | { kind: 'grant'; grantId: string }
+  | { kind: 'airs_report'; reportId: string; reportStatus: string; airsAmount: number };
+
+/** A claim code as its ally's team sees it; the code itself is shown only once. */
+export interface HonorAwardClaimCodeRecord {
+  id: string;
+  recipeId: string;
+  recipeTitle: string;
+  recipeEventName: string | null;
+  enterpriseId: string;
+  /** Last four characters, to tell codes apart. */
+  hint: string;
+  label: string | null;
+  maxRedemptions: number;
+  redemptionCount: number;
+  startsAt: string;
+  expiresAt: string;
+  createdAt: string;
+  revokedAt: string | null;
+}
+
+export interface HonorAwardClaimCodeInput {
+  recipeId: string;
+  label?: string;
+  maxRedemptions: number;
+  /** Days the code stays valid from now (1 to 365). */
+  validDays: number;
+}
+
+/** The code in clear text travels only in this response. */
+export interface HonorAwardClaimCodeCreated {
+  code: string;
+  record: HonorAwardClaimCodeRecord;
+}
+
+export interface HonorAwardRedeemResult {
+  recipeId: string;
+  airsAmount: number;
+  /** null for an award without Airs (given directly). */
+  reportStatus: string | null;
+  /** The award to claim in the app, when it was given right away. */
+  grantId: string | null;
 }
 
 /** How many honor awards of an ally a person holds (for example hotel stays). */
