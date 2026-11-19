@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-19T18:14:39.958Z",
+  "lastUpdated": "2026-11-19T18:21:50.332Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Confirm with Caro (+14 Airs fixed, Swing Golf signed) and give Swing Golf a partner_operator; then pilot claim codes for the 21-22 Nov tournament",
+      "description": "Verify v1.2.11-dev.0 on testnet (Swing Golf desk: send with Airs, claim codes, Reclamar medalla); then confirm with Caro (+14 Airs fixed, Swing Golf signed) and give Swing Golf a partner_operator",
       "id": "next",
       "priority": 1
     }
