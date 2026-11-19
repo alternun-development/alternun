@@ -1,3 +1,13 @@
+## [1.2.11](https://github.com/alternun-development/alternun/compare/v1.2.10...v1.2.11) (2026-11-19)
+
+### Bug Fixes
+
+- **repo:** feat(honor-awards): Swing Golf V4 medals, sends with Airs and claim codes
+
+### Features
+
+- **honor-awards:** Swing Golf V4 medals, sends with Airs and claim codes ([51315db](https://github.com/alternun-development/alternun/commit/51315db2dd510a815d31c4f9eafd591fa70b112d))
+
 ## [1.2.10](https://github.com/alternun-development/alternun/compare/v1.2.9...v1.2.10) (2026-11-18)
 
 ### Bug Fixes

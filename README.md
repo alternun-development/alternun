@@ -120,13 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.10**
+Current version: **1.2.11**
 
-## 📋 Latest Changes (v1.2.10)
+## 📋 Latest Changes (v1.2.11)
 
 ### Bug Fixes
 
-- **security:** keep null off the CORS origin path flagged by CodeQL ([9009a65](https://github.com/alternun-development/alternun/commit/9009a652cb25899ed8fe54b7cd19624d2c422dbb))
+- **repo:** feat(honor-awards): Swing Golf V4 medals, sends with Airs and claim codes
+
+### Features
+
+- **honor-awards:** Swing Golf V4 medals, sends with Airs and claim codes ([51315db](https://github.com/alternun-development/alternun/commit/51315db2dd510a815d31c4f9eafd591fa70b112d))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
