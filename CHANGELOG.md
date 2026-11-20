@@ -1,16 +1,13 @@
-## [1.2.12](https://github.com/alternun-development/alternun/compare/v1.2.11...v1.2.12) (2026-11-20)
+## [1.2.12](https://github.com/alternun-development/alternun/compare/v1.2.11...v1.2.12) (2026-11-19)
+
+### Changes
+
+- **reentry:** next step before merging v1.2.12 ([ffddb29](https://github.com/alternun-development/alternun/commit/ffddb2988eee8f1c93ea2eeddd719aa833ff8df7))
 
 ### Bug Fixes
 
-- **repo:** chore(reentry): next step before merging v1.2.12
-- **repo:** fix(honor-awards): award email opens Legado and docs on the claim
-- **repo:** feat(marketplace): production launch catalog and featured slider rule
-- **repo:** fix(airs-reports): release waiting reports on app load and in Legado
-
-### Bug Fixes
-
-- **airs-reports:** release waiting reports on app load and in Legado ([1c1b951](https://github.com/alternun-development/alternun/commit/1c1b951c516db2784cf5d0048130dc6e4a2263b1))
 - **honor-awards:** award email opens Legado and docs on the claim ([a5f25b5](https://github.com/alternun-development/alternun/commit/a5f25b54091c97382ca7cf31750f975842000b81))
+- **airs-reports:** release waiting reports on app load and in Legado ([1c1b951](https://github.com/alternun-development/alternun/commit/1c1b951c516db2784cf5d0048130dc6e4a2263b1))
 
 ### Features
 
