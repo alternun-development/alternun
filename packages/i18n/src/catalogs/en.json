@@ -973,7 +973,9 @@
           "silver": "A growing track record of contribution. Silver recognizes the verified actions that have brought your cumulative AIRS score to this milestone.",
           "gold": "A significant milestone in your regenerative journey. Gold makes your accumulated contribution and commitment visible within the ecosystem.",
           "platinum": "The highest tier in the current AIRS journey. Platinum recognizes an extensive track record of verified contribution, built over time."
-        }
+        },
+        "balance": "You have {{amount}} Airs.",
+        "balanceToReach": "You have {{amount}} Airs. {{remaining}} Airs to go for {{tier}}."
       },
       "achievementUnlocked": "Unlocked",
       "achievementLocked": "Locked",
