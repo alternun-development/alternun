@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-20T03:30:39.207Z",
+  "lastUpdated": "2026-11-20T03:59:18.367Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge the v1.2.14 PR after CI; confirm Swing Golf venue/status; Friday rehearsal with 3 new Gmail accounts",
+      "description": "Merge the v1.2.15 PR so Authentik prod promotes admin@alternun.co; team E2E tests on testnet and prod before Saturday",
       "id": "next",
       "priority": 1
     }
