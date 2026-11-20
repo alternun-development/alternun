@@ -37,6 +37,10 @@ jest.mock('../../components/honorAwards/HonorAwardsSection', () => ({
   __esModule: true,
   default: () => null,
 }));
+jest.mock('../../components/honorAwards/HonorAwardCatalogSection', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 
 const palette = {
   background: '#fff',

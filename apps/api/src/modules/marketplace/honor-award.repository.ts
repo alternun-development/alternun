@@ -355,12 +355,18 @@ export class HonorAwardRepository {
   }
 
   /** Active medals for people, with their project and ally, for the legacy catalog. */
-  async listUserCatalog(): Promise<HonorAwardCatalogItem[]> {
-    const { data, error } = await this.client
+  /** Active medals for people; optionally only an ally's or a project's. */
+  async listUserCatalog(
+    filter: { enterpriseId?: string; projectId?: string } = {}
+  ): Promise<HonorAwardCatalogItem[]> {
+    let query = this.client
       .from('honor_award_recipes')
       .select(`*, ${RECIPE_LINKS}`)
       .eq('audience', 'user')
-      .eq('is_active', true)
+      .eq('is_active', true);
+    if (filter.enterpriseId) query = query.eq('partner_enterprise_id', filter.enterpriseId);
+    if (filter.projectId) query = query.eq('project_id', filter.projectId);
+    const { data, error } = await query
       .order('sort_order', { ascending: true })
       .order('title', { ascending: true });
     if (error) failDatabase(error);
@@ -436,6 +442,26 @@ export class HonorAwardRepository {
       ? {
           id: String(row.id ?? ''),
           slug: String(row.slug ?? ''),
+          status: String(row.status ?? ''),
+          testnetOnly: row.testnet_only === true,
+        }
+      : null;
+  }
+
+  /** A project by slug, with what its public page needs to know. */
+  async findProjectBySlug(
+    slug: string
+  ): Promise<{ id: string; status: string; testnetOnly: boolean } | null> {
+    const { data, error } = await this.client
+      .from('projects')
+      .select('id, status, testnet_only')
+      .eq('slug', slug)
+      .maybeSingle();
+    if (error) failDatabase(error);
+    const row = record(data);
+    return row
+      ? {
+          id: String(row.id ?? ''),
           status: String(row.status ?? ''),
           testnetOnly: row.testnet_only === true,
         }

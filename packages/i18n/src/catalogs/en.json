@@ -923,6 +923,7 @@
         "verified": "Information Verified"
       },
       "tierJourney": "Tier Journey",
+      "tierJourneyAirs": "{{amount}} Airs",
       "accountRows": {
         "accountAndRoles": "Account & roles",
         "personalInfo": "Personal information",
@@ -1220,6 +1221,17 @@
           "unverified": "Verify your account email to claim medals.",
           "unavailable": "This code cannot be used right now. Contact the ally who shared it.",
           "genericError": "We could not claim the medal. Try again."
+        },
+        "catalog": {
+          "title": "Medals to earn",
+          "subtitle": "Tap a medal to see how to earn it.",
+          "itemLabel": "{{title}}: see how to earn it"
+        },
+        "howToEarn": {
+          "title": "How to earn it",
+          "withEvent": "You earn it at {{event}}, with {{partner}}.",
+          "withPartner": "You earn it with {{partner}}.",
+          "steps": "It is sent to you by email or with a code. If you have a code, enter it in your profile, under Legacy → \"Claim medal\"."
         }
       },
       "statsInfo": {

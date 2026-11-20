@@ -21,6 +21,7 @@ import type {
 } from './types';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { ContactSection, LocationSection } from './ProfileSections';
+import HonorAwardCatalogSection from '../honorAwards/HonorAwardCatalogSection';
 import { publicValue } from './publicDisplay';
 import { AdminEntryButton } from './AdminEntryButton';
 import {
@@ -433,6 +434,15 @@ export function MarketplaceProjectDetailView({
             </Pressable>
           ) : null}
 
+          <HonorAwardCatalogSection
+            source={{ kind: 'project', slug: project.slug }}
+            c={{
+              text: palette.text,
+              muted: palette.muted,
+              border: palette.border,
+              accent: palette.primaryDeep,
+            }}
+          />
           <LocationSection location={project.locationDetails} palette={palette} t={t} />
           <ContactSection
             contact={project.publicContact}

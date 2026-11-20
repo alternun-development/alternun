@@ -67,6 +67,7 @@ import {
   EnterpriseHonorAwardPublicController,
   HonorAwardAdminController,
   HonorAwardMeController,
+  ProjectHonorAwardPublicController,
 } from './honor-award.controller';
 import { HonorAwardRepository } from './honor-award.repository';
 import { HonorAwardService } from './honor-award.service';
@@ -119,6 +120,7 @@ import { AdminAccessRepository, AdminAccessService } from './admin-access.servic
     HonorAwardMeController,
     EnterpriseHonorAwardController,
     EnterpriseHonorAwardPublicController,
+    ProjectHonorAwardPublicController,
     ProjectAccessController,
   ],
   providers: [

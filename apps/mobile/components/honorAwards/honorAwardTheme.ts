@@ -147,3 +147,30 @@ export function honorCountryName(code: string | null | undefined): string {
   const normalized = code?.trim().toUpperCase() ?? '';
   return COUNTRY_NAMES[normalized] ?? normalized;
 }
+
+/** How a person earns a medal they do not hold yet, from the ally and the event of its recipe. */
+export function honorHowToEarn(t: Translate, item: HonorAwardCatalogItem): string {
+  const partner = item.partner?.displayName ?? '';
+  const event = item.recipe.eventName ?? '';
+  const lead = partner
+    ? event
+      ? honorText(
+          t,
+          'profile.honorAwards.howToEarn.withEvent',
+          'Se obtiene en {{event}}, con {{partner}}.',
+          {
+            event,
+            partner,
+          }
+        )
+      : honorText(t, 'profile.honorAwards.howToEarn.withPartner', 'Se obtiene con {{partner}}.', {
+          partner,
+        })
+    : '';
+  const steps = honorText(
+    t,
+    'profile.honorAwards.howToEarn.steps',
+    'Te la entregan por correo o con un código. Si tienes un código, ingrésalo en tu perfil, en Legado → «Reclamar medalla».'
+  );
+  return lead ? `${lead} ${steps}` : steps;
+}

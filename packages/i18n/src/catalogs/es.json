@@ -923,6 +923,7 @@
         "verified": "Información Verificada"
       },
       "tierJourney": "Trayecto de Tier",
+      "tierJourneyAirs": "{{amount}} Airs",
       "accountRows": {
         "accountAndRoles": "Cuenta y roles",
         "personalInfo": "Información personal",
@@ -1220,6 +1221,17 @@
           "unverified": "Verifica el correo de tu cuenta para reclamar medallas.",
           "unavailable": "Este código no se puede usar ahora. Escríbele al aliado que te lo compartió.",
           "genericError": "No pudimos reclamar la medalla. Inténtalo de nuevo."
+        },
+        "catalog": {
+          "title": "Medallas para obtener",
+          "subtitle": "Toca una medalla para ver cómo obtenerla.",
+          "itemLabel": "{{title}}: ver cómo obtenerla"
+        },
+        "howToEarn": {
+          "title": "¿Cómo obtenerla?",
+          "withEvent": "Se obtiene en {{event}}, con {{partner}}.",
+          "withPartner": "Se obtiene con {{partner}}.",
+          "steps": "Te la entregan por correo o con un código. Si tienes un código, ingrésalo en tu perfil, en Legado → «Reclamar medalla»."
         }
       },
       "statsInfo": {

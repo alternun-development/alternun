@@ -568,4 +568,24 @@ export class EnterpriseHonorAwardPublicController {
   list(@Param('slug') slug: string) {
     return this.service.listPublicForEnterprise(slug);
   }
+
+  @Get('catalog')
+  @ApiOperation({ summary: 'Medals people can earn with this enterprise.' })
+  catalog(@Param('slug') slug: string) {
+    return this.service.listPublicCatalogForEnterprise(slug);
+  }
+}
+
+/** Medals people can earn through a project, shown on its public page. */
+@ApiTags('projects')
+@Controller({ path: 'projects/:slug/honor-awards', version: '1' })
+@UseFilters(MarketplaceExceptionFilter)
+export class ProjectHonorAwardPublicController {
+  constructor(private readonly service: HonorAwardService) {}
+
+  @Get('catalog')
+  @ApiOperation({ summary: 'Medals people can earn through this published project.' })
+  catalog(@Param('slug') slug: string) {
+    return this.service.listPublicCatalogForProject(slug);
+  }
 }
