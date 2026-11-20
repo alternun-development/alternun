@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-20T02:23:32.443Z",
+  "lastUpdated": "2026-11-20T03:11:03.805Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge PR #313 (v1.2.12) after confirming Batis and Swing Golf exist in the production DB; then Friday rehearsal with 3 new Gmail accounts",
+      "description": "Merge the v1.2.13 PR after CI; Friday rehearsal with 3 new Gmail accounts; confirm approvers sign in on prod",
       "id": "next",
       "priority": 1
     }
