@@ -1,9 +1,8 @@
-## [1.2.17](https://github.com/alternun-development/alternun/compare/v1.2.16...v1.2.17) (2026-11-20)
+## [1.2.17](https://github.com/alternun-development/alternun/compare/v1.2.16...v1.2.17) (2026-11-19)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore(reentry): next step after the tier modal
-- **repo:** feat(profile): the live dot and the stretch before Bronze open the tier ahead
+- **reentry:** next step after the tier modal ([33e8ad8](https://github.com/alternun-development/alternun/commit/33e8ad810f7228aba166bf43b18a3dd9c9b8b1cf))
 
 ### Features
 
