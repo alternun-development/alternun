@@ -33,7 +33,7 @@ The app draws the cards from recipe data. `art_preset` picks bundled art (`apps/
 
 The back prints "Fecha: `event_dates`" when the recipe has dates, otherwise "Obtenida:" with the year (recipes with an event year) or the full date. Mission names and classifications use Sculpin. A bundled ally mark wins over the enterprise `logo_url` on the card, because it is drawn for the card's background.
 
-Medals the person does not hold yet show in grey (locked slots, the medal view on a silver pocket and the card emblem).
+Ally and project public pages list their medals under "Medallas para obtener"; tapping one opens its mission in grey with "¿Cómo obtenerla?". Legado has no sample medal. Medals the person does not hold yet show in grey (locked slots, the medal view on a silver pocket and the card emblem).
 
 Copy rule: without certification the classification is "Misión de impacto positivo", never "compensación".
 
@@ -68,15 +68,16 @@ Refusal codes: `HONOR_CODE_INVALID`, `HONOR_CODE_EXPIRED`, `HONOR_CODE_REVOKED`,
 
 ## API
 
-| Method and path                                                     | Who              | What                                                        |
-| ------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------- |
-| `GET /v1/me/honor-awards`, `GET …/catalog`, `POST …/:grantId/claim` | Signed-in person | Their awards, the medals still to earn, claim               |
-| `POST /v1/me/honor-awards/redeem` `{ code }`                        | Signed-in person | Redeem a claim code                                         |
-| `GET /v1/me/enterprises/:id/manage/honor-awards/recipes`            | Ally granters    | Awards the ally can give                                    |
-| `POST …/grants` `{ recipeId, email, recipientName?, reference? }`   | Ally granters    | Send an award; returns `grant` or `airs_report` with status |
-| `GET …/codes`, `POST …/codes`, `POST …/codes/:codeId/revoke`        | Ally granters    | List, create (code in the response only) and revoke codes   |
-| `POST …/guests/lookup`                                              | Ally granters    | How many of the ally's awards a person holds                |
-| `/v1/admin/honor-awards/*`                                          | `medals:manage`  | Recipes and grants from the console                         |
+| Method and path                                                                                 | Who              | What                                                                                       |
+| ----------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------ |
+| `GET /v1/me/honor-awards`, `GET …/catalog`, `POST …/:grantId/claim`                             | Signed-in person | Their awards, the medals still to earn, claim                                              |
+| `POST /v1/me/honor-awards/redeem` `{ code }`                                                    | Signed-in person | Redeem a claim code                                                                        |
+| `GET /v1/me/enterprises/:id/manage/honor-awards/recipes`                                        | Ally granters    | Awards the ally can give                                                                   |
+| `POST …/grants` `{ recipeId, email, recipientName?, reference? }`                               | Ally granters    | Send an award; returns `grant` or `airs_report` with status                                |
+| `GET …/codes`, `POST …/codes`, `POST …/codes/:codeId/revoke`                                    | Ally granters    | List, create (code in the response only) and revoke codes                                  |
+| `POST …/guests/lookup`                                                                          | Ally granters    | How many of the ally's awards a person holds                                               |
+| `GET /v1/enterprises/:slug/honor-awards/catalog`, `GET /v1/projects/:slug/honor-awards/catalog` | Anyone           | Medals to earn with an ally or through a project ("Medallas para obtener" on public pages) |
+| `/v1/admin/honor-awards/*`                                                                      | `medals:manage`  | Recipes and grants from the console                                                        |
 
 ## Operations
 
