@@ -20,6 +20,9 @@ jest.mock('@alternun/ui', () => {
       score >= 20000 ? 'platinum' : score >= 5000 ? 'gold' : score >= 1000 ? 'silver' : 'bronze',
   };
 });
+jest.mock('../../settings/AppPreferencesProvider', () => ({
+  useAppPreferences: () => ({ motionLevel: 'off' }),
+}));
 jest.mock('../../i18n/useAppTranslation', () => ({
   useAppTranslation: () => ({
     locale: 'en',
@@ -102,12 +105,13 @@ it.each([
 );
 
 it.each([
-  [null, false, '0%', 0, 'Your score is currently unavailable'],
-  [0, true, '25%', 1, '20,000 AIRS to reach this tier'],
-  [1000, false, '50%', 2, '19,000 AIRS to reach this tier'],
-  [5000, true, '75%', 3, '15,000 AIRS to reach this tier'],
-  [20000, false, '100%', 3, 'Your current tier'],
-  [25000, true, '100%', 3, 'Your current tier'],
+  // Fill width in px on a 400 px line: it runs from 14 px up to the person's position.
+  [null, false, 0, 0, 'Your score is currently unavailable'],
+  [0, true, 36, 1, '20,000 AIRS to reach this tier'],
+  [1000, false, 136, 2, '19,000 AIRS to reach this tier'],
+  [5000, true, 236, 3, '15,000 AIRS to reach this tier'],
+  [20000, false, 336, 3, 'Your current tier'],
+  [25000, true, 345, 3, 'Your current tier'],
 ])(
   'shows accurate milestone progress at score=%s in dark mode=%s',
   (score, isDark, progressWidth, reachedImageCount, expectedDetails) => {
@@ -115,6 +119,8 @@ it.each([
     act(() => {
       tree = renderer.create(<TierJourney score={score} isDark={isDark} c={colors} />);
     });
+    const line = tree.root.find((node) => typeof node.props.onLayout === 'function');
+    act(() => line.props.onLayout({ nativeEvent: { layout: { width: 400 } } }));
 
     const tracks = tree.root.findAllByType(View).filter((node) => node.props.style?.height === 3);
     expect(tracks).toHaveLength(2);
@@ -151,3 +157,28 @@ it.each([
     act(() => tree.unmount());
   }
 );
+
+it('marks the person\'s Airs on the line with a live dot once the line is measured', () => {
+  let tree;
+  act(() => {
+    tree = renderer.create(<TierJourney score={2_000} isDark c={colors} />);
+  });
+  expect(tree.root.findAllByProps({ testID: 'tier-journey-marker' })).toHaveLength(0);
+  const line = tree.root.find((node) => typeof node.props.onLayout === 'function');
+  act(() => line.props.onLayout({ nativeEvent: { layout: { width: 400 } } }));
+  const marker = tree.root.findAllByProps({ testID: 'tier-journey-marker' })[0];
+  expect(marker.props.accessibilityLabel).toBe('2,000 Airs');
+  expect(textContent(tree)).toContain('2,000 Airs');
+  // Mocked thresholds 0 / 1.000 / 5.000 / 20.000 put 2.000 a quarter of the way to Gold.
+  expect(marker.props.style.left).toBe(175 - 9);
+});
+
+it('shows no marker without a score', () => {
+  let tree;
+  act(() => {
+    tree = renderer.create(<TierJourney score={null} isDark c={colors} />);
+  });
+  const line = tree.root.find((node) => typeof node.props.onLayout === 'function');
+  act(() => line.props.onLayout({ nativeEvent: { layout: { width: 400 } } }));
+  expect(tree.root.findAllByProps({ testID: 'tier-journey-marker' })).toHaveLength(0);
+});
