@@ -70,9 +70,11 @@ test('a report with a galardón medal shows the award and its art in the email',
   assert.match(credited.text, /recibiste el galardón Manglar Verde · Tour Callaway Colombia/);
   assert.match(credited.text, /claim it in your profile, under Legacy/);
   assert.match(credited.html, /<img src="https:\/\/cdn\.example\.test\/manglar-verde\.png"/);
+  assert.match(credited.html, /href="https:\/\/airs\.example\.test\/profile"/);
 
   const waiting = renderAirsReportRecipientEmail(context({ honorAward }));
   assert.match(waiting.text, /al crear tu cuenta lo reclamas/);
+  assert.match(waiting.html, /href="https:\/\/airs\.example\.test\/"/);
 
   const plain = renderAirsReportRecipientEmail(context({ report: report({ status: 'released' }) }));
   assert.doesNotMatch(plain.html, /<img/);

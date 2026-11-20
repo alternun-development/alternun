@@ -19,6 +19,8 @@ Related: [User Airs reports and claiming](airs-user-reports-and-claiming.md), wh
 
 Migrations: `20261114_0001`, `20261114_0002`, `20261119_0001_honor_award_event_dates`, `20261119_0002_honor_award_claim_codes`.
 
+Testing tip: a code redeemed, or an award sent, by the same person who created it is a self-report and always waits for another approver (`SELF_REPORT`). Use a second account to test the release.
+
 ## Card art
 
 The app draws the cards from recipe data. `art_preset` picks bundled art (`apps/mobile/components/honorAwards/honorAwardArt.ts`):
@@ -42,6 +44,8 @@ From `/manage/enterprise/<id>` → Galardones → "Otorgar un galardón". Who ca
 - **Award with Airs** (`airs_amount > 0`): the API files an Airs report on the recipe's project, with the recipe's project medal, the amount and the concept "Galardón <title> · <event>". The usual report rules apply: per-recipient daily and monthly limits (testnet 100 / 300), approvers beyond them, self-reports always wait, ledger and audit. When the report is released, `airs_report_award_medal` inserts the user medal and `user_medal_honor_award` creates the pending grant. The recipient email shows the award name and art. People without an account can be sent the award with their name; it waits for them to sign up.
 - **Award without Airs**: a direct grant, once per person, or once per reference (for example a hotel reservation).
 - The report needs a document number when the project type requires one: the reference typed in the desk, or `GALARDON-<recipe>`.
+- A person without an account gets the report in `awaiting_claim`. It is released when they sign in with that email verified: by the sign-in exchange, and also when the app loads their Airs (`POST /v1/airs/onboarding`) or opens Legado (`GET /v1/me/honor-awards`). The exchange alone was not enough: on testnet it fails for Better Auth accounts (`users_email_key`) and the app falls back to its local session without running the claim.
+- The email button opens the profile (Legado) when the account exists, and the app root when the person still has to sign up.
 - The amount is the recipe's `airs_amount`, edited by Airs admins in the console. Sending an award with Airs needs an active project medal linked to the recipe (`HONOR_AWARD_AIRS_NOT_CONFIGURED` otherwise).
 
 The ally's team needs the ally to be linked to the recipe's project (`enterprise_projects`, for example as `sponsor`), because the report is checked with `airs_report_can_submit`.

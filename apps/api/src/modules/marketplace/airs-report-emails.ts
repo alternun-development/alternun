@@ -59,7 +59,8 @@ export function renderAirsReportRecipientEmail(
   const greetingEn = firstName(report.recipientName)
     ? `Hi ${firstName(report.recipientName)}`
     : 'Hi';
-  const link = `${appUrl}/`;
+  // Legado lives on the profile; a new person goes to the app root to create the account first.
+  const link = context.honorAward && !needsClaim ? `${appUrl}/profile` : `${appUrl}/`;
 
   const introEs = needsClaim
     ? `Tienes ${airsLabel(
