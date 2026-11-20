@@ -6,15 +6,16 @@ import type { LeaderboardTierBadgeProps } from './LeaderboardTierBadge.types';
 
 /**
  * Status tier badge after a name in Top AIRS (same tier rule as the profile). Icon only; the tier
- * name expands on hover (web) or on press, and a second press collapses it.
+ * name expands on hover (web) or on press, and a second press collapses it. Nothing below Bronze.
  */
 export function LeaderboardTierBadge({
   score,
   testID,
-}: LeaderboardTierBadgeProps): React.JSX.Element {
+}: LeaderboardTierBadgeProps): React.JSX.Element | null {
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
   const tier = resolveTier(Number.isFinite(score) ? score : 0);
+  if (!tier) return null;
   const spec = TIERS[tier];
   const artwork = STATUS_BADGES[tier];
   const expanded = hovered || pinned;

@@ -40,7 +40,7 @@ import { CountryPickerModal } from '../components/profile/CountryPickerModal';
 import { CityPickerModal } from '../components/profile/CityPickerModal';
 import * as Clipboard from 'expo-clipboard';
 import { getLocaleLabel } from '@alternun/i18n';
-import { GlassCard, SectionContainer, resolveTier } from '@alternun/ui';
+import { GlassCard, SectionContainer, resolveTier, tierSpecOf } from '@alternun/ui';
 import type { TierSpec } from '@alternun/ui';
 import { useAuth } from '../components/auth/AppAuthProvider';
 import { useAppTranslation } from '../components/i18n/useAppTranslation';
@@ -330,50 +330,14 @@ function getInitials(name: string): string {
   return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
 }
 
+/** The tier spec from @alternun/ui with the labels in the reader's language. */
 function resolveTierSpec(tier: ReturnType<typeof resolveTier>, labels: TierLabelMap): TierSpec {
-  switch (tier) {
-    case 'bronze':
-      return {
-        label: labels.bronze,
-        color: '#cd7f32',
-        trackColor: 'rgba(205,127,50,0.28)',
-        min: 0,
-        max: 1_000,
-        next: 'silver',
-        nextLabel: labels.silver,
-      };
-    case 'silver':
-      return {
-        label: labels.silver,
-        color: '#a8b8cc',
-        trackColor: 'rgba(168,184,204,0.28)',
-        min: 1_000,
-        max: 5_000,
-        next: 'gold',
-        nextLabel: labels.gold,
-      };
-    case 'gold':
-      return {
-        label: labels.gold,
-        color: '#d4b96a',
-        trackColor: 'rgba(212,185,106,0.28)',
-        min: 5_000,
-        max: 20_000,
-        next: 'platinum',
-        nextLabel: labels.platinum,
-      };
-    case 'platinum':
-    default:
-      return {
-        label: labels.platinum,
-        color: '#9ba9c4',
-        trackColor: 'rgba(155,169,196,0.28)',
-        min: 20_000,
-        max: null,
-        next: null,
-        nextLabel: null,
-      };
-  }
+  const spec = tierSpecOf(tier);
+  return {
+    ...spec,
+    label: tier ? labels[tier] : labels.none,
+    nextLabel: spec.next ? labels[spec.next] : null,
+  };
 }
 
 // ─── Profile components ──────────────────────────────────────────────────────
@@ -412,13 +376,16 @@ function ProfileHeader({
     silver: t('profile.tierLabels.silver', undefined, 'Silver'),
     gold: t('profile.tierLabels.gold', undefined, 'Gold'),
     platinum: t('profile.tierLabels.platinum', undefined, 'Platinum'),
+    none: t('profile.tierLabels.none', undefined, 'Aún sin nivel'),
   };
   const spec = resolveTierSpec(tier, tierLabels);
   const [tierRevealOpen, setTierRevealOpen] = useState(false);
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   // Hovering the avatar turns it over to show the current tier badge.
   const [showTierFace, setShowTierFace] = useState(false);
-  const tierBadge = hasScore ? STATUS_BADGES[tier] ?? null : null;
+  const tierBadge = hasScore && tier ? STATUS_BADGES[tier] ?? null : null;
+  // Below Bronze there is no tier to reveal yet.
+  const canRevealTier = hasScore && tier !== null;
   const avatarClient = useMemo(
     () => (getToken ? createUserAvatarClient(getToken) : null),
     [getToken]
@@ -533,7 +500,7 @@ function ProfileHeader({
               { tier: spec.label },
               `Ver tu nivel ${spec.label}`
             )}
-            disabled={!hasScore}
+            disabled={!canRevealTier}
             onPress={() => setTierRevealOpen(true)}
             onHoverIn={() => setShowTierFace(true)}
             onHoverOut={() => setShowTierFace(false)}
@@ -614,6 +581,7 @@ function ProfileHeader({
                 `Ver tu nivel ${spec.label}`
               )}
               activeOpacity={0.85}
+              disabled={!canRevealTier}
               onPress={() => setTierRevealOpen(true)}
               style={{
                 position: 'absolute',
@@ -642,7 +610,7 @@ function ProfileHeader({
           ) : null}
         </View>
         <TierRevealCinematic
-          tier={tierRevealOpen && hasScore ? tier : null}
+          tier={tierRevealOpen && canRevealTier ? tier : null}
           score={safeScore}
           onClose={() => setTierRevealOpen(false)}
         />

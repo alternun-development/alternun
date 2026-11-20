@@ -837,7 +837,8 @@
         "bronze": "Bronze",
         "silver": "Silver",
         "gold": "Gold",
-        "platinum": "Platinum"
+        "platinum": "Platinum",
+        "none": "No tier yet"
       },
       "stats": {
         "airs": "AIRS",
@@ -1140,9 +1141,7 @@
           "purpose": "As a tournament participant, you contributed to the conservation of the mangrove forest in the Colombian Caribbean, together with Fundación Batis.",
           "partnerDescription": "Organizes and promotes golf tournaments and sports events in Colombia. We help athletes reach their dreams and goals.",
           "projectLocation": "KM5 Finca La Granja, Antigua Vía Férrea, Puerto Colombia, Atlántico.",
-          "projectDescription": "Red mangrove forest (Rhizophora mangle) in the Colombian Caribbean.",
-          "sampleLabel": "Sample medal: see demo",
-          "sampleTag": "Sample"
+          "projectDescription": "Red mangrove forest (Rhizophora mangle) in the Colombian Caribbean."
         },
         "desk": {
           "grantTitle": "Give an award",
@@ -1175,7 +1174,6 @@
           "dateLabel": "Date:",
           "obtainedLabel": "Earned:"
         },
-        "demoSlotHint": "Tap the sample medal to see how it looks.",
         "locked": {
           "note": "You don't have this medal yet: take part in the mission to earn it.",
           "slotLabel": "{{title}}: medal to earn"

@@ -837,7 +837,8 @@
         "bronze": "บรอนซ์",
         "silver": "เงิน",
         "gold": "ทอง",
-        "platinum": "แพลทินัม"
+        "platinum": "แพลทินัม",
+        "none": "ยังไม่มีระดับ"
       },
       "stats": {
         "airs": "AIRS",
@@ -1140,9 +1141,7 @@
           "purpose": "ในฐานะผู้เข้าร่วมการแข่งขัน คุณมีส่วนช่วยอนุรักษ์ป่าชายเลนในทะเลแคริบเบียนของโคลอมเบีย ร่วมกับ Fundación Batis",
           "partnerDescription": "จัดและโปรโมตการแข่งขันกอล์ฟและงานกีฬาในโคลอมเบีย เราช่วยนักกีฬาให้ไปถึงความฝันและเป้าหมาย",
           "projectLocation": "KM5 Finca La Granja, Antigua Vía Férrea, Puerto Colombia, Atlántico.",
-          "projectDescription": "ป่าโกงกางแดง (Rhizophora mangle) ในแถบทะเลแคริบเบียนของโคลอมเบีย",
-          "sampleLabel": "เหรียญตัวอย่าง: ดูตัวอย่าง",
-          "sampleTag": "ตัวอย่าง"
+          "projectDescription": "ป่าโกงกางแดง (Rhizophora mangle) ในแถบทะเลแคริบเบียนของโคลอมเบีย"
         },
         "desk": {
           "grantTitle": "มอบรางวัล",
@@ -1175,7 +1174,6 @@
           "dateLabel": "วันที่:",
           "obtainedLabel": "ได้รับเมื่อ:"
         },
-        "demoSlotHint": "แตะเหรียญตัวอย่างเพื่อดูหน้าตา",
         "locked": {
           "note": "คุณยังไม่มีเหรียญนี้ เข้าร่วมภารกิจเพื่อรับเหรียญ",
           "slotLabel": "{{title}}: เหรียญที่ยังไม่ได้รับ"

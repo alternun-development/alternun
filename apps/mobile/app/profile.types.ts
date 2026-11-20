@@ -15,6 +15,8 @@ export type TierLabelMap = {
   silver: string;
   gold: string;
   platinum: string;
+  /** Below the first tier. */
+  none: string;
 };
 
 export type AuthMethodDescriptor =
