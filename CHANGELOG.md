@@ -1,3 +1,14 @@
+## [1.2.15](https://github.com/alternun-development/alternun/compare/v1.2.14...v1.2.15) (2026-11-20)
+
+### Bug Fixes
+
+- **repo:** chore(reentry): next step after super admin config
+- **repo:** feat(admin): admin@alternun.co as super admin and recipient of system notices
+
+### Features
+
+- **admin:** admin@alternun.co as super admin and recipient of system notices ([5c607d7](https://github.com/alternun-development/alternun/commit/5c607d7d480a1b202d6601492946d6e9cf259300))
+
 ## [1.2.14](https://github.com/alternun-development/alternun/compare/v1.2.13...v1.2.14) (2026-11-19)
 
 ### Changes

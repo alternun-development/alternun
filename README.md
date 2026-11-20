@@ -120,22 +120,18 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.14**
+Current version: **1.2.15**
 
-## 📋 Latest Changes (v1.2.14)
+## 📋 Latest Changes (v1.2.15)
 
-### Changes
+### Bug Fixes
 
-- **reentry:** next step after public medals and tier line ([8bec744](https://github.com/alternun-development/alternun/commit/8bec744a927c508a56b5b1a1a785e1f471a85204))
-
-### Documentation
-
-- **honor-awards:** public medal catalog routes ([ef3b038](https://github.com/alternun-development/alternun/commit/ef3b03899aefafd8fb413a5f61a3960d9c73acba))
+- **repo:** chore(reentry): next step after super admin config
+- **repo:** feat(admin): admin@alternun.co as super admin and recipient of system notices
 
 ### Features
 
-- **honor-awards:** medals to earn on ally and project public pages ([ce17212](https://github.com/alternun-development/alternun/commit/ce172124b33cd65fe13a26547df3059ed88eb45a))
-- **profile:** live dot marks the person's Airs on the tier journey line ([8f27701](https://github.com/alternun-development/alternun/commit/8f2770138ff87e2319b891c6352acbd4053396cb))
+- **admin:** admin@alternun.co as super admin and recipient of system notices ([5c607d7](https://github.com/alternun-development/alternun/commit/5c607d7d480a1b202d6601492946d6e9cf259300))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
