@@ -120,22 +120,23 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.12**
+Current version: **1.2.13**
 
-## 📋 Latest Changes (v1.2.12)
-
-### Changes
-
-- **reentry:** next step before merging v1.2.12 ([ffddb29](https://github.com/alternun-development/alternun/commit/ffddb2988eee8f1c93ea2eeddd719aa833ff8df7))
+## 📋 Latest Changes (v1.2.13)
 
 ### Bug Fixes
 
-- **honor-awards:** award email opens Legado and docs on the claim ([a5f25b5](https://github.com/alternun-development/alternun/commit/a5f25b54091c97382ca7cf31750f975842000b81))
-- **airs-reports:** release waiting reports on app load and in Legado ([1c1b951](https://github.com/alternun-development/alternun/commit/1c1b951c516db2784cf5d0048130dc6e4a2263b1))
+- **repo:** chore(reentry): next step after tiers and Legado changes
+- **repo:** feat(tiers): no tier below 1.000 Airs; Bronze 1.000, Silver 3.000, Gold 7.000, Platinum 12.000
+- **repo:** fix(legado): no sample medal in Legado; tier reveal without light rays
+
+### Bug Fixes
+
+- **legado:** no sample medal in Legado; tier reveal without light rays ([cfe12ab](https://github.com/alternun-development/alternun/commit/cfe12abdcb051552ead0648e85b91bc496617ec7))
 
 ### Features
 
-- **marketplace:** production launch catalog and featured slider rule ([4684143](https://github.com/alternun-development/alternun/commit/468414399da69c37db8416a0b88f7e230c2f97f0))
+- **tiers:** no tier below 1.000 Airs; Bronze 1.000, Silver 3.000, Gold 7.000, Platinum 12.000 ([a152fad](https://github.com/alternun-development/alternun/commit/a152fada02b1241b4f60034d2d4652074745526a))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
