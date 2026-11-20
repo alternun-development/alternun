@@ -1,3 +1,14 @@
+## [1.2.16](https://github.com/alternun-development/alternun/compare/v1.2.15...v1.2.16) (2026-11-20)
+
+### Bug Fixes
+
+- **repo:** chore(reentry): next step after welcome email v2
+- **repo:** feat(email): Airs welcome email v2 with the Email01 design
+
+### Features
+
+- **email:** Airs welcome email v2 with the Email01 design ([262807a](https://github.com/alternun-development/alternun/commit/262807a84e5a51b01f7c9cd7bf675930091699c4))
+
 ## [1.2.15](https://github.com/alternun-development/alternun/compare/v1.2.14...v1.2.15) (2026-11-19)
 
 ### Changes
