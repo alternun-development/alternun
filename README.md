@@ -124,10 +124,9 @@ Current version: **1.2.16**
 
 ## 📋 Latest Changes (v1.2.16)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore(reentry): next step after welcome email v2
-- **repo:** feat(email): Airs welcome email v2 with the Email01 design
+- **reentry:** next step after welcome email v2 ([2253d02](https://github.com/alternun-development/alternun/commit/2253d0232b29352c90438b8fe9cd46b39e585593))
 
 ### Features
 
