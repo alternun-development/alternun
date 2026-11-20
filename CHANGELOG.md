@@ -1,3 +1,17 @@
+## [1.2.14](https://github.com/alternun-development/alternun/compare/v1.2.13...v1.2.14) (2026-11-20)
+
+### Bug Fixes
+
+- **repo:** chore(reentry): next step after public medals and tier line
+- **repo:** docs(honor-awards): public medal catalog routes
+- **repo:** feat(honor-awards): medals to earn on ally and project public pages
+- **repo:** feat(profile): live dot marks the person's Airs on the tier journey line
+
+### Features
+
+- **honor-awards:** medals to earn on ally and project public pages ([ce17212](https://github.com/alternun-development/alternun/commit/ce172124b33cd65fe13a26547df3059ed88eb45a))
+- **profile:** live dot marks the person's Airs on the tier journey line ([8f27701](https://github.com/alternun-development/alternun/commit/8f2770138ff87e2319b891c6352acbd4053396cb))
+
 ## [1.2.13](https://github.com/alternun-development/alternun/compare/v1.2.12...v1.2.13) (2026-11-19)
 
 ### Changes

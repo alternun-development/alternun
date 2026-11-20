@@ -120,21 +120,21 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.13**
+Current version: **1.2.14**
 
-## 📋 Latest Changes (v1.2.13)
-
-### Changes
-
-- **reentry:** next step after tiers and Legado changes ([8c6a9e9](https://github.com/alternun-development/alternun/commit/8c6a9e92ef4005e7da03b9df6c5e8562677fd184))
-
-### Features
-
-- **tiers:** no tier below 1.000 Airs; Bronze 1.000, Silver 3.000, Gold 7.000, Platinum 12.000 ([a152fad](https://github.com/alternun-development/alternun/commit/a152fada02b1241b4f60034d2d4652074745526a))
+## 📋 Latest Changes (v1.2.14)
 
 ### Bug Fixes
 
-- **legado:** no sample medal in Legado; tier reveal without light rays ([cfe12ab](https://github.com/alternun-development/alternun/commit/cfe12abdcb051552ead0648e85b91bc496617ec7))
+- **repo:** chore(reentry): next step after public medals and tier line
+- **repo:** docs(honor-awards): public medal catalog routes
+- **repo:** feat(honor-awards): medals to earn on ally and project public pages
+- **repo:** feat(profile): live dot marks the person's Airs on the tier journey line
+
+### Features
+
+- **honor-awards:** medals to earn on ally and project public pages ([ce17212](https://github.com/alternun-development/alternun/commit/ce172124b33cd65fe13a26547df3059ed88eb45a))
+- **profile:** live dot marks the person's Airs on the tier journey line ([8f27701](https://github.com/alternun-development/alternun/commit/8f2770138ff87e2319b891c6352acbd4053396cb))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
