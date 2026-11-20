@@ -5,7 +5,6 @@ export interface AirsWelcomeEmailInput {
   displayName?: string | null;
   dashboardUrl?: string | null;
   bonusAirs?: number;
-  airsPerDollar?: number;
 }
 
 export interface AirsWelcomeEmail {
@@ -24,69 +23,78 @@ export interface AirsWelcomeEmail {
 interface AirsWelcomeTemplate {
   subject: string;
   preview: string;
+  /** With the person's name, and without it when the account has none. */
   greeting: string;
+  greetingNoName: string;
   intro: string;
   body: string;
   ctaLabel: string;
-  footer: string;
+  closing: string;
+  signature: string;
+  reason: string;
+  bannerAlt: string;
 }
 
 const DEFAULT_DASHBOARD_URL = 'https://airs.alternun.co/';
 const DEFAULT_BONUS_AIRS = 10;
-const DEFAULT_AIRS_PER_DOLLAR = 5;
 
+/** Welcome v2 art (Email01Airs design), served from the public media bucket. */
+const ASSET_BASE =
+  'https://rjebeugdvwbjpaktrrbx.supabase.co/storage/v1/object/public/marketplace-media/email/welcome-v2';
+const BANNER_URL = `${ASSET_BASE}/banner.jpg`;
+const FOOTER_URL = `${ASSET_BASE}/footer.jpg`;
+const ALTERNUN_URL = 'https://alternun.io';
+
+// Copy from the 19-Nov-2026 email audit (Email01 and Ficha 11), checked with the Airs language
+// guardrail: Airs is reputation, no exchange rate, no rewards fund or token wording.
 const AIRS_WELCOME_TEMPLATES: Record<EmailLocale, AirsWelcomeTemplate> = {
-  en: {
-    subject: 'Welcome to AIRS accumulation',
-    preview: 'Complete your profile to claim your 10 AIRS bonus and start earning.',
-    greeting: 'Hi {{displayName}},',
-    intro:
-      'Your AIRS account is active. You can now accumulate AIRS through allied commerce and validated regenerative actions.',
-    body: 'You earn {{airsPerDollar}} AIRS for every USD spent in allied commerce or validated regenerative actions. Complete your profile to unlock the {{bonusAirs}} AIRS welcome bonus and keep your regenerative score flowing.',
-    ctaLabel: 'Open dashboard',
-    footer: 'Alternun AIRS Team',
-  },
   es: {
-    subject: 'Bienvenido a la acumulacion de AIRS',
-    preview: 'Completa tu perfil para reclamar tu bono de 10 AIRS y comenzar a acumular.',
-    greeting: 'Hola {{displayName}},',
-    intro:
-      'Tu cuenta AIRS ya esta activa. Ahora puedes acumular AIRS mediante comercio aliado y acciones regenerativas validadas.',
-    body: 'Ganas {{airsPerDollar}} AIRS por cada USD utilizado en comercio aliado o acciones regenerativas validadas. Completa tu perfil para desbloquear el bono de bienvenida de {{bonusAirs}} AIRS y mantener tu puntuacion regenerativa en movimiento.',
-    ctaLabel: 'Abrir panel',
-    footer: 'Equipo AIRS de Alternun',
+    subject: 'Te damos la bienvenida a Airs',
+    preview: 'Completa tu perfil y suma tus primeros {{bonusAirs}} Airs.',
+    greeting: 'Hola, {{displayName}}:',
+    greetingNoName: 'Hola:',
+    intro: 'Desde hoy, tus acciones de impacto positivo con marcas y proyectos aliados suman Airs.',
+    body: 'Los Airs se construyen con lo que haces, no vencen y forman tu trayectoria. Completa tu perfil y suma tus primeros {{bonusAirs}} Airs.',
+    ctaLabel: 'Completar mi perfil',
+    closing: 'Que lo que haces por el planeta, quede.',
+    signature: 'Equipo Airs',
+    reason: 'Recibes este correo porque creaste una cuenta en Airs.',
+    bannerAlt: 'Te damos la bienvenida a Airs',
+  },
+  en: {
+    subject: 'Welcome to Airs',
+    preview: 'Complete your profile and get your first {{bonusAirs}} Airs.',
+    greeting: 'Hi {{displayName}},',
+    greetingNoName: 'Hi,',
+    intro: 'From today, your positive-impact actions with partner brands and projects earn Airs.',
+    body: 'Airs are built by what you do, never expire and become your track record. Complete your profile to get your first {{bonusAirs}} Airs.',
+    ctaLabel: 'Complete my profile',
+    closing: 'What you do for the planet, stays.',
+    signature: 'The Airs team',
+    reason: 'You are receiving this email because you created an Airs account.',
+    bannerAlt: 'Welcome to Airs',
   },
   th: {
-    subject: 'ยินดีต้อนรับสู่การสะสม AIRS',
-    preview: 'กรอกโปรไฟล์ของคุณให้ครบเพื่อรับโบนัส 10 AIRS และเริ่มสะสม',
-    greeting: 'สวัสดี {{displayName}},',
+    subject: 'ยินดีต้อนรับสู่ Airs',
+    preview: 'กรอกโปรไฟล์ให้ครบและรับ {{bonusAirs}} Airs แรกของคุณ',
+    greeting: 'สวัสดี {{displayName}}',
+    greetingNoName: 'สวัสดี',
     intro:
-      'บัญชี AIRS ของคุณพร้อมใช้งานแล้ว ตอนนี้คุณสามารถสะสม AIRS จากการค้าเครือข่ายพันธมิตรและการกระทำเชิงฟื้นฟูที่ตรวจสอบได้',
-    body: 'คุณจะได้รับ {{airsPerDollar}} AIRS สำหรับทุก USD ที่ใช้กับการค้าเครือข่ายพันธมิตรหรือการกระทำเชิงฟื้นฟูที่ตรวจสอบแล้ว กรอกโปรไฟล์ให้ครบเพื่อปลดล็อกโบนัสต้อนรับ {{bonusAirs}} AIRS และเดินหน้าคะแนนฟื้นฟูของคุณต่อไป',
-    ctaLabel: 'เปิดแดชบอร์ด',
-    footer: 'ทีม AIRS ของ Alternun',
+      'ตั้งแต่วันนี้ การกระทำที่สร้างผลกระทบเชิงบวกของคุณร่วมกับแบรนด์และโครงการพันธมิตรจะสะสมเป็น Airs',
+    body: 'Airs สร้างขึ้นจากสิ่งที่คุณทำ ไม่มีวันหมดอายุ และกลายเป็นเส้นทางของคุณ กรอกโปรไฟล์ให้ครบเพื่อรับ {{bonusAirs}} Airs แรกของคุณ',
+    ctaLabel: 'กรอกโปรไฟล์ของฉัน',
+    closing: 'ให้สิ่งที่คุณทำเพื่อโลกคงอยู่',
+    signature: 'ทีม Airs',
+    reason: 'คุณได้รับอีเมลนี้เพราะคุณสร้างบัญชี Airs',
+    bannerAlt: 'ยินดีต้อนรับสู่ Airs',
   },
 };
 
-function interpolate(
-  value: string,
-  params: {
-    displayName: string;
-    bonusAirs: number;
-    airsPerDollar: number;
-  }
-): string {
+function interpolate(value: string, params: { displayName: string; bonusAirs: number }): string {
   return value.replace(/\{\{\s*([^}]+)\s*\}\}/g, (match: string, key: string) => {
     const trimmedKey = key.trim();
-    if (trimmedKey === 'displayName') {
-      return params.displayName;
-    }
-    if (trimmedKey === 'bonusAirs') {
-      return String(params.bonusAirs);
-    }
-    if (trimmedKey === 'airsPerDollar') {
-      return String(params.airsPerDollar);
-    }
+    if (trimmedKey === 'displayName') return params.displayName;
+    if (trimmedKey === 'bonusAirs') return String(params.bonusAirs);
     return match;
   });
 }
@@ -103,10 +111,6 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => HTML_ESCAPE_LOOKUP[char] ?? char);
 }
 
-function escapeHtmlWithBreaks(value: string): string {
-  return escapeHtml(value).replace(/\n/g, '<br />');
-}
-
 function stripTrailingSlashes(value: string): string {
   let result = value;
   while (result.endsWith('/')) {
@@ -115,35 +119,38 @@ function stripTrailingSlashes(value: string): string {
   return result;
 }
 
+const SPACER = '<tr><td style="font-size:0;line-height:0;height:16px" height="16">&nbsp;</td></tr>';
+const DIVIDER =
+  '<tr><td style="padding:0 20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td height="1" style="height:1px;line-height:1px;font-size:0;background-color:#bfc3c8">&nbsp;</td></tr></table></td></tr>';
+const TEXT_STYLE =
+  'padding:0 20px;color:#545454;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.45;text-align:left';
+
+/**
+ * The Airs welcome email (v2): the Email01Airs design from the design team (banner, title,
+ * greeting, two paragraphs, profile button, closing and the Alternun footer) with copy that
+ * follows the Airs language rules. Spanish by default, because a new account often has no locale.
+ */
 export function renderAirsWelcomeEmail(input: AirsWelcomeEmailInput): AirsWelcomeEmail {
-  const locale = normalizeEmailLocale(input.locale, 'en');
-  const template =
-    locale === 'es'
-      ? AIRS_WELCOME_TEMPLATES.es
-      : locale === 'th'
-      ? AIRS_WELCOME_TEMPLATES.th
-      : AIRS_WELCOME_TEMPLATES.en;
-  const displayName = (input.displayName?.trim() ?? 'AIRS member').trim();
+  const locale = normalizeEmailLocale(input.locale, 'es');
+  const template = AIRS_WELCOME_TEMPLATES[locale] ?? AIRS_WELCOME_TEMPLATES.es;
+  const displayName = input.displayName?.trim() ?? '';
   const dashboardUrl = stripTrailingSlashes(input.dashboardUrl?.trim() ?? DEFAULT_DASHBOARD_URL);
+  const profileUrl = `${dashboardUrl}/profile`;
   const bonusAirs = Number.isFinite(input.bonusAirs ?? DEFAULT_BONUS_AIRS)
     ? Number(input.bonusAirs ?? DEFAULT_BONUS_AIRS)
     : DEFAULT_BONUS_AIRS;
-  const airsPerDollar = Number.isFinite(input.airsPerDollar ?? DEFAULT_AIRS_PER_DOLLAR)
-    ? Number(input.airsPerDollar ?? DEFAULT_AIRS_PER_DOLLAR)
-    : DEFAULT_AIRS_PER_DOLLAR;
-  const params = {
-    displayName,
-    bonusAirs,
-    airsPerDollar,
-  };
+  const params = { displayName, bonusAirs };
 
   const subject = interpolate(template.subject, params);
   const preview = interpolate(template.preview, params);
-  const greeting = interpolate(template.greeting, params);
+  const greeting = displayName
+    ? interpolate(template.greeting, params)
+    : interpolate(template.greetingNoName, params);
   const intro = interpolate(template.intro, params);
   const body = interpolate(template.body, params);
   const ctaLabel = template.ctaLabel;
-  const footer = template.footer;
+  const year = new Date().getUTCFullYear();
+  const legal = `© ${year} Alternun Colombia SAS · info@alternun.io`;
 
   const text = [
     subject,
@@ -154,9 +161,13 @@ export function renderAirsWelcomeEmail(input: AirsWelcomeEmailInput): AirsWelcom
     '',
     body,
     '',
-    `${ctaLabel}: ${dashboardUrl}`,
+    `${ctaLabel}: ${profileUrl}`,
     '',
-    footer,
+    template.closing,
+    template.signature,
+    '',
+    legal,
+    template.reason,
   ].join('\n');
 
   const html = `<!doctype html>
@@ -164,47 +175,96 @@ export function renderAirsWelcomeEmail(input: AirsWelcomeEmailInput): AirsWelcom
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
     <title>${escapeHtml(subject)}</title>
   </head>
-  <body style="margin:0;padding:0;background:#f0f1f5;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
-    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(preview)}</div>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f0f1f5;padding:24px 12px;">
+  <body style="margin:0;padding:0;width:100%;background-color:#f0f1f5;-webkit-text-size-adjust:100%;text-size-adjust:100%">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all">${escapeHtml(
+      preview
+    )}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f0f1f5" style="background-color:#f0f1f5">
       <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:18px;overflow:hidden;">
+        <td align="center" style="padding:16px 8px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;background-color:#ffffff">
+            ${SPACER}
             <tr>
-              <td style="height:8px;background:#333782;font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-            <tr>
-              <td style="padding:28px 28px 12px 28px;">
-                <h1 style="margin:0;font-size:28px;line-height:1.2;color:#1c676c;text-align:center;font-family:Tahoma,Geneva,sans-serif;">${escapeHtml(
-                  subject
-                )}</h1>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:0 28px 8px 28px;text-align:center;color:#545454;font-size:16px;line-height:1.5;">
-                <strong style="display:block;font-size:18px;color:#0f172a;margin-bottom:8px;">${escapeHtml(
-                  greeting
-                )}</strong>
-                <div style="margin-bottom:12px;">${escapeHtmlWithBreaks(intro)}</div>
-                <div style="margin-bottom:12px;">${escapeHtmlWithBreaks(body)}</div>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:10px 28px 4px 28px;text-align:center;">
-                <a href="${escapeHtml(
-                  dashboardUrl
-                )}" style="display:inline-block;padding:14px 24px;background:#333782;color:#ffffff;text-decoration:none;border-radius:999px;font-weight:700;">
-                  ${escapeHtml(ctaLabel)}
+              <td style="padding:0 20px">
+                <a href="${escapeHtml(dashboardUrl)}" style="text-decoration:none">
+                  <img src="${BANNER_URL}" width="560" alt="${escapeHtml(
+    template.bannerAlt
+  )}" style="display:block;width:100%;max-width:560px;height:auto;border:0" />
                 </a>
               </td>
             </tr>
+            ${SPACER}
+            ${DIVIDER}
+            ${SPACER}
             <tr>
-              <td style="padding:20px 28px 28px 28px;text-align:center;color:#347e09;font-size:14px;line-height:1.45;">
-                ${escapeHtml(footer)}
+              <td style="padding:0 20px;color:#1c676c;font-family:Tahoma,Geneva,sans-serif;font-size:28px;font-weight:700;line-height:1.3;text-align:center">${escapeHtml(
+                subject
+              )}</td>
+            </tr>
+            ${SPACER}
+            ${DIVIDER}
+            ${SPACER}
+            <tr><td style="${TEXT_STYLE};font-weight:700">${escapeHtml(greeting)}</td></tr>
+            ${SPACER}
+            <tr><td style="${TEXT_STYLE}">${escapeHtml(intro)}</td></tr>
+            ${SPACER}
+            <tr><td style="${TEXT_STYLE}">${escapeHtml(body)}</td></tr>
+            ${SPACER}
+            ${SPACER}
+            <tr>
+              <td style="padding:0 20px">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" bgcolor="#333782" style="border-radius:26px;background-color:#333782">
+                      <a href="${escapeHtml(
+                        profileUrl
+                      )}" target="_blank" rel="noopener" style="display:block;padding:15px 24px;color:#ffffff;font-family:Verdana,Geneva,sans-serif;font-size:16px;font-weight:700;line-height:1.4;text-decoration:none;border-radius:26px">${escapeHtml(
+    ctaLabel
+  )}</a>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
+            ${SPACER}
+            <tr>
+              <td style="padding:0 20px;color:#347e09;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;line-height:1.3;text-align:center">${escapeHtml(
+                template.closing
+              )}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 20px 0 20px;color:#545454;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.3;text-align:center">${escapeHtml(
+                template.signature
+              )}</td>
+            </tr>
+            ${SPACER}
+            ${SPACER}
+            <tr>
+              <td style="padding:0 20px">
+                <a href="${ALTERNUN_URL}" style="text-decoration:none">
+                  <img src="${FOOTER_URL}" width="560" alt="Alternun" style="display:block;width:100%;max-width:560px;height:auto;border:0" />
+                </a>
+              </td>
+            </tr>
+            ${SPACER}
+            <tr>
+              <td style="padding:0 20px;color:#545454;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.4;text-align:center">${escapeHtml(
+                legal
+              )}</td>
+            </tr>
+            ${SPACER}
+            ${DIVIDER}
+            ${SPACER}
+            <tr>
+              <td style="padding:0 20px 8px 20px;color:#545454;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.4;text-align:center">${escapeHtml(
+                template.reason
+              )}</td>
+            </tr>
+            ${SPACER}
           </table>
         </td>
       </tr>
