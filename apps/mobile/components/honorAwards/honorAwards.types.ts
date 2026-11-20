@@ -28,8 +28,6 @@ export interface HonorTierPalette {
 
 export type HonorSlot =
   | { kind: 'award'; award: HonorAward }
-  /** The sample Manglar Verde medal, while the person has none. */
-  | { kind: 'demo' }
   /** A medal in Airs the person can still earn. */
   | { kind: 'locked'; item: HonorAwardCatalogItem }
   | { kind: 'empty'; key: string };

@@ -44,13 +44,12 @@ export const HONOR_SLOT_COUNT = 5;
  */
 export function buildHonorSlots(
   awards: readonly HonorAward[],
-  options: { demo?: boolean; locked?: readonly HonorAwardCatalogItem[] } = {},
+  options: { locked?: readonly HonorAwardCatalogItem[] } = {},
   perRow = HONOR_SLOT_COUNT
 ): HonorSlot[] {
   const held = new Set(awards.map((award) => award.recipe.id));
   const filled: HonorSlot[] = [
     ...awards.map((award): HonorSlot => ({ kind: 'award', award })),
-    ...(options.demo && awards.length === 0 ? [{ kind: 'demo' } as HonorSlot] : []),
     ...(options.locked ?? [])
       .filter((item) => !held.has(item.recipe.id))
       .map((item): HonorSlot => ({ kind: 'locked', item })),

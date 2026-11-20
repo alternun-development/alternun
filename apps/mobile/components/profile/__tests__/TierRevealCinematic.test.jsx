@@ -71,3 +71,9 @@ it('renders nothing without a tier', () => {
   expect(tree.toJSON()).toBeNull();
   act(() => tree.unmount());
 });
+
+it('shows the tier badge without the turning light rays', () => {
+  const tree = render({ tier: 'bronze' });
+  expect(tree.root.findAll((node) => node.type?.name === 'Rays')).toHaveLength(0);
+  act(() => tree.unmount());
+});

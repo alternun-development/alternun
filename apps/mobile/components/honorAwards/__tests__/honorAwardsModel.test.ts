@@ -150,7 +150,7 @@ describe('honor award slots and copy', () => {
     expect(six.filter((slot) => slot.kind === 'award')).toHaveLength(6);
   });
 
-  it('puts the sample first while there are no medals, then the locked ones, then empty', () => {
+  it('lists held medals, then the locked ones, then empty slots', () => {
     const item = (id: string) => ({
       ...award('x', 'claimed', ''),
       recipe: { ...award('x', 'claimed', '').recipe, id },
@@ -160,16 +160,16 @@ describe('honor award slots and copy', () => {
       project,
       partner,
     }));
-    expect(buildHonorSlots([], { demo: true, locked }).map((slot) => slot.kind)).toEqual([
-      'demo',
+    expect(buildHonorSlots([], { locked }).map((slot) => slot.kind)).toEqual([
       'locked',
       'locked',
+      'empty',
       'empty',
       'empty',
     ]);
-    // A held medal (recipe "r") is neither repeated as locked nor replaced by the sample.
+    // A held medal (recipe "r") is not repeated as locked.
     expect(
-      buildHonorSlots([award('a', 'claimed', '')], { demo: true, locked }).map((slot) => slot.kind)
+      buildHonorSlots([award('a', 'claimed', '')], { locked }).map((slot) => slot.kind)
     ).toEqual(['award', 'locked', 'empty', 'empty', 'empty']);
     const shaped = lockedHonorAward(locked[1]);
     expect(shaped).toMatchObject({ id: 'locked-r2', status: 'pending', claimedAt: null });

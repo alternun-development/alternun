@@ -53,6 +53,8 @@ export default function TierRevealCinematic({
     <CinematicReveal
       playKey={`tier-${tier}`}
       glow={spec.color}
+      // The tier reveal shows the badge without the turning light rays.
+      showRays={false}
       accessibilityLabel={tierLabel}
       onRequestClose={onClose}
       renderArt={(size) => (
