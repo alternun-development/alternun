@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-19T18:21:50.332Z",
+  "lastUpdated": "2026-11-20T02:23:32.443Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Verify v1.2.11-dev.0 on testnet (Swing Golf desk: send with Airs, claim codes, Reclamar medalla); then confirm with Caro (+14 Airs fixed, Swing Golf signed) and give Swing Golf a partner_operator",
+      "description": "Merge PR #313 (v1.2.12) after confirming Batis and Swing Golf exist in the production DB; then Friday rehearsal with 3 new Gmail accounts",
       "id": "next",
       "priority": 1
     }

@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Verify v1.2.11-dev.0 on testnet (Swing Golf desk: send with Airs, claim codes, Reclamar medalla); then confirm with Caro (+14 Airs fixed, Swing Golf signed) and give Swing Golf a partner_operator
+Next micro-step: Merge PR #313 (v1.2.12) after confirming Batis and Swing Golf exist in the production DB; then Friday rehearsal with 3 new Gmail accounts
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
