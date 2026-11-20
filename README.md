@@ -124,10 +124,9 @@ Current version: **1.2.15**
 
 ## 📋 Latest Changes (v1.2.15)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore(reentry): next step after super admin config
-- **repo:** feat(admin): admin@alternun.co as super admin and recipient of system notices
+- **reentry:** next step after super admin config ([65e16b7](https://github.com/alternun-development/alternun/commit/65e16b7aebe8f8a7ad9a736602a510e52544e8a7))
 
 ### Features
 
