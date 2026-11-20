@@ -973,7 +973,9 @@
           "silver": "Una trayectoria de contribución en crecimiento. Plata reconoce las acciones verificadas que han llevado tu puntuación AIRS acumulada hasta este hito.",
           "gold": "Un hito significativo en tu camino regenerativo. Oro hace visibles tu contribución acumulada y tu compromiso dentro del ecosistema.",
           "platinum": "El nivel más alto del camino AIRS actual. Platino reconoce una amplia trayectoria de contribución verificada, construida a lo largo del tiempo."
-        }
+        },
+        "balance": "Tienes {{amount}} Airs.",
+        "balanceToReach": "Tienes {{amount}} Airs. Te faltan {{remaining}} Airs para {{tier}}."
       },
       "achievementUnlocked": "Desbloqueado",
       "achievementLocked": "Bloqueado",

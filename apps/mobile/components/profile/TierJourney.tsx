@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { Check, type LucideProps } from 'lucide-react-native';
 import { GlassCard, resolveTier, TIERS, type AirsTier } from '@alternun/ui';
 import { useAppTranslation } from '../i18n/useAppTranslation';
@@ -57,6 +57,11 @@ export function TierJourney({
     return () => loop.stop();
   }, [hasScore, motionLevel, pulse]);
   const markerColor = currentIdx >= 0 ? tiers[currentIdx].color : '#1de9b6';
+  // The dot and the stretch before Bronze open the tier the person is heading to (their own tier
+  // at the top), so the modal shows their balance and what is left for it.
+  const currentTier = hasScore ? resolveTier(safeScore) : null;
+  const nextTier: AirsTier = currentTier ? TIERS[currentTier].next ?? currentTier : 'bronze';
+  const firstNodeX = lineWidth > 0 ? lineWidth / (2 * tiers.length) : 0;
   const airsLabel = t(
     'profile.tierJourneyAirs',
     { amount: safeScore.toLocaleString() },
@@ -136,12 +141,34 @@ export function TierJourney({
           }}
         />
 
+        {/* Before Bronze: the stretch from the start of the line to the first node */}
+        {hasScore && lineWidth > 0 ? (
+          <Pressable
+            testID='tier-journey-before-first'
+            accessibilityRole='button'
+            accessibilityLabel={airsLabel}
+            accessibilityHint={openDetailsLabel}
+            onPress={() => setSelectedTier(nextTier)}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: Math.max(0, firstNodeX - 27),
+              height: 56,
+              zIndex: 3,
+            }}
+          />
+        ) : null}
+
         {/* Live position of the person's Airs */}
         {hasScore && lineWidth > 0 ? (
-          <View
+          <Pressable
             testID='tier-journey-marker'
+            accessibilityRole='button'
             accessibilityLabel={airsLabel}
-            pointerEvents='none'
+            accessibilityHint={openDetailsLabel}
+            onPress={() => setSelectedTier(nextTier)}
+            hitSlop={10}
             style={{
               position: 'absolute',
               top: 27.5 - 9,
@@ -175,7 +202,7 @@ export function TierJourney({
                 opacity: Animated.add(0.45, Animated.multiply(pulse, 0.55)),
               }}
             />
-          </View>
+          </Pressable>
         ) : null}
 
         {/* Tier nodes */}

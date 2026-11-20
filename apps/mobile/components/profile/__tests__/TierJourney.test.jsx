@@ -11,10 +11,10 @@ jest.mock('@alternun/ui', () => {
   return {
     GlassCard: View,
     TIERS: {
-      bronze: { label: 'Bronze', min: 0, color: '#cd7f32' },
-      silver: { label: 'Silver', min: 1000, color: '#a8b8cc' },
-      gold: { label: 'Gold', min: 5000, color: '#d4b96a' },
-      platinum: { label: 'Platinum', min: 20000, color: '#9ba9c4' },
+      bronze: { label: 'Bronze', min: 0, color: '#cd7f32', next: 'silver' },
+      silver: { label: 'Silver', min: 1000, color: '#a8b8cc', next: 'gold' },
+      gold: { label: 'Gold', min: 5000, color: '#d4b96a', next: 'platinum' },
+      platinum: { label: 'Platinum', min: 20000, color: '#9ba9c4', next: null },
     },
     resolveTier: (score) =>
       score >= 20000 ? 'platinum' : score >= 5000 ? 'gold' : score >= 1000 ? 'silver' : 'bronze',
@@ -181,4 +181,26 @@ it('shows no marker without a score', () => {
   const line = tree.root.find((node) => typeof node.props.onLayout === 'function');
   act(() => line.props.onLayout({ nativeEvent: { layout: { width: 400 } } }));
   expect(tree.root.findAllByProps({ testID: 'tier-journey-marker' })).toHaveLength(0);
+});
+
+it('opens the tier ahead with the balance from the dot and from the stretch before the first tier', () => {
+  let tree;
+  act(() => {
+    tree = renderer.create(<TierJourney score={600} isDark c={colors} />);
+  });
+  const line = tree.root.find((node) => typeof node.props.onLayout === 'function');
+  act(() => line.props.onLayout({ nativeEvent: { layout: { width: 400 } } }));
+
+  // Mocked thresholds 0 / 1.000 / 5.000 / 20.000: 600 Airs is Bronze, heading to Silver.
+  const dot = tree.root.findAllByProps({ testID: 'tier-journey-marker' })[0];
+  act(() => dot.props.onPress());
+  expect(textContent(tree)).toContain('Silver status');
+  expect(tree.root.findAllByProps({ testID: 'tier-details-balance' })[0].props.children).toBe(
+    'You have 600 Airs. 400 Airs to go for Silver.'
+  );
+  act(() => tree.root.findByType(Modal).props.onRequestClose());
+
+  const before = tree.root.findAllByProps({ testID: 'tier-journey-before-first' })[0];
+  act(() => before.props.onPress());
+  expect(textContent(tree)).toContain('Silver status');
 });

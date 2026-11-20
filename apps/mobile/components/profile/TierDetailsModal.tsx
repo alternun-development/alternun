@@ -58,6 +58,25 @@ export function TierDetailsModal({
         '{{amount}} AIRS to reach this tier'
       )
     : t('profile.tierDetails.reached', undefined, 'Milestone reached');
+  // The person's own balance, and what is left for this tier when it is still ahead.
+  const balance =
+    score === null
+      ? null
+      : remaining !== null && remaining > 0 && !current
+      ? t(
+          'profile.tierDetails.balanceToReach',
+          {
+            amount: score.toLocaleString(locale),
+            remaining: remaining.toLocaleString(locale),
+            tier: label,
+          },
+          'You have {{amount}} Airs. {{remaining}} Airs to go for {{tier}}.'
+        )
+      : t(
+          'profile.tierDetails.balance',
+          { amount: score.toLocaleString(locale) },
+          'You have {{amount}} Airs.'
+        );
   const perks = [
     t(
       'profile.tierDetails.reputation',
@@ -128,6 +147,11 @@ export function TierDetailsModal({
                     )}
                   </Text>
                 </View>
+                {balance ? (
+                  <Text testID='tier-details-balance' style={styles.balance}>
+                    {balance}
+                  </Text>
+                ) : null}
                 <Text style={styles.description}>
                   {t(`profile.tierDetails.descriptions.${tier}`, undefined, DESCRIPTIONS[tier])}
                 </Text>
@@ -216,6 +240,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   thresholdText: { color: '#043b32', fontSize: 19, fontWeight: '800' },
+  balance: { color: '#ffffff', fontSize: 16, fontWeight: '700', lineHeight: 22 },
   description: { color: '#e0ece7', fontSize: 14, lineHeight: 22, marginTop: 24 },
   benefits: {
     borderTopWidth: 1,
