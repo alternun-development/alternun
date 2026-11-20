@@ -298,6 +298,11 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
   const defaultStageDomains = buildStageDomains('api', args.rootDomain);
   const localConfig = args.localConfig;
   const backendDatabaseUrl = resolveBackendDatabaseUrl(args.env);
+  // The API-only address wins over the shared one, which the web build also shows publicly.
+  // An empty value (CodeBuild passes '') counts as not set.
+  const marketplaceContactEmail = args.env.INFRA_BACKEND_API_MARKETPLACE_CONTACT_EMAIL?.trim()
+    ? args.env.INFRA_BACKEND_API_MARKETPLACE_CONTACT_EMAIL.trim()
+    : args.env.MARKETPLACE_CONTACT_EMAIL?.trim();
 
   return {
     enabled: parseBoolean(
@@ -391,9 +396,7 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
       ...(args.env.INFRA_BACKEND_API_MIGRATIONS_ENABLED !== undefined
         ? { RUN_MIGRATIONS: args.env.INFRA_BACKEND_API_MIGRATIONS_ENABLED }
         : { RUN_MIGRATIONS: 'false' }),
-      ...(args.env.MARKETPLACE_CONTACT_EMAIL
-        ? { MARKETPLACE_CONTACT_EMAIL: args.env.MARKETPLACE_CONTACT_EMAIL }
-        : {}),
+      ...(marketplaceContactEmail ? { MARKETPLACE_CONTACT_EMAIL: marketplaceContactEmail } : {}),
       ...(args.env.INFRA_BACKEND_API_AIRS_DASHBOARD_URL
         ? { AIRS_DASHBOARD_URL: args.env.INFRA_BACKEND_API_AIRS_DASHBOARD_URL }
         : {}),
