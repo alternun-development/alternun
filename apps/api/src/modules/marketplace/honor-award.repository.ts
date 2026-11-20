@@ -426,14 +426,19 @@ export class HonorAwardRepository {
 
   async findEnterprise(
     by: { id: string } | { slug: string }
-  ): Promise<{ id: string; slug: string; status: string } | null> {
-    let query = this.client.from('enterprises').select('id, slug, status');
+  ): Promise<{ id: string; slug: string; status: string; testnetOnly: boolean } | null> {
+    let query = this.client.from('enterprises').select('id, slug, status, testnet_only');
     query = 'id' in by ? query.eq('id', by.id) : query.eq('slug', by.slug);
     const { data, error } = await query.maybeSingle();
     if (error) failDatabase(error);
     const row = record(data);
     return row
-      ? { id: String(row.id ?? ''), slug: String(row.slug ?? ''), status: String(row.status ?? '') }
+      ? {
+          id: String(row.id ?? ''),
+          slug: String(row.slug ?? ''),
+          status: String(row.status ?? ''),
+          testnetOnly: row.testnet_only === true,
+        }
       : null;
   }
 

@@ -61,6 +61,14 @@ Denied attempts return a stable error code (`marketplace.errors.ts`) and are wri
 
 `20261013_0001` seeded a local placeholder enterprise, "Hotel Piloto", that owned `eco-turismo`. `20261018_0001` made the `alternun` enterprise the primary owner of `eco-turismo` and kept the old relation as non-primary. Hotel Piloto has no project of its own and was archived through the audited status function by `20261030_0002` (issue #249, A4). Its non-primary relation to `eco-turismo` is kept for the record; because of rule 3 above, nobody should get an enterprise membership on Hotel Piloto.
 
+## Production catalog
+
+Production shows only the catalog approved for launch. Projects and enterprises have a `testnet_only` flag (`20261119_0003`). When `APP_STAGE=production`, the public API hides flagged rows: the project list and detail, and the enterprise directory, detail and honor awards. A flagged primary owner still appears on its visible project's card. Testnet, local and every admin view show all rows.
+
+At launch only `fundacion-batis` (project) and `torneo-swing-golf-rincon-cajica` (Swing Golf Colombia) are visible; the migration flagged every other row in each database. New rows default to visible. To publish another one in production, set its `testnet_only` to false.
+
+The explorer's featured slider appears only when at least two projects with media can be featured; until then the explorer shows the intents card alone.
+
 ## OpenAPI
 
 The API builds its OpenAPI document at startup (`apps/api/src/common/openapi/setup-openapi.ts`) and serves it at `GET /docs-json` (Swagger UI at `/docs`). No snapshot is committed, because building the full document needs the whole `AppModule`, and starting the API also runs pending migrations against the configured database.

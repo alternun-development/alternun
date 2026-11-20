@@ -14,6 +14,7 @@ import type {
   ProjectRecord,
   ProjectStatus,
 } from './marketplace.types';
+import { hidesTestnetOnly } from './marketplace-visibility';
 
 export const MARKETPLACE_SUPABASE = Symbol('MARKETPLACE_SUPABASE');
 
@@ -73,6 +74,7 @@ function mapEnterprise(row: Row): EnterpriseRecord {
   return {
     id: text(row.id),
     slug: text(row.slug),
+    testnetOnly: row.testnet_only === true,
     displayName: text(row.display_name),
     legalName: nullableText(row.legal_name),
     status: text(row.status) as EnterpriseRecord['status'],
@@ -280,6 +282,7 @@ export class MarketplacePublicRepository {
       .order('sort_order')
       .order('published_at', { ascending: false });
     if (categoryCode) query = query.eq('category_code', categoryCode);
+    if (hidesTestnetOnly()) query = query.eq('testnet_only', false);
     const { data, error } = await query;
     if (error) failDatabase(error);
     return rowArray(data).map((row) => {
@@ -327,14 +330,15 @@ export class MarketplacePublicRepository {
     enterprise: EnterpriseRecord;
     media: ProjectMediaRecord[];
   } | null> {
-    const { data, error } = await this.client
+    let query = this.client
       .from('projects')
       .select('*, enterprise_projects!inner(*, enterprises!inner(*)), project_media(*)')
       .eq('status', 'published')
       .eq('slug', slug)
       .eq('enterprise_projects.is_primary', true)
-      .eq('project_media.is_active', true)
-      .maybeSingle();
+      .eq('project_media.is_active', true);
+    if (hidesTestnetOnly()) query = query.eq('testnet_only', false);
+    const { data, error } = await query.maybeSingle();
     if (error) failDatabase(error);
     if (!data) return null;
     const row = data as Row;

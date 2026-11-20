@@ -37,6 +37,7 @@ import {
   type PublicEnterpriseDetail,
   type PublicProject,
 } from './marketplace.types';
+import { hidesTestnetOnly } from './marketplace-visibility';
 
 type PublishedProjectRow = {
   project: ProjectRecord;
@@ -379,7 +380,10 @@ export class MarketplacePublicService {
       const row = rows.find(({ project }) => project.id === projectId);
       if (row) listings.push({ listedEnterprise: enterprise, isPrimary: false, row });
     }
-    return listings;
+    // A testnet-only enterprise stays off the directory even when it is tied to a visible project.
+    return hidesTestnetOnly()
+      ? listings.filter(({ listedEnterprise }) => !listedEnterprise.testnetOnly)
+      : listings;
   }
 
   async listEnterprises(

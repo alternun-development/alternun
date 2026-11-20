@@ -296,3 +296,31 @@ test('an enterprise owning several projects does not borrow one of their logos',
   assert.equal(detail.logo, null);
   assert.equal(detail.projectCount, 2);
 });
+
+test('production keeps testnet-only enterprises off the directory; testnet lists them', async (t) => {
+  const sponsor = { ...enterprise, id: 'sponsor-1', slug: 'swing-golf' };
+  const rows = [{ project, enterprise: { ...enterprise, testnetOnly: true }, media: [logo] }];
+  const service = new MarketplacePublicService(
+    repository(rows, [{ projectId: project.id, enterprise: sponsor }])
+  );
+  const previous = process.env.APP_STAGE;
+  t.after(() => {
+    if (previous === undefined) delete process.env.APP_STAGE;
+    else process.env.APP_STAGE = previous;
+  });
+
+  process.env.APP_STAGE = 'dev';
+  const testnet = await service.listEnterprises('en', undefined, 1, 20);
+  assert.deepEqual(
+    testnet.data.map((item) => item.slug),
+    [enterprise.slug, 'swing-golf']
+  );
+
+  process.env.APP_STAGE = 'production';
+  const production = await service.listEnterprises('en', undefined, 1, 20);
+  assert.deepEqual(
+    production.data.map((item) => item.slug),
+    ['swing-golf']
+  );
+  await assert.rejects(service.findEnterpriseBySlug(enterprise.slug, 'en'), expectNotFound);
+});

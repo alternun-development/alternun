@@ -7,6 +7,7 @@ import { validateMedalImageUrl } from './medal.service';
 import { HonorAwardRepository, type HonorAwardOwner } from './honor-award.repository';
 import { AirsReportService } from './airs-report.service';
 import { claimWaitingAirsReports } from '../auth-exchange/airs-report-claim';
+import { hidesTestnetOnly } from './marketplace-visibility';
 import {
   claimCodeHint,
   generateClaimCode,
@@ -610,7 +611,13 @@ export class HonorAwardService {
   /** What anyone can see on an enterprise page: only the awards it already claimed. */
   async listPublicForEnterprise(slug: string): Promise<HonorAwardView[]> {
     const enterprise = await this.repository.findEnterprise({ slug });
-    if (!enterprise || enterprise.status !== 'active') marketplaceError('ENTERPRISE_NOT_FOUND');
+    if (
+      !enterprise ||
+      enterprise.status !== 'active' ||
+      (enterprise.testnetOnly && hidesTestnetOnly())
+    ) {
+      marketplaceError('ENTERPRISE_NOT_FOUND');
+    }
     return this.repository.listViews({ enterpriseId: enterprise.id }, true);
   }
 

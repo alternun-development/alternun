@@ -1401,15 +1401,22 @@ export default function ExplorarScreen(): React.JSX.Element {
             }
           />
 
-          <HeroCarousel
-            palette={palette}
-            onProposeProject={handleProposeProject}
-            onOpenIntent={setIntent}
-            t={t}
-            isDark={isDark}
-            showcase={showcase}
-            onOpenProject={(slug) => router.push({ pathname: '/explore/[slug]', params: { slug } })}
-          />
+          {/* A featured slider needs at least two projects; until then only the intents show. */}
+          {showcase.length > 1 ? (
+            <HeroCarousel
+              palette={palette}
+              onProposeProject={handleProposeProject}
+              onOpenIntent={setIntent}
+              t={t}
+              isDark={isDark}
+              showcase={showcase}
+              onOpenProject={(slug) =>
+                router.push({ pathname: '/explore/[slug]', params: { slug } })
+              }
+            />
+          ) : (
+            <IntentRotator palette={palette} onOpenIntent={setIntent} t={t} />
+          )}
 
           <View
             accessibilityRole='tablist'

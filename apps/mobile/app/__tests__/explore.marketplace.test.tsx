@@ -471,11 +471,28 @@ describe('Explorer marketplace projects', () => {
     expect(onOpenProject).toHaveBeenNthCalledWith(2, 'productive-project');
   });
 
+  it('hides the featured slider until there are two projects to feature', async () => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [publishedProject] }),
+    } as Response);
+    const renderer = await renderExplorerScreen();
+
+    expect(renderer.root.findAllByProps({ testID: 'explorer-hero' })).toHaveLength(0);
+    expect(renderer.root.findAllByProps({ testID: 'explorer-intents' }).length).toBeGreaterThan(0);
+  });
+
   it('renders the hero showcase and proposal card and navigates to projects and enterprises', async () => {
     process.env.EXPO_PUBLIC_MARKETPLACE_CONTACT_EMAIL = 'marketplace@example.com';
     jest.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ data: [publishedProject] }),
+      json: () =>
+        Promise.resolve({
+          data: [
+            publishedProject,
+            { ...publishedProject, id: 'project-2', slug: 'second-project' },
+          ],
+        }),
     } as Response);
     const openUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     const renderer = await renderExplorerScreen();

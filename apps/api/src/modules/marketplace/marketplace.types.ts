@@ -197,6 +197,8 @@ export type ProjectContent = Record<string, ProjectContentBlock>;
 
 export interface EnterpriseRecord {
   id: string;
+  /** Hidden from the public pages in production (see hidesTestnetOnly). */
+  testnetOnly?: boolean;
   slug: string;
   displayName: string;
   legalName: string | null;
