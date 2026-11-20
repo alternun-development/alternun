@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-20T03:59:18.367Z",
+  "lastUpdated": "2026-11-20T04:12:20.536Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge the v1.2.15 PR so Authentik prod promotes admin@alternun.co; team E2E tests on testnet and prod before Saturday",
+      "description": "Merge the v1.2.16 PR (super admin + welcome v2) after CI; team E2E tests on testnet and prod before Saturday",
       "id": "next",
       "priority": 1
     }
