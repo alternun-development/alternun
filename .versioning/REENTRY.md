@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Merge the v1.2.14 PR after CI; confirm Swing Golf venue/status; Friday rehearsal with 3 new Gmail accounts
+Next micro-step: Merge the v1.2.16 PR (super admin + welcome v2) after CI; team E2E tests on testnet and prod before Saturday
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md

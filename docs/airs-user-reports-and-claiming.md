@@ -109,5 +109,6 @@ Email delivery is tracked apart from the report state. A failed email never bloc
 ## Still open
 
 - Decided: domain accounts (`@alternun.io` and `@alternun.co`) are `internal_admin`, and only when the address is proven by a source sign-in such as Google. `platform_owner` stays manual.
-- The approvers `edward@alternun.io`, `admin@alternun.co` and `security-ceo@alternun.example` are configured on testnet; production has not been checked yet (`airs_report_approvers`).
+- Approvers (`airs_report_approvers`) are configured on testnet and production; `admin@alternun.co` is one of them in both, and is also a `platform_owner` in `platform_admins` and an Authentik super admin.
+- Notices: every Airs report notice (email and console inbox) goes to the mailboxes in `AIRS_REPORT_SUPPORT_EMAILS`, and enterprise applications and project proposals go to `MARKETPLACE_CONTACT_EMAIL`. Both come from SSM at deploy time (`/alternun-infra/{dev,prod}/infra-backend-api-airs-report-support-emails-{dev,prod}` and `.../infra-backend-api-marketplace-contact-email-{dev,prod}`) and are set to `admin@alternun.co`.
 - **Deferred:** limits per submitter or per project. Today's limits are per recipient only. Revisit together with monitoring for many small grants spread across many recipients.

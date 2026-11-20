@@ -88,7 +88,6 @@ export interface AirsOnboardingDependencies {
   env?: Record<string, string | undefined>;
   dashboardUrl?: string | null;
   bonusAirs?: number;
-  airsPerDollar?: number;
 }
 
 export interface AirsDashboardSnapshotDependencies {
@@ -187,7 +186,6 @@ export async function processAirsOnboarding(
       displayName: dashboardState.displayName ?? tokenClaims.displayName ?? dashboardState.email,
       dashboardUrl: dependencies.dashboardUrl ?? resolveDashboardUrl(env),
       bonusAirs: dependencies.bonusAirs ?? 10,
-      airsPerDollar: dependencies.airsPerDollar ?? 5,
     });
 
     const sendResult = await dependencies.sendWelcomeEmail(

@@ -120,22 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.14**
+Current version: **1.2.16**
 
-## 📋 Latest Changes (v1.2.14)
+## 📋 Latest Changes (v1.2.16)
 
 ### Changes
 
-- **reentry:** next step after public medals and tier line ([8bec744](https://github.com/alternun-development/alternun/commit/8bec744a927c508a56b5b1a1a785e1f471a85204))
-
-### Documentation
-
-- **honor-awards:** public medal catalog routes ([ef3b038](https://github.com/alternun-development/alternun/commit/ef3b03899aefafd8fb413a5f61a3960d9c73acba))
+- **reentry:** next step after welcome email v2 ([2253d02](https://github.com/alternun-development/alternun/commit/2253d0232b29352c90438b8fe9cd46b39e585593))
 
 ### Features
 
-- **honor-awards:** medals to earn on ally and project public pages ([ce17212](https://github.com/alternun-development/alternun/commit/ce172124b33cd65fe13a26547df3059ed88eb45a))
-- **profile:** live dot marks the person's Airs on the tier journey line ([8f27701](https://github.com/alternun-development/alternun/commit/8f2770138ff87e2319b891c6352acbd4053396cb))
+- **email:** Airs welcome email v2 with the Email01 design ([262807a](https://github.com/alternun-development/alternun/commit/262807a84e5a51b01f7c9cd7bf675930091699c4))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

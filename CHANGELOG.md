@@ -1,3 +1,23 @@
+## [1.2.16](https://github.com/alternun-development/alternun/compare/v1.2.15...v1.2.16) (2026-11-19)
+
+### Changes
+
+- **reentry:** next step after welcome email v2 ([2253d02](https://github.com/alternun-development/alternun/commit/2253d0232b29352c90438b8fe9cd46b39e585593))
+
+### Features
+
+- **email:** Airs welcome email v2 with the Email01 design ([262807a](https://github.com/alternun-development/alternun/commit/262807a84e5a51b01f7c9cd7bf675930091699c4))
+
+## [1.2.15](https://github.com/alternun-development/alternun/compare/v1.2.14...v1.2.15) (2026-11-19)
+
+### Changes
+
+- **reentry:** next step after super admin config ([65e16b7](https://github.com/alternun-development/alternun/commit/65e16b7aebe8f8a7ad9a736602a510e52544e8a7))
+
+### Features
+
+- **admin:** admin@alternun.co as super admin and recipient of system notices ([5c607d7](https://github.com/alternun-development/alternun/commit/5c607d7d480a1b202d6601492946d6e9cf259300))
+
 ## [1.2.14](https://github.com/alternun-development/alternun/compare/v1.2.13...v1.2.14) (2026-11-19)
 
 ### Changes

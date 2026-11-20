@@ -47,6 +47,7 @@ declare -a CACHE_EXPORT_VARS=(
   DATABASE_URL
   INFRA_BACKEND_API_AIRS_DASHBOARD_URL
   INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS
+  INFRA_BACKEND_API_MARKETPLACE_CONTACT_EMAIL
   INFRA_BACKEND_API_AUTHENTIK_API_URL
   INFRA_BACKEND_API_AUTHENTIK_API_TOKEN
 )
@@ -444,6 +445,8 @@ main() {
       # Airs report links must open testnet, never production.
       export_env_from_ssm "INFRA_BACKEND_API_AIRS_DASHBOARD_URL" "infra-backend-api-airs-dashboard-url-dev" "https://testnet.airs.alternun.co"
       export_env_from_ssm "INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS" "infra-backend-api-airs-report-support-emails-dev"
+      # Where enterprise applications and project proposals are emailed (API only, never public).
+      export_env_from_ssm "INFRA_BACKEND_API_MARKETPLACE_CONTACT_EMAIL" "infra-backend-api-marketplace-contact-email-dev"
       # Group sync stays off until a token is set; the URL only says which Authentik to call.
       export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_URL" "infra-backend-api-authentik-api-url-dev" "https://testnet.sso.alternun.co"
       export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_TOKEN" "infra-backend-api-authentik-api-token-dev"
@@ -469,6 +472,7 @@ main() {
       export_env_from_ssm "DISCORD_AUTH_CLIENT_ID" "discord-auth-client-id" "" "${SSM_SHARED_STAGE}"
       export_env_from_ssm "DISCORD_AUTH_CLIENT_SECRET" "discord-auth-client-secret" "" "${SSM_SHARED_STAGE}"
       export_env_from_ssm "INFRA_BACKEND_API_AIRS_REPORT_SUPPORT_EMAILS" "infra-backend-api-airs-report-support-emails-prod"
+      export_env_from_ssm "INFRA_BACKEND_API_MARKETPLACE_CONTACT_EMAIL" "infra-backend-api-marketplace-contact-email-prod"
       export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_URL" "infra-backend-api-authentik-api-url-prod" "https://sso.alternun.co"
       export_env_from_ssm "INFRA_BACKEND_API_AUTHENTIK_API_TOKEN" "infra-backend-api-authentik-api-token-prod"
       ;;
