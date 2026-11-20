@@ -9,6 +9,7 @@ import {
   getRememberedDirectoryView,
   rememberDirectoryView,
 } from './directoryPaging';
+import { enterprisePlace, pluralKey } from './publicDisplay';
 import type {
   DirectoryView,
   EnterprisePalette,
@@ -103,22 +104,29 @@ function EnterpriseLogo({
 
 function EnterpriseCard({
   enterprise,
+  locale,
   palette,
   t,
   view,
   onOpen,
 }: {
   enterprise: MarketplaceEnterprise;
+  locale: string;
   palette: EnterprisePalette;
   t: Translate;
   view: DirectoryView;
   onOpen: (slug: string) => void;
 }): React.JSX.Element {
-  const projectCount = t('explorer.enterprises.projectCount', { count: enterprise.projectCount });
-  const country = enterprise.countryCode ? (
+  const projectCount = t(pluralKey('explorer.enterprises.projectCount', enterprise.projectCount), {
+    count: enterprise.projectCount,
+  });
+  const place = enterprisePlace(enterprise, locale);
+  const country = place ? (
     <View style={styles.countryRow}>
       <MapPin size={14} color={palette.muted} />
-      <Text style={[styles.countryText, { color: palette.muted }]}>{enterprise.countryCode}</Text>
+      <Text numberOfLines={1} style={[styles.countryText, { color: palette.muted }]}>
+        {place}
+      </Text>
     </View>
   ) : null;
   const cardProps = {
@@ -161,7 +169,7 @@ function EnterpriseCard({
             {enterprise.displayName}
           </Text>
           <Text numberOfLines={1} style={[styles.compactMeta, { color: palette.primaryDeep }]}>
-            {enterprise.countryCode ? `${enterprise.countryCode} · ${projectCount}` : projectCount}
+            {place ? `${place} · ${projectCount}` : projectCount}
           </Text>
         </View>
         <ChevronRight size={17} color={palette.primaryDeep} />
@@ -194,10 +202,13 @@ export function MarketplaceEnterpriseBrowser({
   loader = loadMarketplaceEnterprises,
   onOpenEnterprise = () => undefined,
   onListNavigate = () => undefined,
+  refreshKey = 0,
 }: {
   locale: string;
   palette: EnterprisePalette;
   t: Translate;
+  /** Changing it reloads the directory (the screen's reload button). */
+  refreshKey?: number;
   loader?: LoadMarketplaceEnterprises;
   onOpenEnterprise?: (slug: string) => void;
   /** Called after the page or the view changes, so the screen can scroll back to the list. */
@@ -209,13 +220,27 @@ export function MarketplaceEnterpriseBrowser({
   const [view, setView] = useState<DirectoryView>(() => getRememberedDirectoryView('enterprises'));
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState('');
+  const [kind, setKind] = useState<'all' | 'company' | 'event'>('all');
   const matchingEnterprises = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return enterprises;
-    return enterprises.filter((enterprise) =>
-      enterprise.displayName.toLowerCase().includes(normalizedQuery)
+    return enterprises.filter(
+      (enterprise) =>
+        (kind === 'all' || (enterprise.kind ?? 'company') === kind) &&
+        (!normalizedQuery ||
+          enterprise.displayName.toLowerCase().includes(normalizedQuery) ||
+          (enterprise.sector ?? '').toLowerCase().includes(normalizedQuery))
     );
-  }, [enterprises, query]);
+  }, [enterprises, kind, query]);
+  // Only offer the kind filter when the directory actually mixes companies and events.
+  const kindFilters = useMemo(() => {
+    const kinds = new Set(enterprises.map((enterprise) => enterprise.kind ?? 'company'));
+    return kinds.size > 1
+      ? (['all', 'company', 'event'] as const).map((key) => ({
+          key,
+          label: t(`explorer.enterprises.filters.${key}`),
+        }))
+      : [];
+  }, [enterprises, t]);
   const pageCount = directoryPageCount(matchingEnterprises.length, view);
   const currentPage = Math.min(page, pageCount);
   const pageItems = directoryPageItems(matchingEnterprises, view, currentPage);
@@ -229,6 +254,11 @@ export function MarketplaceEnterpriseBrowser({
 
   const changeQuery = (next: string): void => {
     setQuery(next);
+    setPage(1);
+  };
+
+  const changeKind = (next: string): void => {
+    setKind(next === 'company' || next === 'event' ? next : 'all');
     setPage(1);
   };
 
@@ -254,7 +284,7 @@ export function MarketplaceEnterpriseBrowser({
         setState('error');
       });
     return () => controller.abort();
-  }, [loader, locale, requestVersion]);
+  }, [loader, locale, requestVersion, refreshKey]);
 
   return (
     <View style={styles.directory}>
@@ -320,6 +350,10 @@ export function MarketplaceEnterpriseBrowser({
             onViewChange={changeView}
             palette={palette}
             t={t}
+            filters={kindFilters}
+            activeFilter={kind}
+            onFilterChange={changeKind}
+            filterLabel={t('explorer.enterprises.filters.heading')}
           />
           {matchingEnterprises.length === 0 ? (
             <View
@@ -346,6 +380,7 @@ export function MarketplaceEnterpriseBrowser({
               <EnterpriseCard
                 key={enterprise.id}
                 enterprise={enterprise}
+                locale={locale}
                 palette={palette}
                 t={t}
                 view={view}
@@ -378,7 +413,7 @@ const styles = StyleSheet.create({
   cardTitleBlock: { flex: 1, gap: 5 },
   cardTitle: { fontFamily: 'Sculpin-Bold', fontSize: 19 },
   countryRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  countryText: { fontSize: 13 },
+  countryText: { fontSize: 13, flexShrink: 1 },
   logoFallback: { alignItems: 'center', justifyContent: 'center' },
   listLayout: { gap: 14 },
   gridLayout: {

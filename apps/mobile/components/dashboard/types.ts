@@ -115,3 +115,7 @@ export interface ToastMessage {
   title: string;
   message: string;
 }
+
+/** Columns of the recent activity table that can be sorted. */
+export type ActivitySortKey = 'action' | 'source' | 'airs' | 'date';
+export type ActivitySortDirection = 'asc' | 'desc';

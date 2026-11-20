@@ -8,6 +8,7 @@ import { act } from 'react-dom/test-utils';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 jest.mock('react-native', () => require('react-native-web'));
+jest.mock('expo-image', () => ({ __esModule: true, Image: () => null }));
 
 jest.mock('expo-router', () => ({
   __esModule: true,

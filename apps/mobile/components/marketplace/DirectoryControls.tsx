@@ -1,19 +1,17 @@
-import React, { useRef } from 'react';
-import { ChevronLeft, ChevronRight, LayoutGrid, List, Rows3, Search, X } from 'lucide-react-native';
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import React from 'react';
+import { ChevronLeft, ChevronRight, LayoutGrid, List, Rows3 } from 'lucide-react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import SearchFilterBar from '../common/SearchFilterBar';
+import { ViewModeTray } from '../common/ViewModeTray';
 import { DIRECTORY_VIEWS } from './directoryPaging';
-import type {
-  DirectoryControlsProps,
-  DirectoryKeyEvent,
-  DirectoryPaginationProps,
-} from './DirectoryControls.types';
-import type { DirectoryView } from './types';
+import type { DirectoryControlsProps, DirectoryPaginationProps } from './DirectoryControls.types';
 
 const VIEW_ICONS = { list: List, grid: LayoutGrid, compact: Rows3 } as const;
-const NEXT_KEYS = new Set(['ArrowRight', 'ArrowDown']);
-const PREVIOUS_KEYS = new Set(['ArrowLeft', 'ArrowUp']);
 
-/** Search field plus list / grid / compact switcher shared by the Explorer directories. */
+/**
+ * Explorer directory toolbar: the shared search pattern (search, filters) with the layout tray
+ * (list / grid / compact) on the same line.
+ */
 export function DirectoryControls({
   idPrefix,
   query,
@@ -24,97 +22,44 @@ export function DirectoryControls({
   onViewChange,
   palette,
   t,
+  filters = [],
+  activeFilter = '',
+  onFilterChange = () => undefined,
+  filterLabel,
 }: DirectoryControlsProps): React.JSX.Element {
-  const optionRefs = useRef<Partial<Record<DirectoryView, View | null>>>({});
-
-  // Radio-group keyboard pattern on web: arrows move both the selection and the focus.
-  const onSwitcherKeyDown = (event: DirectoryKeyEvent): void => {
-    const step = NEXT_KEYS.has(event.nativeEvent.key)
-      ? 1
-      : PREVIOUS_KEYS.has(event.nativeEvent.key)
-      ? -1
-      : 0;
-    if (step === 0) return;
-    event.preventDefault?.();
-    const index = DIRECTORY_VIEWS.indexOf(view);
-    const next = DIRECTORY_VIEWS[(index + step + DIRECTORY_VIEWS.length) % DIRECTORY_VIEWS.length];
-    onViewChange(next);
-    optionRefs.current[next]?.focus?.();
-  };
-  const keyboardProps = Platform.OS === 'web' ? { onKeyDown: onSwitcherKeyDown } : {};
-
   return (
-    <View testID={`${idPrefix}-directory-controls`} style={styles.controls}>
-      <View
-        style={[
-          styles.searchBox,
-          { backgroundColor: palette.surface, borderColor: palette.border },
-        ]}
-      >
-        <Search size={18} color={palette.muted} />
-        <TextInput
-          testID={`${idPrefix}-search-input`}
-          value={query}
-          onChangeText={onQueryChange}
-          placeholder={searchPlaceholder}
-          placeholderTextColor={palette.muted}
-          accessibilityLabel={searchLabel}
-          role='searchbox'
-          returnKeyType='search'
-          autoCorrect={false}
-          style={[styles.searchInput, { color: palette.text }]}
-        />
-        {query ? (
-          <Pressable
-            testID={`${idPrefix}-search-clear`}
-            accessibilityRole='button'
-            accessibilityLabel={t('explorer.controls.clearSearch')}
-            hitSlop={8}
-            onPress={() => onQueryChange('')}
-            style={styles.clearButton}
-          >
-            <X size={16} color={palette.muted} />
-          </Pressable>
-        ) : null}
-      </View>
-
-      <View
-        testID={`${idPrefix}-view-switcher`}
-        accessibilityRole='radiogroup'
-        accessibilityLabel={t('explorer.controls.view.label')}
-        style={[styles.switcher, { backgroundColor: palette.surface, borderColor: palette.border }]}
-        {...keyboardProps}
-      >
-        {DIRECTORY_VIEWS.map((item) => {
-          const selected = item === view;
-          const Icon = VIEW_ICONS[item];
-          return (
-            <Pressable
-              key={item}
-              ref={(node) => {
-                optionRefs.current[item] = node;
-              }}
-              testID={`${idPrefix}-view-${item}`}
-              accessibilityRole='radio'
-              accessibilityLabel={t(`explorer.controls.view.${item}`)}
-              accessibilityState={{ selected, checked: selected }}
-              // react-native-web only exposes the checked state through aria-checked.
-              aria-checked={selected}
-              // Only the selected option is a Tab stop; arrows move inside the group.
-              tabIndex={selected ? 0 : -1}
-              onPress={() => {
-                if (!selected) onViewChange(item);
-              }}
-              style={[styles.switcherOption, selected && { backgroundColor: palette.fill }]}
-            >
-              <Icon size={15} color={selected ? '#effff7' : palette.muted} />
-              <Text style={[styles.switcherText, { color: selected ? '#effff7' : palette.muted }]}>
-                {t(`explorer.controls.view.${item}`)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+    <View testID={`${idPrefix}-directory-controls`}>
+      <SearchFilterBar
+        testID={idPrefix}
+        value={query}
+        onChangeText={onQueryChange}
+        placeholder={searchPlaceholder}
+        searchLabel={searchLabel}
+        clearLabel={t('explorer.controls.clearSearch')}
+        filters={filters}
+        activeFilter={activeFilter}
+        onChangeFilter={onFilterChange}
+        filterLabel={filterLabel}
+        style={styles.bar}
+        trailing={
+          <ViewModeTray
+            idPrefix={idPrefix}
+            label={t('explorer.controls.view.label')}
+            value={view}
+            onChange={onViewChange}
+            options={DIRECTORY_VIEWS.map((item) => ({
+              key: item,
+              label: t(`explorer.controls.view.${item}`),
+              icon: VIEW_ICONS[item],
+            }))}
+            activeColor={palette.fill}
+            activeIconColor='#effff7'
+            inactiveIconColor={palette.muted}
+            borderColor={palette.border}
+            backgroundColor={palette.surface}
+          />
+        }
+      />
     </View>
   );
 }
@@ -182,42 +127,8 @@ export function DirectoryPagination({
 }
 
 const styles = StyleSheet.create({
-  controls: { gap: 10 },
-  searchBox: {
-    minHeight: 50,
-    borderRadius: 15,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    gap: 9,
-  },
-  searchInput: { flex: 1, fontSize: 13, paddingVertical: 10 },
-  clearButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  switcher: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 4,
-    gap: 4,
-  },
-  switcherOption: {
-    flex: 1,
-    minHeight: 40,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: 8,
-  },
-  switcherText: { fontSize: 12, fontWeight: '900' },
+  // The shared search bar brings its own bottom margin; the directory lays out its own gaps.
+  bar: { marginBottom: 0 },
   pagination: {
     flexDirection: 'row',
     alignItems: 'center',

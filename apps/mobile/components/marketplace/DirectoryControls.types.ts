@@ -1,3 +1,4 @@
+import type { SearchFilterOption } from '../common/SearchFilterBar';
 import type { DirectoryView, EnterprisePalette, Translate } from './types';
 
 /** Colors the shared directory controls read; both Explorer palettes satisfy it. */
@@ -17,6 +18,12 @@ export interface DirectoryControlsProps {
   onViewChange: (view: DirectoryView) => void;
   palette: DirectoryControlsPalette;
   t: Translate;
+  /** Filter menu options; the first one means "no filter". Hidden with fewer than two. */
+  filters?: readonly SearchFilterOption[];
+  activeFilter?: string;
+  onFilterChange?: (filter: string) => void;
+  /** Heading of the filter menu. */
+  filterLabel?: string;
 }
 
 export interface DirectoryPaginationProps {
@@ -27,10 +34,4 @@ export interface DirectoryPaginationProps {
   palette: DirectoryControlsPalette;
   t: Translate;
   onChange: (page: number) => void;
-}
-
-/** The subset of a web keyboard event the view switcher reacts to. */
-export interface DirectoryKeyEvent {
-  nativeEvent: { key: string };
-  preventDefault?: () => void;
 }

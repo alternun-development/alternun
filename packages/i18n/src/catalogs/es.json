@@ -109,7 +109,8 @@
         "codeOrLinkHint": "Usa el código del correo o haz clic en el enlace del botón para confirmar.",
         "codeTitle": "¿Tienes un código de verificación?",
         "emailFallback": "tu correo",
-        "linkSentTo": "Enviamos un enlace de confirmación a:"
+        "linkSentTo": "Enviamos un enlace de confirmación a:",
+        "spamFolderHint": "Si no lo ves, revisa también tu carpeta de spam o correo no deseado."
       },
       "divider": {
         "or": "o"
@@ -238,6 +239,8 @@
           "airs": "Airs",
           "date": "Fecha"
         },
+        "resizeColumn": "Ajustar ancho entre {{left}} y {{right}}",
+        "sortBy": "Ordenar por {{column}}",
         "empty": "Sin actividad para esta búsqueda.",
         "now": "Ahora",
         "activityTypes": {
@@ -356,7 +359,7 @@
         "empty": "Aún no tienes notificaciones",
         "viewCenter": "Ver el centro de notificaciones",
         "seeAll": "Ver todas las notificaciones",
-        "secondsAgo": "hace {{count}} s",
+        "justNow": "ahora",
         "minutesAgo": "hace {{count}} min",
         "hoursAgo": "hace {{count}} h",
         "daysAgo": "hace {{count}} d",
@@ -385,11 +388,11 @@
       "events": {
         "registration_completed": {
           "title": "Registro completado",
-          "body": "Tu cuenta de AIRS está lista."
+          "body": "Tu cuenta de Airs está lista."
         },
         "airs_credited": {
-          "title": "AIRS acreditados",
-          "body": "Recibiste {{amount}} AIRS."
+          "title": "Airs acreditados",
+          "body": "Recibiste {{amount}} Airs."
         },
         "referral_confirmed": {
           "title": "Referido confirmado",
@@ -401,11 +404,17 @@
         },
         "profile_completed": {
           "title": "Perfil completado",
-          "body": "Tu perfil de AIRS está completo."
+          "body": "Tu perfil de Airs está completo."
         },
         "generic": {
           "title": "Actualización de cuenta",
-          "body": "Hay una nueva actualización en tu cuenta de AIRS."
+          "body": "Hay una nueva actualización en tu cuenta de Airs."
+        },
+        "project_client_added": {
+          "title": "Nuevo cliente en {{project}}",
+          "titlePending": "Airs en revisión en {{project}}",
+          "body": "{{client}} ({{email}}) ahora es cliente del proyecto.",
+          "bodyAirs": "{{client}} ({{email}}): {{amount}} Airs por {{concept}}."
         }
       }
     },
@@ -594,7 +603,6 @@
         "loadingIntro": "Cargando video introductorio de Airs",
         "muted": "Silenciado",
         "openIntro": "Abrir video introductorio de Airs",
-
         "pip": "Imagen sobre imagen",
         "restart": "Reiniciar",
         "soundOn": "Sonido activado"
@@ -804,6 +812,20 @@
       }
     },
     "profile": {
+      "roles": {
+        "title": "Roles",
+        "none": "Usuario",
+        "scoped": "En {{target}}",
+        "labels": {
+          "platform_owner": "Admin global Alternun",
+          "internal_admin": "Admin Alternun",
+          "moderator": "Moderador",
+          "partner_operator": "Admin de proyecto",
+          "sub_admin": "Sub admin",
+          "project_moderator": "Moderador de proyecto",
+          "partner_readonly": "Solo lectura"
+        }
+      },
       "screenTitle": "Mi perfil",
       "signInPrompt": "Inicia sesión para ver tu perfil",
       "tabs": {
@@ -892,7 +914,8 @@
         "achievements": "Logros",
         "account": "Cuenta",
         "referrals": "Referidos",
-        "preferences": "Preferencias"
+        "preferences": "Preferencias",
+        "honorAwards": "Galardones de honor"
       },
       "header": {
         "personalInfo": "Información Personal",
@@ -900,6 +923,7 @@
       },
       "tierJourney": "Trayecto de Tier",
       "accountRows": {
+        "accountAndRoles": "Cuenta y roles",
         "personalInfo": "Información personal",
         "wallet": "Billetera",
         "accessMethod": "Método de acceso",
@@ -1026,15 +1050,9 @@
         "shareTitle": "Comparte tu logro",
         "shareHint": "Comparte la imagen personalizada desde tu dispositivo o usa su enlace público en X, Facebook y LinkedIn. En Instagram, adjunta la imagen guardada y pega tu texto.",
         "share": "Compartir imagen…",
-        "download": "Guardar imagen",
-        "copy": "Copiar texto",
-        "copied": "Texto copiado.",
-        "copyError": "Selecciona el texto de arriba para copiarlo.",
         "preparing": "Preparando tu imagen…",
         "retry": "Reintentar imagen",
         "imageError": "No se pudo preparar la imagen. Inténtalo de nuevo.",
-        "attach": "Imagen guardada. Adjúntala a tu publicación y pega el texto.",
-        "shareError": "No se pudo abrir el menú de compartir. Puedes copiar el texto o guardar la imagen si está disponible.",
         "unlockTitle": "Cómo desbloquearla",
         "unlockAirs": "Alcanza {{amount}} AIRS participando en actividades elegibles desde el dashboard. Los AIRS cuentan cuando se acreditan en tu saldo.",
         "recognition": "Esta insignia se desbloquea cuando se confirma tu logro. Si ya lo completaste, contacta al equipo de Alternun para recibir ayuda.",
@@ -1055,21 +1073,587 @@
         "createImage": "Crear imagen para compartir",
         "publishHint": "Crea una imagen pública con tu nombre y esta insignia obtenida para compartirla en redes sociales.",
         "previewHint": "El enlace incluye la vista previa de tu imagen personalizada. La red social determina cuándo aparece.",
-        "shareApps": "Compartir con apps",
-        "appsHint": "Elige una app instalada en el menú de tu dispositivo. Para Instagram, comparte la imagen o guárdala para adjuntarla a una publicación.",
-        "socialLinks": "Enlaces sociales",
-        "linksHint": "Comparte el enlace con vista previa. Para adjuntar la imagen en una app, usa Compartir con apps.",
-        "saveCaption": "Guardar y texto",
-        "browserFallback": "Elige un enlace social o guarda la imagen y copia el texto.",
-        "downloadError": "No se pudo guardar la imagen. Prueba Compartir con apps."
+        "appsHint": "Elige una app instalada en el menú de tu dispositivo. Para Instagram, comparte la imagen o guárdala para adjuntarla a una publicación."
+      },
+      "honorAwards": {
+        "legacyTitle": "Legado",
+        "legacySubtitle": "(Medallas de misión)",
+        "legacyInfoButton": "¿Qué es el legado?",
+        "subtitle": "Medallas y trofeos que reconocen tu trayectoria de impacto positivo.",
+        "enterpriseSubtitle": "Reconocimientos que este aliado ha recibido en Airs.",
+        "pendingNote": "Galardones por reclamar: {{count}}",
+        "loadError": "No pudimos cargar los galardones. Toca para reintentar.",
+        "claimError": "No pudimos reclamar el galardón. Inténtalo de nuevo.",
+        "emptySlot": "Espacio disponible",
+        "claimCta": "Reclamar",
+        "missionLabel": "Misión:",
+        "supportedBy": "Con el apoyo de:",
+        "airsAmount": "+{{amount}} Airs",
+        "obtained": "Obtenida: {{date}}",
+        "shareMessage": "Obtuve la medalla de legado \"{{title}}\" en Airs{{partner}}.",
+        "claim": {
+          "headline": "¡Nueva medalla de legado!",
+          "inspect": "Ver misión",
+          "continue": "Continuar"
+        },
+        "inspect": {
+          "flip": "Clic para ver reverso",
+          "share": "Compartir",
+          "viewMission": "Ver misión",
+          "close": "Cerrar",
+          "back": "Volver"
+        },
+        "mission": {
+          "purpose": "Propósito:",
+          "visitPartner": "Visitar sitio / página",
+          "projectData": "Datos del proyecto:",
+          "viewProject": "Ver proyecto"
+        },
+        "infoButton": "¿Qué son los galardones de honor?",
+        "info": {
+          "title": "Legado: medallas de misión",
+          "allyTitle": "Galardones de honor",
+          "whatTitle": "¿Qué son?",
+          "whatBody": "Tu legado reúne las medallas de las misiones de impacto positivo en las que participas junto a aliados de Airs: torneos, estadías en hoteles aliados, eventos y otras actividades.",
+          "allyWhatBody": "Reconocimientos que tu organización recibe en Airs por sus hitos como aliado, y medallas que puedes otorgar a tus clientes o huéspedes por participar en tus misiones.",
+          "howTitle": "¿Cómo obtengo una medalla?",
+          "allyHowTitle": "¿Cómo funcionan?",
+          "step1": "Participa en una misión o actividad de un aliado de Airs.",
+          "step2": "El aliado registra tu participación con el correo de tu cuenta de Airs.",
+          "step3": "La medalla aparece en tu legado por reclamar: tócala para reclamarla.",
+          "step4": "Después puedes ver la misión y compartir tu medalla.",
+          "allyStep1": "El equipo de Airs crea los galardones de tu alianza, por ejemplo una medalla por hotel.",
+          "allyStep2": "Desde aquí los otorgas con el correo de la cuenta de Airs de la persona. En estadías, agrega el número de reserva: se otorga uno por estadía.",
+          "allyStep3": "La persona lo reclama en su perfil y ve a tu organización y el proyecto que apoyas.",
+          "allyStep4": "Los galardones que reclama tu organización se muestran en su página pública.",
+          "showsTitle": "¿Qué muestra cada medalla?",
+          "showsBody": "La misión, el aliado que la apoya, el proyecto de impacto positivo al que aportaste y los Airs asociados.",
+          "demoHint": "Toca un espacio disponible para ver una demostración.",
+          "legacyHint": "Las medallas con candado son misiones disponibles en Airs: tócalas para ver cómo obtenerlas. Si aún no tienes medallas, toca la de ejemplo para ver cómo se ve."
+        },
+        "demo": {
+          "ribbon": "Demostración",
+          "headline": "Así se ve una medalla de legado",
+          "note": "Demostración: así se verá tu medalla cuando la obtengas.",
+          "slotLabel": "Espacio disponible: ver demostración",
+          "classification": "Misión de impacto positivo",
+          "purpose": "Como participante del torneo, sumaste a la conservación del bosque de manglar en el Caribe colombiano, junto a la Fundación Batis.",
+          "partnerDescription": "Organización y promoción de torneos de golf y eventos deportivos en Colombia. Ayudamos a los deportistas a alcanzar sus sueños y metas.",
+          "projectLocation": "KM5 Finca La Granja, Antigua Vía Férrea, Puerto Colombia, Atlántico.",
+          "projectDescription": "Bosque de mangle rojo (Rhizophora mangle) en el Caribe colombiano.",
+          "sampleLabel": "Medalla de ejemplo: ver demostración",
+          "sampleTag": "Ejemplo"
+        },
+        "desk": {
+          "grantTitle": "Otorgar un galardón",
+          "noRecipes": "Tu organización aún no tiene galardones para otorgar. Pídelos al equipo de Airs.",
+          "email": "Correo de la cuenta de Airs",
+          "reference": "Referencia (opcional): reserva, factura o compra",
+          "referenceHint": "Con referencia se otorga uno por cada una, por ejemplo por estadía o por compra; cada referencia se usa una sola vez.",
+          "grant": "Otorgar galardón",
+          "granted": "Galardón otorgado. La persona lo verá por reclamar en su perfil.",
+          "missing": "Elige un galardón y escribe el correo.",
+          "lookupTitle": "Consultar a una persona",
+          "lookupEmail": "Correo de la persona",
+          "lookup": "Consultar",
+          "total": "Galardones de tu organización: {{count}}",
+          "recipientNotFound": "No hay una cuenta de Airs con ese correo.",
+          "alreadyGranted": "Esa persona ya tiene este galardón, o esa referencia ya se usó.",
+          "notGrantable": "Este galardón ya no se puede otorgar.",
+          "permissionDenied": "Tu rol no puede otorgar galardones.",
+          "invalid": "Revisa el correo y la referencia.",
+          "genericError": "No pudimos completar la acción. Inténtalo de nuevo.",
+          "recipientName": "Nombre (si aún no tiene cuenta en Airs)",
+          "nameRequired": "Esa persona aún no tiene cuenta en Airs: escribe su nombre para enviarle el galardón.",
+          "airsNotConfigured": "Este galardón aún no está listo para entregar Airs. Pídelo al equipo de Airs.",
+          "sentReleased": "Galardón enviado con +{{amount}} Airs. La persona recibió un correo y lo verá por reclamar en su perfil.",
+          "sentPending": "Quedó en revisión: el galardón y los +{{amount}} Airs se entregan cuando un aprobador lo confirme.",
+          "sentAwaitingAccount": "La persona aún no tiene cuenta: le enviamos un correo para crearla y recibir el galardón y los +{{amount}} Airs."
+        },
+        "card": {
+          "stamp": "• Proyecto Airs {{year}} • Impacto positivo ambiental",
+          "dateLabel": "Fecha:",
+          "obtainedLabel": "Obtenida:"
+        },
+        "demoSlotHint": "Toca la medalla de ejemplo para ver cómo se ve.",
+        "locked": {
+          "note": "Aún no tienes esta medalla: participa en la misión para obtenerla.",
+          "slotLabel": "{{title}}: medalla por obtener"
+        },
+        "share": {
+          "title": "Comparte tu medalla de legado"
+        },
+        "codes": {
+          "title": "Códigos para reclamar",
+          "intro": "Comparte un código: cada persona lo usa una sola vez en su perfil (Legado → Reclamar medalla) y recibe el galardón y sus Airs. El código completo solo se ve al crearlo.",
+          "codeFor": "Código para",
+          "label": "Nombre del código (opcional)",
+          "maxUses": "Personas que pueden usarlo",
+          "days": "Días de vigencia",
+          "create": "Crear código",
+          "copy": "Copiar",
+          "copied": "Copiado",
+          "onceNote": "Guárdalo ahora: por seguridad no lo volveremos a mostrar.",
+          "invalid": "Usos: de 1 a 10.000. Vigencia: de 1 a 365 días.",
+          "emailRequired": "Verifica tu correo para crear códigos.",
+          "usage": "{{used}} de {{max}} usos · vence {{date}}",
+          "revoke": "Revocar",
+          "state": {
+            "active": "Activo",
+            "expired": "Vencido",
+            "exhausted": "Agotado",
+            "revoked": "Revocado"
+          }
+        },
+        "redeem": {
+          "button": "Reclamar medalla",
+          "title": "Reclamar medalla",
+          "intro": "Escribe el código que te compartió el aliado. Cada código se usa una sola vez por persona.",
+          "input": "Código de la medalla",
+          "submit": "Reclamar",
+          "pending": "Código aceptado. Tu medalla y sus Airs quedaron en revisión: te avisaremos por correo cuando estén en tu perfil.",
+          "invalid": "Ese código no existe. Revísalo e inténtalo de nuevo.",
+          "expired": "Ese código ya venció.",
+          "revoked": "Ese código ya no está activo.",
+          "notStarted": "Ese código aún no está activo.",
+          "exhausted": "Ese código ya alcanzó su límite de usos.",
+          "alreadyRedeemed": "Ya usaste este código.",
+          "rateLimited": "Hiciste demasiados intentos. Espera 15 minutos e inténtalo de nuevo.",
+          "unverified": "Verifica el correo de tu cuenta para reclamar medallas.",
+          "unavailable": "Este código no se puede usar ahora. Escríbele al aliado que te lo compartió.",
+          "genericError": "No pudimos reclamar la medalla. Inténtalo de nuevo."
+        }
+      },
+      "statsInfo": {
+        "airsTitle": "Airs",
+        "airs": "Tus puntos Airs reconocen tus acciones de impacto positivo y construyen tu reputación. Se suman con cada acción, por ejemplo actividades y compras con aliados, y no bajan por inactividad.",
+        "projectsTitle": "Proyectos",
+        "projects": "Proyectos de impacto positivo a los que aportaste con tus acciones en Airs, por ejemplo con compras o actividades en comercios aliados.",
+        "co2Title": "CO₂",
+        "co2": "Estimación de referencia de las toneladas de CO₂ asociadas a los proyectos de impacto positivo que apoyaste con tus acciones."
+      },
+      "tierReveal": {
+        "open": "Ver tu nivel {{tier}}",
+        "headline": "¡Felicitaciones!",
+        "title": "Eres nivel {{tier}}",
+        "body": {
+          "bronze": "Tu trayectoria en Airs empieza aquí. Cada acción de impacto positivo suma Airs y construye tu reputación.",
+          "silver": "Tu trayectoria crece: Plata reconoce las acciones de impacto positivo que te trajeron hasta aquí.",
+          "gold": "Un hito en tu trayectoria: Oro hace visible tu compromiso con el impacto positivo.",
+          "platinum": "El nivel más alto de Airs: Platino reconoce una trayectoria amplia de impacto positivo, construida con el tiempo."
+        },
+        "score": "{{score}} Airs",
+        "next": "Te faltan {{amount}} Airs para llegar a {{next}}.",
+        "top": "Alcanzaste el nivel más alto de Airs.",
+        "continue": "Continuar"
+      },
+      "avatar": {
+        "title": "Elige tu avatar",
+        "close": "Cerrar",
+        "edit": "Cambiar avatar",
+        "error": "No pudimos guardar tu avatar. Inténtalo de nuevo.",
+        "socialPhoto": "Tu foto",
+        "initials": "Tus iniciales",
+        "sections": {
+          "own": "Tu foto",
+          "presets": "Ilustraciones",
+          "badges": "Tus insignias y galardones"
+        },
+        "presets": {
+          "mangrove": "Manglar",
+          "leaf": "Hoja",
+          "wave": "Ola",
+          "mountain": "Montaña",
+          "sun": "Sol",
+          "coral": "Coral",
+          "hummingbird": "Colibrí",
+          "turtle": "Tortuga"
+        }
       }
     },
+    "manage": {
+      "enterprise": {
+        "title": "Administrar empresa",
+        "back": "Volver a la empresa",
+        "tabs": {
+          "info": "Información",
+          "images": "Imágenes",
+          "products": "Productos y Airs",
+          "team": "Equipo",
+          "clients": "Clientes",
+          "honors": "Galardones"
+        },
+        "info": {
+          "name": "Nombre",
+          "sector": "Sector",
+          "description": "Descripción"
+        },
+        "images": {
+          "logo": "Logo",
+          "banner": "Banner"
+        },
+        "products": {
+          "intro": "Lo que tus clientes suman en Airs con cada producto o servicio.",
+          "name": "Producto o servicio",
+          "description": "Descripción",
+          "airsMin": "Airs desde",
+          "airsMax": "Airs hasta",
+          "airsNote": "Nota (ej. por noche)",
+          "add": "Agregar producto",
+          "save": "Guardar",
+          "delete": "Eliminar",
+          "empty": "Aún no hay productos.",
+          "invalid": "Escribe un nombre y usa números enteros; \"hasta\" no puede ser menor que \"desde\"."
+        },
+        "team": {
+          "intro": "Personas que administran toda la empresa y todos sus proyectos. Deben haber iniciado sesión en Airs al menos una vez."
+        },
+        "honors": {
+          "intro": "Reclama los galardones que recibió tu organización; los reclamados se muestran en su página pública."
+        }
+      },
+      "title": "Administrar proyecto",
+      "back": "Volver al proyecto",
+      "loading": "Cargando…",
+      "denied": "No tienes permisos para administrar este proyecto.",
+      "error": "No se pudo cargar. Intenta de nuevo.",
+      "retry": "Reintentar",
+      "saved": "Cambios guardados.",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "tabs": {
+        "info": "Información",
+        "images": "Imágenes",
+        "team": "Equipo",
+        "clients": "Clientes",
+        "comments": "Comentarios"
+      },
+      "info": {
+        "title": "Nombre",
+        "theme": "Tema",
+        "location": "Ubicación (resumen)",
+        "description": "Descripción",
+        "ways": "Formas de participar (una por línea)",
+        "alternateName": "Nombre alterno",
+        "municipality": "Municipio",
+        "department": "Departamento",
+        "address": "Dirección",
+        "coverage": "Cobertura",
+        "contact": "Contacto público",
+        "contentOnly": "Tu rol puede editar el contenido; la ubicación y el contacto los edita el admin del proyecto.",
+        "language": "Idioma del contenido",
+        "missing": "sin traducción",
+        "missingHint": "Este proyecto aún no tiene versión en {{language}}; quienes usan la app en {{language}} lo ven en {{fallback}}. Completa los campos para agregarla.",
+        "incomplete": "Completa nombre, tema, ubicación y descripción en {{language}}, o deja vacíos todos sus campos."
+      },
+      "images": {
+        "logo": "Logo",
+        "cover": "Banner",
+        "gallery": "Galería",
+        "upload": "Subir imagen",
+        "uploading": "Subiendo…",
+        "remove": "Quitar",
+        "empty": "Sin imagen.",
+        "alt": "Descripción de la imagen",
+        "altRequired": "Escribe una descripción corta de la imagen.",
+        "webOnly": "La subida de imágenes está disponible en la versión web de Airs.",
+        "hint": "JPG, PNG o WebP de hasta 5 MB.",
+        "type": "Sube una imagen JPG, PNG o WebP.",
+        "size": "La imagen debe pesar 5 MB o menos."
+      },
+      "team": {
+        "intro": "Personas que te ayudan a administrar este proyecto. Deben haber iniciado sesión en Airs al menos una vez.",
+        "email": "Correo",
+        "role": "Rol",
+        "add": "Agregar",
+        "remove": "Quitar",
+        "removeReason": "Quitado desde Airs",
+        "empty": "Aún no hay más personas en el equipo.",
+        "notFound": "Ese correo aún no tiene cuenta en Airs. La persona debe iniciar sesión en Airs al menos una vez.",
+        "readOnly": "Solo el admin del proyecto puede cambiar el equipo.",
+        "confirmRemove": "¿Quitar a esta persona del equipo?",
+        "confirm": "Sí, quitar",
+        "cancel": "Cancelar"
+      },
+      "clients": {
+        "intro": "Agrega personas con cuenta en Airs o invítalas por correo.",
+        "search": "Buscar por nombre o correo",
+        "empty": "Aún no hay clientes.",
+        "noMatch": "Ningún cliente coincide con la búsqueda.",
+        "kind": {
+          "member": "Activo",
+          "invitation": "Invitado",
+          "cancelled": "Invitación cancelada"
+        },
+        "status": {
+          "draft": "Borrador",
+          "auto_approved": "Aprobado",
+          "pending_approval": "En revisión",
+          "approved": "Aprobado",
+          "awaiting_claim": "Esperando registro",
+          "released": "Acreditado",
+          "rejected": "Rechazado",
+          "cancelled": "Cancelado",
+          "reversed": "Revertido"
+        },
+        "viewProof": "Ver soporte",
+        "assignAirs": "Asignar Airs",
+        "assignSubmit": "Asignar Airs",
+        "assignCancel": "Cancelar",
+        "remove": "Quitar",
+        "removeReason": "Quitado desde Airs",
+        "cancelInvitation": "Cancelar invitación",
+        "addTitle": "Agregar cliente",
+        "project": "Proyecto",
+        "email": "Correo de la persona",
+        "lookup": "Buscar",
+        "hasAccount": "{{name}} ya tiene cuenta en Airs.",
+        "newPerson": "Este correo aún no tiene cuenta en Airs. Le enviaremos una invitación y quedará como cliente activo cuando confirme su registro.",
+        "name": "Nombre",
+        "assignToggle": "Asignar Airs",
+        "amount": "Cantidad de Airs",
+        "concept": "Concepto (por ejemplo, compra de producto)",
+        "documentNumber": "Número de factura o documento",
+        "proofAttach": "Adjuntar soporte",
+        "proofChange": "Cambiar soporte",
+        "proofReady": "Soporte listo",
+        "airsHint": "El soporte (foto o PDF de hasta 10 MB) es privado: solo lo ven el equipo del proyecto y quien aprueba. Si la persona aún no tiene cuenta, recibe sus Airs al registrarse.",
+        "add": "Agregar cliente",
+        "readOnly": "Solo el admin y los sub admins del proyecto pueden agregar o quitar clientes.",
+        "notices": {
+          "added": "Cliente agregado.",
+          "invited": "Invitación enviada. Quedará activo cuando confirme su registro.",
+          "invitedWithAirs": "Invitación enviada con el detalle de sus Airs: los recibe al confirmar su registro.",
+          "airsAdded": "Airs asignados al cliente.",
+          "pendingApproval": "Los Airs quedan en revisión hasta que un aprobador los confirme.",
+          "alreadyClient": "Esta persona ya es cliente del proyecto.",
+          "invitedNoEmail": "Cliente invitado, pero no pudimos enviar el correo. Inténtalo de nuevo más tarde."
+        },
+        "errors": {
+          "nameRequired": "Escribe el nombre de la persona.",
+          "documentRequired": "Este proyecto pide el número de factura o documento.",
+          "proof": "El soporte debe ser una imagen o un PDF de hasta 10 MB.",
+          "rateLimited": "Hiciste muchas solicitudes seguidas. Intenta de nuevo en un rato.",
+          "email": "Escribe un correo válido, por ejemplo nombre@dominio.com.",
+          "nameLong": "El nombre puede tener hasta {{max}} caracteres.",
+          "amount": "Escribe una cantidad entera de Airs mayor que 0.",
+          "conceptShort": "El concepto necesita al menos {{min}} caracteres para entender la asignación.",
+          "conceptLong": "El concepto puede tener hasta {{max}} caracteres.",
+          "documentLong": "El número de documento puede tener hasta {{max}} caracteres.",
+          "review": "Revisa los campos marcados para poder agregar el cliente.",
+          "resendTooSoon": "Ya se envió hace poco. Puedes volver a enviarlo en unos minutos.",
+          "resendNotApplicable": "Esta asignación no tiene nada pendiente por enviar.",
+          "reviewAssign": "Revisa los campos marcados para asignar los Airs."
+        },
+        "clear": "Borrar búsqueda",
+        "filterLabel": "Mostrar",
+        "filters": {
+          "all": "Todos",
+          "member": "Activos",
+          "invitation": "Invitados",
+          "withAirs": "Con Airs",
+          "cancelled": "Canceladas"
+        },
+        "conceptCount": "{{count}}/{{min}} caracteres mínimo",
+        "lookupFirst": "Busca el correo en Airs para continuar.",
+        "noProjects": "Esta empresa todavía no tiene proyectos activos. Los clientes se agregan a un proyecto: cuando la empresa tenga uno, podrás agregarlos aquí.",
+        "busy": {
+          "lookup": "Buscando…",
+          "add": "Agregando cliente…",
+          "remove": "Quitando…",
+          "assign": "Asignando Airs…"
+        },
+        "toasts": {
+          "addedTitle": "Cliente agregado",
+          "invitedTitle": "Invitación enviada",
+          "errorTitle": "No se pudo completar",
+          "lookupErrorTitle": "No se pudo buscar el correo",
+          "removedTitle": "Cliente quitado",
+          "cancelledTitle": "Invitación cancelada",
+          "resentTitle": "Correo reenviado",
+          "remindedTitle": "Recordatorio enviado",
+          "remindedBody": "Los admins recibieron de nuevo la solicitud por correo y en la app.",
+          "cancelledAirs": "{{email}} · también se cancelaron {{count}} asignaciones de Airs pendientes.",
+          "airsAssignedTitle": "Airs asignados"
+        },
+        "invitationStatus": {
+          "pending": "Pendiente",
+          "accepted": "Aceptada",
+          "cancelled": "Cancelada"
+        },
+        "since": "Cliente desde el {{date}}",
+        "invitedOn": "Invitación enviada el {{date}}",
+        "cancelledOn": "Invitación cancelada el {{date}}",
+        "assignedOn": "asignados el {{date}}",
+        "history": "Ver historial de invitaciones ({{count}})",
+        "historyHide": "Ocultar historial",
+        "sentOn": "enviada el {{date}}",
+        "cancelledAt": "cancelada el {{date}}",
+        "acceptedAt": "aceptada el {{date}}",
+        "reinvite": "Invitar de nuevo",
+        "proof": {
+          "title": "Soporte",
+          "private": "Archivo privado: solo lo ve el equipo del proyecto y quien aprueba.",
+          "loading": "Cargando soporte…",
+          "error": "No se pudo cargar el soporte.",
+          "close": "Cerrar",
+          "webOnly": "Los PDF se ven desde la versión web de Airs."
+        },
+        "resendEmail": "Reenviar correo",
+        "remindAdmins": "Recordar a los admins",
+        "resendInvitation": "Reenviar invitación",
+        "reportsAll": "Ver todas las asignaciones ({{count}})",
+        "reportsLess": "Ver solo las más recientes",
+        "pagination": "Páginas de clientes",
+        "confirmCancel": "Confirmar: cancela también {{count}} asignaciones pendientes",
+        "keepInvitation": "No, mantener"
+      },
+      "comments": {
+        "empty": "No hay comentarios en este estado.",
+        "approve": "Aprobar",
+        "reject": "Rechazar",
+        "hide": "Ocultar",
+        "restore": "Restaurar",
+        "reasonPrompt": "Motivo (obligatorio para rechazar u ocultar)",
+        "reasonRequired": "Escribe un motivo para rechazar u ocultar este comentario.",
+        "moderationReason": "Motivo: {{reason}}",
+        "status": {
+          "pending": "Pendientes",
+          "visible": "Visibles",
+          "hidden": "Ocultos",
+          "rejected": "Rechazados"
+        }
+      },
+      "discard": "Descartar cambios"
+    },
     "explorer": {
+      "seeProject": "Ver proyecto",
+      "cta": {
+        "project": {
+          "title": "¿Lideras un proyecto de impacto positivo?",
+          "description": "Propón tu iniciativa productiva o de conservación. El equipo de Alternun revisa cada propuesta.",
+          "action": "Proponer proyecto"
+        },
+        "enterprise": {
+          "title": "¿Tienes una empresa?",
+          "description": "Tus clientes suman Airs con tus productos y tus aportes llegan, a nombre de tu empresa, a proyectos de impacto positivo.",
+          "action": "Inscribir mi empresa"
+        },
+        "close": "Cerrar"
+      },
+      "enterpriseForm": {
+        "title": "Suma tu empresa a Airs",
+        "subtitle": "El equipo de Alternun revisa cada inscripción y te contacta.",
+        "companyName": "Nombre de la empresa",
+        "legalName": "Razón social (opcional)",
+        "sector": "Sector (ej. hotelería, alimentos)",
+        "location": "Ciudad y país",
+        "websiteUrl": "Sitio web (opcional)",
+        "sizeLabel": "Tamaño de la empresa (opcional)",
+        "sizes": {
+          "1-10": "1–10 personas",
+          "11-50": "11–50",
+          "51-200": "51–200",
+          "201+": "Más de 200"
+        },
+        "offer": "¿Con qué productos o servicios sumarían Airs tus clientes?",
+        "interest": "Causa o proyecto que te gustaría apoyar (opcional)",
+        "contactName": "Nombre de contacto",
+        "contactRole": "Cargo (opcional)",
+        "contactEmail": "Correo de contacto",
+        "contactPhone": "Teléfono o WhatsApp (opcional)",
+        "submit": "Enviar inscripción",
+        "submitting": "Enviando…",
+        "sent": "¡Recibimos tu inscripción! El equipo de Alternun te contactará pronto.",
+        "validationError": "Revisa el campo marcado.",
+        "rateLimited": "Recibimos varias inscripciones seguidas. Intenta de nuevo más tarde.",
+        "submitError": "No pudimos enviar la inscripción. Intenta de nuevo.",
+        "finePrint": "Guardamos tu inscripción para que el equipo de Alternun la revise y te contacte.",
+        "fieldInvalid": "Revisa este campo."
+      },
+      "tips": {
+        "label": "Ideas para sumar en Airs",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "items": {
+          "reputation": {
+            "title": "Tu trayectoria cuenta",
+            "text": "Cada acción de impacto positivo suma Airs a tu reputación.",
+            "action": "Ver mi perfil"
+          },
+          "projects": {
+            "title": "Conoce los proyectos",
+            "text": "Explora los proyectos de impacto positivo y las formas de participar en cada uno.",
+            "action": "Ver proyectos"
+          },
+          "enterprises": {
+            "title": "Suma Airs con empresas",
+            "text": "En las empresas del directorio sumas Airs con sus productos y servicios.",
+            "action": "Ver empresas"
+          },
+          "invite": {
+            "title": "Invita a tu comunidad",
+            "text": "Comparte Airs con tus amigos desde tu perfil y construyan juntos su trayectoria.",
+            "action": "Invitar"
+          },
+          "propose": {
+            "title": "¿Lideras un proyecto?",
+            "text": "Propón tu iniciativa productiva o de conservación para que el equipo de Alternun la revise.",
+            "action": "Proponer proyecto"
+          },
+          "enroll": {
+            "title": "¿Tienes una empresa?",
+            "text": "Inscríbela: tus clientes suman Airs y tus aportes llegan, a nombre de tu empresa, a proyectos de impacto positivo.",
+            "action": "Inscribir empresa"
+          },
+          "together": {
+            "title": "La colaboración impulsa",
+            "text": "Las oportunidades de Airs se coordinan con cada proyecto y con la comunidad."
+          }
+        }
+      },
+      "reload": "Recargar proyectos",
+      "admin": {
+        "openPanel": "Panel admin de Alternun",
+        "manageProject": "Administrar proyecto",
+        "manageEnterprise": "Administrar empresa",
+        "airsReview": "Airs en revisión"
+      },
+      "profile": {
+        "about": "Acerca de",
+        "location": "Ubicación",
+        "coverage": "Cobertura",
+        "contact": "Contacto",
+        "sites": "Sedes",
+        "rooms_one": "{{count}} habitación",
+        "rooms_other": "{{count}} habitaciones",
+        "event": "Evento",
+        "eventDate": "Fecha",
+        "venue": "Lugar",
+        "products": "Dónde sumar Airs",
+        "airsRange": "{{min}} a {{max}} Airs",
+        "airsFrom": "Desde {{min}} Airs",
+        "airsExact": "{{min}} Airs",
+        "airsPending": "Airs por definir",
+        "contactFields": {
+          "web": "Sitio web",
+          "email": "Correo",
+          "phone": "Teléfono",
+          "whatsapp": "WhatsApp",
+          "instagram": "Instagram",
+          "facebook": "Facebook"
+        },
+        "partnership": {
+          "structuring": "En estructuración",
+          "in_conversation": "En conversación",
+          "onboarding": "En vinculación",
+          "pilot": "Piloto",
+          "postponed": "Aplazado",
+          "signed": "Aliado"
+        }
+      },
       "title": "Explorar",
-      "subtitle": "El mapa global de proyectos AIRS",
-      "marketplace": "MERCADO DE PROYECTOS AIRS",
-      "heroTitle": "Explora donde tu energía se vuelve impacto.",
-      "live": "EN VIVO",
+      "subtitle": "Donde tu energía se vuelve impacto positivo.",
       "featured": "PROYECTO DESTACADO",
       "featuredProject": "PROYECTO DESTACADO",
       "heroDescription": "Conoce la propuesta y encuentra la forma de sumar tu talento, red o experiencia.",
@@ -1079,13 +1663,14 @@
       "swipeHint": "Desliza para explorar",
       "globalMarket": "MERCADO GLOBAL",
       "projectsToActivate": "Proyectos para activar",
-      "available": "{{count}} disponible",
+      "available_one": "{{count}} disponible",
+      "available_other": "{{count}} disponibles",
       "searchPlaceholder": "Buscar por proyecto, país o tema",
       "livePaths": "ELIGE TU CAMINO",
       "active": "ACTIVO",
       "productive": "PRODUCTIVO",
       "waysToCollaborate": "Formas de colaborar",
-      "participateAndEarn": "Ver cómo participar y ganar AIRS",
+      "participateAndEarn": "Ver cómo participar y ganar Airs",
       "directory": {
         "label": "Elige qué explorar",
         "projects": "Proyectos",
@@ -1115,15 +1700,22 @@
       },
       "enterprises": {
         "eyebrow": "EMPRESAS",
-        "heading": "Empresas que generan impacto",
+        "heading": "Empresas donde sumas Airs",
         "intro": "Conoce las organizaciones detrás de los proyectos publicados.",
-        "projectCount": "{{count}} proyectos publicados",
+        "projectCount_one": "{{count}} proyecto publicado",
+        "projectCount_other": "{{count}} proyectos publicados",
         "loading": "Cargando empresas…",
         "empty": "Aún no hay empresas disponibles.",
         "searchPlaceholder": "Buscar empresa por nombre",
         "noMatches": "Ninguna empresa coincide con tu búsqueda.",
         "error": "No se pudieron cargar las empresas.",
         "retry": "Reintentar",
+        "filters": {
+          "heading": "Filtrar por tipo",
+          "all": "Todas",
+          "company": "Empresas",
+          "event": "Eventos"
+        },
         "detail": {
           "back": "Volver a empresas",
           "loading": "Cargando empresa…",
@@ -1134,6 +1726,7 @@
         }
       },
       "filters": {
+        "heading": "Filtrar por categoría",
         "all": "Todos",
         "active": "Activos"
       },
@@ -1187,23 +1780,46 @@
         }
       },
       "intents": {
-        "question": "¿Qué quieres hacer hoy?",
-        "prompt": "ELIGE TU CAMINO",
+        "question": "¿Qué quieres hacer?",
         "collaborate": {
           "label": "Quiero colaborar",
-          "description": "Aporta tu tiempo, conocimiento o red a un proyecto activo."
+          "description": "Aporta tu tiempo, conocimiento o red a un proyecto activo.",
+          "guide": {
+            "intro": "Aporta tu tiempo, conocimiento o red a un proyecto activo. Cada acción de impacto positivo suma a tu reputación en Airs.",
+            "step1": "Explora los proyectos y elige uno que te mueva.",
+            "step2": "En su página, revisa las formas de aportar y lo que necesita hoy.",
+            "step3": "Escríbenos o contacta al proyecto para coordinar cómo te sumas."
+          }
         },
         "propose": {
           "label": "Quiero proponer un proyecto",
-          "description": "Lleva tu iniciativa productiva o de conservación a la red AIRS."
+          "description": "Lleva tu iniciativa productiva o de conservación a la red Airs.",
+          "guide": {
+            "intro": "¿Lideras una iniciativa productiva o de conservación? Cuéntanos de ella para sumarla a la red Airs.",
+            "step1": "Completa el formulario con lo esencial de tu iniciativa.",
+            "step2": "El equipo de Alternun la revisa y te contacta para conocerla mejor.",
+            "step3": "Si encaja, publicamos su página en Airs para que más personas se sumen."
+          }
         },
         "donate": {
           "label": "Quiero donar",
-          "description": "Impulsa una causa y conecta tu apoyo con impacto verificable."
+          "description": "Impulsa una causa y conecta tu apoyo con impacto positivo.",
+          "guide": {
+            "intro": "Impulsa una causa que te importe y conecta tu apoyo con impacto positivo.",
+            "step1": "Explora los proyectos y elige la causa que quieres impulsar.",
+            "step2": "Revisa en su página cómo recibe apoyo y en qué lo usa.",
+            "step3": "Escríbenos y te contamos cómo canalizar tu aporte a ese proyecto."
+          }
+        },
+        "guide": {
+          "close": "Cerrar",
+          "contact": "Escríbenos",
+          "openForm": "Proponer mi proyecto",
+          "seeProjects": "Ver proyectos"
         }
       },
       "submitBanner": {
-        "title": "Tu proyecto también puede mover AIRS.",
+        "title": "Tu proyecto también puede mover Airs.",
         "description": "Presenta una iniciativa productiva o de conservación a la comunidad global de Alternun."
       },
       "empty": {
@@ -1212,7 +1828,7 @@
       },
       "earn": {
         "title": "Colaborar genera movimiento",
-        "description": "Las oportunidades AIRS se coordinan con cada proyecto y la comunidad."
+        "description": "Las oportunidades Airs se coordinan con cada proyecto y la comunidad."
       },
       "form": {
         "title": "Presenta un proyecto",
@@ -1230,6 +1846,65 @@
         "validationError": "Revisa los campos e inténtalo de nuevo.",
         "submitError": "No pudimos enviar tu propuesta. Inténtalo de nuevo.",
         "finePrint": "Guardaremos tu propuesta para que el equipo de Alternun pueda revisarla."
+      }
+    },
+    "airsReview": {
+      "title": "Airs en revisión",
+      "subtitle": "Asignaciones que superan los límites automáticos y esperan una decisión.",
+      "back": "Volver",
+      "loading": "Cargando…",
+      "denied": "Esta sección es para quienes aprueban Airs.",
+      "error": "No se pudo cargar. Intenta de nuevo.",
+      "retry": "Reintentar",
+      "empty": "No hay Airs en revisión por ahora.",
+      "focusMissing": "La asignación del enlace ya no está en revisión: ya fue aprobada, rechazada o cancelada.",
+      "amount": "{{count}} Airs",
+      "submittedOn": "Asignados el {{date}}",
+      "recipient": "Para",
+      "project": "Proyecto",
+      "concept": "Concepto",
+      "document": "Documento",
+      "noDocument": "Sin número de documento",
+      "viewProof": "Ver soporte",
+      "totalsTitle": "Airs que esta persona ya recibió",
+      "totalDay": "Hoy: {{total}} de {{limit}} Airs del límite diario automático",
+      "totalMonth": "Este mes: {{total}} de {{limit}} Airs del límite mensual automático",
+      "totalsError": "No se pudieron cargar los totales.",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "rejectReason": "Motivo del rechazo (obligatorio)",
+      "confirmReject": "Confirmar rechazo",
+      "cancel": "Cancelar",
+      "reasonRequired": "Escribe el motivo del rechazo.",
+      "reasonTooLong": "El motivo puede tener hasta {{max}} caracteres.",
+      "toasts": {
+        "approvedTitle": "Airs aprobados",
+        "rejectedTitle": "Airs rechazados",
+        "body": "{{count}} Airs para {{email}}"
+      },
+      "errors": {
+        "self": "No puedes aprobar ni rechazar Airs que son para ti o que tú asignaste.",
+        "changed": "Esta asignación cambió o ya tiene una decisión. Actualizamos la lista.",
+        "generic": "No se pudo completar. Intenta de nuevo."
+      }
+    },
+    "share": {
+      "button": "Compartir",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "copyLink": "Copiar enlace",
+      "on": "Compartir en {{network}}",
+      "download": "Descargar imagen",
+      "downloadShort": "Descargar",
+      "close": "Cerrar",
+      "notices": {
+        "copied": "Enlace copiado.",
+        "copyError": "No pudimos copiar el enlace.",
+        "shareError": "No pudimos abrir el menú para compartir. Copia el enlace o descarga la imagen.",
+        "downloaded": "Imagen lista.",
+        "downloadError": "No pudimos guardar la imagen.",
+        "instagramHint": "Instagram no publica desde un enlace: guardamos la imagen para que la subas a tu historia o publicación.",
+        "imageUnavailable": "La imagen no está disponible; puedes compartir el enlace."
       }
     }
   },

@@ -7,6 +7,8 @@ export interface ProjectMedalRecord {
   imageUrl: string;
   isActive: boolean;
   sortOrder: number;
+  /** Honor award this medal also gives when it is awarded. */
+  honorRecipeId: string | null;
   createdAt: string;
 }
 
@@ -15,6 +17,7 @@ export interface CreateProjectMedalInput {
   description?: string;
   imageUrl: string;
   sortOrder?: number;
+  honorRecipeId?: string | null;
 }
 
 export interface UpdateProjectMedalInput {
@@ -23,4 +26,5 @@ export interface UpdateProjectMedalInput {
   imageUrl?: string;
   isActive?: boolean;
   sortOrder?: number;
+  honorRecipeId?: string | null;
 }

@@ -14,6 +14,8 @@ export type DetailState =
 export type QueueItemProps = {
   report: AirsReportRecord;
   busy: boolean;
+  /** Opened from a link to this report: its details show right away. */
+  focused?: boolean;
   onApprove: (report: AirsReportRecord, snapshotHash: string) => void;
   onReject: (report: AirsReportRecord) => void;
 };

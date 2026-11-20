@@ -1,9 +1,9 @@
 {
   "subject": "Confirma tu cuenta de Alternun",
-  "preview": "Confirma tu correo para activar tu cuenta de Alternun.",
+  "preview": "Aquí está tu código de verificación de Alternun.",
   "greeting": "Hola {{email}},",
-  "intro": "Bienvenido a Alternun. Confirma tu direccion de correo para activar tu cuenta y comenzar a usar AIRS. Puedes escribir el codigo de verificacion en la app o hacer clic en el boton de abajo para confirmar al instante.",
-  "codeLabel": "Codigo de verificacion",
+  "intro": "Te damos la bienvenida a Alternun. Escribe este código en la app para confirmar tu correo y empezar a usar Airs.",
+  "codeLabel": "Código de verificación",
   "ctaLabel": "Confirmar mi cuenta",
   "ignoreNotice": "Si no creaste esta cuenta, puedes ignorar este correo.",
   "closing": "Tu camino regenerativo empieza aqui.",

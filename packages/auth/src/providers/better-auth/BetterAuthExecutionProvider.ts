@@ -386,6 +386,42 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     return this.emailFallbackProvider?.supabase ?? null;
   }
 
+  /**
+   * When Supabase owns email accounts, the backend signs in on Supabase and
+   * returns its tokens; store them in the legacy client so the session persists.
+   * Better Auth sign-ins carry no such tokens (their session is a cookie).
+   */
+  private async adoptBackendLegacySession(payload: Record<string, unknown>): Promise<void> {
+    const backendSession = isRecord(payload.session) ? payload.session : null;
+    const accessToken = backendSession?.token;
+    const refreshToken = backendSession?.refreshToken;
+    if (typeof accessToken !== 'string' || typeof refreshToken !== 'string') {
+      return;
+    }
+
+    const legacyAuth = (
+      this.supabase as {
+        auth?: {
+          setSession?: (tokens: {
+            access_token: string;
+            refresh_token: string;
+          }) => Promise<{ error?: { message?: string } | null }>;
+        };
+      } | null
+    )?.auth;
+    if (!legacyAuth?.setSession) {
+      return;
+    }
+
+    const { error } = await legacyAuth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error) {
+      throw new AlternunProviderError(error.message ?? 'Could not store the email session.');
+    }
+  }
+
   private async resolveBrowserClient(): Promise<BetterAuthBrowserClientLike | null> {
     if (this.options.browserClient) {
       return this.options.browserClient;
@@ -457,18 +493,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
       this.normalizeProvider(options.provider) ??
       this.normalizeProvider(this.options.defaultProvider) ??
       'google';
-
-    if (provider === 'email' && this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signIn({
-        provider: 'email',
-        flow: options.flow ?? 'native',
-        redirectUri: options.redirectUri,
-        web3: options.web3,
-        email: options.email,
-        password: options.password,
-        metadata: options.metadata,
-      });
-    }
 
     const browserClient = await this.resolveBrowserClient();
 
@@ -649,15 +673,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signUp(input: AuthExecutionSignUpInput): Promise<AuthExecutionResult> {
-    if (this.emailFallbackProvider) {
-      return (await this.emailFallbackProvider.signUpWithEmail(
-        input.email,
-        input.password,
-        input.locale,
-        input.referral ?? null
-      )) as AuthExecutionResult;
-    }
-
     const client = this.client;
     const signUpName = deriveSignUpName(input.email, input.name);
 
@@ -942,10 +957,6 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async signInWithEmail(email: string, password: string): Promise<User> {
-    if (this.emailFallbackProvider) {
-      return this.emailFallbackProvider.signInWithEmail(email, password);
-    }
-
     const browserClient = await this.resolveBrowserClient();
     if (browserClient?.signIn?.email) {
       const result = await browserClient.signIn.email({
@@ -953,21 +964,35 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
         password,
       });
 
+      // The Better Auth client reports failures (e.g. "Email not verified") in
+      // `error` instead of throwing; surface them so the UI shows the right notice.
+      if ((result as Record<string, unknown>)?.error) {
+        const errorPayload = (result as Record<string, unknown>).error as Record<string, unknown>;
+        throw new AlternunProviderError(
+          typeof errorPayload.message === 'string' ? errorPayload.message : 'Email sign in failed'
+        );
+      }
+
+      // The API answers with Better Auth's payload or, when Supabase owns email
+      // accounts, with the backend sign-in DTO; both arrive wrapped in `data`.
+      const payload = isRecord((result as Record<string, unknown>)?.data)
+        ? ((result as Record<string, unknown>).data as Record<string, unknown>)
+        : ((result ?? {}) as Record<string, unknown>);
       const session = normalizeSession(result, 'email');
       const authResult: AuthExecutionResult = {
         session,
         externalIdentity: session?.externalIdentity ?? null,
         needsEmailVerification:
-          typeof (result as Record<string, unknown>)?.needsEmailVerification === 'boolean'
-            ? ((result as Record<string, unknown>).needsEmailVerification as boolean)
+          typeof payload.needsEmailVerification === 'boolean'
+            ? payload.needsEmailVerification
             : session?.externalIdentity?.emailVerified === false,
         confirmationEmailSent:
-          typeof (result as Record<string, unknown>)?.confirmationEmailSent === 'boolean'
-            ? ((result as Record<string, unknown>).confirmationEmailSent as boolean)
+          typeof payload.confirmationEmailSent === 'boolean'
+            ? payload.confirmationEmailSent
             : session?.externalIdentity?.emailVerified === false,
         emailAlreadyRegistered:
-          typeof (result as Record<string, unknown>)?.emailAlreadyRegistered === 'boolean'
-            ? ((result as Record<string, unknown>).emailAlreadyRegistered as boolean)
+          typeof payload.emailAlreadyRegistered === 'boolean'
+            ? payload.emailAlreadyRegistered
             : undefined,
       };
 
@@ -976,6 +1001,8 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
           'Email not confirmed. Please check your inbox before signing in.'
         );
       }
+
+      await this.adoptBackendLegacySession(payload);
 
       if (session?.externalIdentity) {
         return {
@@ -1050,27 +1077,14 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
     locale?: string,
     referral?: AuthExecutionSignUpReferralInput | null
   ): Promise<AuthExecutionResult> {
-    if (this.emailFallbackProvider) {
-      return (await this.emailFallbackProvider.signUpWithEmail(
-        email,
-        password,
-        locale,
-        referral ?? null
-      )) as AuthExecutionResult;
-    }
-
     return this.signUp({ email, password, locale, referral });
   }
 
   async resendEmailConfirmation(email: string): Promise<void> {
-    if (this.emailFallbackProvider) {
-      await this.emailFallbackProvider.resendEmailConfirmation(email);
-      return;
-    }
-
     if (this.options.baseUrl) {
-      await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/send-verification-email', {
-        email,
+      // The backend sends the code through whichever provider owns email accounts.
+      await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/resend-email-verification', {
+        email: email.trim().toLowerCase(),
       });
       return;
     }
@@ -1083,12 +1097,11 @@ export class BetterAuthExecutionProvider implements AuthExecutionProvider {
   }
 
   async verifyEmailConfirmationCode(email: string, code: string): Promise<void> {
-    if (this.emailFallbackProvider) {
-      await this.emailFallbackProvider.verifyEmailConfirmationCode(email, code);
-      return;
-    }
-
-    return Promise.resolve();
+    // The backend checks the code against whichever provider owns email accounts.
+    await callJson(this.fetchFn, this.requireBaseUrl(), '/auth/verify-email', {
+      email: email.trim().toLowerCase(),
+      code: code.trim().replace(/\s+/g, ''),
+    });
   }
 
   async requestPasswordResetEmail(email: string, redirectTo?: string): Promise<void> {

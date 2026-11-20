@@ -11,6 +11,8 @@ import { useMarketplaceRoles } from '../../marketplace/permissions';
 import { ErrorPanel, LoadingPanel, SectionMessage, StatusPill } from './components';
 import { AuditHistory } from './editors/audit-history';
 import { EnterpriseEditor } from './editors/enterprise-editor';
+import { EnterpriseProductsEditor } from './editors/enterprise-products-editor';
+import { EnterpriseProfileEditor } from './editors/enterprise-profile-editor';
 import { EnterpriseStatusActions } from './editors/enterprise-status-actions';
 import type { EnterpriseDetail } from './enterprise-detail-page.types';
 
@@ -19,7 +21,14 @@ async function loadEnterprise(id: string): Promise<EnterpriseDetail> {
     requestMarketplace<Enterprise>(`/v1/admin/enterprises/${encodeURIComponent(id)}`),
     requestMarketplace<Project[]>('/v1/admin/projects'),
   ]);
-  return { enterprise, projects: projects.filter((project) => project.enterpriseId === id) };
+  // Projects it owns, plus those it supports as an allied enterprise.
+  return {
+    enterprise,
+    projects: projects.filter(
+      (project) =>
+        project.enterpriseId === id || project.enterprises?.some((link) => link.enterpriseId === id)
+    ),
+  };
 }
 
 export function MarketplaceEnterpriseDetailPage(): JSX.Element {
@@ -125,6 +134,20 @@ export function MarketplaceEnterpriseDetailPage(): JSX.Element {
             enterprise={data.enterprise}
             roles={roles}
             onSaved={(enterprise) => changed(enterprise, marketplaceCopy.edit.success)}
+          />
+          <EnterpriseProfileEditor
+            enterprise={data.enterprise}
+            key={`profile-${data.enterprise.id}`}
+            roles={roles}
+            onSaved={(enterprise) => changed(enterprise, marketplaceCopy.edit.success)}
+          />
+          <EnterpriseProductsEditor
+            enterprise={data.enterprise}
+            roles={roles}
+            onChanged={(message) => {
+              setSuccess(message);
+              setHistoryKey((current) => current + 1);
+            }}
           />
           <EnterpriseStatusActions
             enterprise={data.enterprise}

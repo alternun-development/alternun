@@ -656,7 +656,7 @@ export class ReferralsService {
 
     const referralUrl = referrer.referral_code
       ? buildReferralLink(referrer.referral_code, process.env)
-      : referral.referral_link ?? 'https://airs.alternun.co/mi-perfil';
+      : referral.referral_link ?? 'https://airs.alternun.co/profile';
     const sends: Array<Promise<void>> = [];
 
     if (referrer.email) {

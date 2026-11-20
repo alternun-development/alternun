@@ -10,6 +10,7 @@ const ROLES = [
   'partner_operator',
   'sub_admin',
   'partner_readonly',
+  'project_moderator',
 ];
 
 const CLIENT_PERMISSIONS = [

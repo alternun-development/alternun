@@ -28,6 +28,7 @@ const PERSISTED_ROLES: readonly ProjectMembershipRecord['role'][] = [
   'partner_operator',
   'sub_admin',
   'partner_readonly',
+  'project_moderator',
 ];
 
 function isGlobal(principal: AdminPrincipal): boolean {
@@ -43,7 +44,8 @@ function canManageRole(principal: AdminPrincipal, role: string): boolean {
   if (principal.roles.some((item) => ['platform_owner', 'internal_admin'].includes(item)))
     return true;
   return (
-    principal.roles.includes('partner_operator') && ['sub_admin', 'partner_readonly'].includes(role)
+    principal.roles.includes('partner_operator') &&
+    ['sub_admin', 'partner_readonly', 'project_moderator'].includes(role)
   );
 }
 

@@ -14,6 +14,9 @@ import { createTypographyStyles } from '../theme/typography';
 import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { type RankScope, changeLeaderboardScope } from './leaderboardTransitions';
+import { LeaderboardTierBadge } from './LeaderboardTierBadge';
+import UserAvatar from '../avatar/UserAvatar';
+import type { UserAvatarChoice } from '../../utils/userAvatar';
 
 interface LeaderboardEntry {
   rank: number;
@@ -22,6 +25,8 @@ interface LeaderboardEntry {
   airsBalance: number;
   airsLifetimeEarned: number;
   isMe: boolean;
+  /** Chosen avatar art; never a social photo. */
+  avatar?: UserAvatarChoice | null;
 }
 
 interface LeaderboardResult {
@@ -215,7 +220,7 @@ export default function AIRSLeaderboard({
     >
       <View style={styles.sectionHeader}>
         <View style={styles.titleBlock}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>Top AIRS</Text>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>Top Airs</Text>
           <Text style={[styles.sectionSubtitle, { color: mutedColor }]}>{scopeLabel}</Text>
         </View>
         <TouchableOpacity
@@ -273,7 +278,7 @@ export default function AIRSLeaderboard({
           <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
             <View style={styles.emptyBox}>
               <Text style={[styles.emptyText, { color: mutedColor }]}>
-                Inicia sesión para ver el ranking de AIRS
+                Inicia sesión para ver el ranking de Airs
               </Text>
             </View>
           </View>
@@ -294,7 +299,7 @@ export default function AIRSLeaderboard({
             <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
               <View style={styles.emptyBox}>
                 <Text style={[styles.emptyText, { color: mutedColor }]}>
-                  Aún no hay usuarios con AIRS acumulados.
+                  Aún no hay usuarios con Airs acumulados.
                 </Text>
               </View>
             </View>
@@ -303,7 +308,7 @@ export default function AIRSLeaderboard({
               <View style={[styles.tableHeader, { backgroundColor: `${accent}0F` }]}>
                 <Text style={[styles.thRank, { color: accent }]}>#</Text>
                 <Text style={[styles.thName, { color: accent }]}>Usuario</Text>
-                <Text style={[styles.thBalance, { color: accent }]}>AIRS</Text>
+                <Text style={[styles.thBalance, { color: accent }]}>Airs</Text>
               </View>
 
               {topEntries.map((entry, idx) => {
@@ -322,12 +327,28 @@ export default function AIRSLeaderboard({
                       <RankBadge rank={entry.rank} isDark={isDark} />
                     </View>
                     <View style={styles.nameCell}>
+                      {entry.avatar?.kind ? (
+                        <UserAvatar
+                          size={22}
+                          initials={entry.displayName.slice(0, 1)}
+                          choice={entry.avatar}
+                          socialUrl={null}
+                        />
+                      ) : null}
                       <Text
                         style={[styles.nameText, { color: entry.isMe ? accent : textColor }]}
                         numberOfLines={1}
                       >
                         {entry.displayName}
                       </Text>
+                      <LeaderboardTierBadge
+                        testID={`airs-leaderboard-tier-${entry.rank}`}
+                        score={
+                          entry.isMe
+                            ? currentUserAirsBalance ?? entry.airsBalance
+                            : entry.airsBalance
+                        }
+                      />
                       {entry.isMe && <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>}
                     </View>
                     <Text style={[styles.balanceText, { color: entry.isMe ? accent : textColor }]}>
@@ -355,9 +376,18 @@ export default function AIRSLeaderboard({
                       <RankBadge rank={myEntry.rank} isDark={isDark} />
                     </View>
                     <View style={styles.nameCell}>
+                      {myEntry.avatar?.kind ? (
+                        <UserAvatar
+                          size={22}
+                          initials={myEntry.displayName.slice(0, 1)}
+                          choice={myEntry.avatar}
+                          socialUrl={null}
+                        />
+                      ) : null}
                       <Text style={[styles.nameText, { color: accent }]} numberOfLines={1}>
                         {myEntry.displayName}
                       </Text>
+                      <LeaderboardTierBadge score={currentUserAirsBalance ?? myEntry.airsBalance} />
                       <Text style={[styles.youBadge, { color: accent }]}>TÚ</Text>
                     </View>
                     <Text style={[styles.balanceText, { color: accent }]}>

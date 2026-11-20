@@ -235,3 +235,47 @@ test('processAirsOnboarding is idempotent when the welcome email and bonus are a
     false
   );
 });
+
+test('processAirsOnboarding releases waiting Airs reports before reading the balance', async () => {
+  const order = [];
+  await processAirsOnboarding(
+    { token: 'token', locale: 'es' },
+    {
+      verifySessionToken: async () => ({
+        appUserId: 'user-9',
+        principalId: 'user-9',
+        email: null,
+        displayName: null,
+        issuer: 'better-auth',
+        tokenUse: 'access',
+        emailVerified: true,
+      }),
+      recordDashboardVisit: async () => ({
+        userId: 'user-9',
+        email: 'sam@example.test',
+        displayName: null,
+        locale: 'es',
+        profileComplete: false,
+        shouldSendWelcomeEmail: false,
+        shouldAwardProfileBonus: false,
+        profileBonusAwardedAt: null,
+      }),
+      awardRegistrationBonus: async () => ({ awarded: false }),
+      awardProfileBonus: async () => ({ awarded: false, status: 'already_awarded' }),
+      claimAirsReports: async (input) => {
+        order.push(['claim', input]);
+      },
+      getDashboardSnapshot: async () => {
+        order.push(['snapshot']);
+        return { userId: 'user-9', airsBalance: 34 };
+      },
+      sendWelcomeEmail: async () => ({ sent: false, skipped: true }),
+      markWelcomeEmailSent: async () => {},
+      renderWelcomeEmail: () => ({ subject: '', preview: '', text: '', html: '' }),
+    }
+  );
+  assert.deepEqual(order, [
+    ['claim', { userId: 'user-9', email: 'sam@example.test' }],
+    ['snapshot'],
+  ]);
+});

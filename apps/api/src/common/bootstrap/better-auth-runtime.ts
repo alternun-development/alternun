@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import fastifyRateLimit from '@fastify/rate-limit';
 import {
   type BetterAuthDevConfig,
   resolveBetterAuthDevConfig,
@@ -8,6 +9,11 @@ import { normalizeBetterAuthRequestBody } from './better-auth-request-body';
 import { applyBetterAuthCorsHeaders } from './better-auth-cors';
 import { rewriteBetterAuthErrorRedirect } from './better-auth-error-redirect';
 import { shouldProxyBetterAuthPath } from './better-auth-proxy';
+import { isBetterAuthEmailProvider } from '../../modules/auth-exchange/services/signup/signup.utils';
+
+const BETTER_AUTH_EMAIL_SIGN_IN_PATH = '/auth/sign-in/email';
+/** Email sign-in attempts per client IP and window, on each API instance. */
+export const EMAIL_SIGN_IN_RATE_LIMIT = { max: 10, windowMs: 60_000 } as const;
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
@@ -220,6 +226,8 @@ export async function handleBetterAuthRuntimeRequest(
     authHandler: (request: Request) => Promise<Response>;
     baseUrl: string;
     trustedOrigins?: readonly string[];
+    /** Handle the request even on paths normally reserved for the Nest email routes. */
+    skipPathGuards?: boolean;
   }
 ): Promise<boolean> {
   const requestUrl = request.raw.url;
@@ -233,12 +241,12 @@ export async function handleBetterAuthRuntimeRequest(
     options.trustedOrigins ?? resolveBetterAuthDevConfig(process.env).trustedOrigins;
   console.log('[Better Auth Handler]', { path: requestPath, method: request.method });
 
-  if (!shouldProxyBetterAuthPath(requestPath)) {
+  if (!options.skipPathGuards && !shouldProxyBetterAuthPath(requestPath)) {
     console.log('[Better Auth Handler] Path not matched:', requestPath);
     return false;
   }
 
-  if (BETTER_AUTH_SUPABASE_EMAIL_PATHS.has(requestPath)) {
+  if (!options.skipPathGuards && BETTER_AUTH_SUPABASE_EMAIL_PATHS.has(requestPath)) {
     console.log('[Better Auth Handler] Supabase email auth path bypassed:', requestPath);
     return false;
   }
@@ -304,8 +312,55 @@ export async function handleBetterAuthRuntimeRequest(
   return true;
 }
 
+/**
+ * Nest owns POST /auth/sign-in/email (a static route always beats `/auth/*`).
+ * When Better Auth owns email accounts, hand that request to Better Auth so it
+ * checks the right user table and sets the session cookie.
+ */
+export function registerBetterAuthEmailSignIn(
+  app: FastifyInstance,
+  options: {
+    authHandler: (request: Request) => Promise<Response>;
+    baseUrl: string;
+    trustedOrigins?: readonly string[];
+  },
+  env: NodeJS.ProcessEnv = process.env
+): void {
+  if (!isBetterAuthEmailProvider(env)) {
+    return;
+  }
+
+  // Password guessing is throttled per client IP before Better Auth sees the request (Better Auth
+  // also applies its own limits). Only this route: the plugin is registered with global: false.
+  void app.register(fastifyRateLimit, { global: false });
+  let signInLimiter: ReturnType<FastifyInstance['rateLimit']> | undefined;
+
+  app.addHook('preHandler', async (request, reply) => {
+    const path = new URL(request.raw.url ?? '/', 'http://alternun.local').pathname;
+    if (request.method !== 'POST' || path !== BETTER_AUTH_EMAIL_SIGN_IN_PATH) {
+      return;
+    }
+
+    signInLimiter ??= app.rateLimit({
+      max: EMAIL_SIGN_IN_RATE_LIMIT.max,
+      timeWindow: EMAIL_SIGN_IN_RATE_LIMIT.windowMs,
+    });
+    // Throws a 429 error once the IP is over the limit.
+    await signInLimiter.call(app, request, reply);
+
+    await handleBetterAuthRuntimeRequest(request, reply, { ...options, skipPathGuards: true });
+    return reply;
+  });
+}
+
 export function registerBetterAuthRuntime(app: FastifyInstance, config: BetterAuthDevConfig): void {
   const auth = createBetterAuthDevAuth(config) as BetterAuthRuntimeAuth;
+
+  registerBetterAuthEmailSignIn(app, {
+    authHandler: auth.handler,
+    baseUrl: config.baseURL,
+    trustedOrigins: config.trustedOrigins,
+  });
 
   app.route({
     method: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

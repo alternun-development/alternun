@@ -231,6 +231,9 @@ def resolve_scope_mappings(managed_ids):
     return ordered, missing
 
 
+ADMIN_GROUP_CLAIM_MAPPING_NAME = "Alternun Admin OAuth Mapping: profile groups"
+
+
 def ensure_admin_group_claim_mapping(group_roles):
     """Expose Authentik group membership to the admin OIDC client.
 
@@ -239,7 +242,7 @@ def ensure_admin_group_claim_mapping(group_roles):
     approved. Keep the claims on the standard ``profile`` scope so existing
     clients need no extra scope.
     """
-    name = "Alternun Admin OAuth Mapping: profile groups"
+    name = ADMIN_GROUP_CLAIM_MAPPING_NAME
     scope_name = "profile"
     encoded_groups = json.dumps(sorted(group for group in group_roles if group))
     encoded_group_roles = json.dumps(group_roles, sort_keys=True)
@@ -929,6 +932,7 @@ if admin_oidc_application_slug and admin_oidc_client_id and admin_oidc_redirect_
         "Alternun Partner Operator": "partner_operator",
         "Alternun Sub Admin": "sub_admin",
         "Alternun Partner Read Only": "partner_readonly",
+        "Alternun Project Moderator": "project_moderator",
     }
     # Every mapped group must exist so it can be assigned in Authentik; the
     # access policy and the alternun_roles claim below are built from this map.
@@ -2015,6 +2019,16 @@ if mobile_oidc_client_id:
 
         desired_scope_mappings, missing_scope_mapping_ids = resolve_scope_mappings(
             mobile_scope_mapping_ids
+        )
+        # Same groups/alternun_roles claim as the admin client, so the mobile app can show
+        # admin entry points. Authorization still happens in the API and the admin panel.
+        mobile_group_claim_mapping = ScopeMapping.objects.filter(
+            name=ADMIN_GROUP_CLAIM_MAPPING_NAME
+        ).first()
+        if mobile_group_claim_mapping:
+            desired_scope_mappings.append(mobile_group_claim_mapping)
+        results["mobile_oidc_group_claim_mapping"] = (
+            "attached" if mobile_group_claim_mapping else "missing_admin_mapping"
         )
         current_scope_mapping_ids = set(
             mobile_provider.property_mappings.values_list("pk", flat=True)

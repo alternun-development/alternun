@@ -716,7 +716,7 @@ export function createInfrastructure() {
           process.env.AUTHENTIK_SMTP_SECRET_ARN ??
           process.env.AIRS_SMTP_SECRET_ARN ??
           identityInfrastructure?.secrets.smtpCredentials.arn ??
-          'alternun/postmark/smtp',
+          'alternun/tlao/smtp',
         authentikJwtSigningKey: identityInfrastructure?.secrets.jwtSigningKey.value,
         authentikIntegrationConfigSecretArn:
           process.env.INFRA_IDENTITY_EXISTING_INTEGRATION_CONFIG_SECRET_NAME ??

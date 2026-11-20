@@ -1,0 +1,76 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowListAndPolicyInfo",
+      "Effect": "Allow",
+      "Action": ["iam:ListVirtualMFADevices", "iam:GetAccountPasswordPolicy"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowCreateVirtualMfa",
+      "Effect": "Allow",
+      "Action": "iam:CreateVirtualMFADevice",
+      "Resource": "arn:aws:iam::124120088516:mfa/*"
+    },
+    {
+      "Sid": "AllowDeleteOwnVirtualMfa",
+      "Effect": "Allow",
+      "Action": "iam:DeleteVirtualMFADevice",
+      "Resource": "arn:aws:iam::124120088516:mfa/${aws:username}"
+    },
+    {
+      "Sid": "AllowManageOwnUserMfaAndPassword",
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetUser",
+        "iam:ChangePassword",
+        "iam:ListMFADevices",
+        "iam:EnableMFADevice",
+        "iam:ResyncMFADevice"
+      ],
+      "Resource": "arn:aws:iam::124120088516:user/${aws:username}"
+    },
+    {
+      "Sid": "AllowGetSessionTokenWithMfa",
+      "Effect": "Allow",
+      "Action": "sts:GetSessionToken",
+      "Resource": "*",
+      "Condition": {
+        "Bool": {
+          "aws:MultiFactorAuthPresent": "true"
+        }
+      }
+    },
+    {
+      "Sid": "AllowAssumeReadOnlyRole",
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::124120088516:role/alternun-external-reviewer-readonly"
+    },
+    {
+      "Sid": "DenyEverythingElseWithoutMfa",
+      "Effect": "Deny",
+      "NotAction": [
+        "iam:ChangePassword",
+        "iam:GetUser",
+        "iam:GetAccountPasswordPolicy",
+        "iam:ListMFADevices",
+        "iam:ListVirtualMFADevices",
+        "iam:CreateVirtualMFADevice",
+        "iam:DeleteVirtualMFADevice",
+        "iam:EnableMFADevice",
+        "iam:ResyncMFADevice",
+        "sts:GetCallerIdentity",
+        "sts:GetSessionToken",
+        "sts:AssumeRole"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "BoolIfExists": {
+          "aws:MultiFactorAuthPresent": "false"
+        }
+      }
+    }
+  ]
+}

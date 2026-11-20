@@ -169,6 +169,92 @@ test('AirsService.activity applies filters and maps RPC payload', async () => {
     assert.equal(JSON.parse(calls[1].init.body).p_search, 'carbon');
     assert.equal(JSON.parse(calls[1].init.body).p_source_kind, 'compensation');
     assert.equal(JSON.parse(calls[2].init.body).p_source_kind, 'validated_regenerative_action');
+    assert.equal(JSON.parse(calls[1].init.body).p_sort, 'date');
+    assert.equal(JSON.parse(calls[1].init.body).p_direction, 'desc');
+  } finally {
+    global.fetch = originalFetch;
+    process.env = originalEnv;
+  }
+});
+
+test('AirsService.activity sorts merged compensation pages by the chosen column', async () => {
+  const originalEnv = { ...process.env };
+  const originalFetch = global.fetch;
+  const calls = [];
+
+  try {
+    process.env.SUPABASE_URL = 'https://supabase.example';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+    process.env.AUTH_BETTER_AUTH_URL = 'https://auth.example';
+
+    global.fetch = createFetchQueue(
+      [
+        createJsonResponse({ id: 'user-123' }),
+        createJsonResponse({
+          total_count: 8,
+          page: 1,
+          page_size: 10,
+          entries: [
+            {
+              id: 'entry-1',
+              source_kind: 'compensation',
+              source_ref: 'action-1',
+              idempotency_key: 'idem-1',
+              source_currency: 'USD',
+              source_amount: null,
+              airs_rate: 5,
+              airs_delta: 12,
+              notes: 'Compensation payout',
+              metadata: { source: 'project' },
+              recorded_at: '2026-08-09T12:00:00.000Z',
+              created_at: '2026-08-09T12:00:00.000Z',
+            },
+          ],
+        }),
+        createJsonResponse({
+          total_count: 3,
+          page: 1,
+          page_size: 10,
+          entries: [
+            {
+              id: 'entry-2',
+              source_kind: 'validated_regenerative_action',
+              source_ref: 'action-2',
+              idempotency_key: 'idem-2',
+              source_currency: 'USD',
+              source_amount: null,
+              airs_rate: 5,
+              airs_delta: 9,
+              notes: 'Regenerative action payout',
+              metadata: { source: 'project' },
+              recorded_at: '2026-08-09T12:05:00.000Z',
+              created_at: '2026-08-09T12:05:00.000Z',
+            },
+          ],
+        }),
+      ],
+      calls
+    );
+
+    const service = new AirsService();
+    const response = await service.activity('Bearer session-token', {
+      scope: 'global',
+      page: 1,
+      limit: 5,
+      search: 'carbon',
+      sourceKind: 'compensation',
+      sort: 'airs',
+      direction: 'desc',
+    });
+
+    // 12 Airs before 9 Airs, although the 9 is newer.
+    assert.deepEqual(
+      response.entries.map((entry) => entry.id),
+      ['entry-1', 'entry-2']
+    );
+    assert.equal(JSON.parse(calls[1].init.body).p_sort, 'airs');
+    assert.equal(JSON.parse(calls[1].init.body).p_direction, 'desc');
+    assert.equal(JSON.parse(calls[2].init.body).p_sort, 'airs');
   } finally {
     global.fetch = originalFetch;
     process.env = originalEnv;

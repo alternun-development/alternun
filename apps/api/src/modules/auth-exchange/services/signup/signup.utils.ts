@@ -72,6 +72,11 @@ export function resolveSignupProviderName(
   return 'supabase';
 }
 
+/** True when email/password accounts live in Better Auth instead of Supabase. */
+export function isBetterAuthEmailProvider(env: NodeJS.ProcessEnv = process.env): boolean {
+  return resolveSignupProviderName(env) === 'better-auth';
+}
+
 export function resolveSupabaseSignupConfig(
   env: NodeJS.ProcessEnv = process.env
 ): { url: string; key: string } | null {

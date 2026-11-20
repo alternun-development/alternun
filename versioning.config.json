@@ -34,6 +34,7 @@
     "secrets-check": {
       "allowlist": [
         "DATABASE_PASSWORD=",
+        "AUTHENTIK_API_TOKEN: args.env.INFRA_BACKEND_API_AUTHENTIK_API_TOKEN",
         "SMTP_PASSWORD=",
         "GOOGLE_AUTH_CLIENT_SECRET=",
         "GOOGLE_AUTH_CLIENT_SECRET:",

@@ -6,12 +6,12 @@ import test from 'node:test';
 const identityModulePath = path.resolve('modules/identity.ts');
 const identityDefaultsPath = path.resolve('config/infrastructure-specs.ts');
 
-void test('identity infrastructure defaults to Tláo with Postmark as the alternate provider', () => {
+void test('identity infrastructure only supports Tláo; Postmark is retired', () => {
   const identityModule = fs.readFileSync(identityModulePath, 'utf8');
   const defaults = fs.readFileSync(identityDefaultsPath, 'utf8');
 
-  assert.match(identityModule, /IdentityEmailProvider = 'tlao' \| 'postmark'/);
-  assert.match(identityModule, /provider === 'postmark' \? 'postmark' : 'tlao'/);
+  assert.match(identityModule, /IdentityEmailProvider = 'tlao';/);
+  assert.match(identityModule, /Postmark is retired, use "tlao"/);
   assert.match(defaults, /emailProvider: 'tlao'/);
   assert.doesNotMatch(identityModule, /'ses'/);
 });

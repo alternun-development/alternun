@@ -35,6 +35,8 @@ function hasRole(principal: AdminPrincipal, ...roles: string[]): boolean {
   return principal.roles.some((role) => roles.includes(role));
 }
 
+const FALLBACK_LOCALE = 'en';
+
 function resolveLocale(
   content: ActivityContent,
   requested: string | undefined,
@@ -42,9 +44,13 @@ function resolveLocale(
   fallback: string
 ): string {
   const available = Object.keys(content);
+  // The language the app asked for wins over the browser's; missing translations fall back to
+  // English (the shared language, e.g. for Thai), then to the default language.
   const candidates = [
-    requested,
-    ...(acceptLanguage ?? '').split(',').map((part) => part.split(';')[0]?.trim()),
+    ...(requested
+      ? [requested]
+      : (acceptLanguage ?? '').split(',').map((part) => part.split(';')[0]?.trim())),
+    FALLBACK_LOCALE,
     fallback,
   ].filter((value): value is string => !!value);
   for (const candidate of candidates) {
@@ -194,6 +200,19 @@ export class MarketplaceActivityService {
       reasonCode: code,
     });
     return marketplaceError(code);
+  }
+
+  /** Same person by sign-in identity (console or app session) or by email. */
+  private async isOwnCompletion(principal: AdminPrincipal, userId: string): Promise<boolean> {
+    if (principal.sub === `airs-user:${userId}`) return true;
+    const user = await this.repository.findCompletionUser(userId);
+    if (!user) return false;
+    const email = principal.email?.trim().toLowerCase();
+    return (
+      (user.issuer === principal.iss && user.subject === principal.sub) ||
+      user.panelSubject === principal.sub ||
+      (!!email && email === user.email)
+    );
   }
 
   private async authorizeProject(
@@ -420,6 +439,9 @@ export class MarketplaceActivityService {
     await this.authorizeProject(principal, 'completions:award', requestId, projectId);
     const completion = await this.repository.findCompletion(projectId, completionId);
     if (!completion) marketplaceError('COMPLETION_NOT_FOUND');
+    // Awarding writes Airs: nobody approves their own completion, another admin must.
+    if (await this.isOwnCompletion(principal, completion.userId))
+      await this.deny(principal, requestId, projectId, 'COMPLETION_SELF_APPROVAL_DENIED');
     return this.repository.awardCompletion(
       completionId,
       actorFromPrincipal(principal),

@@ -172,10 +172,14 @@ test('AuthExchangeService sends the legacy OIDC identity derived from the verifi
     );
 
     assert.equal(response.appUserId, 'legacy-app-user-42');
-    // The verified email also triggers the Airs report claim, which has its own tests.
+    // The verified email also triggers the Airs report claim and the client invitations.
     assert.deepEqual(
       rpcCalls.map((call) => call.url.split('/rpc/')[1]),
-      ['upsert_oidc_user_compat', 'marketplace_claim_airs_reports']
+      [
+        'upsert_oidc_user_compat',
+        'marketplace_claim_airs_reports',
+        'marketplace_accept_project_client_invitations',
+      ]
     );
     assert.equal(rpcCalls[0].url, 'https://example.supabase.co/rest/v1/rpc/upsert_oidc_user_compat');
     // The legacy (sub, iss) key comes from the verified Supabase identity, never the body.

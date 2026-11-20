@@ -1,0 +1,7 @@
+# never commit generated credentials or raw secret dumps
+*.secret
+*-password.txt
+newkey.tmp
+
+# audits contain the AWS account id + admin names — keep out of this public repo
+audits/

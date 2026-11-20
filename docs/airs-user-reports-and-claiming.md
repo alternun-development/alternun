@@ -17,14 +17,14 @@ What existed before this process, and what it builds on (as of 2026-10-26):
 
 ## Who takes part
 
-| Actor                              | How they get access                                                        | In this process                                                                                                              |
-| ---------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Alternun Super Admin               | Verified `@alternun.io` or `@alternun.co` account                          | Edits every project. Assigns Project Admins. Manages the project type and medal catalogs. Can submit reports on any project. |
-| Grant Approver                     | Allowlist: `edward@alternun.io`, `admin@alternun.co`, `sgomez@alternun.io` | Reviews reports over the auto-approval limits. Being on an Alternun domain is not enough.                                    |
-| Project Admin (`partner_operator`) | Assigned by a Super Admin                                                  | Submits reports for their project. Assigns Project Moderators.                                                               |
-| Project Moderator (`sub_admin`)    | Assigned by a Super Admin or the Project Admin                             | Submits reports for their project.                                                                                           |
-| Project account                    | One real Airs account per project, for example `ecoturismo@alternun.co`    | Receives the project reward.                                                                                                 |
-| Support                            | `support@alternun.io`, `support@alternun.co`                               | Gets in-app and email notice of every report.                                                                                |
+| Actor                              | How they get access                                                                   | In this process                                                                                                              |
+| ---------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Alternun Super Admin               | Verified `@alternun.io` or `@alternun.co` account                                     | Edits every project. Assigns Project Admins. Manages the project type and medal catalogs. Can submit reports on any project. |
+| Grant Approver                     | Allowlist: `edward@alternun.io`, `admin@alternun.co`, `security-ceo@alternun.example` | Reviews reports over the auto-approval limits. Being on an Alternun domain is not enough.                                    |
+| Project Admin (`partner_operator`) | Assigned by a Super Admin                                                             | Submits reports for their project. Assigns Project Moderators.                                                               |
+| Project Moderator (`sub_admin`)    | Assigned by a Super Admin or the Project Admin                                        | Submits reports for their project.                                                                                           |
+| Project account                    | One real Airs account per project, for example `ecoturismo@alternun.co`               | Receives the project reward.                                                                                                 |
+| Support                            | `support@alternun.io`, `support@alternun.co`                                          | Gets in-app and email notice of every report.                                                                                |
 
 A User Airs Report is separate from activity completions. Today, `sub_admin` and `moderator` cannot approve completions or award points. Submitting a report does not change that: a report credits nothing until it is approved (B.4 in the issue).
 
@@ -92,6 +92,8 @@ Each project has a commerce type, separate from its impact category (`project_ca
 
 Medals are custom per client and project, for example a golf tournament or a race, and are designed by the Alternun design team. Super Admins upload them to a project. A project's admins and moderators can only pick that project's medals.
 
+A project medal can point to an honor award (`honor_recipe_id`): when its report is released, the person also gets that award to claim in Legado. Sending an award with Airs from an ally's desk and redeeming a claim code both file a report this way. See [Honor awards](honor-awards.md).
+
 ## Notifications
 
 | Event                    | In-app                     | Email                                                                                                                         |
@@ -107,5 +109,5 @@ Email delivery is tracked apart from the report state. A failed email never bloc
 ## Still open
 
 - Decided: domain accounts (`@alternun.io` and `@alternun.co`) are `internal_admin`, and only when the address is proven by a source sign-in such as Google. `platform_owner` stays manual.
-- The approvers `edward@alternun.io`, `admin@alternun.co` and `sgomez@alternun.io` are configured on testnet; production has not been checked yet (`airs_report_approvers`).
+- The approvers `edward@alternun.io`, `admin@alternun.co` and `security-ceo@alternun.example` are configured on testnet; production has not been checked yet (`airs_report_approvers`).
 - **Deferred:** limits per submitter or per project. Today's limits are per recipient only. Revisit together with monitoring for many small grants spread across many recipients.

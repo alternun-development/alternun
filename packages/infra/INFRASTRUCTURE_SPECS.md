@@ -237,7 +237,7 @@ Default specs:
 - RDS instance type: `db.t4g.micro`
 - RDS storage: `20 GiB`
 - RDS backup retention: `7 days`
-- default email provider: `tlao` (with `postmark` available as the alternate provider)
+- email provider: `tlao` only (Postmark is retired; see `docs/email-delivery.md`)
 - default Authentik image tag: `2026.2`
 
 Defined in:

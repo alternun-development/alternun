@@ -25,6 +25,7 @@ export function mapProjectMedal(row: Row): ProjectMedalRecord {
     imageUrl: String(row.image_url ?? ''),
     isActive: row.is_active !== false,
     sortOrder: Number(row.sort_order ?? 0),
+    honorRecipeId: typeof row.honor_recipe_id === 'string' ? row.honor_recipe_id : null,
     createdAt: String(row.created_at ?? ''),
   };
 }
@@ -44,6 +45,18 @@ export class MedalRepository {
     const { data, error } = await query;
     if (error) failDatabase(error);
     return ((data ?? []) as Row[]).map(mapProjectMedal);
+  }
+
+  /** Audience of an honor award recipe, or null when it does not exist. */
+  async honorRecipeAudience(recipeId: string): Promise<string | null> {
+    const { data, error } = await this.client
+      .from('honor_award_recipes')
+      .select('audience')
+      .eq('id', recipeId)
+      .maybeSingle();
+    if (error) failDatabase(error);
+    const audience = (data as Row | null)?.audience;
+    return typeof audience === 'string' ? audience : null;
   }
 
   async find(projectId: string, medalId: string): Promise<ProjectMedalRecord | null> {
@@ -70,6 +83,7 @@ export class MedalRepository {
         description: input.description ?? null,
         image_url: input.imageUrl,
         sort_order: input.sortOrder ?? 100,
+        honor_recipe_id: input.honorRecipeId ?? null,
         created_by_issuer: actor.issuer,
         created_by_subject: actor.subject,
       })
@@ -90,6 +104,7 @@ export class MedalRepository {
     if (input.imageUrl !== undefined) patch.image_url = input.imageUrl;
     if (input.isActive !== undefined) patch.is_active = input.isActive;
     if (input.sortOrder !== undefined) patch.sort_order = input.sortOrder;
+    if (input.honorRecipeId !== undefined) patch.honor_recipe_id = input.honorRecipeId;
     const { data, error } = await this.client
       .from('project_medals')
       .update(patch)

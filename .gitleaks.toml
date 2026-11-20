@@ -1,0 +1,42 @@
+# Gitleaks config for alternun. Extends the default rules and allowlists the known,
+# non-sensitive matches (examples, placeholders and Supabase *publishable*/anon keys
+# and Discord *public* keys, which are designed to be shipped client-side).
+#
+# The working-tree scan still blocks on anything new. This allowlist keeps the
+# informational history scan from flagging pre-existing, non-secret values.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known non-sensitive matches (examples, placeholders, publishable/public keys)"
+
+# Obvious example/placeholder secrets committed in docs and tests.
+regexes = [
+  '''REDACTED_EXAMPLE_KEY''',
+  '''0123456789abcdef''',
+  # Supabase publishable/anon keys and the EXPO_PUBLIC client key are public by design.
+  '''(?i)publishable_''',
+  '''EXPO_PUBLIC_SUPABASE_KEY''',
+  '''SUPABASE_KEY_(PROD|DEV)_SUFFIX_PART''',
+  # Discord *public* key = signature-verification key, not an auth secret.
+  '''DISCORD_PUBLIC_KEY''',
+]
+
+# Non-versioned build output, caches and local env files (absent in CI checkout).
+# Source files with known example/publishable values are covered by `regexes` above,
+# so a NEW real secret added to them is still caught.
+paths = [
+  '''\.next/''',
+  '''(^|/)dist/''',
+  '''(^|/)build/''',
+  '''\.sst/''',
+  '''\.local\.''',
+  '''(^|/)out/''',
+  '''\.env\.''',
+  '''(^|/)\.env''',
+  '''\.pnpm-store/''',
+  '''(^|/)\.env$''',
+  '''(^|/)node_modules/''',
+  '''\.codebase-memory/''',
+]

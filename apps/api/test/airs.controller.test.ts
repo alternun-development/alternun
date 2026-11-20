@@ -61,7 +61,9 @@ test('AirsController.activity forwards query scope and source kind to the servic
       2,
       11,
       'term',
-      'allied_commerce'
+      'allied_commerce',
+      'airs',
+      'asc'
     );
 
     assert.equal(calls[0].scope, 'global');
@@ -69,6 +71,8 @@ test('AirsController.activity forwards query scope and source kind to the servic
     assert.equal(calls[0].limit, 11);
     assert.equal(calls[0].search, 'term');
     assert.equal(calls[0].sourceKind, 'allied_commerce');
+    assert.equal(calls[0].sort, 'airs');
+    assert.equal(calls[0].direction, 'asc');
     assert.equal(result.totalPages, 1);
   } finally {
     process.env = originalEnv;
@@ -118,6 +122,9 @@ test('AirsController.activity converts unknown source kind to null and normalize
 
     assert.equal(calls[0].scope, 'personal');
     assert.equal(calls[0].sourceKind, null);
+    // Unknown or missing sort falls back to the newest first.
+    assert.equal(calls[0].sort, 'date');
+    assert.equal(calls[0].direction, 'desc');
     assert.equal(result.totalCount, 0);
   } finally {
     process.env = originalEnv;

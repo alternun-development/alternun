@@ -12,6 +12,7 @@ const EXPECTED_ADMIN_ROLES = [
   'partner_operator',
   'sub_admin',
   'partner_readonly',
+  'project_moderator',
 ];
 const AUTHENTIK_JWKS_URL = 'https://login.alternun.co/application/o/alternun-admin/jwks/';
 const AUTHENTIK_ISSUER = 'https://login.alternun.co/application/o/alternun-admin/';
@@ -110,6 +111,8 @@ function signAuthentikAdminToken({
   expiresInSeconds = 60 * 15,
   expiresAt,
   includeTokenUse = true,
+  notBefore,
+  includeNotBefore = true,
 } = {}) {
   const issuedAt = Math.floor(Date.now() / 1000);
   const payload = {
@@ -119,7 +122,7 @@ function signAuthentikAdminToken({
     email: 'partner@example.com',
     email_verified: true,
     iat: issuedAt,
-    nbf: issuedAt,
+    ...(includeNotBefore ? { nbf: notBefore ?? issuedAt } : {}),
     exp: expiresAt ?? issuedAt + expiresInSeconds,
     roles,
     alternun_roles: roles,
@@ -250,7 +253,11 @@ test('marketplace permission matrix preserves role-specific enterprise, project,
       'partner_operator',
       'sub_admin',
     ].includes(role);
-    assert.equal(can(role, 'participants:read'), canManageParticipants);
+    // Project moderators see a project's clients (read-only) in the app.
+    assert.equal(
+      can(role, 'participants:read'),
+      canManageParticipants || role === 'project_moderator'
+    );
     assert.equal(can(role, 'participants:manage'), canManageParticipants);
     assert.equal(can(role, 'airs_reports:submit'), canManageParticipants);
   }
@@ -443,6 +450,51 @@ test('resolveRuntimeOptions accepts RS256 Authentik tokens through the configure
     email: 'partner@example.com',
     emailVerified: true,
   });
+});
+
+function useAuthentikJwks() {
+  process.env.ADMIN_AUTH_ISSUER = AUTHENTIK_ISSUER;
+  process.env.ADMIN_AUTH_JWKS_URL = AUTHENTIK_JWKS_URL;
+  global.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        keys: [{ ...rsaJwk, alg: 'RS256', kid: 'alternun-admin-rsa', use: 'sig' }],
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } }
+    );
+}
+
+// Authentik access tokens carry iss, sub, aud (the client id), exp and iat, but never nbf.
+test('an Authentik access token without nbf is accepted', async () => {
+  const adminAuth = loadAdminAuthContract();
+  useAuthentikJwks();
+  process.env.ADMIN_AUTH_AUDIENCE = 'alternun-admin';
+
+  const principal = await adminAuth.authenticateAdminPrincipal(
+    `Bearer ${signAuthentikAdminToken({
+      audience: 'alternun-admin',
+      includeNotBefore: false,
+      includeTokenUse: false,
+    })}`,
+    adminAuth.resolveAdminRuntimeOptions()
+  );
+
+  assert.equal(principal?.sub, 'partner-user-1');
+  assert.deepEqual(principal?.roles, ['partner_operator']);
+});
+
+test('an Authentik token whose nbf is in the future is rejected with 401', async () => {
+  const adminAuth = loadAdminAuthContract();
+  useAuthentikJwks();
+  process.env.ADMIN_AUTH_AUDIENCE = 'alternun-app';
+
+  await assert.rejects(
+    adminAuth.authenticateAdminPrincipal(
+      `Bearer ${signAuthentikAdminToken({ notBefore: Math.floor(Date.now() / 1000) + 600 })}`,
+      adminAuth.resolveAdminRuntimeOptions()
+    ),
+    (error) => error?.getStatus?.() === 401
+  );
 });
 
 test('an Authentik token that expires exactly now is rejected with 401', async () => {
@@ -642,4 +694,29 @@ test('the API example environment exposes a dedicated admin JWKS URL', () => {
   assert.match(environmentExample, /^ADMIN_AUTH_ISSUER=/m);
   assert.match(environmentExample, /^ADMIN_AUTH_AUDIENCE=/m);
   assert.match(environmentExample, /^ADMIN_AUTH_JWKS_URL=/m);
+});
+
+test('a project moderator moderates only within its memberships and never globally', () => {
+  const adminAuth = loadAdminAuthContract();
+  const principal = {
+    iss: 'issuer',
+    aud: 'admin',
+    sub: 'project-moderator',
+    roles: ['project_moderator'],
+    organizationIds: [],
+  };
+  for (const permission of ['comments:moderate', 'project_media:moderate', 'projects:read']) {
+    assert.equal(adminAuth.hasPermission(principal, permission), true, permission);
+    // Scope must come from a membership: the role itself grants nothing globally.
+    assert.equal(adminAuth.grantsGlobally(principal, permission), false, permission);
+  }
+  for (const permission of [
+    'projects:update',
+    'project_media:write',
+    'project_memberships:assign',
+    'completions:award',
+    'enterprises:update',
+  ]) {
+    assert.equal(adminAuth.hasPermission(principal, permission), false, permission);
+  }
 });

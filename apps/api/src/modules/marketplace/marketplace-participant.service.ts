@@ -44,7 +44,8 @@ export class MarketplaceParticipantService {
     return marketplaceError(code);
   }
 
-  private async authorizeProject(
+  /** Permission plus project scope; also used by the in-app Clients tab. */
+  async authorizeProject(
     principal: AdminPrincipal,
     permission: AdminPermission,
     requestId: string,

@@ -1,4 +1,8 @@
-export type AuthentikGroupRole = 'partner_operator' | 'sub_admin' | 'partner_readonly';
+export type AuthentikGroupRole =
+  | 'partner_operator'
+  | 'sub_admin'
+  | 'partner_readonly'
+  | 'project_moderator';
 
 /**
  * added / removed: Authentik now matches the membership. skipped: nothing was done (the sync is

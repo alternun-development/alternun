@@ -12,9 +12,13 @@ void test('backend API Lambda receives AIRS mail configuration and can read its 
   assert.match(source, /SUPABASE_ANON_KEY/);
   assert.match(source, /AUTHENTIK_SMTP_SECRET_ARN/);
   assert.match(source, /AIRS_SMTP_SECRET_ARN/);
-  assert.match(source, /ADMIN_AUTH_ISSUER: authIssuer/);
-  assert.match(source, /ADMIN_AUTH_AUDIENCE: args\.settings\.auth\.audience/);
-  assert.match(source, /ADMIN_AUTH_JWKS_URL: authJwksUrl/);
+  // Admin tokens come from the admin panel's own Authentik provider, not the app's.
+  assert.match(source, /ADMIN_AUTH_ISSUER: adminAuthIssuer/);
+  assert.match(source, /ADMIN_AUTH_AUDIENCE: args\.settings\.adminAuth\.audience/);
+  assert.match(source, /ADMIN_AUTH_JWKS_URL: adminAuthJwksUrl/);
+  assert.match(source, /const ADMIN_AUTH_CLIENT_ID = 'alternun-admin'/);
+  assert.match(source, /\/application\/o\/\$\{ADMIN_AUTH_CLIENT_ID\}\//);
+  assert.doesNotMatch(source, /ADMIN_AUTH_ISSUER: authIssuer/);
   assert.match(
     source,
     /const authentikWebhookSecretEnvironmentVariable = \['AUTHENTIK', 'WEBHOOK', 'SECRET'\]\.join\('_'\)/

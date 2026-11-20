@@ -129,3 +129,64 @@ test('completion creation requires an active project participant', async () => {
   );
   assert.equal(creates, 0);
 });
+
+test('nobody awards their own completion; another admin can', async () => {
+  const awarded: string[] = [];
+  const audits: Array<{ reasonCode?: string }> = [];
+  const activityRepository = {
+    findCompletion: async (_projectId: string, id: string) => ({
+      id,
+      projectId: 'p1',
+      userId: 'user-1',
+      status: 'pending',
+    }),
+    findCompletionUser: async () => ({
+      email: 'ada@alternun.example',
+      issuer: 'app-issuer',
+      subject: 'app-sub',
+      panelSubject: 'panel-uuid',
+    }),
+    awardCompletion: async (id: string) => {
+      awarded.push(id);
+      return { completionId: id, ledgerEntryId: 'l1', airsDelta: 40, idempotent: false };
+    },
+  };
+  const adminRepository = {
+    findProject: async () => ({ id: 'p1', enterpriseId: 'e1' }),
+    audit: async (entry: { reasonCode?: string }) => void audits.push(entry),
+  };
+  const service = new MarketplaceActivityService(
+    activityRepository as never,
+    adminRepository as never,
+    {} as never,
+    {} as never
+  );
+  const admin = (over: Record<string, unknown>) => ({
+    iss: 'console-issuer',
+    aud: 'admin',
+    sub: 'someone-else',
+    roles: ['platform_owner'],
+    organizationIds: ['*'],
+    ...over,
+  });
+  const award = (principal: Record<string, unknown>, id: string) =>
+    service.awardCompletion(principal as never, 'req', 'p1', id, {} as never);
+
+  // The app session, the console identity, the same account and the same email are all "self".
+  for (const self of [
+    admin({ sub: 'airs-user:user-1' }),
+    admin({ sub: 'panel-uuid' }),
+    admin({ iss: 'app-issuer', sub: 'app-sub' }),
+    admin({ email: ' ADA@alternun.example ' }),
+  ]) {
+    await assert.rejects(
+      award(self, 'c-self'),
+      expectApiError('COMPLETION_SELF_APPROVAL_DENIED', 403)
+    );
+  }
+  assert.equal(awarded.length, 0);
+  assert.ok(audits.every((entry) => entry.reasonCode === 'COMPLETION_SELF_APPROVAL_DENIED'));
+
+  await award(admin({ email: 'other@alternun.example' }), 'c-ok');
+  assert.deepEqual(awarded, ['c-ok']);
+});

@@ -1,7 +1,10 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { claimAirsReportsViaSupabase } = require('../src/modules/auth-exchange/airs-report-claim.ts');
+const {
+  claimAirsReportsViaSupabase,
+  claimWaitingAirsReports,
+} = require('../src/modules/auth-exchange/airs-report-claim.ts');
 const { AuthExchangeService } = require('../src/modules/auth-exchange/auth-exchange.service.ts');
 
 const ENV = {
@@ -72,7 +75,9 @@ test('claim sends the normalized email and a server-side user id with the servic
 });
 
 test('claim generates a distinct request id when none is given', async (t) => {
-  const fetchMock = mockFetch(t, async () => Response.json({ ok: true, claimed: 0, reportIds: [] }));
+  const fetchMock = mockFetch(t, async () =>
+    Response.json({ ok: true, claimed: 0, reportIds: [] })
+  );
 
   await claimAirsReportsViaSupabase(
     { appUserId: 'user-1', email: 'ada@example.test', emailConfirmed: true },
@@ -238,4 +243,58 @@ test('sign-in succeeds even when the claim request fails', async (t) => {
   } finally {
     process.env = originalEnv;
   }
+});
+
+function recordingLogger() {
+  const lines = [];
+  return {
+    lines,
+    log: (message) => lines.push(['log', message]),
+    warn: (message) => lines.push(['warn', message]),
+  };
+}
+
+test('claimWaitingAirsReports passes the session user and stored email as confirmed', async () => {
+  const logger = recordingLogger();
+  const seen = [];
+  await claimWaitingAirsReports(
+    { userId: 'user-1', email: 'ada@example.test' },
+    logger,
+    async (input) => {
+      seen.push(input);
+      return { skipped: false, ok: true, claimed: 1, reportIds: ['r1'], reasonCode: null };
+    }
+  );
+  assert.deepEqual(seen, [
+    { appUserId: 'user-1', email: 'ada@example.test', emailConfirmed: true },
+  ]);
+  assert.equal(logger.lines[0][0], 'log');
+});
+
+test('claimWaitingAirsReports logs a denial and never throws', async () => {
+  const logger = recordingLogger();
+  await claimWaitingAirsReports(
+    { userId: 'user-1', email: 'ada@example.test' },
+    logger,
+    async () => ({
+      skipped: false,
+      ok: false,
+      claimed: 0,
+      reportIds: [],
+      reasonCode: 'AIRS_REPORT_CLAIM_EMAIL_MISMATCH',
+    })
+  );
+  await claimWaitingAirsReports(
+    { userId: 'user-1', email: 'ada@example.test' },
+    logger,
+    async () => {
+      throw new Error('boom');
+    }
+  );
+  assert.deepEqual(
+    logger.lines.map(([level]) => level),
+    ['warn', 'warn']
+  );
+  assert.match(logger.lines[0][1], /EMAIL_MISMATCH/);
+  assert.match(logger.lines[1][1], /boom/);
 });

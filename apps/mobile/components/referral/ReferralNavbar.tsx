@@ -124,7 +124,7 @@ export const ReferralNavbar: React.FC<ReferralNavbarProps> = ({
                     <Pressable
                       onPress={() => {
                         setShowDropdown(false);
-                        setTimeout(() => router.push('/mi-perfil'), 0);
+                        setTimeout(() => router.push('/profile'), 0);
                       }}
                       style={styles.menuItem}
                     >

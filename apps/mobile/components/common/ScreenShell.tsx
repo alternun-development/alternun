@@ -135,12 +135,12 @@ export default function ScreenShell({
   const handleNavigate = (key: string): void => {
     if (key === 'dashboard') {
       router.replace('/');
-    } else if (key === 'explorar') {
-      router.push('/explorar');
-    } else if (key === 'portafolio') {
-      router.push('/portafolio');
-    } else if (key === 'mi-perfil') {
-      router.push('/mi-perfil');
+    } else if (key === 'explore') {
+      router.push('/explore');
+    } else if (key === 'portfolio') {
+      router.push('/portfolio');
+    } else if (key === 'profile') {
+      router.push('/profile');
     }
   };
 
@@ -207,11 +207,11 @@ export default function ScreenShell({
               userEmail={user?.email}
               activeSection={activeSection}
               onSignIn={() => router.push({ pathname: '/auth', params: { next: '/' } })}
-              onConnectWallet={() => router.push('/mi-perfil')}
+              onConnectWallet={() => router.push('/profile')}
               onToggleTheme={toggleThemeMode}
               onCycleLanguage={cycleLanguage}
               onCycleMotionLevel={cycleMotionLevel}
-              onOpenProfile={() => router.push('/mi-perfil')}
+              onOpenProfile={() => router.push('/profile')}
               onOpenSettings={() => router.push('/settings')}
               onSignOut={() => {
                 void signOutUser();

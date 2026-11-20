@@ -6,7 +6,7 @@ describe('mobile build script cleanup', () => {
   it('clears previous Expo export artifacts before generating a new web bundle', () => {
     const buildScript = fs.readFileSync(path.resolve(__dirname, '..', 'build.sh'), 'utf8');
     const devSupabaseKey = ['sb', 'publishable', 'Z8egrB_x2ya7eNQCN8qcOw', 'Sxhmmt2O'].join('_');
-    const prodSupabaseKey = ['sb', 'publishable', 'hPlMCyy51TS4c67V7WkkIw', 'p1Mv2Nze'].join('_');
+    const prodSupabaseKey = ['sb', 'publishable', 'REDACTED_SUPABASE_KEY_SUFFIX', 'p1Mv2Nze'].join('_');
 
     expect(buildScript).toContain('clear_previous_export_artifacts()');
     expect(buildScript).toContain('resolve_supabase_key_stage_suffix()');

@@ -7,7 +7,6 @@ import { getLocaleLabel } from '@alternun/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Animated,
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -40,6 +39,8 @@ import {
   type LucideProps,
 } from 'lucide-react-native';
 import AirsBrandMark from '../branding/AirsBrandMark';
+import UserAvatar from '../avatar/UserAvatar';
+import { useUserAvatarState } from '../../utils/userAvatar';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { AppLanguage, MotionLevel, ThemeMode } from '../settings/AppPreferencesProvider';
 import NotificationDropdown, { type NotificationItem } from './NotificationDropdown';
@@ -62,6 +63,41 @@ const LogOutIcon = LogOut as React.FC<LucideProps>;
 const LanguagesIcon = Languages as React.FC<LucideProps>;
 const LogInIcon = LogIn as React.FC<LucideProps>;
 const BellIcon = Bell as React.FC<LucideProps>;
+
+/**
+ * One scale per breakpoint: the profile pill is as tall as the round Airs mark of the logo
+ * (the logo SVG is 526.73 x 183.4), and its round controls share one diameter.
+ */
+const NAV_SCALE = {
+  desktop: {
+    logoWidth: 180,
+    logoHeight: 63,
+    navPadding: 16,
+    pill: 62,
+    circle: 50,
+    icon: 20,
+    chevron: 22,
+    initials: 17,
+    name: 15,
+    nameLine: 18,
+    score: 12,
+    scoreLine: 15,
+  },
+  mobile: {
+    logoWidth: 103,
+    logoHeight: 36,
+    navPadding: 8,
+    pill: 36,
+    circle: 28,
+    icon: 14,
+    chevron: 16,
+    initials: 12,
+    name: 12,
+    nameLine: 14,
+    score: 9.5,
+    scoreLine: 12,
+  },
+} as const;
 const ChevronUpIcon = ChevronUp as React.FC<LucideProps>;
 const MoonIcon = Moon as React.FC<LucideProps>;
 const SunIcon = Sun as React.FC<LucideProps>;
@@ -149,9 +185,18 @@ export default function TopNav({
 
   const brandMarkFill = isDark ? '#1ee6b5' : '#0b5a5f';
   const brandMarkCutout = isDark ? '#03292f' : '#d9fff4';
-  const isDesktop = width >= 720;
-  // On phones the signed-in pill takes the room the wordmark leaves, within sane bounds.
-  const mobilePillWidth = Math.min(300, Math.max(200, width - 122));
+  const scale = isMobile ? NAV_SCALE.mobile : NAV_SCALE.desktop;
+  // Room left between the circles and the pill edge (the pill has a 1px border).
+  const pillInset = (scale.pill - scale.circle) / 2 - 1;
+  const circleSize = { width: scale.circle, height: scale.circle, borderRadius: scale.circle / 2 };
+  const skeletonTone = isDark ? '#39464f' : '#c8d2d9';
+  // On phones the signed-in pill fits its content, up to the room the wordmark leaves.
+  const mobilePillMaxWidth = Math.min(
+    300,
+    Math.max(190, width - (scale.logoWidth + scale.navPadding * 2 + 10))
+  );
+  // A short name and score: the skeleton has the size most loaded pills end up with.
+  const mobileSkeletonWidth = 190;
   const wordmarkSource = isDark ? AIRS_LOGO_DARK : AIRS_LOGO_LIGHT;
   const ThemeIconComp = isDark ? SunIcon : MoonIcon;
   const themeLabel = isDark ? t('labels.dark') : t('labels.light');
@@ -239,6 +284,9 @@ export default function TopNav({
   const profileName = userDisplayName?.trim() ?? 'Account';
   const profileFirstName = useMemo(() => getFirstName(profileName), [profileName]);
   const initials = useMemo(() => getInitials(profileName), [profileName]);
+  // The chosen avatar or the social photo replaces the initials; without either, initials stay.
+  const avatarState = useUserAvatarState();
+  const showAvatarArt = Boolean(avatarState.choice.kind ?? avatarState.socialUrl);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
@@ -300,12 +348,6 @@ export default function TopNav({
 
   const handleNavSectionPress = (section: NavSection): void => {
     setMenuVisible(false);
-
-    if (section.comingSoon) {
-      Alert.alert('Coming soon', `${section.label} will be available soon.`);
-      return;
-    }
-
     onNavigate?.(section.key);
   };
 
@@ -328,7 +370,11 @@ export default function TopNav({
             ]}
           >
             {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
-            <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>{initials}</Text>
+            {showAvatarArt ? (
+              <UserAvatar size={30} initials={initials} />
+            ) : (
+              <Text style={[styles.dropAvatarText, { color: p.avatarText }]}>{initials}</Text>
+            )}
           </View>
           <View style={styles.dropHeaderInfo}>
             <Text style={[styles.dropHeaderName, { color: p.dropText }]} numberOfLines={1}>
@@ -391,7 +437,6 @@ export default function TopNav({
         <View style={[styles.navSectionGroup, { borderBottomColor: p.dropDivider }]}>
           {NAV_SECTIONS.map((section) => {
             const isActive = activeSection === section.key;
-            const isComingSoon = Boolean(section.comingSoon);
             const IconComp = section.icon;
             return (
               <TouchableOpacity
@@ -400,45 +445,27 @@ export default function TopNav({
                   styles.navItem,
                   isExtraSmall && styles.navItemExtraSmall,
                   {
-                    backgroundColor: isActive
-                      ? p.navActive
-                      : isComingSoon
-                      ? isDark
-                        ? 'rgba(255,255,255,0.03)'
-                        : 'rgba(15,23,42,0.03)'
-                      : 'transparent',
-                    borderWidth: isActive || isComingSoon ? 1 : 0,
-                    borderColor: isActive
-                      ? p.navActiveBorder
-                      : isComingSoon
-                      ? p.dropDivider
-                      : 'transparent',
-                    opacity: isComingSoon ? 0.74 : 1,
+                    backgroundColor: isActive ? p.navActive : 'transparent',
+                    borderWidth: isActive ? 1 : 0,
+                    borderColor: isActive ? p.navActiveBorder : 'transparent',
                   },
                 ]}
                 onPress={() => handleNavSectionPress(section)}
                 activeOpacity={0.8}
               >
-                <IconComp
-                  size={15}
-                  color={isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.iconIdle}
-                />
+                <IconComp size={15} color={isActive ? p.navActiveText : p.iconIdle} />
                 <Text
                   style={[
                     styles.navItemText,
                     {
-                      color: isActive ? p.navActiveText : isComingSoon ? p.dropSub : p.dropText,
+                      color: isActive ? p.navActiveText : p.dropText,
                     },
                     isActive && styles.navItemTextActive,
                   ]}
                 >
                   {section.label}
                 </Text>
-                {isComingSoon ? (
-                  <View style={[styles.comingSoonPill, { borderColor: p.dropDivider }]}>
-                    <Text style={[styles.comingSoonText, { color: p.dropSub }]}>Coming soon</Text>
-                  </View>
-                ) : isActive ? (
+                {isActive ? (
                   <View style={[styles.activeIndicator, { backgroundColor: p.accent }]} />
                 ) : null}
               </TouchableOpacity>
@@ -594,13 +621,7 @@ export default function TopNav({
               {/* Wordmark row: "Airs" SVG + mark */}
               <ExpoImage
                 source={wordmarkSource}
-                style={
-                  isMobile
-                    ? styles.wordmarkMobile
-                    : isDesktop
-                    ? styles.wordmarkDesktop
-                    : styles.wordmark
-                }
+                style={{ width: scale.logoWidth, height: scale.logoHeight }}
                 contentFit='contain'
               />
             </View>
@@ -619,41 +640,39 @@ export default function TopNav({
                 styles.profilePill,
                 isMobile && styles.profilePillMobile,
                 {
-                  width: isExtraSmall ? 40 : isMobile ? mobilePillWidth : 240,
+                  width: isExtraSmall ? scale.pill : isMobile ? mobileSkeletonWidth : 300,
                   maxWidth: '100%',
-                  height: isExtraSmall ? 40 : isMobile ? 36 : 40,
+                  height: scale.pill,
+                  paddingLeft: pillInset,
+                  paddingRight: pillInset,
                   backgroundColor: isDark ? '#202a32' : '#e4e9ec',
                   boxShadow: 'none',
                 },
               ]}
             >
-              <View
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 15,
-                  backgroundColor: isDark ? '#39464f' : '#c8d2d9',
-                }}
-              />
+              {/* Same layout as the loaded pill: avatar, name and score, then the two controls. */}
+              <View style={[circleSize, { backgroundColor: skeletonTone }]} />
               {!isExtraSmall && (
-                <View style={{ gap: 6, flex: 1, paddingHorizontal: 6 }}>
-                  <View
-                    style={{
-                      width: '70%',
-                      height: 10,
-                      borderRadius: 5,
-                      backgroundColor: isDark ? '#39464f' : '#c8d2d9',
-                    }}
-                  />
-                  <View
-                    style={{
-                      width: '90%',
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: isDark ? '#39464f' : '#c8d2d9',
-                    }}
-                  />
-                </View>
+                <>
+                  <View style={styles.skeletonText}>
+                    <View
+                      style={[
+                        styles.skeletonLine,
+                        { width: '72%', height: Math.round(scale.name * 0.75) },
+                        { backgroundColor: skeletonTone },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.skeletonLine,
+                        { width: '52%', height: Math.round(scale.score * 0.75) },
+                        { backgroundColor: skeletonTone },
+                      ]}
+                    />
+                  </View>
+                  <View style={[circleSize, { backgroundColor: skeletonTone }]} />
+                  <View style={[circleSize, { backgroundColor: skeletonTone }]} />
+                </>
               )}
             </View>
           )}
@@ -662,6 +681,7 @@ export default function TopNav({
             <TouchableOpacity
               style={[
                 styles.hamburgerButton,
+                { width: scale.pill, height: scale.pill, borderRadius: scale.pill / 2 },
                 { backgroundColor: p.pillBg, borderColor: p.pillBorder },
               ]}
               onPress={toggleMenu}
@@ -688,10 +708,10 @@ export default function TopNav({
                   styles.profilePill,
                   signedIn &&
                     (isMobile
-                      ? [styles.signedInPillMobile, { width: mobilePillWidth }]
-                      : { minWidth: 240 }),
+                      ? [styles.signedInPillMobile, { maxWidth: mobilePillMaxWidth }]
+                      : { minWidth: 300 }),
                   isMobile && styles.profilePillMobile,
-                  isExtraSmall && styles.profilePillExtraSmall,
+                  { height: scale.pill, paddingLeft: pillInset, paddingRight: pillInset },
                   { backgroundColor: p.pillBg, borderColor: p.pillBorder },
                   tierColor && {
                     borderTopColor: `${tierColor}80`,
@@ -720,20 +740,22 @@ export default function TopNav({
                   accessibilityRole='link'
                   accessibilityLabel={t('labels.profile', undefined, 'Profile')}
                 >
-                  <View
-                    style={[
-                      styles.avatar,
-                      isMobile && styles.avatarMobile,
-                      isExtraSmall && styles.avatarExtraSmall,
-                      { backgroundColor: p.avatarBg },
-                    ]}
-                  >
+                  <View style={[styles.avatar, circleSize, { backgroundColor: p.avatarBg }]}>
                     {tierColor && <TierAvatarBorder color={tierColor} motionLevel={motionLevel} />}
-                    {signedIn ? (
-                      <Text style={[styles.avatarText, { color: p.avatarText }]}>{initials}</Text>
+                    {signedIn && showAvatarArt ? (
+                      <UserAvatar size={scale.circle - 6} initials={initials} />
+                    ) : signedIn ? (
+                      <Text
+                        style={[
+                          styles.avatarText,
+                          { fontSize: scale.initials, color: p.avatarText },
+                        ]}
+                      >
+                        {initials}
+                      </Text>
                     ) : (
                       <AirsBrandMark
-                        size={13}
+                        size={Math.round(scale.circle * 0.45)}
                         fillColor={brandMarkFill}
                         cutoutColor={brandMarkCutout}
                       />
@@ -746,8 +768,7 @@ export default function TopNav({
                       <Text
                         style={[
                           styles.pillName,
-                          isMobile && styles.pillNameMobile,
-                          { color: p.pillText },
+                          { fontSize: scale.name, lineHeight: scale.nameLine, color: p.pillText },
                         ]}
                         numberOfLines={1}
                       >
@@ -757,8 +778,11 @@ export default function TopNav({
                         <Text
                           style={[
                             styles.pillScore,
-                            isMobile && styles.pillScoreMobile,
-                            { color: p.scoreText },
+                            {
+                              fontSize: scale.score,
+                              lineHeight: scale.scoreLine,
+                              color: p.scoreText,
+                            },
                           ]}
                           numberOfLines={1}
                         >
@@ -774,9 +798,10 @@ export default function TopNav({
 
                 {/* Notification badge */}
                 <TouchableOpacity
+                  testID='account-badge-bell'
                   style={[
                     styles.notifBadge,
-                    isMobile && styles.notifBadgeMobile,
+                    circleSize,
                     { backgroundColor: `${p.pillText}1A`, borderColor: `${p.pillText}26` },
                   ]}
                   onPress={(e) => {
@@ -785,7 +810,7 @@ export default function TopNav({
                   }}
                   hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 >
-                  <BellIcon size={11} color={p.pillText} />
+                  <BellIcon size={scale.icon} color={p.pillText} />
                   {unreadCount > 0 && (
                     <Animated.View
                       style={[
@@ -813,7 +838,7 @@ export default function TopNav({
                     testID='account-badge-chevron'
                     style={[
                       styles.notifBadge,
-                      isMobile && styles.notifBadgeMobile,
+                      circleSize,
                       {
                         backgroundColor: `${p.pillText}${menuVisible ? '2E' : '1A'}`,
                         borderColor: `${p.pillText}26`,
@@ -821,9 +846,9 @@ export default function TopNav({
                     ]}
                   >
                     {menuVisible ? (
-                      <ChevronUpIcon size={16} strokeWidth={2.5} color={p.pillText} />
+                      <ChevronUpIcon size={scale.chevron} strokeWidth={2.5} color={p.pillText} />
                     ) : (
-                      <ChevronDownIcon size={16} strokeWidth={2.5} color={p.pillText} />
+                      <ChevronDownIcon size={scale.chevron} strokeWidth={2.5} color={p.pillText} />
                     )}
                   </View>
                 )}
@@ -834,6 +859,7 @@ export default function TopNav({
                 <Animated.View
                   style={[
                     styles.dropdown,
+                    { top: scale.pill + 8 },
                     { backgroundColor: p.dropBg, borderColor: p.dropBorder },
                     {
                       opacity: dropdownAnimated,
@@ -888,6 +914,41 @@ export default function TopNav({
                   {menuItems}
                 </Animated.View>
               )}
+
+              {/* ── Notification dropdown: same anchor as the menu, under the pill ── */}
+              <Animated.View
+                testID='notification-dropdown-anchor'
+                pointerEvents={notifVisible ? 'auto' : 'none'}
+                style={[
+                  styles.notifDropdownWrapper,
+                  { top: scale.pill + 8, width: Math.min(300, width - scale.navPadding * 2 - 8) },
+                  {
+                    opacity: notifAnimated,
+                    transform: [
+                      {
+                        scale: notifAnimated.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.94, 1],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                {notifVisible && (
+                  <NotificationDropdown
+                    notifications={notifications}
+                    isDark={isDark}
+                    onMarkAllRead={() => onMarkAllNotificationsRead?.()}
+                    onDismiss={(id) => onDismissNotification?.(id)}
+                    onClose={() => setNotifVisible(false)}
+                    onNavigateToCenter={() => {
+                      setNotifVisible(false);
+                      onNavigateToNotifications?.();
+                    }}
+                  />
+                )}
+              </Animated.View>
             </View>
           )}
         </View>
@@ -909,7 +970,7 @@ export default function TopNav({
             <View style={[styles.fullMenuHeader, { borderBottomColor: p.dropDivider }]}>
               <ExpoImage
                 source={wordmarkSource}
-                style={styles.wordmarkMobile}
+                style={{ width: NAV_SCALE.mobile.logoWidth, height: NAV_SCALE.mobile.logoHeight }}
                 contentFit='contain'
               />
               <TouchableOpacity
@@ -918,6 +979,11 @@ export default function TopNav({
                 accessibilityLabel={t('common.close', undefined, 'Close menu')}
                 style={[
                   styles.hamburgerButton,
+                  {
+                    width: NAV_SCALE.mobile.pill,
+                    height: NAV_SCALE.mobile.pill,
+                    borderRadius: NAV_SCALE.mobile.pill / 2,
+                  },
                   { backgroundColor: p.pillBg, borderColor: p.pillBorder },
                 ]}
                 onPress={() => setMenuVisible(false)}
@@ -926,7 +992,10 @@ export default function TopNav({
                 <CloseIcon size={20} color={p.pillText} />
               </TouchableOpacity>
             </View>
-            <ScrollView contentContainerStyle={styles.fullMenuBody}>
+            <ScrollView
+              contentContainerStyle={styles.fullMenuBody}
+              showsVerticalScrollIndicator={false}
+            >
               {signedIn && (
                 <TouchableOpacity
                   testID='fullscreen-menu-notifications'
@@ -959,33 +1028,6 @@ export default function TopNav({
           </SafeAreaView>
         </Modal>
       )}
-
-      {/* ── Notification dropdown (portal-like, outside nav bar) ─────────── */}
-      <Animated.View
-        style={[
-          styles.notifDropdownWrapper,
-          {
-            opacity: notifAnimated,
-            transform: [
-              { scale: notifAnimated.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) },
-            ],
-          },
-        ]}
-      >
-        {notifVisible && (
-          <NotificationDropdown
-            notifications={notifications}
-            isDark={isDark}
-            onMarkAllRead={() => onMarkAllNotificationsRead?.()}
-            onDismiss={(id) => onDismissNotification?.(id)}
-            onClose={() => setNotifVisible(false)}
-            onNavigateToCenter={() => {
-              setNotifVisible(false);
-              onNavigateToNotifications?.();
-            }}
-          />
-        )}
-      </Animated.View>
     </View>
   );
 }
@@ -1062,18 +1104,6 @@ const styles = StyleSheet.create({
   logoMarkRowMobile: {
     gap: 4,
   },
-  wordmark: {
-    width: 72,
-    height: 26,
-  },
-  wordmarkDesktop: {
-    width: 180,
-    height: 64,
-  },
-  wordmarkMobile: {
-    width: 70,
-    height: 28,
-  },
   bylineRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1127,60 +1157,29 @@ const styles = StyleSheet.create({
   profilePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: 8,
     borderWidth: 1,
     borderRadius: 999,
-    paddingVertical: 5,
-    paddingLeft: 5,
-    paddingRight: 10,
     boxShadow: '0px 10px 22px rgba(30, 230, 181, 0.18)',
   },
   signedInPillMobile: {
-    width: 220,
-    maxWidth: '100%',
     minWidth: 0,
   },
   profilePillMobile: {
     gap: 6,
-    paddingVertical: 4,
-    paddingLeft: 4,
-    paddingRight: 8,
-  },
-  profilePillExtraSmall: {
-    gap: 0,
-    paddingVertical: 4,
-    paddingLeft: 3,
-    paddingRight: 3,
   },
   hamburgerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'transparent',
   },
   avatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarMobile: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-  },
-  avatarExtraSmall: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-  },
   avatarText: {
     fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 12,
     fontWeight: '800',
   },
   profileLink: {
@@ -1192,6 +1191,9 @@ const styles = StyleSheet.create({
   },
   profileLinkMobile: {
     gap: 6,
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: 'auto',
   },
   nameBlock: {
     flex: 1,
@@ -1201,42 +1203,26 @@ const styles = StyleSheet.create({
   },
   nameBlockMobile: {
     maxWidth: undefined,
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: 'auto',
   },
   pillName: {
-    fontSize: 12,
     fontWeight: '700',
-    lineHeight: 15,
-    fontFamily: 'Sculpin-Bold',
-  },
-  pillNameMobile: {
-    fontSize: 11,
-    lineHeight: 13,
     fontFamily: 'Sculpin-Bold',
   },
   pillScore: {
-    fontSize: 10,
     fontWeight: '600',
-    lineHeight: 13,
-  },
-  pillScoreMobile: {
-    fontSize: 9,
-    lineHeight: 11,
   },
   notifBadge: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'transparent',
   },
-  notifBadgeMobile: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-  },
+  skeletonText: { flex: 1, minWidth: 0, gap: 6, paddingHorizontal: 2 },
+  skeletonLine: { borderRadius: 999 },
   badgeOverlay: {
     position: 'absolute',
     top: -3,
@@ -1266,7 +1252,6 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     position: 'absolute',
-    top: 46,
     right: 0,
     width: 220,
     borderWidth: 1,
@@ -1383,20 +1368,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Sculpin-Bold',
   },
-  comingSoonPill: {
-    marginLeft: 'auto',
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  comingSoonText: {
-    fontFamily: ANEK_EXPANDED_FAMILY,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-    textTransform: 'uppercase',
-  },
   activeIndicator: {
     position: 'absolute',
     right: 10,
@@ -1422,8 +1393,7 @@ const styles = StyleSheet.create({
   // ── Notification dropdown wrapper ───────────────────────────────────────
   notifDropdownWrapper: {
     position: 'absolute',
-    top: 52,
-    right: 14,
+    right: 0,
     zIndex: 1300,
   },
 });

@@ -36,6 +36,12 @@ export interface BackendApiLocalConfig {
     issuer?: string;
     jwksUrl?: string;
   };
+  /** Admin panel tokens (its own Authentik provider); defaults derive from the stage. */
+  adminAuth?: {
+    audience?: string;
+    issuer?: string;
+    jwksUrl?: string;
+  };
   environment?: Record<string, string>;
 }
 
@@ -62,6 +68,11 @@ export interface BackendApiSettings {
     timeoutSeconds: number;
   };
   auth: {
+    audience: string;
+    issuer: string;
+    jwksUrl: string;
+  };
+  adminAuth: {
     audience: string;
     issuer: string;
     jwksUrl: string;
@@ -147,6 +158,8 @@ function resolveAuthIntegrationConfigSecretName(stage: string, appName: string):
   return `${appName}/identity/integration-config/${suffix}`;
 }
 
+/** Authentik client (and provider slug) of the admin panel. */
+const ADMIN_AUTH_CLIENT_ID = 'alternun-admin';
 const authentikWebhookSecretEnvironmentVariable = ['AUTHENTIK', 'WEBHOOK', 'SECRET'].join('_');
 
 function resolveWebhookSecretFromIntegrationConfig(
@@ -358,6 +371,15 @@ export function buildBackendApiSettings(args: BuildBackendApiSettingsArgs): Back
       issuer: args.env.INFRA_BACKEND_API_AUTHENTIK_ISSUER ?? localConfig?.auth?.issuer ?? '',
       jwksUrl: args.env.INFRA_BACKEND_API_AUTHENTIK_JWKS_URL ?? localConfig?.auth?.jwksUrl ?? '',
     },
+    adminAuth: {
+      audience:
+        args.env.INFRA_BACKEND_API_ADMIN_AUTH_AUDIENCE ??
+        localConfig?.adminAuth?.audience ??
+        ADMIN_AUTH_CLIENT_ID,
+      issuer: args.env.INFRA_BACKEND_API_ADMIN_AUTH_ISSUER ?? localConfig?.adminAuth?.issuer ?? '',
+      jwksUrl:
+        args.env.INFRA_BACKEND_API_ADMIN_AUTH_JWKS_URL ?? localConfig?.adminAuth?.jwksUrl ?? '',
+    },
     environment: {
       ...(localConfig?.environment ?? {}),
       ...(args.env.INFRA_BACKEND_API_AUTHENTIK_JWT_SIGNING_KEY
@@ -518,6 +540,16 @@ export function deployBackendApiInfrastructure(
     args.settings.auth.issuer || `https://${resolveAuthDomain(args.rootDomain, args.stage)}`;
   const authJwksUrl =
     args.settings.auth.jwksUrl || `${authIssuer.replace(/\/+$/, '')}/application/o/jwks/`;
+  // The admin panel signs in through its own Authentik provider, so its tokens carry that
+  // provider's issuer and aud = its client id; the app's issuer/audience above never match them.
+  const adminAuthIssuer =
+    args.settings.adminAuth.issuer ||
+    `https://${resolveAuthDomain(
+      args.rootDomain,
+      args.stage
+    )}/application/o/${ADMIN_AUTH_CLIENT_ID}/`;
+  const adminAuthJwksUrl =
+    args.settings.adminAuth.jwksUrl || `${adminAuthIssuer.replace(/\/+$/, '')}/jwks/`;
   const resourceBaseName = sanitizeResourceName(`${args.appName}-${args.stage}-api`);
   const lambdaFunctionName = sanitizeResourceName(`${args.appName}-${args.stage}-nestjs-api`);
   const tags = createResourceTags(args);
@@ -566,9 +598,9 @@ export function deployBackendApiInfrastructure(
           AUTHENTIK_AUDIENCE: args.settings.auth.audience,
           AUTHENTIK_ISSUER: authIssuer,
           AUTHENTIK_JWKS_URL: authJwksUrl,
-          ADMIN_AUTH_AUDIENCE: args.settings.auth.audience,
-          ADMIN_AUTH_ISSUER: authIssuer,
-          ADMIN_AUTH_JWKS_URL: authJwksUrl,
+          ADMIN_AUTH_AUDIENCE: args.settings.adminAuth.audience,
+          ADMIN_AUTH_ISSUER: adminAuthIssuer,
+          ADMIN_AUTH_JWKS_URL: adminAuthJwksUrl,
           [authentikWebhookSecretEnvironmentVariable]: webhookSecret,
           NODE_ENV: 'production',
           ...args.settings.environment,

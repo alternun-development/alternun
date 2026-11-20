@@ -12,6 +12,7 @@ import {
   hasMarketplacePermission,
 } from '../../../marketplace/permissions';
 import { SectionMessage } from '../components';
+import { ImageUploadButton } from './image-upload-button';
 import type { MediaEditorProps } from './media-editor.types';
 
 const kinds: MediaKind[] = ['logo', 'cover', 'gallery_image', 'video', 'canva'];
@@ -252,6 +253,14 @@ export function MediaEditor({ project, media, roles, onChanged }: MediaEditorPro
             <input value={url} onChange={(event) => setUrl(event.target.value)} />
             {validationMessage ? <strong className='error-text'>{validationMessage}</strong> : null}
           </label>
+          {imageKinds.has(kind) ? (
+            <ImageUploadButton
+              disabled={saving}
+              kind={kind}
+              onUploaded={setUrl}
+              uploadPath={`/v1/admin/projects/${encodeURIComponent(project.id)}/media/upload-url`}
+            />
+          ) : null}
           {imageKinds.has(kind) ? (
             <label>
               <span>{marketplaceCopy.mediaEditor.altText}</span>

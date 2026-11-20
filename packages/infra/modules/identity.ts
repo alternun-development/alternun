@@ -10,7 +10,8 @@ import {
   type IdentitySourceLoginFlowMode,
 } from '../config/google-source-login-flow.js';
 
-export type IdentityEmailProvider = 'tlao' | 'postmark';
+// Postmark is retired; Tláo Mail is the only email provider.
+export type IdentityEmailProvider = 'tlao';
 export type IdentityDatabaseMode = 'rds' | 'ec2';
 export type IdentityPolicyEngineMode = 'any' | 'all';
 export type IdentityIngressMode = 'instance' | 'alb';
@@ -335,7 +336,12 @@ function resolveIdentityRdsBackupRetentionDefault(env: NodeJS.ProcessEnv): numbe
 
 function normalizeEmailProvider(value: string | undefined): IdentityEmailProvider {
   const provider = value?.trim().toLowerCase();
-  return provider === 'postmark' ? 'postmark' : 'tlao';
+  if (provider && provider !== 'tlao') {
+    throw new Error(
+      `Unsupported identity email provider "${provider}": Postmark is retired, use "tlao".`
+    );
+  }
+  return 'tlao';
 }
 
 function normalizeDatabaseMode(value: string | undefined): IdentityDatabaseMode {

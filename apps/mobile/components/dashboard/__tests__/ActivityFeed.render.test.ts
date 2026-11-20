@@ -40,7 +40,7 @@ jest.mock('../../i18n/useAppTranslation', () => ({
         'dashboard.activityFeed.activityTypes.certificate': 'Certificado',
         'dashboard.activityFeed.tableHeaders.action': 'Acción',
         'dashboard.activityFeed.tableHeaders.source': 'Fuente',
-        'dashboard.activityFeed.tableHeaders.airs': 'AIRS',
+        'dashboard.activityFeed.tableHeaders.airs': 'Airs',
         'dashboard.activityFeed.tableHeaders.date': 'Fecha',
         'dashboard.activityFeed.empty': 'No hay actividad para mostrar',
       };
@@ -285,5 +285,62 @@ describe('ActivityFeed render', () => {
     );
     expect(secondRequest.searchParams.get('scope')).toBe('global');
     expect((globalThis.fetch as unknown as jest.Mock).mock.calls.length).toBe(2);
+  });
+
+  it('sorts by a column from its header: first the natural order, then the reverse', async () => {
+    const emptyPage = {
+      ok: true,
+      json: async (): Promise<Record<string, unknown>> => ({
+        entries: [],
+        totalCount: 0,
+        page: 1,
+        pageSize: 5,
+        totalPages: 0,
+      }),
+    } as unknown as Response;
+    globalThis.fetch = jest.fn(async () => emptyPage) as unknown as typeof fetch;
+
+    renderState = renderActivityFeed(
+      React.createElement(ActivityFeed, {
+        isDark: true,
+        client: createClient(),
+        signedIn: true,
+      })
+    );
+    const lastRequest = (): URL => {
+      const calls = (globalThis.fetch as unknown as jest.Mock).mock.calls;
+      return new URL(String(calls[calls.length - 1][0]));
+    };
+    await act(async () => {
+      await flushEffects();
+      await flushEffects();
+    });
+    // Newest first by default.
+    expect(lastRequest().searchParams.get('sort')).toBe('date');
+    expect(lastRequest().searchParams.get('direction')).toBe('desc');
+
+    clickByTestId(renderState.container, 'airs-activity-sort-airs');
+    await act(async () => {
+      await flushEffects();
+      await flushEffects();
+    });
+    expect(lastRequest().searchParams.get('sort')).toBe('airs');
+    expect(lastRequest().searchParams.get('direction')).toBe('desc');
+
+    clickByTestId(renderState.container, 'airs-activity-sort-airs');
+    await act(async () => {
+      await flushEffects();
+      await flushEffects();
+    });
+    expect(lastRequest().searchParams.get('direction')).toBe('asc');
+
+    clickByTestId(renderState.container, 'airs-activity-sort-source');
+    await act(async () => {
+      await flushEffects();
+      await flushEffects();
+    });
+    expect(lastRequest().searchParams.get('sort')).toBe('source');
+    expect(lastRequest().searchParams.get('direction')).toBe('asc');
+    expect(lastRequest().searchParams.get('page')).toBe('1');
   });
 });

@@ -8,9 +8,11 @@ const REQUIRED_PORTS = {
   5173: 'Admin Dashboard',
   8081: 'Mobile Web App',
   8082: 'API Server',
-  8083: 'Documentation Site',
+  8090: 'Documentation Site',
   3004: 'Remotion Composition (auto-detected)',
 };
+
+const killAllowed = process.argv.includes('--kill-allowed');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -39,7 +41,32 @@ function getProcessOnPort(port) {
   }
 }
 
+function getContainerOnPort(port) {
+  try {
+    const result = execSync(`docker ps --filter publish=${port} --format '{{.Names}}' 2>/dev/null`, {
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    }).trim();
+    return result || null;
+  } catch {
+    return null;
+  }
+}
+
 function killPort(port) {
+  // Ports published by Docker are held by a root-owned docker-proxy; stop the container instead
+  const container = getContainerOnPort(port);
+  if (container) {
+    try {
+      execSync(`docker stop ${container.split('\n').join(' ')}`, { stdio: 'pipe' });
+      console.log(`  ✅ Stopped Docker container(s) on port ${port}: ${container.replace(/\n/g, ', ')}`);
+      return true;
+    } catch {
+      console.log(`  ❌ Could not stop Docker container(s) on port ${port}: ${container}`);
+      return false;
+    }
+  }
+
   try {
     // Use fuser to kill all processes on port (most reliable method)
     try {
@@ -71,6 +98,7 @@ function killPort(port) {
   } catch (e) {
     // Silently fail
   }
+  console.log(`  ❌ Could not kill process on port ${port} (it may belong to another user)`);
   return false;
 }
 
@@ -119,12 +147,16 @@ async function main() {
 `);
 
   usedPorts.forEach(({ port, service }) => {
-    const pid = getProcessOnPort(port);
-    console.log(`  • Port ${port} (${service})${pid ? ` - PID: ${pid}` : ''}`);
+    const container = getContainerOnPort(port);
+    const pid = container ? null : getProcessOnPort(port);
+    const owner = container ? ` - Docker: ${container.replace(/\n/g, ', ')}` : pid ? ` - PID: ${pid}` : '';
+    console.log(`  • Port ${port} (${service})${owner}`);
   });
 
-  const shouldKill = await promptUser(`
-Would you like me to kill these processes? (y/n): `);
+  const shouldKill =
+    killAllowed ||
+    (await promptUser(`
+Would you like me to kill these processes? (y/n): `));
 
   if (!shouldKill) {
     console.log('\n⚠️  Please free up the ports manually before starting development.\n');

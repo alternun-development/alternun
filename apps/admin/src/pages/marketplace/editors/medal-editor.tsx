@@ -13,6 +13,8 @@ import type {
   NewMedalValues,
   ProjectMedal,
 } from '../../../marketplace/medals.types';
+import { honorAwardRecipesPath } from '../../../marketplace/honor-awards';
+import type { HonorAwardRecipe } from '../../../marketplace/honor-awards.types';
 import { hasMarketplacePermission } from '../../../marketplace/permissions';
 import { SectionMessage } from '../components';
 import type { MedalEditorProps, MedalsState } from './medal-editor.types';
@@ -28,6 +30,7 @@ export function MedalEditor({ project, roles }: MedalEditorProps): JSX.Element |
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>();
   const [success, setSuccess] = useState<string>();
+  const [recipes, setRecipes] = useState<HonorAwardRecipe[]>([]);
 
   const load = useCallback(() => {
     requestMarketplace<ProjectMedal[]>(medalsPath(project.id))
@@ -38,6 +41,19 @@ export function MedalEditor({ project, roles }: MedalEditorProps): JSX.Element |
   useEffect(() => {
     if (canManage) load();
   }, [canManage, load]);
+
+  // Honor awards for people that a medal of this project can also give.
+  useEffect(() => {
+    if (!canManage) return;
+    requestMarketplace<HonorAwardRecipe[]>(honorAwardRecipesPath)
+      .then((data) =>
+        setRecipes(data.filter((recipe) => recipe.audience === 'user' && recipe.isActive))
+      )
+      .catch(() => setRecipes([]));
+  }, [canManage]);
+
+  const recipeTitle = (id: string | null | undefined) =>
+    id ? recipes.find((recipe) => recipe.id === id)?.title ?? null : null;
 
   if (!canManage) return null;
 
@@ -109,6 +125,9 @@ export function MedalEditor({ project, roles }: MedalEditorProps): JSX.Element |
               <img alt={medal.name} height={64} loading='lazy' src={medal.imageUrl} width={64} />
               <h4>{medal.name}</h4>
               {medal.description ? <small>{medal.description}</small> : null}
+              {recipeTitle(medal.honorRecipeId) ? (
+                <small>{copy.linkedHonorAward(recipeTitle(medal.honorRecipeId) ?? '')}</small>
+              ) : null}
               <button
                 className='secondary-button'
                 disabled={busy}
@@ -159,6 +178,25 @@ export function MedalEditor({ project, roles }: MedalEditorProps): JSX.Element |
           <small>{copy.imageHint}</small>
           {errors.imageUrl ? <strong className='error-text'>{errors.imageUrl}</strong> : null}
         </label>
+        {recipes.length > 0 ? (
+          <label>
+            <span>{copy.honorAward}</span>
+            <select
+              value={values.honorRecipeId ?? ''}
+              onChange={(event) =>
+                setValues((current) => ({ ...current, honorRecipeId: event.target.value }))
+              }
+            >
+              <option value=''>{copy.noHonorAward}</option>
+              {recipes.map((recipe) => (
+                <option key={recipe.id} value={recipe.id}>
+                  {recipe.title}
+                </option>
+              ))}
+            </select>
+            <small>{copy.honorAwardHint}</small>
+          </label>
+        ) : null}
         <div className='marketplace-form-actions'>
           <button
             className='primary-button'

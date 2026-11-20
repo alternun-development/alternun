@@ -120,13 +120,22 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.1.124**
+Current version: **1.2.12**
 
-## 📋 Latest Changes (v1.1.124)
+## 📋 Latest Changes (v1.2.12)
+
+### Changes
+
+- **reentry:** next step before merging v1.2.12 ([ffddb29](https://github.com/alternun-development/alternun/commit/ffddb2988eee8f1c93ea2eeddd719aa833ff8df7))
 
 ### Bug Fixes
 
-- **marketplace:** count admins from every related enterprise on project access ([a526360](https://github.com/alternun-development/alternun/commit/a526360c862a1b66b7cceb3e3330ac08084ce577))
+- **honor-awards:** award email opens Legado and docs on the claim ([a5f25b5](https://github.com/alternun-development/alternun/commit/a5f25b54091c97382ca7cf31750f975842000b81))
+- **airs-reports:** release waiting reports on app load and in Legado ([1c1b951](https://github.com/alternun-development/alternun/commit/1c1b951c516db2784cf5d0048130dc6e4a2263b1))
+
+### Features
+
+- **marketplace:** production launch catalog and featured slider rule ([4684143](https://github.com/alternun-development/alternun/commit/468414399da69c37db8416a0b88f7e230c2f97f0))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

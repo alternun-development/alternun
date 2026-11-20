@@ -10,7 +10,8 @@ export function LoginPage(): JSX.Element {
     searchParams.get('error') === 'unauthorized-admin'
       ? 'Your Authentik account is not assigned to an approved Alternun admin group.'
       : null;
-  const releaseLabel = `v${adminEnv.appVersion} · ${adminEnv.appEnv}`;
+  // People signing in only need the version; endpoints, issuer and stage stay out of the screen.
+  const releaseLabel = `v${adminEnv.appVersion}`;
 
   async function handleLogin(provider: 'google' | 'password'): Promise<void> {
     setErrorMessage(null);
@@ -33,10 +34,7 @@ export function LoginPage(): JSX.Element {
       <section className='auth-card'>
         <span className='panel-label'>Alternun Admin</span>
         <h1>Operator sign in</h1>
-        <p>
-          Start from the hosted Authentik login on `login.alternun.co`. This app never collects raw
-          passwords and only grants access after admin-role checks complete.
-        </p>
+        <p>Sign in with your Alternun account. Access is only for invited operators and allies.</p>
 
         <div className='auth-methods'>
           {adminEnv.authGoogleEnabled ? (
@@ -58,25 +56,6 @@ export function LoginPage(): JSX.Element {
             </p>
           </article>
         </div>
-
-        <dl className='auth-facts'>
-          <div>
-            <dt>API</dt>
-            <dd>{adminEnv.apiUrl}</dd>
-          </div>
-          <div>
-            <dt>Issuer</dt>
-            <dd>{adminEnv.authIssuer}</dd>
-          </div>
-          <div>
-            <dt>Client</dt>
-            <dd>{adminEnv.authClientId}</dd>
-          </div>
-          <div>
-            <dt>Audience</dt>
-            <dd>{adminEnv.authAudience}</dd>
-          </div>
-        </dl>
 
         <div className='auth-actions'>
           {adminEnv.authGoogleEnabled ? (
@@ -102,12 +81,6 @@ export function LoginPage(): JSX.Element {
           </button>
         </div>
 
-        <p className='auth-note'>
-          Google sign-in still relays through the app-owned route so Authentik can return directly
-          to the dashboard callback. Password entry stays on Authentik, and unauthorized users are
-          rejected before the admin shell loads.
-        </p>
-
         {loginError ? (
           <p className='error-text' role='alert'>
             {loginError}
@@ -120,7 +93,7 @@ export function LoginPage(): JSX.Element {
         ) : null}
 
         <footer className='auth-footer' aria-label='deployment version'>
-          <span className='auth-footer-label'>Deployed release</span>
+          <span className='auth-footer-label'>Version</span>
           <strong>{releaseLabel}</strong>
         </footer>
       </section>

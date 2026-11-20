@@ -149,6 +149,14 @@ export interface AirsReportRecipientLookupResponse {
 // GET /v1/admin/airs-reports (Grant Approvers only): pending_approval reports, oldest first.
 export type AirsReportReviewQueueResponse = AirsReportRecord[];
 
+/** A report in the in-app review (GET /v1/me/airs-reports): the queue item plus what it shows. */
+export interface AirsReportReviewItem extends AirsReportRecord {
+  /** Title of the project in its default language, or null when it cannot be read. */
+  projectTitle: string | null;
+  /** Whether a private supporting file was attached. */
+  hasProof: boolean;
+}
+
 /** One step of a report's history, from the audit log. No actor identity is returned. */
 export interface AirsReportTimelineEntry {
   action: string;

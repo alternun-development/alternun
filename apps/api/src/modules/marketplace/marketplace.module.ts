@@ -47,6 +47,7 @@ import { PROJECT_PROPOSAL_EMAIL_SENDER, ProjectProposalService } from './project
 import { sendAirsEmail } from '../airs/airs.email';
 import {
   AirsReportAdminController,
+  AirsReportMeController,
   AirsReportProjectAdminController,
 } from './airs-report.controller';
 import { AirsReportRepository } from './airs-report.repository';
@@ -61,6 +62,14 @@ import {
   ProjectAccessService,
 } from './project-access';
 import { MedalAdminController } from './medal.controller';
+import {
+  EnterpriseHonorAwardController,
+  EnterpriseHonorAwardPublicController,
+  HonorAwardAdminController,
+  HonorAwardMeController,
+} from './honor-award.controller';
+import { HonorAwardRepository } from './honor-award.repository';
+import { HonorAwardService } from './honor-award.service';
 import { MedalRepository } from './medal.repository';
 import { MedalService } from './medal.service';
 import { AdminNotificationController } from './admin-notification.controller';
@@ -69,9 +78,22 @@ import { AdminNotificationService } from './admin-notification.service';
 import { ProjectTypeRepository } from './project-type.repository';
 import { ProjectTypeService } from './project-type.service';
 import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-group-sync';
+import { AdminAccessController } from './admin-access.controller';
+import { EnterpriseApplicationController } from './enterprise-application.controller';
+import { EnterpriseApplicationRepository } from './enterprise-application.repository';
+import { EnterpriseApplicationService } from './enterprise-application.service';
+import { ProjectManageController } from './project-manage.controller';
+import { EnterpriseManageController } from './enterprise-manage.controller';
+import { ProjectManageAccess } from './project-manage.service';
+import { ProjectClientRepository } from './project-client.repository';
+import { ProjectClientService } from './project-client.service';
+import { AdminAccessRepository, AdminAccessService } from './admin-access.service';
 
 @Module({
   controllers: [
+    AdminAccessController,
+    ProjectManageController,
+    EnterpriseManageController,
     MarketplacePublicController,
     MarketplaceEnterprisePublicController,
     MarketplaceEnterpriseAdminController,
@@ -85,17 +107,28 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     MarketplaceProjectAuditAdminController,
     MarketplaceEnterpriseAuditAdminController,
     ProjectProposalController,
+    EnterpriseApplicationController,
     AirsReportProjectAdminController,
     AirsReportAdminController,
+    AirsReportMeController,
     ProjectTypeAdminController,
     ProjectTypeAssignmentController,
     AdminNotificationController,
     MedalAdminController,
+    HonorAwardAdminController,
+    HonorAwardMeController,
+    EnterpriseHonorAwardController,
+    EnterpriseHonorAwardPublicController,
     ProjectAccessController,
   ],
   providers: [
     { provide: MARKETPLACE_SUPABASE, useFactory: () => createMarketplaceSupabaseClient() },
     MarketplacePublicRepository,
+    AdminAccessRepository,
+    AdminAccessService,
+    ProjectManageAccess,
+    ProjectClientRepository,
+    ProjectClientService,
     MarketplaceAdminRepository,
     MarketplaceActivityRepository,
     MarketplaceMembershipRepository,
@@ -103,6 +136,7 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     MarketplaceParticipantRepository,
     MarketplaceAuditRepository,
     ProjectProposalRepository,
+    EnterpriseApplicationRepository,
     MarketplacePublicService,
     MarketplaceAdminService,
     MarketplaceActivityService,
@@ -111,6 +145,7 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     MarketplaceParticipantService,
     MarketplaceAuditService,
     ProjectProposalService,
+    EnterpriseApplicationService,
     AirsReportRepository,
     AirsReportService,
     ProjectTypeRepository,
@@ -119,6 +154,8 @@ import { AUTHENTIK_GROUP_SYNC, createAuthentikGroupSync } from './authentik-grou
     AdminNotificationService,
     MedalRepository,
     MedalService,
+    HonorAwardRepository,
+    HonorAwardService,
     ProjectAccessRepository,
     ProjectAccessService,
     {

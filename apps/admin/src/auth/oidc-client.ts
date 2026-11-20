@@ -16,6 +16,7 @@ export const ADMIN_ROLES = [
   'partner_operator',
   'sub_admin',
   'partner_readonly',
+  'project_moderator',
 ] as const;
 
 export type AdminRole = (typeof ADMIN_ROLES)[number];
@@ -39,6 +40,7 @@ const ADMIN_GROUP_ROLE_ALIASES: Map<string, AdminRole> = new Map([
   ['alternun partner operator', 'partner_operator'],
   ['alternun partner read only', 'partner_readonly'],
   ['alternun sub admin', 'sub_admin'],
+  ['alternun project moderator', 'project_moderator'],
 ]);
 const rolePriority: readonly AdminRole[] = [
   'platform_owner',
@@ -46,6 +48,7 @@ const rolePriority: readonly AdminRole[] = [
   'moderator',
   'partner_operator',
   'sub_admin',
+  'project_moderator',
   'partner_readonly',
 ] as const;
 

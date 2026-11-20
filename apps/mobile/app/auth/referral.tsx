@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { writePendingReferralData } from '../../components/auth/referralStorage';
+import BrandLoader from '../../components/common/BrandLoader';
 
 function readSearchParam(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) return value[0] ?? null;
@@ -57,7 +58,7 @@ export default function ReferralRoute(): React.JSX.Element {
 
   return (
     <View style={styles.loadingScreen}>
-      <ActivityIndicator size='large' color='#1ccba1' />
+      <BrandLoader />
     </View>
   );
 }

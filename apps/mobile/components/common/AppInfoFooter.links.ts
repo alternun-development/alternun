@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, normalizeLocale, type AlternunLocale, } from '@alternun/i18n';
+import { DEFAULT_LOCALE, normalizeLocale, type AlternunLocale } from '@alternun/i18n';
 
 export interface FooterPrimaryLink {
   labelKey: string;
@@ -32,10 +32,10 @@ export const FOOTER_PRIMARY_LINK_DEFINITIONS = [
   },
 ] as const;
 
-function resolveDocumentationUrl(locale: AlternunLocale,): string {
+function resolveDocumentationUrl(locale: AlternunLocale): string {
   // Use localhost in development builds, production URLs otherwise.
   const baseUrl =
-    process.env.NODE_ENV === 'development' ? 'http://localhost:8083' : 'https://docs.alternun.io';
+    process.env.NODE_ENV === 'development' ? 'http://localhost:8090' : 'https://docs.alternun.io';
 
   if (locale === 'es') {
     return `${baseUrl}/es/`;
@@ -51,13 +51,13 @@ function resolveDocumentationUrl(locale: AlternunLocale,): string {
 export function resolvePrimaryLinksForViewport(
   _viewport: FooterViewport,
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  locale: AlternunLocale | string = DEFAULT_LOCALE,
+  locale: AlternunLocale | string = DEFAULT_LOCALE
 ): ReadonlyArray<FooterPrimaryLink> {
   // Keep a single source of truth so desktop/mobile cannot drift.
-  const resolvedLocale = normalizeLocale(locale,);
+  const resolvedLocale = normalizeLocale(locale);
 
   const docsBaseUrl =
-    process.env.NODE_ENV === 'development' ? 'http://localhost:8083' : 'https://docs.alternun.io';
+    process.env.NODE_ENV === 'development' ? 'http://localhost:8090' : 'https://docs.alternun.io';
 
   return [
     {
@@ -75,7 +75,7 @@ export function resolvePrimaryLinksForViewport(
     {
       labelKey: FOOTER_PRIMARY_LINK_DEFINITIONS[2].labelKey,
       fallbackLabel: FOOTER_PRIMARY_LINK_DEFINITIONS[2].fallbackLabel,
-      url: resolveDocumentationUrl(resolvedLocale,),
+      url: resolveDocumentationUrl(resolvedLocale),
       action: FOOTER_PRIMARY_LINK_DEFINITIONS[2].action,
     },
   ];
@@ -83,7 +83,7 @@ export function resolvePrimaryLinksForViewport(
 
 export function resolvePrimaryLinkPressHandler(
   link: FooterPrimaryLink,
-  handlers: Record<FooterPrimaryLinkAction, () => void>,
+  handlers: Record<FooterPrimaryLinkAction, () => void>
 ): (() => void) | undefined {
   if (!link.action) {
     return undefined;

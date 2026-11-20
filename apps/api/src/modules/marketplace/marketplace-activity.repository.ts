@@ -276,6 +276,32 @@ export class MarketplaceActivityRepository {
     return rows(data).map(mapCompletion);
   }
 
+  /** Sign-in identity of the person who completed an activity, to keep approvers off their own. */
+  async findCompletionUser(userId: string): Promise<{
+    email: string | null;
+    issuer: string;
+    subject: string;
+    panelSubject: string | null;
+  } | null> {
+    const { data, error } = await this.client
+      .from('users')
+      .select('email, iss, sub, raw_claims')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) failDatabase(error);
+    if (!data) return null;
+    const row = data as Row;
+    const claims = record(row.raw_claims);
+    const email = nullableText(row.email)?.trim().toLowerCase();
+    return {
+      email: email ? email : null,
+      issuer: text(row.iss),
+      subject: text(row.sub),
+      // Accounts synced from Authentik keep the panel subject (its UUID) in raw_claims.
+      panelSubject: nullableText(claims.uuid),
+    };
+  }
+
   async findCompletion(
     projectId: string,
     completionId: string

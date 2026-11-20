@@ -72,6 +72,7 @@ For targeted changes use the relevant package/app command first, then broaden if
 - **Branch flow**: feature → `develop` → `master`. PRs target `develop` unless hotfix.
 - **Infra deploys** run via `pnpm infra:deploy:*` — confirm with user before running.
 - **Secrets**: `.env.*` files are never committed. Use AWS Secrets Manager in prod.
+- **Route names** (Expo Router files / URL paths in `apps/mobile/app`) are English only; copy stays localized via i18n. Legacy Spanish URLs redirect via `apps/mobile/utils/legacyRoutes.ts` (`app/+not-found.tsx`). Guard: `apps/mobile/app/__tests__/route-names.test.ts` (update its allowlist when adding routes).
 
 ## Backend Rules
 

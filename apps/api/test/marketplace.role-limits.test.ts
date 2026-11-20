@@ -70,6 +70,8 @@ function activityService(hasScope = true) {
     {
       find: async () => activity,
       findCompletion: async () => completion,
+      // The completion belongs to someone else, so the self-approval guard lets it through.
+      findCompletionUser: async () => null,
       awardCompletion: async () => {
         writes.push('award');
         return { completionId: 'c1', ledgerEntryId: 'l1' };

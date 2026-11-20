@@ -6,7 +6,7 @@ This note explains how the marketplace (epic [#249](https://github.com/alternun-
 
 | Part        | Where                                                                | Role                                                                                                                                                                                                              |
 | ----------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Explorer    | `apps/mobile/app/explorar.tsx`, `apps/mobile/app/explorar/*`         | Public listing and detail of published projects and active enterprises. Reads only the public API.                                                                                                                |
+| Explorer    | `apps/mobile/app/explore.tsx`, `apps/mobile/app/explore/*`           | Public listing and detail of published projects and active enterprises. Reads only the public API.                                                                                                                |
 | Admin panel | `apps/admin/src/pages/marketplace/*`, `apps/admin/src/marketplace/*` | Alternun Admin screens for enterprises (create, edit, pause, archive, order), projects, media, activities, team, comments, audit, Airs reports, project types, medals, the notification inbox and project access. |
 | API         | `apps/api/src/modules/marketplace/*`                                 | NestJS on Fastify. Public routes under `/v1/projects`, `/v1/enterprises` and `/v1/project-proposals`; admin routes under `/v1/admin/*`.                                                                           |
 | Database    | `supabase/migrations/20261013_*` and later                           | Postgres tables, security-definer functions for every sensitive change, and the admin audit log.                                                                                                                  |
@@ -60,6 +60,14 @@ Denied attempts return a stable error code (`marketplace.errors.ts`) and are wri
 ## Pilot data
 
 `20261013_0001` seeded a local placeholder enterprise, "Hotel Piloto", that owned `eco-turismo`. `20261018_0001` made the `alternun` enterprise the primary owner of `eco-turismo` and kept the old relation as non-primary. Hotel Piloto has no project of its own and was archived through the audited status function by `20261030_0002` (issue #249, A4). Its non-primary relation to `eco-turismo` is kept for the record; because of rule 3 above, nobody should get an enterprise membership on Hotel Piloto.
+
+## Production catalog
+
+Production shows only the catalog approved for launch. Projects and enterprises have a `testnet_only` flag (`20261119_0003`). When `APP_STAGE=production`, the public API hides flagged rows: the project list and detail, and the enterprise directory, detail and honor awards. A flagged primary owner still appears on its visible project's card. Testnet, local and every admin view show all rows.
+
+At launch only `fundacion-batis` (project) and `torneo-swing-golf-rincon-cajica` (Swing Golf Colombia) are visible; the migration flagged every other row in each database. New rows default to visible. To publish another one in production, set its `testnet_only` to false.
+
+The explorer's featured slider appears only when at least two projects with media can be featured; until then the explorer shows the intents card alone.
 
 ## OpenAPI
 

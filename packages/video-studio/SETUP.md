@@ -183,7 +183,7 @@ This starts:
 - API server (port 8082)
 - Admin dashboard (port 5173)
 - Mobile web app (port 8081)
-- Docs site (port 8083)
+- Docs site (port 8090)
 - **Video Studio (port 3003)** ← You are here
 - Remotion Composition (auto-detected port)
 

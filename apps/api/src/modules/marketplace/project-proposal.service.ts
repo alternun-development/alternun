@@ -12,7 +12,7 @@ import type {
 
 export const PROJECT_PROPOSAL_EMAIL_SENDER = Symbol('PROJECT_PROPOSAL_EMAIL_SENDER');
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => {
     const entities: Record<string, string> = {
       '&': '&amp;',
@@ -25,7 +25,7 @@ function escapeHtml(value: string): string {
   });
 }
 
-function createIpHash(ipAddress: string, env: Record<string, string | undefined>): string {
+export function createIpHash(ipAddress: string, env: Record<string, string | undefined>): string {
   const secret = env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!secret) marketplaceError('MARKETPLACE_UNAVAILABLE');
   return createHmac('sha256', secret)

@@ -1,7 +1,6 @@
 import { resolveMobileApiBaseUrl } from '../../utils/runtimeConfig';
 import { Asset } from 'expo-asset';
 import { Platform } from 'react-native';
-import * as Sharing from 'expo-sharing';
 import { MILESTONE_SHARE_IMAGES } from './badgeAssets';
 
 export type PreparedMilestoneImage = {
@@ -11,7 +10,6 @@ export type PreparedMilestoneImage = {
   displayName?: string;
   previewUri?: string;
 };
-export type SocialPlatform = 'X' | 'Facebook' | 'Instagram' | 'LinkedIn';
 
 export async function prepareMilestoneImage(
   key: string,
@@ -40,109 +38,6 @@ export async function prepareMilestoneImage(
     previewUri: remote?.imageUrl,
     file: new File([blob], `airs-${key}.png`, { type: 'image/png' }),
   };
-}
-
-export function canShareMilestoneFile(image: PreparedMilestoneImage): boolean {
-  return (
-    Platform.OS !== 'web' ||
-    Boolean(
-      image.file &&
-        typeof navigator.share === 'function' &&
-        typeof navigator.canShare === 'function' &&
-        navigator.canShare({ files: [image.file] })
-    )
-  );
-}
-
-export async function shareMilestoneImage(
-  image: PreparedMilestoneImage,
-  caption: string
-): Promise<void> {
-  if (Platform.OS === 'web') {
-    if (image.file && canShareMilestoneFile(image)) {
-      await navigator.share({ files: [image.file], text: caption, title: 'AIRS milestone' });
-    } else if (canShareMilestoneLink(image)) {
-      const text = caption
-        .replace(image.shareUrl ?? '', '')
-        .replace(/\s{2,}/g, ' ')
-        .trim();
-      await navigator.share({ url: image.shareUrl, text, title: 'AIRS milestone' });
-    } else {
-      throw new Error('File sharing unavailable');
-    }
-  } else {
-    if (!(await Sharing.isAvailableAsync())) throw new Error('Sharing unavailable');
-    await Sharing.shareAsync(image.uri, {
-      mimeType: 'image/png',
-      UTI: 'public.png',
-      dialogTitle: caption,
-    });
-  }
-}
-
-/** Capability detection also supports browsers that share links but not PNG files. */
-export function canShareMilestoneLink(image: PreparedMilestoneImage): boolean {
-  return (
-    Platform.OS === 'web' &&
-    typeof navigator !== 'undefined' &&
-    typeof navigator.share === 'function' &&
-    Boolean(image.shareUrl) &&
-    (typeof navigator.canShare !== 'function' || navigator.canShare({ url: image.shareUrl }))
-  );
-}
-
-export function isMobileShareBrowser(): boolean {
-  if (Platform.OS !== 'web' || typeof navigator === 'undefined') return false;
-  return (
-    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-    (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
-  );
-}
-
-export function openMilestoneComposer(
-  platform: SocialPlatform,
-  caption: string,
-  shareUrl?: string
-): void {
-  if (Platform.OS !== 'web') return;
-  const url = socialComposerUrl(platform, caption, shareUrl);
-  // A direct, user-initiated HTTPS navigation lets the OS handle associated apps.
-  // No undocumented app schemes, delayed redirects, or automatic posting.
-  if (isMobileShareBrowser()) window.location.assign(url);
-  else window.open(url, '_blank', 'noopener,noreferrer');
-}
-
-export function downloadMilestoneImage(image: PreparedMilestoneImage): void {
-  if (!image.file || Platform.OS !== 'web') throw new Error('Download unavailable');
-  const url = URL.createObjectURL(image.file);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = image.file.name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-export function socialComposerUrl(
-  platform: SocialPlatform,
-  caption: string,
-  shareUrl?: string
-): string {
-  switch (platform) {
-    case 'X':
-      return `https://x.com/intent/post?text=${encodeURIComponent(caption)}`;
-    case 'Facebook':
-      return shareUrl
-        ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
-        : 'https://www.facebook.com/';
-    case 'Instagram':
-      return 'https://www.instagram.com/';
-    case 'LinkedIn':
-      return shareUrl
-        ? `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
-        : 'https://www.linkedin.com/feed/';
-  }
 }
 
 export async function publishMilestoneImage(

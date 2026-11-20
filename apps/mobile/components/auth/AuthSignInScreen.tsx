@@ -2172,6 +2172,9 @@ export default function AuthSignInScreen({
                   <Text style={[styles.confirmationHint, { color: p.textSecondary }]}>
                     {t('authModal.confirmation.codeOrLinkHint')}
                   </Text>
+                  <Text style={[styles.confirmationHint, { color: p.noticeText }]}>
+                    {t('authModal.confirmation.spamFolderHint')}
+                  </Text>
                 </View>
 
                 <View

@@ -19,6 +19,7 @@ import { SignupService } from './services/signup.service';
 import { SocialSignInService } from './services/social-signin.service';
 import { SocialSignInRequestDto } from './dto/social-signin-request.dto';
 import { VerifyEmailConfirmationRequestDto } from './dto/verify-email-confirmation-request.dto';
+import { ResendEmailVerificationRequestDto } from './dto/resend-email-verification-request.dto';
 import { EmailVerificationService } from './services/email-verification.service';
 
 @ApiTags('auth')
@@ -82,12 +83,21 @@ export class AuthExchangeController {
 
   @Post('verify-email')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Verify a Supabase email confirmation code' })
-  @ApiOkResponse({ description: 'Verified Supabase session.', type: SignInResponseDto })
+  @ApiOperation({ summary: 'Verify an email confirmation code' })
+  @ApiOkResponse({ description: 'Verification result.', type: SignInResponseDto })
   async verifyEmailConfirmation(
     @Body() body: VerifyEmailConfirmationRequestDto
   ): Promise<SignInResponseDto> {
     return this.emailVerificationService.verifyEmailConfirmation(body);
+  }
+
+  @Post('resend-email-verification')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Send a new email confirmation code' })
+  async resendEmailVerification(
+    @Body() body: ResendEmailVerificationRequestDto
+  ): Promise<{ confirmationEmailSent: boolean }> {
+    return this.emailVerificationService.resendEmailConfirmation(body.email);
   }
 
   @Post('sign-in/social-url')

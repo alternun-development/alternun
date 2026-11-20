@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AirsService } from './airs.service';
+import { AIRS_ACTIVITY_SORTS } from './airs.repository';
 
 interface AirsOnboardingBody {
   locale?: string | null;
@@ -162,7 +163,9 @@ export class AirsController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('search') search: string | undefined,
-    @Query('source_kind') sourceKind: string | undefined
+    @Query('source_kind') sourceKind: string | undefined,
+    @Query('sort') sort: string | undefined,
+    @Query('direction') direction: string | undefined
   ): Promise<import('./airs.repository').AirsActivityResult> {
     if (!authorization?.trim()) {
       throw new UnauthorizedException('Missing AIRS bearer token.');
@@ -176,6 +179,10 @@ export class AirsController {
       sourceKind: AIRS_SOURCE_KINDS.has(sourceKind ?? '')
         ? (sourceKind as import('./airs.repository').AirsLedgerSourceKind)
         : null,
+      sort: AIRS_ACTIVITY_SORTS.has(sort ?? '')
+        ? (sort as import('./airs.repository').AirsActivitySort)
+        : 'date',
+      direction: direction === 'asc' ? 'asc' : 'desc',
     });
   }
 

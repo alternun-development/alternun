@@ -110,7 +110,7 @@ export default function HeroStats({
             score={totalAIRS}
             isLoading={isLoading}
             onReload={onReload}
-            onOpenProfile={() => router.push('/mi-perfil')}
+            onOpenProfile={() => router.push('/profile')}
             closeInfoLabel={t.t('common.close', undefined, 'Close')}
             previewMode={previewMode}
             isDark={isDark}

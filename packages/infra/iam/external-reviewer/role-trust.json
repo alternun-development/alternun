@@ -1,0 +1,12 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ExternalReviewerWithMfaOnly",
+      "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::124120088516:user/external-reviewer" },
+      "Action": "sts:AssumeRole",
+      "Condition": { "Bool": { "aws:MultiFactorAuthPresent": "true" } }
+    }
+  ]
+}

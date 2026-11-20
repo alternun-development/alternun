@@ -13,6 +13,19 @@ export interface AirsLeaderboardEntry {
   airsBalance: number;
   airsLifetimeEarned: number;
   isMe: boolean;
+  /** Chosen avatar art (illustration or badge); never a social photo. */
+  avatar?: AirsUserAvatar | null;
+}
+
+export type AirsUserAvatarKind = 'social' | 'preset' | 'tier' | 'achievement' | 'honor_award';
+
+/** How a person appears: their social photo (kind 'social' or null), an illustration or a badge. */
+export interface AirsUserAvatar {
+  kind: AirsUserAvatarKind | null;
+  ref: string | null;
+  art: Record<string, unknown> | null;
+  /** The person's own social photo (https), only on their avatar read; never in rankings. */
+  socialUrl?: string | null;
 }
 
 export interface AirsLeaderboardResult {
@@ -30,6 +43,14 @@ export interface AirsCommunityTotal {
 }
 
 export type AirsActivityScope = 'personal' | 'global';
+export type AirsActivitySort = 'action' | 'source' | 'airs' | 'date';
+export type AirsActivityDirection = 'asc' | 'desc';
+export const AIRS_ACTIVITY_SORTS: ReadonlySet<string> = new Set([
+  'action',
+  'source',
+  'airs',
+  'date',
+]);
 
 export interface AirsActivityResult {
   entries: AirsDashboardLedgerEntry[];
@@ -585,6 +606,26 @@ function compareActivityEntriesByRecordedAtDesc(
   return rightTime - leftTime;
 }
 
+/** Same order as airs_get_activity: the chosen column, then the newest first. */
+function compareActivityEntries(
+  sort: AirsActivitySort,
+  direction: AirsActivityDirection
+): (left: AirsDashboardLedgerEntry, right: AirsDashboardLedgerEntry) => number {
+  const sign = direction === 'asc' ? 1 : -1;
+  return (left, right) => {
+    let result = 0;
+    if (sort === 'action') result = left.sourceKind.localeCompare(right.sourceKind);
+    if (sort === 'source') {
+      result = (left.sourceRef ?? left.sourceKind)
+        .toLowerCase()
+        .localeCompare((right.sourceRef ?? right.sourceKind).toLowerCase());
+    }
+    if (sort === 'airs') result = left.airsDelta - right.airsDelta;
+    if (sort === 'date') result = -compareActivityEntriesByRecordedAtDesc(left, right);
+    return result * sign || compareActivityEntriesByRecordedAtDesc(left, right);
+  };
+}
+
 async function fetchAirsActivityPage(
   input: {
     requestingUserId: string;
@@ -593,6 +634,8 @@ async function fetchAirsActivityPage(
     limit: number;
     search: string | null;
     sourceKind: AirsLedgerSourceKind | null;
+    sort: AirsActivitySort;
+    direction: AirsActivityDirection;
   },
   env: Record<string, string | undefined>
 ): Promise<AirsActivityRpcEntry> {
@@ -605,6 +648,8 @@ async function fetchAirsActivityPage(
       p_limit: input.limit,
       p_search: input.search?.length ? input.search : null,
       p_source_kind: input.sourceKind,
+      p_sort: input.sort,
+      p_direction: input.direction,
     },
     env
   );
@@ -671,6 +716,17 @@ export async function getAirsLeaderboard(
     airsBalance: asNumber(row.airs_balance),
     airsLifetimeEarned: asNumber(row.airs_lifetime_earned),
     isMe: row.is_me === true,
+    avatar:
+      typeof row.avatar_kind === 'string'
+        ? {
+            kind: row.avatar_kind as AirsUserAvatarKind,
+            ref: asText(row.avatar_ref),
+            art:
+              row.avatar_art && typeof row.avatar_art === 'object'
+                ? (row.avatar_art as Record<string, unknown>)
+                : null,
+          }
+        : null,
   }));
   let requestingUserEntry = entries.find((e) => e.isMe) ?? null;
 
@@ -724,12 +780,16 @@ export async function getAirsActivity(
     limit?: number;
     search?: string | null;
     sourceKind?: AirsLedgerSourceKind | null;
+    sort?: AirsActivitySort;
+    direction?: AirsActivityDirection;
   },
   env: Record<string, string | undefined> = process.env
 ): Promise<AirsActivityResult> {
   const pageSize = Math.max(1, Math.min(input.limit ?? 10, 50));
   const page = Math.max(1, input.page ?? 1);
   const search = input.search?.trim();
+  const sort = input.sort ?? 'date';
+  const direction = input.direction ?? 'desc';
 
   const scope = input.scope ?? 'personal';
 
@@ -744,6 +804,8 @@ export async function getAirsActivity(
           limit: queryLimit,
           search: search && search.length > 0 ? search : null,
           sourceKind: 'compensation',
+          sort,
+          direction,
         },
         env
       ),
@@ -755,6 +817,8 @@ export async function getAirsActivity(
           limit: queryLimit,
           search: search && search.length > 0 ? search : null,
           sourceKind: 'validated_regenerative_action',
+          sort,
+          direction,
         },
         env
       ),
@@ -767,7 +831,7 @@ export async function getAirsActivity(
           entry,
         ])
       ).values()
-    ).sort(compareActivityEntriesByRecordedAtDesc);
+    ).sort(compareActivityEntries(sort, direction));
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     const combinedTotalCount = compensationResult.totalCount + regenerativeResult.totalCount;
@@ -788,6 +852,8 @@ export async function getAirsActivity(
       limit: pageSize,
       search: search && search.length > 0 ? search : null,
       sourceKind: input.sourceKind ?? null,
+      sort,
+      direction,
     },
     env
   );
@@ -806,4 +872,40 @@ export async function getAirsEligibleUsersCount(
 ): Promise<number> {
   const rows = await supabaseRpcArray('airs_get_eligible_users_count', {}, env);
   return asNumber(rows[0]?.count);
+}
+
+export function mapAirsUserAvatar(value: unknown): AirsUserAvatar {
+  const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  const avatar: AirsUserAvatar = {
+    kind: typeof record.kind === 'string' ? (record.kind as AirsUserAvatarKind) : null,
+    ref: typeof record.ref === 'string' ? record.ref : null,
+    art:
+      record.art && typeof record.art === 'object' ? (record.art as Record<string, unknown>) : null,
+  };
+  if ('socialUrl' in record) {
+    const photo = typeof record.socialUrl === 'string' ? record.socialUrl.trim() : '';
+    avatar.socialUrl = /^https:\/\//i.test(photo) ? photo : null;
+  }
+  return avatar;
+}
+
+export async function getAirsUserAvatar(
+  userId: string,
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsUserAvatar> {
+  return mapAirsUserAvatar(await supabaseRpc('airs_get_user_avatar', { p_user_id: userId }, env));
+}
+
+/** Saves an avatar choice; the RPC checks the person holds the badge (AVATAR_NOT_ALLOWED). */
+export async function setAirsUserAvatar(
+  input: { userId: string; kind: AirsUserAvatarKind | null; ref: string | null },
+  env: Record<string, string | undefined> = process.env
+): Promise<AirsUserAvatar> {
+  return mapAirsUserAvatar(
+    await supabaseRpc(
+      'airs_set_user_avatar',
+      { p_user_id: input.userId, p_kind: input.kind, p_ref: input.ref },
+      env
+    )
+  );
 }

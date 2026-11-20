@@ -118,7 +118,7 @@ Rationale:
 - Tláo is the selected managed mail provider for the Alternun domain
 - SMTP configuration remains provider-switchable without changing application code
 
-Postmark remains the configured alternate if Tláo deliverability or operational complexity becomes a blocker.
+Update (2026-11-10): Postmark is retired. Tláo Mail is the only email provider, because the `alternun.co` SPF record only authorizes Tláo. See `docs/email-delivery.md`.
 
 ### 7. Database and Infrastructure Baseline
 
@@ -185,5 +185,5 @@ Tradeoffs:
 These items are intentionally not decided here:
 
 - whether future high-availability deployment uses ECS, EKS, or multiple EC2 nodes
-- whether Postmark becomes the long-term email provider
+- ~~whether Postmark becomes the long-term email provider~~ (decided: Tláo only, Postmark retired)
 - whether the non-production identity hostname keeps the `testnet.sso.alternun.co` convention permanently

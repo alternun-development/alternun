@@ -57,6 +57,7 @@ export const ADMIN_ROLES = [
   'partner_operator',
   'sub_admin',
   'partner_readonly',
+  'project_moderator',
 ] as const;
 
 export const ADMIN_PERMISSION_METADATA = 'admin-auth:permission';
@@ -98,7 +99,7 @@ type VerifiedIssuerClaims = Record<string, unknown> & {
   exp: number;
   iat: number;
   iss: string;
-  nbf: number;
+  nbf?: number;
   sub: string;
 };
 
@@ -189,6 +190,19 @@ const permissionsByRole: Readonly<Record<string, readonly AdminPermission[]>> = 
     'participants:manage',
     'airs_reports:submit',
     'audit:read',
+  ],
+  // Moderation for the projects a membership covers; never global (see globalAdminRoles).
+  project_moderator: [
+    'enterprises:read',
+    'notifications:read',
+    'projects:read',
+    'project_media:read',
+    'project_media:moderate',
+    'project_memberships:read',
+    'activities:read',
+    'comments:read',
+    'comments:moderate',
+    'participants:read',
   ],
   moderator: [
     'enterprises:read',
@@ -419,10 +433,10 @@ function validateVerifiedClaims(claims: Record<string, unknown>): VerifiedIssuer
 
   if (
     typeof claims.exp !== 'number' ||
-    typeof claims.nbf !== 'number' ||
+    // nbf is optional (RFC 7519 §4.1.5) and Authentik never sets it, so only enforce it when present.
+    (claims.nbf !== undefined && (typeof claims.nbf !== 'number' || claims.nbf > now)) ||
     typeof claims.iat !== 'number' ||
     claims.exp <= now ||
-    claims.nbf > now ||
     typeof claims.iss !== 'string' ||
     !claims.iss.trim() ||
     typeof claims.sub !== 'string' ||
@@ -437,7 +451,7 @@ function validateVerifiedClaims(claims: Record<string, unknown>): VerifiedIssuer
     exp: claims.exp,
     iat: claims.iat,
     iss: claims.iss,
-    nbf: claims.nbf,
+    ...(typeof claims.nbf === 'number' ? { nbf: claims.nbf } : {}),
     sub: claims.sub,
   };
 }

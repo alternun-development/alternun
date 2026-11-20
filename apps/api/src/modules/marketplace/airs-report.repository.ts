@@ -306,6 +306,30 @@ export class AirsReportRepository {
     return data ? mapAirsReportRow(data as Row) : null;
   }
 
+  /** The honor award a project medal gives (via its recipe), for the recipient email. */
+  async findHonorAwardForMedal(
+    medalId: string
+  ): Promise<{ title: string; eventName: string | null; imageUrl: string } | null> {
+    const { data, error } = await this.client
+      .from('project_medals')
+      .select('image_url, recipe:honor_award_recipes!honor_recipe_id(title, event_name)')
+      .eq('id', medalId)
+      .maybeSingle();
+    if (error) return null;
+    if (!data) return null;
+    const row = data as Row;
+    const recipe = (Array.isArray(row.recipe) ? row.recipe[0] : row.recipe) as Row | null;
+    const imageUrl = typeof row.image_url === 'string' ? row.image_url : '';
+    if (!recipe || typeof recipe.title !== 'string' || !imageUrl.startsWith('https://')) {
+      return null;
+    }
+    return {
+      title: recipe.title,
+      eventName: typeof recipe.event_name === 'string' ? recipe.event_name : null,
+      imageUrl,
+    };
+  }
+
   /** History of one report, oldest first. Only what an operator needs: no actor identity. */
   async listTimeline(reportId: string): Promise<AirsReportTimelineEntry[]> {
     const { data, error } = await this.client

@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 const includeVideoStudio = process.argv.includes('--video-studio');
+const killAllowed = process.argv.includes('--kill-allowed');
 let authentikStarted = false;
 let child = null;
 
@@ -56,7 +57,7 @@ function startAuthentik() {
 // Check and optionally kill conflicting ports first
 function checkPorts() {
   try {
-    const result = spawnSync('node', ['scripts/check-ports.mjs'], {
+    const result = spawnSync('node', ['scripts/check-ports.mjs', ...(killAllowed ? ['--kill-allowed'] : [])], {
       stdio: 'inherit',
       cwd: process.cwd(),
     });

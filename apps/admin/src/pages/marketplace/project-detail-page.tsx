@@ -14,6 +14,7 @@ import { ContentEditor } from './editors/content-editor';
 import { ActivityEditor } from './editors/activity-editor';
 import { ApprovalInbox } from './editors/approval-inbox';
 import { MediaEditor } from './editors/media-editor';
+import { ProjectProfileEditor } from './editors/project-profile-editor';
 import { ProjectStatusActions } from './editors/project-status-actions';
 import { MedalEditor } from './editors/medal-editor';
 import { ProjectTypeEditor } from './editors/project-type-editor';
@@ -406,14 +407,24 @@ export function MarketplaceProjectDetailPage(): JSX.Element {
           />
         ) : null}
         {tab === 'content' ? (
-          <ContentEditor
-            project={snapshot.project}
-            roles={roles}
-            onSaved={() => {
-              setSuccess(marketplaceCopy.edit.success);
-              load();
-            }}
-          />
+          <div className='page-grid'>
+            <ContentEditor
+              project={snapshot.project}
+              roles={roles}
+              onSaved={() => {
+                setSuccess(marketplaceCopy.edit.success);
+                load();
+              }}
+            />
+            <ProjectProfileEditor
+              project={snapshot.project}
+              roles={roles}
+              onSaved={(message) => {
+                setSuccess(message);
+                load();
+              }}
+            />
+          </div>
         ) : null}
         {tab === 'media' ? (
           <SectionState result={snapshot.media} empty={() => false} onRetry={load}>

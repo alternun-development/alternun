@@ -17,7 +17,7 @@ import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { NotificationsService, type UserNotification } from './notifications.service';
 
 @ApiTags('notifications')
-@Controller({ path: 'notifications', version: VERSION_NEUTRAL })
+@Controller({ path: 'notifications', version: [VERSION_NEUTRAL, '1'] })
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 

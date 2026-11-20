@@ -1,10 +1,9 @@
 import { useAuth } from '../auth/AppAuthProvider';
 import { resolveSessionTokenWithRetry } from '../auth/sessionToken';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Image,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,22 +11,14 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { ChevronDown, ChevronUp, Share2 } from 'lucide-react-native';
-import * as Clipboard from 'expo-clipboard';
 import { useAppTranslation } from '../i18n/useAppTranslation';
+import ShareActions from '../share/ShareActions';
+import ShareButton from '../share/ShareButton';
+import type { ShareContent, ShareServices } from '../share/share.types';
 import { AIRS_MILESTONES, type AchievementDef, type ColorPalette } from './AchievementBadge';
 import { MILESTONE_DETAIL_ARTWORK, LOCKED_ACHIEVEMENT_ARTWORK } from './badgeAssets';
 import { ACHIEVEMENT_UNLOCK_STEPS } from './achievementUnlockSteps';
-import {
-  canShareMilestoneFile,
-  canShareMilestoneLink,
-  openMilestoneComposer,
-  downloadMilestoneImage,
-  publishMilestoneImage,
-  shareMilestoneImage,
-  type PreparedMilestoneImage,
-  type SocialPlatform,
-} from './milestoneSharing';
+import { publishMilestoneImage, type PreparedMilestoneImage } from './milestoneSharing';
 
 export default function AchievementDetailsModal({
   def,
@@ -45,12 +36,8 @@ export default function AchievementDetailsModal({
   const { t } = useAppTranslation('mobile');
   const { width, height } = useWindowDimensions();
   const [image, setImage] = useState<PreparedMilestoneImage | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState('');
   const [retry, setRetry] = useState(0);
   const [failed, setFailed] = useState(false);
-  const [socialExpanded, setSocialExpanded] = useState(false);
-  const [toolsExpanded, setToolsExpanded] = useState(false);
   const threshold = AIRS_MILESTONES[def.key];
   const artwork = def.unlocked
     ? MILESTONE_DETAIL_ARTWORK[def.key]
@@ -85,45 +72,29 @@ export default function AchievementDetailsModal({
     };
   }, [def.key, canCelebrate, retry, client]);
 
-  const handleShare = async (): Promise<void> => {
-    if (!image || !canCelebrate || busy) return;
-    setBusy(true);
-    setNotice('');
-    try {
-      // Keep navigator.share in the original tap; the image is prepared beforehand.
-      if (canShareMilestoneFile(image) || canShareMilestoneLink(image)) {
-        await shareMilestoneImage(image, caption);
-      } else {
-        setSocialExpanded(true);
-        setToolsExpanded(true);
-        setNotice(
-          copy('browserFallback', 'Choose a social link, or save the image and copy your caption.')
-        );
-      }
-    } catch (error) {
-      if (!(error instanceof Error && error.name === 'AbortError')) {
-        setToolsExpanded(true);
-        setNotice(
-          copy('shareError', 'Unable to open sharing. Save the image and copy the caption instead.')
-        );
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
-  const handleSocial = (platform: SocialPlatform): void => {
-    if (!image) return;
-    openMilestoneComposer(platform, caption, image.shareUrl);
-  };
-  const handleDownload = (): void => {
-    if (!image) return;
-    try {
-      downloadMilestoneImage(image);
-      setNotice(copy('attach', 'Image saved. Attach it to your post and paste the caption below.'));
-    } catch {
-      setNotice(copy('downloadError', 'Unable to save the image. Try Share with apps instead.'));
-    }
-  };
+  // The published image goes to the shared share actions: the system sheet, X, LinkedIn,
+  // Instagram, the public link and saving the image.
+  const shareContent = useMemo<ShareContent | null>(
+    () =>
+      image
+        ? {
+            title: copy('shareTitle', 'Share your milestone'),
+            message: caption,
+            url: image.shareUrl ?? null,
+            image: { fileName: `airs-${def.key}.png`, source: image.previewUri ?? image.uri },
+          }
+        : null,
+    // `copy` and `caption` are derived from `t`, `def` and `image`.
+    [image, caption, def.key, t]
+  );
+  // The image was prepared when it was published: no second download.
+  const shareServices = useMemo<Partial<ShareServices> | undefined>(
+    () =>
+      image
+        ? { prepareImage: () => Promise.resolve({ uri: image.uri, file: image.file }) }
+        : undefined,
+    [image]
+  );
   const button = (label: string, onPress: () => void, disabled = false): React.JSX.Element => (
     <Pressable
       accessibilityRole='button'
@@ -297,125 +268,33 @@ export default function AchievementDetailsModal({
                       )}
                 </Text>
                 {retry === 0 ? (
-                  button(copy('createImage', 'Create share image'), () => setRetry(1))
-                ) : image ? (
-                  <Pressable
-                    accessibilityRole='button'
-                    accessibilityLabel={copy('shareApps', 'Share with apps')}
-                    accessibilityState={{ disabled: busy }}
-                    disabled={busy}
-                    onPress={() => {
-                      void handleShare();
-                    }}
-                    style={{
-                      minHeight: 44,
-                      borderRadius: 14,
-                      backgroundColor: '#10dbb1',
-                      opacity: busy ? 0.5 : 1,
-                      flexDirection: 'row',
-                      gap: 8,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: 12,
-                    }}
-                  >
-                    <Share2 size={18} color='#052d28' />
-                    <Text style={{ color: '#052d28', fontWeight: '700' }}>
-                      {copy('shareApps', 'Share with apps')}
-                    </Text>
-                  </Pressable>
-                ) : null}
-                {image && (
-                  <View style={{ borderTopWidth: 1, borderColor: c.border }}>
-                    {Platform.OS === 'web' && (
-                      <>
-                        <Pressable
-                          accessibilityRole='button'
-                          accessibilityLabel={copy('socialLinks', 'Social links')}
-                          accessibilityState={{ expanded: socialExpanded }}
-                          onPress={() => setSocialExpanded((value) => !value)}
-                          style={{
-                            minHeight: 44,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <Text style={{ color: c.text, fontSize: 13 }}>
-                            {copy('socialLinks', 'Social links')}
-                          </Text>
-                          {socialExpanded ? (
-                            <ChevronUp size={16} color={c.muted} />
-                          ) : (
-                            <ChevronDown size={16} color={c.muted} />
-                          )}
-                        </Pressable>
-                        {socialExpanded && (
-                          <View style={{ gap: 8, paddingBottom: 10 }}>
-                            <Text style={{ color: c.muted, fontSize: 12, lineHeight: 18 }}>
-                              {copy(
-                                'linksHint',
-                                'Share the public preview link. To attach the image in an app, use Share with apps.'
-                              )}
-                            </Text>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                              {(['X', 'Facebook', 'LinkedIn'] as const).map((platform) => (
-                                <React.Fragment key={platform}>
-                                  {button(platform, () => handleSocial(platform))}
-                                </React.Fragment>
-                              ))}
-                            </View>
-                          </View>
-                        )}
-                      </>
-                    )}
-                    <Pressable
-                      accessibilityRole='button'
-                      accessibilityLabel={copy('saveCaption', 'Save & caption')}
-                      accessibilityState={{ expanded: toolsExpanded }}
-                      onPress={() => setToolsExpanded((value) => !value)}
-                      style={{
-                        minHeight: 44,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Text style={{ color: c.text, fontSize: 13 }}>
-                        {copy('saveCaption', 'Save & caption')}
-                      </Text>
-                      {toolsExpanded ? (
-                        <ChevronUp size={16} color={c.muted} />
-                      ) : (
-                        <ChevronDown size={16} color={c.muted} />
-                      )}
-                    </Pressable>
-                    {toolsExpanded && (
-                      <View style={{ gap: 10 }}>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                          {Platform.OS === 'web' &&
-                            button(copy('download', 'Save image'), handleDownload)}
-                          {button(copy('copy', 'Copy caption'), () => {
-                            void Clipboard.setStringAsync(caption)
-                              .then((copied) =>
-                                setNotice(
-                                  copied
-                                    ? copy('copied', 'Caption copied.')
-                                    : copy('copyError', 'Select the caption above to copy it.')
-                                )
-                              )
-                              .catch(() =>
-                                setNotice(copy('copyError', 'Select the caption above to copy it.'))
-                              );
-                          })}
-                        </View>
-                        <Text selectable style={{ color: c.muted, lineHeight: 18, fontSize: 12 }}>
-                          {caption}
-                        </Text>
-                      </View>
-                    )}
+                  <View style={{ alignItems: 'center' }}>
+                    <ShareButton
+                      size='large'
+                      label={copy('createImage', 'Create share image')}
+                      onPress={() => setRetry(1)}
+                    />
                   </View>
-                )}
+                ) : null}
+                {shareContent ? (
+                  <>
+                    <ShareActions
+                      key={shareContent.url ?? image?.uri}
+                      content={shareContent}
+                      services={shareServices}
+                      palette={{
+                        text: c.text,
+                        muted: c.muted,
+                        border: c.border,
+                        accent: c.accent,
+                        surface: modalBackground,
+                      }}
+                    />
+                    <Text selectable style={{ color: c.muted, lineHeight: 18, fontSize: 12 }}>
+                      {caption}
+                    </Text>
+                  </>
+                ) : null}
                 {retry > 0 && !image && !failed && (
                   <Text accessibilityLiveRegion='polite' style={{ color: c.muted }}>
                     {copy('preparing', 'Preparing your image…')}
@@ -429,11 +308,6 @@ export default function AchievementDetailsModal({
                     </Text>
                   </>
                 )}
-                {notice ? (
-                  <Text accessibilityLiveRegion='polite' style={{ color: c.muted, fontSize: 12 }}>
-                    {notice}
-                  </Text>
-                ) : null}
               </>
             )}
           </ScrollView>

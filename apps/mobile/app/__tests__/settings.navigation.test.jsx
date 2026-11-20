@@ -37,6 +37,6 @@ it('opens the profile route from the top navigation', () => {
     tree = renderer.create(<SettingsScreen />);
   });
   act(() => TopNav.mock.calls.at(-1)[0].onOpenProfile());
-  expect(mockPush).toHaveBeenCalledWith('/mi-perfil');
+  expect(mockPush).toHaveBeenCalledWith('/profile');
   act(() => tree.unmount());
 });

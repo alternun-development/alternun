@@ -3,12 +3,15 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   Param,
   ParseUUIDPipe,
   Post,
   Query,
   Req,
+  Res,
+  UnauthorizedException,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -20,12 +23,14 @@ import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiServiceUnavailableResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { FastifyAdminRequest } from '../../common/admin-auth/admin-auth.guard';
 import { ApiErrorDto } from './marketplace.dto';
 import { MarketplaceExceptionFilter } from './marketplace.errors';
@@ -38,8 +43,10 @@ import {
   SubmitAirsReportDto,
 } from './airs-report.dto';
 import { AirsReportService } from './airs-report.service';
+import { ProjectClientService } from './project-client.service';
+import { ProjectManageAccess } from './project-manage.service';
 
-function requestId(request: FastifyAdminRequest): string {
+function requestId(request: FastifyRequest): string {
   return String(request.id ?? request.headers['x-request-id'] ?? 'unknown');
 }
 
@@ -169,5 +176,107 @@ export class AirsReportAdminController {
     @Body() body: AirsReportReasonDto
   ) {
     return this.service.cancel(request.adminPrincipal!, requestId(request), id, body.reason);
+  }
+}
+
+function bearer(authorization: string | undefined): string {
+  if (!authorization?.trim()) throw new UnauthorizedException('Missing bearer token');
+  return authorization;
+}
+
+/**
+ * In-app review of Airs in review, authorized with the Airs session. The approver list and the
+ * rule that nobody decides on their own Airs are applied by AirsReportService, as in the console.
+ */
+@ApiTags('me')
+@ApiBearerAuth()
+@ApiBadRequestResponse({ type: ApiErrorDto })
+@ApiUnauthorizedResponse({ type: ApiErrorDto })
+@ApiForbiddenResponse({ type: ApiErrorDto })
+@ApiNotFoundResponse({ type: ApiErrorDto })
+@ApiConflictResponse({ type: ApiErrorDto })
+@ApiUnprocessableEntityResponse({ type: ApiErrorDto })
+@ApiServiceUnavailableResponse({ type: ApiErrorDto })
+@Controller({ path: 'me/airs-reports', version: '1' })
+@UseFilters(MarketplaceExceptionFilter)
+export class AirsReportMeController {
+  constructor(
+    private readonly access: ProjectManageAccess,
+    private readonly service: AirsReportService,
+    private readonly clients: ProjectClientService
+  ) {}
+
+  @Get('access')
+  @ApiOperation({ summary: 'Whether the signed-in person may review Airs in review.' })
+  @ApiOkResponse({ description: '{ canApprove: boolean }' })
+  async reviewAccess(@Headers('authorization') authorization: string | undefined) {
+    const principal = await this.access.resolveApprover(bearer(authorization));
+    return { canApprove: await this.service.canApprove(principal) };
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Airs in review, oldest first, with project title and file flag.' })
+  async reviewQueue(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined
+  ) {
+    const principal = await this.access.resolveApprover(bearer(authorization));
+    return this.clients.reviewQueue(principal, requestId(request));
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Report with the recipient daily and monthly totals.' })
+  async detail(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string
+  ) {
+    const principal = await this.access.resolveApprover(bearer(authorization));
+    return this.service.detail(principal, requestId(request), id);
+  }
+
+  @Get(':id/proof')
+  @ApiOperation({ summary: 'The supporting file of the report, to approvers; never as a URL.' })
+  async proof(
+    @Req() request: FastifyRequest,
+    @Res() reply: FastifyReply,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string
+  ): Promise<void> {
+    const principal = await this.access.resolveApprover(bearer(authorization));
+    const file = await this.clients.approverProofFile(principal, requestId(request), id);
+    await reply
+      .code(200)
+      .header('cache-control', 'private, no-store')
+      .header('x-content-type-options', 'nosniff')
+      .header('content-disposition', `inline; filename="${file.fileName}"`)
+      .type(file.contentType)
+      .send(file.bytes);
+  }
+
+  @Post(':id/approve')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Approve the reviewed version (snapshot hash) of the report.' })
+  async approve(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() body: ApproveAirsReportDto
+  ) {
+    const principal = await this.access.resolveApprover(bearer(authorization));
+    return this.service.approve(principal, requestId(request), id, body.snapshotHash);
+  }
+
+  @Post(':id/reject')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Reject the report with a reason.' })
+  async reject(
+    @Req() request: FastifyRequest,
+    @Headers('authorization') authorization: string | undefined,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() body: AirsReportReasonDto
+  ) {
+    const principal = await this.access.resolveApprover(bearer(authorization));
+    return this.service.reject(principal, requestId(request), id, body.reason);
   }
 }

@@ -26,6 +26,19 @@ jest.mock('react-native', () => {
   };
 });
 
+jest.mock('@alternun/ui', () => ({
+  resolveTier: (score: number): string =>
+    score >= 20_000 ? 'platinum' : score >= 5_000 ? 'gold' : score >= 1_000 ? 'silver' : 'bronze',
+  TIERS: {
+    bronze: { label: 'Bronze', color: '#cd7f32' },
+    silver: { label: 'Silver', color: '#a8b8cc' },
+    gold: { label: 'Gold', color: '#d4b96a' },
+    platinum: { label: 'Platinum', color: '#9ba9c4' },
+  },
+}));
+
+jest.mock('../../profile/badgeAssets', () => ({ STATUS_BADGES: {} }));
+
 jest.mock('../../../utils/runtimeConfig', () => ({
   resolveMobileApiBaseUrl: (): string => 'http://127.0.0.1:3000',
 }));
@@ -171,7 +184,7 @@ describe('AIRSLeaderboard render', () => {
       await flushEffects();
     });
 
-    expect(renderState.container.textContent).toContain('Top AIRS');
+    expect(renderState.container.textContent).toContain('Top Airs');
     expect(renderState.container.textContent).toContain('Ranking global de acumuladores');
     expect(renderState.container.textContent).toContain('Tu posición global: #4');
     expect(renderState.container.textContent).toContain('20');
@@ -304,7 +317,7 @@ describe('AIRSLeaderboard render', () => {
     );
 
     expect(renderState.container.textContent).toContain(
-      'Inicia sesión para ver el ranking de AIRS'
+      'Inicia sesión para ver el ranking de Airs'
     );
   });
 
@@ -391,7 +404,7 @@ describe('AIRSLeaderboard render', () => {
       await flushEffects();
     });
 
-    expect(renderState.container.textContent).toContain('Aún no hay usuarios con AIRS acumulados.');
+    expect(renderState.container.textContent).toContain('Aún no hay usuarios con Airs acumulados.');
   });
 
   it('renders the out-of-top user row in the global ranking', async () => {
