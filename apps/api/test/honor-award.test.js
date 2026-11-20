@@ -530,3 +530,53 @@ test('Legado skips the claim when the account has no verified email', async () =
   assert.equal(claimCalls, 0);
   assert.deepEqual(calls.listed, [[{ userId: 'user-2' }, false]]);
 });
+
+function withStage(t, stage) {
+  const previous = process.env.APP_STAGE;
+  process.env.APP_STAGE = stage;
+  t.after(() => {
+    if (previous === undefined) delete process.env.APP_STAGE;
+    else process.env.APP_STAGE = previous;
+  });
+}
+
+test('an ally page lists the medals people can earn with it', async (t) => {
+  withStage(t, 'dev');
+  const { service } = build({
+    enterprises: { 'swing-golf': { id: ENTERPRISE_ID, slug: 'swing-golf', status: 'active' } },
+  });
+  const filters = [];
+  service.repository.listUserCatalog = async (filter) => {
+    filters.push(filter);
+    return [{ recipe: { id: RECIPE_ID } }];
+  };
+  const items = await service.listPublicCatalogForEnterprise('swing-golf');
+  assert.equal(items.length, 1);
+  assert.deepEqual(filters, [{ enterpriseId: ENTERPRISE_ID }]);
+  await assert.rejects(service.listPublicCatalogForEnterprise('missing'), /ENTERPRISE_NOT_FOUND/);
+});
+
+test('a project page lists its medals; production hides testnet-only and unpublished projects', async (t) => {
+  const { service } = build();
+  const projects = {
+    'fundacion-batis': { id: PROJECT_ID, status: 'published', testnetOnly: false },
+    'eco-turismo': { id: 'p2', status: 'published', testnetOnly: true },
+    draft: { id: 'p3', status: 'draft', testnetOnly: false },
+  };
+  service.repository.findProjectBySlug = async (slug) => projects[slug] ?? null;
+  const filters = [];
+  service.repository.listUserCatalog = async (filter) => {
+    filters.push(filter);
+    return [];
+  };
+
+  withStage(t, 'production');
+  await service.listPublicCatalogForProject('fundacion-batis');
+  assert.deepEqual(filters, [{ projectId: PROJECT_ID }]);
+  await assert.rejects(service.listPublicCatalogForProject('eco-turismo'), /PROJECT_NOT_FOUND/);
+  await assert.rejects(service.listPublicCatalogForProject('draft'), /PROJECT_NOT_FOUND/);
+
+  process.env.APP_STAGE = 'dev';
+  await service.listPublicCatalogForProject('eco-turismo');
+  assert.deepEqual(filters.at(-1), { projectId: 'p2' });
+});

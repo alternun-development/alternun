@@ -28,6 +28,7 @@ import {
 } from '../../utils/adminAccess';
 import type { DetailPalette, MarketplaceEnterpriseDetail, Translate } from './types';
 import HonorAwardsSection from '../honorAwards/HonorAwardsSection';
+import HonorAwardCatalogSection from '../honorAwards/HonorAwardCatalogSection';
 
 export class MarketplaceEnterpriseRequestError extends Error {
   constructor(readonly status: number) {
@@ -265,6 +266,15 @@ export function MarketplaceEnterpriseDetailView({
             </View>
           ) : null}
           <ProductsSection products={enterprise.products} palette={palette} t={t} />
+          <HonorAwardCatalogSection
+            source={{ kind: 'enterprise', slug: enterprise.slug }}
+            c={{
+              text: palette.text,
+              muted: palette.muted,
+              border: palette.border,
+              accent: palette.primaryDeep,
+            }}
+          />
           <EventSection event={enterprise.eventDetails} palette={palette} t={t} />
           <LocationSection location={enterprise.location} palette={palette} t={t} />
           <SitesSection sites={enterprise.sites} palette={palette} t={t} />

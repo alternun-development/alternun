@@ -837,7 +837,8 @@
         "bronze": "บรอนซ์",
         "silver": "เงิน",
         "gold": "ทอง",
-        "platinum": "แพลทินัม"
+        "platinum": "แพลทินัม",
+        "none": "ยังไม่มีระดับ"
       },
       "stats": {
         "airs": "AIRS",
@@ -922,6 +923,7 @@
         "verified": "ข้อมูลได้รับการยืนยัน"
       },
       "tierJourney": "การเดินทางระดับชั้น",
+      "tierJourneyAirs": "{{amount}} Airs",
       "accountRows": {
         "accountAndRoles": "บัญชีและบทบาท",
         "personalInfo": "ข้อมูลส่วนบุคคล",
@@ -1140,9 +1142,7 @@
           "purpose": "ในฐานะผู้เข้าร่วมการแข่งขัน คุณมีส่วนช่วยอนุรักษ์ป่าชายเลนในทะเลแคริบเบียนของโคลอมเบีย ร่วมกับ Fundación Batis",
           "partnerDescription": "จัดและโปรโมตการแข่งขันกอล์ฟและงานกีฬาในโคลอมเบีย เราช่วยนักกีฬาให้ไปถึงความฝันและเป้าหมาย",
           "projectLocation": "KM5 Finca La Granja, Antigua Vía Férrea, Puerto Colombia, Atlántico.",
-          "projectDescription": "ป่าโกงกางแดง (Rhizophora mangle) ในแถบทะเลแคริบเบียนของโคลอมเบีย",
-          "sampleLabel": "เหรียญตัวอย่าง: ดูตัวอย่าง",
-          "sampleTag": "ตัวอย่าง"
+          "projectDescription": "ป่าโกงกางแดง (Rhizophora mangle) ในแถบทะเลแคริบเบียนของโคลอมเบีย"
         },
         "desk": {
           "grantTitle": "มอบรางวัล",
@@ -1175,7 +1175,6 @@
           "dateLabel": "วันที่:",
           "obtainedLabel": "ได้รับเมื่อ:"
         },
-        "demoSlotHint": "แตะเหรียญตัวอย่างเพื่อดูหน้าตา",
         "locked": {
           "note": "คุณยังไม่มีเหรียญนี้ เข้าร่วมภารกิจเพื่อรับเหรียญ",
           "slotLabel": "{{title}}: เหรียญที่ยังไม่ได้รับ"
@@ -1222,6 +1221,17 @@
           "unverified": "ยืนยันอีเมลบัญชีของคุณเพื่อรับเหรียญ",
           "unavailable": "ขณะนี้ใช้รหัสนี้ไม่ได้ กรุณาติดต่อพันธมิตรที่แชร์ให้คุณ",
           "genericError": "ไม่สามารถรับเหรียญได้ กรุณาลองอีกครั้ง"
+        },
+        "catalog": {
+          "title": "เหรียญที่รับได้",
+          "subtitle": "แตะเหรียญเพื่อดูวิธีรับ",
+          "itemLabel": "{{title}}: ดูวิธีรับ"
+        },
+        "howToEarn": {
+          "title": "วิธีรับเหรียญ",
+          "withEvent": "รับได้ที่ {{event}} ร่วมกับ {{partner}}",
+          "withPartner": "รับได้ร่วมกับ {{partner}}",
+          "steps": "คุณจะได้รับทางอีเมลหรือด้วยรหัส หากมีรหัส ให้กรอกในโปรไฟล์ของคุณ ที่ Legacy → \"รับเหรียญ\""
         }
       },
       "statsInfo": {

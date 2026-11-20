@@ -252,3 +252,24 @@ export function sortHonorAwards(awards: readonly HonorAward[]): HonorAward[] {
     return right.awardedAt.localeCompare(left.awardedAt);
   });
 }
+
+/** A public page whose medals to earn are listed: an ally or a project. */
+export type HonorCatalogSource = { kind: 'enterprise' | 'project'; slug: string };
+
+/** The active medals people can earn with an ally or through a project (no sign-in needed). */
+export async function fetchPublicHonorCatalog(
+  source: HonorCatalogSource,
+  fetcher: typeof fetch = fetch,
+  apiUrl = resolveMobileApiBaseUrl()
+): Promise<HonorAwardCatalogItem[]> {
+  const collection = source.kind === 'enterprise' ? 'enterprises' : 'projects';
+  const response = await fetcher(
+    `${apiUrl.replace(/\/+$/, '')}/v1/${collection}/${encodeURIComponent(
+      source.slug
+    )}/honor-awards/catalog`,
+    { headers: { Accept: 'application/json' } }
+  );
+  if (!response.ok) throw new HonorAwardRequestError(response.status);
+  const body: unknown = await response.json();
+  return Array.isArray(body) ? (body as HonorAwardCatalogItem[]) : [];
+}

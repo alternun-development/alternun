@@ -156,26 +156,20 @@ export default function HonorAwardsSection({
   if (hideWhenEmpty && (state.kind !== 'ready' || awards.length === 0)) return null;
   const slots = buildHonorSlots(
     awards,
-    legacy ? { demo: true, locked: state.kind === 'ready' ? state.catalog : [] } : {}
+    legacy ? { locked: state.kind === 'ready' ? state.catalog : [] } : {}
   );
   const pendingCount = awards.filter((award) => award.status === 'pending').length;
-  const hint = legacy
-    ? slots.some((slot) => slot.kind === 'demo')
+  // Allies can preview a claim from an empty slot; a person's Legado shows only real medals.
+  const hint =
+    !legacy && slots.some((slot) => slot.kind === 'empty')
       ? honorText(
           t,
-          'profile.honorAwards.demoSlotHint',
-          'Toca la medalla de ejemplo para ver cómo se ve.'
+          'profile.honorAwards.info.demoHint',
+          'Toca un espacio disponible para ver una demostración.'
         )
-      : null
-    : slots.some((slot) => slot.kind === 'empty')
-    ? honorText(
-        t,
-        'profile.honorAwards.info.demoHint',
-        'Toca un espacio disponible para ver una demostración.'
-      )
-    : null;
+      : null;
 
-  /** The sample medal (or an ally's empty slot) previews the claim; nothing is saved. */
+  /** An ally's empty slot previews the claim with a sample medal; nothing is saved. */
   function previewDemo(): void {
     setCelebrating({
       award: buildDemoHonorAward({
@@ -301,34 +295,6 @@ export default function HonorAwardsSection({
       {state.kind === 'ready' ? (
         <View style={styles.grid}>
           {slots.map((slot) => {
-            if (slot.kind === 'demo') {
-              return (
-                <Pressable
-                  key='demo'
-                  accessibilityRole='button'
-                  accessibilityLabel={honorText(
-                    t,
-                    'profile.honorAwards.demo.sampleLabel',
-                    'Medalla de ejemplo: ver demostración'
-                  )}
-                  onPress={previewDemo}
-                  style={styles.slot}
-                >
-                  <HonorAwardEmblem
-                    tier='generic'
-                    title='Manglar Verde'
-                    artPreset='golf_mangrove'
-                    size={56}
-                  />
-                  <Text numberOfLines={2} style={[styles.slotLabel, { color: c.text }]}>
-                    Manglar Verde
-                  </Text>
-                  <Text style={[styles.slotYear, { color: c.muted }]}>
-                    {honorText(t, 'profile.honorAwards.demo.sampleTag', 'Ejemplo')}
-                  </Text>
-                </Pressable>
-              );
-            }
             if (slot.kind === 'locked') {
               const { recipe, partner } = slot.item;
               return (

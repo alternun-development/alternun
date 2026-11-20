@@ -837,7 +837,8 @@
         "bronze": "Bronce",
         "silver": "Plata",
         "gold": "Oro",
-        "platinum": "Platino"
+        "platinum": "Platino",
+        "none": "Aún sin nivel"
       },
       "stats": {
         "airs": "AIRS",
@@ -922,6 +923,7 @@
         "verified": "Información Verificada"
       },
       "tierJourney": "Trayecto de Tier",
+      "tierJourneyAirs": "{{amount}} Airs",
       "accountRows": {
         "accountAndRoles": "Cuenta y roles",
         "personalInfo": "Información personal",
@@ -1140,9 +1142,7 @@
           "purpose": "Como participante del torneo, sumaste a la conservación del bosque de manglar en el Caribe colombiano, junto a la Fundación Batis.",
           "partnerDescription": "Organización y promoción de torneos de golf y eventos deportivos en Colombia. Ayudamos a los deportistas a alcanzar sus sueños y metas.",
           "projectLocation": "KM5 Finca La Granja, Antigua Vía Férrea, Puerto Colombia, Atlántico.",
-          "projectDescription": "Bosque de mangle rojo (Rhizophora mangle) en el Caribe colombiano.",
-          "sampleLabel": "Medalla de ejemplo: ver demostración",
-          "sampleTag": "Ejemplo"
+          "projectDescription": "Bosque de mangle rojo (Rhizophora mangle) en el Caribe colombiano."
         },
         "desk": {
           "grantTitle": "Otorgar un galardón",
@@ -1175,7 +1175,6 @@
           "dateLabel": "Fecha:",
           "obtainedLabel": "Obtenida:"
         },
-        "demoSlotHint": "Toca la medalla de ejemplo para ver cómo se ve.",
         "locked": {
           "note": "Aún no tienes esta medalla: participa en la misión para obtenerla.",
           "slotLabel": "{{title}}: medalla por obtener"
@@ -1222,6 +1221,17 @@
           "unverified": "Verifica el correo de tu cuenta para reclamar medallas.",
           "unavailable": "Este código no se puede usar ahora. Escríbele al aliado que te lo compartió.",
           "genericError": "No pudimos reclamar la medalla. Inténtalo de nuevo."
+        },
+        "catalog": {
+          "title": "Medallas para obtener",
+          "subtitle": "Toca una medalla para ver cómo obtenerla.",
+          "itemLabel": "{{title}}: ver cómo obtenerla"
+        },
+        "howToEarn": {
+          "title": "¿Cómo obtenerla?",
+          "withEvent": "Se obtiene en {{event}}, con {{partner}}.",
+          "withPartner": "Se obtiene con {{partner}}.",
+          "steps": "Te la entregan por correo o con un código. Si tienes un código, ingrésalo en tu perfil, en Legado → «Reclamar medalla»."
         }
       },
       "statsInfo": {

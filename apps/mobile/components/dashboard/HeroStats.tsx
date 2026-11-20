@@ -118,6 +118,7 @@ export default function HeroStats({
             brandMark={heroBrandMark}
             subtitle={subtitle}
             statusLabel={statusLabel}
+            unrankedLabel={t.t('profile.tierLabels.none', undefined, 'Aún sin nivel')}
             progressLabel={progressLabel}
             progressHint={progressHint}
             maxTierMessage={maxTierMessage}

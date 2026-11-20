@@ -73,6 +73,7 @@ export default function HonorAwardInspectModal({
   demo = false,
   initialStage = 'medal',
   locked = false,
+  howToEarn,
 }: HonorAwardInspectModalProps): React.JSX.Element | null {
   const { t, locale } = useAppTranslation('mobile');
   const { motionLevel } = useAppPreferences();
@@ -247,6 +248,14 @@ export default function HonorAwardInspectModal({
                     {honorText(t, 'profile.honorAwards.mission.purpose', 'Propósito:')}
                   </Text>
                   <Text style={styles.bodyText}>{recipe.purpose}</Text>
+                </View>
+              ) : null}
+              {howToEarn ? (
+                <View style={styles.purpose} testID='honor-award-how-to-earn'>
+                  <Text style={styles.purposeLabel}>
+                    {honorText(t, 'profile.honorAwards.howToEarn.title', '¿Cómo obtenerla?')}
+                  </Text>
+                  <Text style={styles.bodyText}>{howToEarn}</Text>
                 </View>
               ) : null}
 

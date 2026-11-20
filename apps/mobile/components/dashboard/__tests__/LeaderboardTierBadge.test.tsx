@@ -4,8 +4,17 @@ import { act, create, type ReactTestRenderer, type ReactTestInstance } from 'rea
 import { LeaderboardTierBadge } from '../LeaderboardTierBadge';
 
 jest.mock('@alternun/ui', () => ({
-  resolveTier: (score: number): string =>
-    score >= 20_000 ? 'platinum' : score >= 5_000 ? 'gold' : score >= 1_000 ? 'silver' : 'bronze',
+  // Same thresholds as @alternun/ui: no tier below 1.000, then 1.000 / 3.000 / 7.000 / 12.000.
+  resolveTier: (score: number): string | null =>
+    score >= 12_000
+      ? 'platinum'
+      : score >= 7_000
+      ? 'gold'
+      : score >= 3_000
+      ? 'silver'
+      : score >= 1_000
+      ? 'bronze'
+      : null,
   TIERS: {
     bronze: { label: 'Bronze', color: '#cd7f32' },
     silver: { label: 'Silver', color: '#a8b8cc' },
@@ -33,16 +42,16 @@ const text = (r: ReactTestRenderer): string => JSON.stringify(r.toJSON());
 
 describe('LeaderboardTierBadge', () => {
   it('shows only the icon, labelled with the tier of the balance', () => {
-    const bronze = render(30);
+    const bronze = render(1_030);
     expect(badge(bronze).props.accessibilityLabel).toBe('Bronze');
     expect(bronze.root.findAll((node) => node.props.source === 1).length).toBeGreaterThan(0);
     expect(text(bronze)).not.toContain('"Bronze"]');
     expect(text(bronze)).not.toMatch(/"children":\["Bronze"\]|"children":"Bronze"/);
-    expect(badge(render(1_200)).props.accessibilityLabel).toBe('Silver');
+    expect(badge(render(3_200)).props.accessibilityLabel).toBe('Silver');
   });
 
   it('expands the tier name on hover and toggles it on press', () => {
-    const r = render(30);
+    const r = render(1_030);
     act(() => badge(r).props.onHoverIn());
     expect(text(r)).toContain('Bronze');
     act(() => badge(r).props.onHoverOut());
@@ -53,10 +62,14 @@ describe('LeaderboardTierBadge', () => {
     expect(badge(r).props.accessibilityState).toEqual({ expanded: false });
   });
 
-  it('falls back to a colored dot without artwork, and treats bad scores as 0', () => {
+  it('falls back to a colored dot without artwork', () => {
     const platinum = render(25_000);
     expect(platinum.root.findAll((node) => node.props.source !== undefined)).toHaveLength(0);
     expect(badge(platinum).props.accessibilityLabel).toBe('Platinum');
-    expect(badge(render(Number.NaN)).props.accessibilityLabel).toBe('Bronze');
+  });
+
+  it('shows no badge below the first tier, and treats bad scores as 0', () => {
+    expect(render(999).toJSON()).toBeNull();
+    expect(render(Number.NaN).toJSON()).toBeNull();
   });
 });

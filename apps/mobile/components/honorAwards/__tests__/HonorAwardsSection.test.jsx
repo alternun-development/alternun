@@ -205,26 +205,15 @@ it('opens the explanation from the info button', async () => {
   expect(info.audience).toBe('person');
 });
 
-it('shows the sample medal first when the person has none, and previews it', async () => {
+it('shows no sample medal in Legado: only placeholders while the person has none', async () => {
   const tree = await render({ client: makeClient() });
-  expect(texts(tree)).toContain('Toca la medalla de ejemplo para ver cómo se ve.');
-  const sample = awardButton(tree, 'Medalla de ejemplo: ver demostración');
-  // The other placeholders are plain: nothing happens on them.
-  expect(texts(tree).filter((value) => value === 'Espacio disponible')).toHaveLength(4);
+  expect(texts(tree)).not.toContain('Ejemplo');
+  expect(texts(tree)).not.toContain('Toca la medalla de ejemplo para ver cómo se ve.');
+  expect(awardButton(tree, 'Medalla de ejemplo: ver demostración')).toBeUndefined();
+  expect(texts(tree).filter((value) => value === 'Espacio disponible')).toHaveLength(5);
   expect(
     pressables(tree).filter((node) => node.props.accessibilityLabel?.startsWith('Espacio'))
   ).toHaveLength(0);
-  await act(async () => sample.props.onPress());
-  const preview = HonorAwardClaimCinematic.mock.calls.at(-1)[0];
-  expect(preview.demo).toBe(true);
-  expect(preview.award.recipe.tier).toBe('generic');
-  expect(preview.award.recipe.artPreset).toBe('golf_mangrove');
-
-  await act(async () => preview.onInspect(preview.award));
-  const inspect = HonorAwardInspectModal.mock.calls.at(-1)[0];
-  expect(inspect.demo).toBe(true);
-  expect(inspect.initialStage).toBe('mission');
-  expect(inspect.award.id).toBe('demo-generic');
 });
 
 it('shows the medals still to earn as locked and opens them without sharing', async () => {

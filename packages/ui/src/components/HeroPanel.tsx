@@ -42,82 +42,12 @@ import {
   SkeletonLoader,
 } from './SkeletonLoader';
 import { ThemeProvider } from '../theme/ThemeContext';
+import { resolveTier, tierSpecOf } from './airsTiers';
 
 // ─── Tier system ──────────────────────────────────────────────────────────────
 
-export type AirsTier = 'bronze' | 'silver' | 'gold' | 'platinum';
-
-export interface TierSpec {
-  label: string;
-  /** Primary foreground colour for text/dot */
-  color: string;
-  /** Semi-transparent badge border / progress track overlay */
-  trackColor: string;
-  min: number;
-  max: number | null;
-  next: AirsTier | null;
-  nextLabel: string | null;
-}
-
-export const TIERS: Record<AirsTier, TierSpec> = {
-  bronze: {
-    label: 'Bronze',
-    color: '#cd7f32',
-    trackColor: 'rgba(205,127,50,0.28)',
-    min: 0,
-    max: 1_000,
-    next: 'silver',
-    nextLabel: 'Silver',
-  },
-  silver: {
-    label: 'Silver',
-    color: palette.statusSilver,
-    trackColor: 'rgba(168,184,204,0.28)',
-    min: 1_000,
-    max: 5_000,
-    next: 'gold',
-    nextLabel: 'Gold',
-  },
-  gold: {
-    label: 'Gold',
-    color: palette.statusGold,
-    trackColor: 'rgba(212,185,106,0.28)',
-    min: 5_000,
-    max: 20_000,
-    next: 'platinum',
-    nextLabel: 'Platinum',
-  },
-  platinum: {
-    label: 'Platinum',
-    color: palette.statusPlatinum,
-    trackColor: 'rgba(155,169,196,0.28)',
-    min: 20_000,
-    max: null,
-    next: null,
-    nextLabel: null,
-  },
-};
-
-/** Resolve the tier for a given score. */
-export function resolveTier(score: number): AirsTier {
-  if (score >= 20_000) return 'platinum';
-  if (score >= 5_000) return 'gold';
-  if (score >= 1_000) return 'silver';
-  return 'bronze';
-}
-
-function resolveTierSpec(tier: AirsTier): TierSpec {
-  switch (tier) {
-    case 'bronze':
-      return TIERS.bronze;
-    case 'silver':
-      return TIERS.silver;
-    case 'gold':
-      return TIERS.gold;
-    case 'platinum':
-      return TIERS.platinum;
-  }
-}
+export { resolveTier, tierSpecOf, TIERS, UNRANKED_TIER } from './airsTiers';
+export type { AirsTier, TierSpec } from './airsTiers.types';
 
 function fmtScore(n: number): string {
   return n.toLocaleString();
@@ -155,6 +85,8 @@ export interface HeroPanelProps {
   subtitle?: string;
   /** Status label template with {{tier}} placeholder. Defaults to "Status {{tier}}". */
   statusLabel?: string;
+  /** Shown as the tier below the first tier (Bronze). */
+  unrankedLabel?: string;
   /** Motion level from the host app. "full" enables floating decorations. */
   motionLevel?: 'full' | 'low' | 'off';
   /** Progress text template with {{nextTier}} placeholder. Defaults to "Progreso a {{nextTier}} —". */
@@ -191,6 +123,7 @@ export function HeroPanel({
   greetingPrefix = 'Hola,',
   subtitle = 'Tu puntuación regenerativa es:',
   statusLabel = 'Status {{tier}}',
+  unrankedLabel = 'No tier yet',
   progressLabel = 'Progreso a {{nextTier}} —',
   progressHint,
   maxTierMessage,
@@ -201,8 +134,9 @@ export function HeroPanel({
   tooltipValidUntilLabel = 'Válido hasta:',
 }: HeroPanelProps): React.JSX.Element {
   const safeScore = score ?? 0;
-  const tier = previewMode || score == null ? 'bronze' : resolveTier(safeScore);
-  const tierSpec = resolveTierSpec(tier);
+  const tier = previewMode || score == null ? null : resolveTier(safeScore);
+  const tierSpec = tierSpecOf(tier);
+  const tierLabel = tier ? tierSpec.label : unrankedLabel;
   const hasTier = !previewMode && score != null && !isLoading;
   const tierAccent = hasTier ? tierSpec.color : '#1ee6b5';
 
@@ -544,7 +478,7 @@ export function HeroPanel({
                 onPress={onOpenProfile}
                 disabled={!onOpenProfile || !hasTier}
                 accessibilityRole={onOpenProfile ? 'button' : undefined}
-                accessibilityLabel={statusLabel.replace('{{tier}}', tierSpec.label)}
+                accessibilityLabel={statusLabel.replace('{{tier}}', tierLabel)}
                 testID='hero-tier-profile'
                 style={[
                   styles.tierBadge,
@@ -561,7 +495,7 @@ export function HeroPanel({
                   numberOfLines={1}
                   style={[styles.tierLabel, { color: '#e8f0ee', flexShrink: 1 }]}
                 >
-                  {statusLabel.replace('{{tier}}', tierSpec.label.toUpperCase())}
+                  {statusLabel.replace('{{tier}}', tierLabel.toUpperCase())}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity

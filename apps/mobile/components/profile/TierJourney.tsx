@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Image, Text, TouchableOpacity, View } from 'react-native';
 import { Check, type LucideProps } from 'lucide-react-native';
 import { GlassCard, resolveTier, TIERS, type AirsTier } from '@alternun/ui';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type { ColorPalette } from './AchievementBadge';
 import { STATUS_BADGES } from './badgeAssets';
 import { TierDetailsModal } from './TierDetailsModal';
+import { tierLinePosition } from './tierJourneyPosition';
+import { useAppPreferences } from '../settings/AppPreferencesProvider';
 
 const CheckIcon = Check as React.FC<LucideProps>;
 
@@ -31,6 +33,35 @@ export function TierJourney({
   const currentIdx = hasScore
     ? tiers.findIndex((tierItem) => tierItem.id === resolveTier(safeScore))
     : -1;
+  // The live dot marks the person's Airs on the line; the fill runs up to it.
+  const [lineWidth, setLineWidth] = useState(0);
+  const markerX = tierLinePosition(
+    safeScore,
+    lineWidth,
+    tiers.map((tierItem) => tierItem.threshold)
+  );
+  const { motionLevel } = useAppPreferences();
+  const pulse = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (!hasScore || motionLevel === 'off') {
+      pulse.setValue(1);
+      return undefined;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 0.25, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [hasScore, motionLevel, pulse]);
+  const markerColor = currentIdx >= 0 ? tiers[currentIdx].color : '#1de9b6';
+  const airsLabel = t(
+    'profile.tierJourneyAirs',
+    { amount: safeScore.toLocaleString() },
+    `${safeScore.toLocaleString()} Airs`
+  );
 
   const openDetailsLabel = t(
     'profile.tierDetails.open',
@@ -45,20 +76,39 @@ export function TierJourney({
         padding: 18,
       }}
     >
-      <Text
+      <View
         style={{
-          fontSize: 11,
-          fontWeight: '700',
-          letterSpacing: 0.12,
-          color: c.muted,
-          textTransform: 'uppercase',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           marginBottom: 14,
         }}
       >
-        {t('profile.tierJourney', undefined, 'Tier Journey')}
-      </Text>
+        <Text
+          style={{
+            fontSize: 11,
+            fontWeight: '700',
+            letterSpacing: 0.12,
+            color: c.muted,
+            textTransform: 'uppercase',
+          }}
+        >
+          {t('profile.tierJourney', undefined, 'Tier Journey')}
+        </Text>
+        {hasScore ? (
+          <Text
+            testID='tier-journey-airs'
+            style={{ fontSize: 12, fontWeight: '800', color: markerColor }}
+          >
+            {airsLabel}
+          </Text>
+        ) : null}
+      </View>
 
-      <View style={{ position: 'relative', height: 120 }}>
+      <View
+        style={{ position: 'relative', height: 120 }}
+        onLayout={(event) => setLineWidth(Math.floor(event.nativeEvent.layout.width))}
+      >
         {/* Track background */}
         <View
           style={{
@@ -81,10 +131,52 @@ export function TierJourney({
             right: 14,
             height: 3,
             borderRadius: 999,
-            backgroundColor: '#d4b96a',
-            width: `${(Math.max(currentIdx + 1, 0) / tiers.length) * 100}%`,
+            backgroundColor: markerColor,
+            width: hasScore && lineWidth > 0 ? Math.max(0, markerX - 14) : 0,
           }}
         />
+
+        {/* Live position of the person's Airs */}
+        {hasScore && lineWidth > 0 ? (
+          <View
+            testID='tier-journey-marker'
+            accessibilityLabel={airsLabel}
+            pointerEvents='none'
+            style={{
+              position: 'absolute',
+              top: 27.5 - 9,
+              left: markerX - 9,
+              width: 18,
+              height: 18,
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2,
+            }}
+          >
+            <Animated.View
+              style={{
+                position: 'absolute',
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: markerColor,
+                opacity: Animated.multiply(pulse, 0.35),
+                transform: [{ scale: Animated.add(1.6, Animated.multiply(pulse, -0.6)) }],
+              }}
+            />
+            <Animated.View
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: markerColor,
+                borderWidth: 2,
+                borderColor: isDark ? '#0d0d1f' : '#ffffff',
+                opacity: Animated.add(0.45, Animated.multiply(pulse, 0.55)),
+              }}
+            />
+          </View>
+        ) : null}
 
         {/* Tier nodes */}
         <View

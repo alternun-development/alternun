@@ -28,7 +28,7 @@ export { Button } from './components/Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './components/Button';
 
 // ── Data display ───────────────────────────────────────────────────────────────
-export { HeroPanel, resolveTier, TIERS } from './components/HeroPanel';
+export { HeroPanel, resolveTier, tierSpecOf, TIERS, UNRANKED_TIER } from './components/HeroPanel';
 export type { HeroPanelProps, AirsTier, TierSpec } from './components/HeroPanel';
 
 export { StatCard } from './components/StatCard';

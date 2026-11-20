@@ -1,3 +1,32 @@
+## [1.2.14](https://github.com/alternun-development/alternun/compare/v1.2.13...v1.2.14) (2026-11-19)
+
+### Changes
+
+- **reentry:** next step after public medals and tier line ([8bec744](https://github.com/alternun-development/alternun/commit/8bec744a927c508a56b5b1a1a785e1f471a85204))
+
+### Documentation
+
+- **honor-awards:** public medal catalog routes ([ef3b038](https://github.com/alternun-development/alternun/commit/ef3b03899aefafd8fb413a5f61a3960d9c73acba))
+
+### Features
+
+- **honor-awards:** medals to earn on ally and project public pages ([ce17212](https://github.com/alternun-development/alternun/commit/ce172124b33cd65fe13a26547df3059ed88eb45a))
+- **profile:** live dot marks the person's Airs on the tier journey line ([8f27701](https://github.com/alternun-development/alternun/commit/8f2770138ff87e2319b891c6352acbd4053396cb))
+
+## [1.2.13](https://github.com/alternun-development/alternun/compare/v1.2.12...v1.2.13) (2026-11-19)
+
+### Changes
+
+- **reentry:** next step after tiers and Legado changes ([8c6a9e9](https://github.com/alternun-development/alternun/commit/8c6a9e92ef4005e7da03b9df6c5e8562677fd184))
+
+### Features
+
+- **tiers:** no tier below 1.000 Airs; Bronze 1.000, Silver 3.000, Gold 7.000, Platinum 12.000 ([a152fad](https://github.com/alternun-development/alternun/commit/a152fada02b1241b4f60034d2d4652074745526a))
+
+### Bug Fixes
+
+- **legado:** no sample medal in Legado; tier reveal without light rays ([cfe12ab](https://github.com/alternun-development/alternun/commit/cfe12abdcb051552ead0648e85b91bc496617ec7))
+
 ## [1.2.12](https://github.com/alternun-development/alternun/compare/v1.2.11...v1.2.12) (2026-11-19)
 
 ### Changes

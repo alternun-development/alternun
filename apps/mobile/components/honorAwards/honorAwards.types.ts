@@ -9,6 +9,7 @@ import type {
   HonorAwardRedeemResult,
   HonorAwardScope,
   HonorAwardTier,
+  HonorCatalogSource,
 } from '../../utils/honorAwards';
 
 /** Types of the honor award ("Galardones de honor") components. */
@@ -28,8 +29,6 @@ export interface HonorTierPalette {
 
 export type HonorSlot =
   | { kind: 'award'; award: HonorAward }
-  /** The sample Manglar Verde medal, while the person has none. */
-  | { kind: 'demo' }
   /** A medal in Airs the person can still earn. */
   | { kind: 'locked'; item: HonorAwardCatalogItem }
   | { kind: 'empty'; key: string };
@@ -146,6 +145,16 @@ export interface HonorAwardInspectModalProps {
   initialStage?: 'medal' | 'mission';
   /** A medal not earned yet: links stay, sharing goes. */
   locked?: boolean;
+  /** Shown under the purpose as "¿Cómo obtenerla?" (public pages). */
+  howToEarn?: string;
+}
+
+export interface HonorAwardCatalogSectionProps {
+  /** The ally or project whose medals to earn are listed. */
+  source: HonorCatalogSource;
+  c: HonorAwardsPalette;
+  /** Injectable for tests. */
+  load?: (source: HonorCatalogSource) => Promise<HonorAwardCatalogItem[]>;
 }
 
 export interface HonorAwardsInfoModalProps {

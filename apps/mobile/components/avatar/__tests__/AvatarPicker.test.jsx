@@ -82,7 +82,8 @@ describe('AvatarPicker', () => {
         ])
       ),
     };
-    const { tree } = renderPicker({ honorAwards });
+    // 3.200 Airs: Bronze (1.000) and Silver (3.000), not Gold (7.000).
+    const { tree } = renderPicker({ honorAwards, score: 3200 });
     await flush();
     const shown = labels(tree);
 
@@ -151,8 +152,10 @@ describe('AvatarPicker', () => {
     const honorAwards = { list: jest.fn(() => Promise.reject(new Error('offline'))) };
     const { tree } = renderPicker({ honorAwards, score: 0 });
     await flush();
-    expect(labels(tree)).toEqual(expect.arrayContaining(['bronze']));
+    // Below 1.000 Airs there is no tier yet, so no tier avatar either.
+    expect(labels(tree)).not.toContain('bronze');
     expect(labels(tree)).not.toContain('silver');
+    expect(labels(tree)).not.toContain('Manglar Verde');
   });
 
   it('closes from the header button', () => {

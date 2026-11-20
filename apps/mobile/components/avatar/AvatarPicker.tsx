@@ -26,10 +26,11 @@ import type { AvatarOption, AvatarPickerProps } from './avatar.types';
 
 const MINT = '#1de9b6';
 const OPTION_SIZE = 64;
+// Must match airs_set_user_avatar (20261119_0004) and TIERS in @alternun/ui.
 const TIER_MINIMUMS: ReadonlyArray<[string, number]> = [
-  ['bronze', 0],
-  ['silver', 1000],
-  ['gold', 5000],
+  ['bronze', 1000],
+  ['silver', 3000],
+  ['gold', 7000],
 ];
 
 /**

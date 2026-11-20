@@ -621,6 +621,28 @@ export class HonorAwardService {
     return this.repository.listViews({ enterpriseId: enterprise.id }, true);
   }
 
+  /** Medals people can earn with an ally, for its public page. */
+  async listPublicCatalogForEnterprise(slug: string): Promise<HonorAwardCatalogItem[]> {
+    const enterprise = await this.repository.findEnterprise({ slug });
+    if (
+      !enterprise ||
+      enterprise.status !== 'active' ||
+      (enterprise.testnetOnly && hidesTestnetOnly())
+    ) {
+      marketplaceError('ENTERPRISE_NOT_FOUND');
+    }
+    return this.repository.listUserCatalog({ enterpriseId: enterprise.id });
+  }
+
+  /** Medals people can earn through a project, for its public page. */
+  async listPublicCatalogForProject(slug: string): Promise<HonorAwardCatalogItem[]> {
+    const project = await this.repository.findProjectBySlug(slug);
+    if (!project || project.status !== 'published' || (project.testnetOnly && hidesTestnetOnly())) {
+      marketplaceError('PROJECT_NOT_FOUND');
+    }
+    return this.repository.listUserCatalog({ projectId: project.id });
+  }
+
   async claim(owner: HonorAwardOwner, grantId: string): Promise<HonorAwardView> {
     const claimed = await this.repository.claimGrant(grantId, owner);
     if (!claimed) marketplaceError('HONOR_AWARD_NOT_CLAIMABLE');

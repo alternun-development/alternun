@@ -19,6 +19,12 @@ jest.mock('../../components/marketplace/MarketplaceProjectComments', () => ({
   default: () => null,
 }));
 
+// The medals to earn load on their own and have their own tests.
+jest.mock('../../components/honorAwards/HonorAwardCatalogSection', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 const palette = {
   background: '#fff',
   surface: '#fff',

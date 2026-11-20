@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Merge PR #313 (v1.2.12) after confirming Batis and Swing Golf exist in the production DB; then Friday rehearsal with 3 new Gmail accounts
+Next micro-step: Merge the v1.2.14 PR after CI; confirm Swing Golf venue/status; Friday rehearsal with 3 new Gmail accounts
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
