@@ -1,18 +1,16 @@
-## [1.2.13](https://github.com/alternun-development/alternun/compare/v1.2.12...v1.2.13) (2026-11-20)
+## [1.2.13](https://github.com/alternun-development/alternun/compare/v1.2.12...v1.2.13) (2026-11-19)
 
-### Bug Fixes
+### Changes
 
-- **repo:** chore(reentry): next step after tiers and Legado changes
-- **repo:** feat(tiers): no tier below 1.000 Airs; Bronze 1.000, Silver 3.000, Gold 7.000, Platinum 12.000
-- **repo:** fix(legado): no sample medal in Legado; tier reveal without light rays
-
-### Bug Fixes
-
-- **legado:** no sample medal in Legado; tier reveal without light rays ([cfe12ab](https://github.com/alternun-development/alternun/commit/cfe12abdcb051552ead0648e85b91bc496617ec7))
+- **reentry:** next step after tiers and Legado changes ([8c6a9e9](https://github.com/alternun-development/alternun/commit/8c6a9e92ef4005e7da03b9df6c5e8562677fd184))
 
 ### Features
 
 - **tiers:** no tier below 1.000 Airs; Bronze 1.000, Silver 3.000, Gold 7.000, Platinum 12.000 ([a152fad](https://github.com/alternun-development/alternun/commit/a152fada02b1241b4f60034d2d4652074745526a))
+
+### Bug Fixes
+
+- **legado:** no sample medal in Legado; tier reveal without light rays ([cfe12ab](https://github.com/alternun-development/alternun/commit/cfe12abdcb051552ead0648e85b91bc496617ec7))
 
 ## [1.2.12](https://github.com/alternun-development/alternun/compare/v1.2.11...v1.2.12) (2026-11-19)
 
