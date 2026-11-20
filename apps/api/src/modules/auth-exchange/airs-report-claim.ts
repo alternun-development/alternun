@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { Logger } from '@nestjs/common';
 import { resolveSupabaseOidcSyncConfig } from '../authentik/supabase-sync';
 import type { AirsReportClaimInput, AirsReportClaimResult } from './airs-report-claim.types';
 
@@ -75,6 +76,40 @@ export async function claimAirsReportsViaSupabase(
   }
 
   return readClaimBody(await response.json().catch(() => null));
+}
+
+/**
+ * Releases the Airs reports (and their medals) waiting for this account's email.
+ *
+ * The sign-in exchange runs this claim too, but it can be skipped: on testnet the exchange fails
+ * for Better Auth accounts and the app falls back to its local session without telling anyone.
+ * The user id comes from the verified session, and the database releases only when the account's
+ * stored email matches and is verified, so passing the stored email is safe. Idempotent and never
+ * fatal for the caller.
+ */
+export async function claimWaitingAirsReports(
+  input: { userId: string; email: string },
+  logger: Pick<Logger, 'log' | 'warn'>,
+  claim: typeof claimAirsReportsViaSupabase = claimAirsReportsViaSupabase
+): Promise<void> {
+  try {
+    const result = await claim({
+      appUserId: input.userId,
+      email: input.email,
+      emailConfirmed: true,
+    });
+    if (result.claimed > 0) {
+      logger.log(`Released ${result.claimed} Airs report(s) claimed by user ${input.userId}`);
+    } else if (result.reasonCode) {
+      logger.warn(`Airs report claim for user ${input.userId} denied: ${result.reasonCode}`);
+    }
+  } catch (error) {
+    logger.warn(
+      `Failed to claim Airs reports for user ${input.userId}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
 }
 
 /**

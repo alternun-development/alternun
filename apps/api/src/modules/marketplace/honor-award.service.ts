@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { hasPermission, type AdminPrincipal } from '../../common/admin-auth/admin-auth.guard';
 import { marketplaceError } from './marketplace.errors';
 import { MarketplaceAdminRepository } from './marketplace.repository';
@@ -6,6 +6,7 @@ import { actorFromPrincipal } from './marketplace.types';
 import { validateMedalImageUrl } from './medal.service';
 import { HonorAwardRepository, type HonorAwardOwner } from './honor-award.repository';
 import { AirsReportService } from './airs-report.service';
+import { claimWaitingAirsReports } from '../auth-exchange/airs-report-claim';
 import {
   claimCodeHint,
   generateClaimCode,
@@ -115,6 +116,8 @@ export function checkRecipeInput(input: HonorAwardRecipeInput): void {
 
 @Injectable()
 export class HonorAwardService {
+  private readonly logger = new Logger(HonorAwardService.name);
+
   constructor(
     private readonly repository: HonorAwardRepository,
     private readonly adminRepository: MarketplaceAdminRepository,
@@ -579,6 +582,19 @@ export class HonorAwardService {
   /** Pending and claimed awards of a person or enterprise, newest first. */
   listForOwner(owner: HonorAwardOwner): Promise<HonorAwardView[]> {
     return this.repository.listViews(owner, false);
+  }
+
+  /**
+   * The person's awards for Legado. First releases any Airs report still waiting for their
+   * email, so a medal sent before they signed up shows up when they open Legado.
+   */
+  async listForUser(
+    userId: string,
+    claim: typeof claimWaitingAirsReports = claimWaitingAirsReports
+  ): Promise<HonorAwardView[]> {
+    const email = await this.repository.findVerifiedEmail(userId).catch(() => null);
+    if (email) await claim({ userId, email }, this.logger);
+    return this.repository.listViews({ userId }, false);
   }
 
   /** Active medals for people that this person does not hold yet (shown locked). */

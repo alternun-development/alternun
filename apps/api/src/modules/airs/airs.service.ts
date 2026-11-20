@@ -26,6 +26,7 @@ import {
   type UserAchievement,
 } from './airs.repository';
 import { sendAirsWelcomeEmail } from './airs.email';
+import { claimWaitingAirsReports } from '../auth-exchange/airs-report-claim';
 
 export interface AirsSessionClaims {
   appUserId: string;
@@ -82,6 +83,8 @@ export interface AirsOnboardingDependencies {
   markWelcomeEmailSent: typeof markAirsWelcomeEmailSent;
   renderWelcomeEmail: typeof renderAirsWelcomeEmail;
   getDashboardSnapshot: typeof getAirsDashboardSnapshot;
+  /** Releases Airs reports waiting for this account's email (claimWaitingAirsReports). */
+  claimAirsReports?: (input: { userId: string; email: string }) => Promise<void>;
   env?: Record<string, string | undefined>;
   dashboardUrl?: string | null;
   bonusAirs?: number;
@@ -212,6 +215,14 @@ export async function processAirsOnboarding(
     }
   } else if (dashboardState.shouldSendWelcomeEmail && !dashboardState.email) {
     welcomeEmailSkipped = true;
+  }
+
+  // Before reading the balance, so Airs and medals sent before sign-up show on the first visit.
+  if (dependencies.claimAirsReports && dashboardState.email) {
+    await dependencies.claimAirsReports({
+      userId: tokenClaims.appUserId,
+      email: dashboardState.email,
+    });
   }
 
   const snapshot = await dependencies.getDashboardSnapshot(
@@ -354,6 +365,7 @@ export class AirsService {
       markWelcomeEmailSent: markAirsWelcomeEmailSent,
       renderWelcomeEmail: renderAirsWelcomeEmail,
       getDashboardSnapshot: getAirsDashboardSnapshot,
+      claimAirsReports: (claim) => claimWaitingAirsReports(claim, this.logger),
       env: process.env,
     }).catch((error: unknown) => {
       this.logger.error(

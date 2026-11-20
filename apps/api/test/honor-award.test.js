@@ -82,6 +82,8 @@ function build({ recipes = [recipe()], users = {}, enterprises = {}, claimable =
       return [];
     },
     findUserIdByEmail: async (email) => users[email] ?? null,
+    findVerifiedEmail: async (userId) =>
+      Object.keys(users).find((email) => users[email] === userId) ?? null,
     findEnterprise: async (by) => {
       const key = by.id ?? by.slug;
       return enterprises[key] ?? null;
@@ -506,4 +508,25 @@ test('guest emails are validated in linear time and malformed ones refused', asy
   await assert.rejects(lookup(`a@${'a.'.repeat(5000)}`), code('HONOR_AWARD_INPUT_INVALID'));
   assert.ok(Date.now() - started < 200);
   assert.deepEqual(await lookup('ada@example.com'), { found: false, total: 0, byRecipe: [] });
+});
+
+test('Legado first releases Airs reports waiting for a verified email, then lists', async () => {
+  const { service, calls } = build({ users: { 'ada@example.test': 'user-1' } });
+  const claimed = [];
+  await service.listForUser('user-1', async (input) => {
+    claimed.push(input);
+    assert.equal(calls.listed.length, 0);
+  });
+  assert.deepEqual(claimed, [{ userId: 'user-1', email: 'ada@example.test' }]);
+  assert.deepEqual(calls.listed, [[{ userId: 'user-1' }, false]]);
+});
+
+test('Legado skips the claim when the account has no verified email', async () => {
+  const { service, calls } = build();
+  let claimCalls = 0;
+  await service.listForUser('user-2', async () => {
+    claimCalls += 1;
+  });
+  assert.equal(claimCalls, 0);
+  assert.deepEqual(calls.listed, [[{ userId: 'user-2' }, false]]);
 });

@@ -399,6 +399,19 @@ export class HonorAwardRepository {
     });
   }
 
+  /** The account's email, only when it is verified (what the Airs report claim requires). */
+  async findVerifiedEmail(userId: string): Promise<string | null> {
+    const { data, error } = await this.client
+      .from('users')
+      .select('email, email_verified')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) failDatabase(error);
+    const row = record(data);
+    if (row?.email_verified !== true || typeof row.email !== 'string') return null;
+    return row.email;
+  }
+
   async findUserIdByEmail(email: string): Promise<string | null> {
     const { data, error } = await this.client
       .from('users')

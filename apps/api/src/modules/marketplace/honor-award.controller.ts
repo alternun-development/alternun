@@ -397,7 +397,7 @@ export class HonorAwardMeController {
   @ApiOperation({ summary: 'Pending and claimed honor awards of the signed-in person.' })
   async list(@Headers('authorization') authorization: string | undefined) {
     const userId = await resolveUserId(bearer(authorization));
-    return this.service.listForOwner({ userId });
+    return this.service.listForUser(userId);
   }
 
   @Get('catalog')
