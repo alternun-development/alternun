@@ -29,6 +29,7 @@ import {
 import type { DetailPalette, MarketplaceEnterpriseDetail, Translate } from './types';
 import HonorAwardsSection from '../honorAwards/HonorAwardsSection';
 import HonorAwardCatalogSection from '../honorAwards/HonorAwardCatalogSection';
+import { GallerySlider } from './GallerySlider';
 
 export class MarketplaceEnterpriseRequestError extends Error {
   constructor(readonly status: number) {
@@ -84,6 +85,7 @@ export function MarketplaceEnterpriseDetailView({
   adminUrl = null,
   adminAccess = null,
   onManageEnterprise,
+  reduceMotion = false,
 }: {
   slug: string;
   locale: string;
@@ -99,6 +101,8 @@ export function MarketplaceEnterpriseDetailView({
   adminAccess?: ResolvedAdminAccess | null;
   /** Opens the in-app manage view; without it the link opens the admin console. */
   onManageEnterprise?: (enterpriseId: string) => void;
+  /** The person turned animations off: the gallery slides without zooming the photo in focus. */
+  reduceMotion?: boolean;
 }): React.JSX.Element {
   const [enterprise, setEnterprise] = useState<MarketplaceEnterpriseDetail | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -275,21 +279,21 @@ export function MarketplaceEnterpriseDetailView({
               <Text style={[styles.sectionTitle, { color: palette.text }]}>
                 {t('explorer.detail.gallery')}
               </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.galleryRow}
-              >
-                {enterprise.gallery.map((image, index) => (
-                  <Image
-                    key={`${index}-${image.url}`}
-                    source={{ uri: image.url }}
-                    accessibilityLabel={image.altText || enterprise.displayName}
-                    style={styles.galleryImage}
-                    resizeMode='cover'
-                  />
-                ))}
-              </ScrollView>
+              <GallerySlider
+                images={enterprise.gallery}
+                fallbackAlt={enterprise.displayName}
+                colors={{ accent: palette.primaryDeep, muted: palette.border }}
+                animated={!reduceMotion}
+                labels={{
+                  previous: t('explorer.detail.galleryPrevious'),
+                  next: t('explorer.detail.galleryNext'),
+                  photo: (index, total) =>
+                    t('explorer.detail.galleryPhoto', {
+                      index: String(index),
+                      total: String(total),
+                    }),
+                }}
+              />
             </View>
           ) : null}
           <ProductsSection products={enterprise.products} palette={palette} t={t} />
@@ -396,8 +400,6 @@ const styles = StyleSheet.create({
   about: { borderWidth: 1, borderRadius: 20, padding: 18, gap: 10 },
   description: { fontSize: 15, lineHeight: 22 },
   gallery: { gap: 12 },
-  galleryRow: { gap: 12 },
-  galleryImage: { width: 260, height: 180, borderRadius: 18 },
   logo: { width: 96, height: 96, borderRadius: 20 },
   logoFallback: {
     width: 96,

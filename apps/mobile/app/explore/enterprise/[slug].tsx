@@ -13,7 +13,7 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{ slug?: string | string[] }>();
   const router = useRouter();
   const adminAccess = useAdminAccess();
-  const { language, themeMode } = useAppPreferences();
+  const { language, themeMode, motionLevel } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
   const requestedSlug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
   // A renamed page loads under its current slug, and the address bar follows.
@@ -65,6 +65,7 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
         t={t}
         onBack={() => router.back()}
         adminAccess={adminAccess}
+        reduceMotion={motionLevel === 'off'}
         onManageEnterprise={(enterpriseId) =>
           router.push({ pathname: '/manage/enterprise/[enterpriseId]', params: { enterpriseId } })
         }

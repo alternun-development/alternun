@@ -102,6 +102,12 @@ describe('Enterprise page gallery', () => {
       ],
     });
     const gallery = renderer.root.findByProps({ testID: 'enterprise-detail-gallery' });
+    // The slider lays the photos out once it knows its width.
+    void act(() => {
+      gallery
+        .findByProps({ testID: 'gallery-slider' })
+        .props.onLayout({ nativeEvent: { layout: { width: 400 } } });
+    });
     const photos = gallery.findAll(
       (node) => (node.type as unknown) === 'Image' && node.props.source?.uri
     );
