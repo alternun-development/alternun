@@ -1,12 +1,8 @@
 ## [1.2.21](https://github.com/alternun-development/alternun/compare/v1.2.20...v1.2.21) (2026-11-21)
 
-### Bug Fixes
-
-- **repo:** feat(explore): the enterprise gallery slides photo by photo
-
 ### Features
 
-- **explore:** the enterprise gallery slides photo by photo ([ffeec08](https://github.com/alternun-development/alternun/commit/ffeec08d6f1465199e8eaea97b91499bc4e0793d)), closes [#321](https://github.com/alternun-development/alternun/issues/321)
+- **explore:** the enterprise gallery slides photo by photo ([ffeec08](https://github.com/alternun-development/alternun/commit/ffeec08d6f1465199e8eaea97b91499bc4e0793d))
 
 ## [1.2.20](https://github.com/alternun-development/alternun/compare/v1.2.19...v1.2.20) (2026-11-20)
 
