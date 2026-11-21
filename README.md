@@ -120,13 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.22**
+Current version: **1.2.23**
 
-## 📋 Latest Changes (v1.2.22)
+## 📋 Latest Changes (v1.2.23)
 
 ### Bug Fixes
 
-- **explore:** keep the photo in focus centered when the gallery is resized ([24c1eb8](https://github.com/alternun-development/alternun/commit/24c1eb8351070de4aa332c3c9e60cebacd5857ce))
+- **repo:** fix(email): phase 0 copy for the tournament emails
+
+### Bug Fixes
+
+- **email:** phase 0 copy for the tournament emails ([86e17b3](https://github.com/alternun-development/alternun/commit/86e17b3180d1d451189570cdad7820bcc34ee1f9)), closes [#321](https://github.com/alternun-development/alternun/issues/321)
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
