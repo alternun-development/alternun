@@ -316,8 +316,20 @@ const CLEARABLE_FIELDS = [
   'internalNotes',
   'alternateName',
 ];
+/**
+ * The fields a request actually sent. A validated DTO instance declares every field of its class,
+ * so `field in input` and Object.keys(input) also list the ones left out (as undefined).
+ */
+function sentFields(input: object): string[] {
+  return Object.entries(input)
+    .filter(([, value]) => value !== undefined)
+    .map(([key]) => key);
+}
+
 function normalizeClearable(input: object): Record<string, unknown> {
-  const values = { ...(input as Record<string, unknown>) };
+  const values = Object.fromEntries(
+    sentFields(input).map((key) => [key, (input as Record<string, unknown>)[key]])
+  );
   for (const key of CLEARABLE_FIELDS)
     if (typeof values[key] === 'string' && !values[key].trim()) values[key] = null;
   return values;
@@ -552,7 +564,9 @@ export class MarketplaceAdminService {
     const before = await this.getEnterprise(principal, requestId, id);
     await this.authorize(principal, 'enterprises:update', requestId, 'enterprise', before.id);
     if (
-      ['legalName', ...INTERNAL_PROFILE_FIELDS].some((field) => field in input) &&
+      ['legalName', ...INTERNAL_PROFILE_FIELDS].some((field) =>
+        sentFields(input).includes(field)
+      ) &&
       !hasRole(principal, 'platform_owner', 'internal_admin')
     )
       await this.deny(
@@ -700,8 +714,9 @@ export class MarketplaceAdminService {
       before.enterpriseId,
       before.id
     );
-    const contentOnly = Object.keys(input).every((key) => key === 'content');
-    const internalWrite = INTERNAL_PROFILE_FIELDS.some((field) => field in input);
+    const sent = sentFields(input);
+    const contentOnly = sent.every((key) => key === 'content');
+    const internalWrite = INTERNAL_PROFILE_FIELDS.some((field) => sent.includes(field));
     if (internalWrite && !hasRole(principal, 'platform_owner', 'internal_admin'))
       await this.deny(
         principal,

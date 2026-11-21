@@ -190,6 +190,8 @@ export async function markBetterAuthWelcomeEmailSent(
     set
       welcome_email_sent = true,
       welcome_email_sent_at = now(),
+      -- The flag the Airs onboarding reads, so the person does not get a second welcome.
+      airs_welcome_email_sent_at = coalesce(airs_welcome_email_sent_at, now()),
       updated_at = now()
     where id = ${userId}
   `);

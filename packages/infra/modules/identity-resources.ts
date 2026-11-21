@@ -812,6 +812,7 @@ export function deployIdentityInfrastructure(
               superAdminEmails: [
                 'edward@alternun.io',
                 'admin@alternun.co',
+                'sgomez@alternun.io',
                 'security-ceo@alternun.example',
               ],
               internalEmailDomains: ['alternun.io', 'alternun.co'],
