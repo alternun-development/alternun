@@ -109,6 +109,22 @@ it('slides photo by photo with the arrows and the dots, following the scroll', (
   expect(alts).toContain('Swing Golf Colombia');
 });
 
+it('keeps the photo in focus centered when the gallery width changes', () => {
+  const renderer = render();
+  layout(renderer);
+  act(() => {
+    renderer.root
+      .findByType(ScrollView as never)
+      .props.onScroll({ nativeEvent: { contentOffset: { x: 668 } } });
+  });
+  // Rotated or resized to 1000 px: 560 px photos, so the third one now sits at 2 × 574.
+  layout(renderer, 1000);
+  expect(scrollTo).toHaveBeenLastCalledWith({ x: 1148, animated: false });
+  expect(byTestId(renderer, 'gallery-dot')[2].props.accessibilityState).toEqual({
+    selected: true,
+  });
+});
+
 it('zooms the photo in focus only when animations are on', () => {
   const animatedSlider = render();
   layout(animatedSlider);

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Image,
@@ -60,6 +60,18 @@ export function GallerySlider({
   const slideWidth = gallerySlideWidth(width);
   const step = slideWidth + GAP;
   const inset = Math.max(0, (width - slideWidth) / 2);
+  // The photo in focus, read when the geometry changes without re-running on every swipe.
+  const activeRef = useRef(0);
+  activeRef.current = active;
+
+  // A new width (rotating the phone, resizing the window) changes every offset: keep the photo
+  // in focus centered.
+  useEffect(() => {
+    if (width <= 0) return;
+    const offset = activeRef.current * step;
+    scrollRef.current?.scrollTo({ x: offset, animated: false });
+    scrollX.setValue(offset);
+  }, [width, step, scrollX]);
 
   if (total === 0) return null;
 
