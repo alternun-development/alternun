@@ -1,3 +1,14 @@
+## [1.2.18](https://github.com/alternun-development/alternun/compare/v1.2.17...v1.2.18) (2026-11-21)
+
+### Bug Fixes
+
+- **repo:** chore(reentry): next step after the welcome and project save fixes
+- **repo:** fix: the welcome email goes out once and project admins can save their page
+
+### Bug Fixes
+
+- the welcome email goes out once and project admins can save their page ([d4644a7](https://github.com/alternun-development/alternun/commit/d4644a7ca9ded825bdb456431a8b1bb1e62c6663))
+
 ## [1.2.17](https://github.com/alternun-development/alternun/compare/v1.2.16...v1.2.17) (2026-11-19)
 
 ### Changes
