@@ -65,12 +65,12 @@ export function renderAirsReportRecipientEmail(
   const introEs = needsClaim
     ? `Tienes ${airsLabel(
         report.amount
-      )} esperando por ti. Entra con este correo y confirma tu cuenta para reclamarlos.`
+      )} esperando por ti. Entra a Airs con este correo y confirma tu cuenta para reclamarlos.`
     : `Se acreditaron ${airsLabel(report.amount)} en tu cuenta.`;
   const introEn = needsClaim
     ? `You have ${airsLabel(
         report.amount
-      )} waiting for you. Sign in with this email and confirm your account to claim them.`
+      )} waiting for you. Sign in to Airs with this email and confirm your account to claim them.`
     : `${airsLabel(report.amount)} were credited to your account.`;
   const ctaEs = needsClaim ? 'Reclamar mis Airs' : 'Abrir mi cuenta';
   const ctaEn = needsClaim ? 'Claim my Airs' : 'Open my account';
@@ -78,9 +78,9 @@ export function renderAirsReportRecipientEmail(
   const honor = context.honorAward ?? null;
   const honorName = honor ? `${honor.title}${honor.eventName ? ` · ${honor.eventName}` : ''}` : '';
   const subject = honor
-    ? `Recibiste el galardón ${honor.title} y ${airsLabel(report.amount)} / You received the ${
+    ? `Recibiste la medalla ${honor.title} y ${airsLabel(report.amount)} / You received the ${
         honor.title
-      } award and ${airsLabel(report.amount)}`
+      } medal and ${airsLabel(report.amount)}`
     : needsClaim
     ? `Tienes ${airsLabel(report.amount)} para reclamar / You have ${airsLabel(
         report.amount
@@ -88,13 +88,13 @@ export function renderAirsReportRecipientEmail(
     : `Recibiste ${airsLabel(report.amount)} / You received ${airsLabel(report.amount)}`;
   const honorEs = honor
     ? needsClaim
-      ? `También te espera el galardón ${honorName}: al crear tu cuenta lo reclamas en tu perfil, en Legado.`
-      : `También recibiste el galardón ${honorName}: reclámalo en tu perfil, en Legado.`
+      ? `También te espera la medalla ${honorName}: cuando crees tu cuenta, la reclamas en tu perfil, en Legado.`
+      : `También recibiste la medalla ${honorName}: reclámala en tu perfil, en Legado.`
     : '';
   const honorEn = honor
     ? needsClaim
-      ? `The ${honorName} award is waiting for you too: once your account is ready, claim it in your profile, under Legacy.`
-      : `You also received the ${honorName} award: claim it in your profile, under Legacy.`
+      ? `The ${honorName} medal is waiting for you too: once your account is ready, claim it in your profile, under Legacy.`
+      : `You also received the ${honorName} medal: claim it in your profile, under Legacy.`
     : '';
   const honorArt = honor
     ? `<p style="margin:16px 0;text-align:center"><img src="${escapeHtml(
@@ -108,7 +108,7 @@ export function renderAirsReportRecipientEmail(
     `${greetingEs}:`,
     introEs,
     ...(honorEs ? [honorEs] : []),
-    `Monto: ${airsLabel(report.amount)}`,
+    `Cantidad: ${airsLabel(report.amount)}`,
     `Motivo: ${report.concept}`,
     ...(context.projectName ? [`Proyecto: ${context.projectName}`] : []),
     `${ctaEs}: ${link}`,
@@ -116,7 +116,7 @@ export function renderAirsReportRecipientEmail(
     `${greetingEn}:`,
     introEn,
     ...(honorEn ? [honorEn] : []),
-    `Amount: ${airsLabel(report.amount)}`,
+    `Quantity: ${airsLabel(report.amount)}`,
     `Reason: ${report.concept}`,
     ...(context.projectName ? [`Project: ${context.projectName}`] : []),
     `${ctaEn}: ${link}`,
@@ -133,13 +133,13 @@ export function renderAirsReportRecipientEmail(
     `<h2 style="margin:0 0 8px">${escapeHtml(greetingEs)}</h2>`,
     `<p>${escapeHtml(introEs)}</p>`,
     ...(honor ? [honorArt, `<p>${escapeHtml(honorEs)}</p>`] : []),
-    ...details(context, ['Monto', 'Motivo', 'Proyecto']),
+    ...details(context, ['Cantidad', 'Motivo', 'Proyecto']),
     button(ctaEs),
     '<hr style="border:none;border-top:1px solid #d5e3dc;margin:24px 0" />',
     `<h2 style="margin:0 0 8px">${escapeHtml(greetingEn)}</h2>`,
     `<p>${escapeHtml(introEn)}</p>`,
     ...(honor ? [`<p>${escapeHtml(honorEn)}</p>`] : []),
-    ...details(context, ['Amount', 'Reason', 'Project']),
+    ...details(context, ['Quantity', 'Reason', 'Project']),
     button(ctaEn),
   ]);
 
@@ -273,7 +273,7 @@ export function renderAirsReportDecisionEmail(
       {
         heading: rejected ? 'Reporte de Airs rechazado' : 'Reporte de Airs aprobado',
         intro: rejected
-          ? 'Un aprobador rechazó el reporte. No se acreditó ningún Air.'
+          ? 'Un aprobador rechazó el reporte. No se acreditaron Airs.'
           : 'Un aprobador aprobó el reporte. Los Airs ya siguen su camino al destinatario.',
         rows: rows(['Destinatario', 'Monto', 'Proyecto', 'Motivo del rechazo']),
       },
@@ -351,26 +351,26 @@ export function renderProjectClientInvitationEmail(context: {
       `${greetingEs}:`,
       introEs,
       ...(airsEs ? [airsEs] : []),
-      ...detailText(['Monto', 'Motivo', 'Proyecto']),
+      ...detailText(['Cantidad', 'Motivo', 'Proyecto']),
       `${ctaEs}: ${link}`,
       '',
       `${greetingEn}:`,
       introEn,
       ...(airsEn ? [airsEn] : []),
-      ...detailText(['Amount', 'Reason', 'Project']),
+      ...detailText(['Quantity', 'Reason', 'Project']),
       `${ctaEn}: ${link}`,
     ].join('\n'),
     html: wrapHtml([
       `<h2 style="margin:0 0 8px">${escapeHtml(greetingEs)}</h2>`,
       `<p>${escapeHtml(introEs)}</p>`,
       ...(airsEs ? [`<p>${escapeHtml(airsEs)}</p>`] : []),
-      ...detailHtml(['Monto', 'Motivo', 'Proyecto']),
+      ...detailHtml(['Cantidad', 'Motivo', 'Proyecto']),
       button(ctaEs),
       '<hr style="border:none;border-top:1px solid #d5e3dc;margin:24px 0" />',
       `<h2 style="margin:0 0 8px">${escapeHtml(greetingEn)}</h2>`,
       `<p>${escapeHtml(introEn)}</p>`,
       ...(airsEn ? [`<p>${escapeHtml(airsEn)}</p>`] : []),
-      ...detailHtml(['Amount', 'Reason', 'Project']),
+      ...detailHtml(['Quantity', 'Reason', 'Project']),
       button(ctaEn),
     ]),
   };

@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-21T05:12:05.358Z",
+  "lastUpdated": "2026-11-21T05:50:45.512Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Approve and merge the gallery slider PR; load the Swing Golf gallery and the production storage host in prod; run the E2E of #321",
+      "description": "Approve the email phase 0 PR; set the SMTP secret senderName to Airs; enable an RSA DKIM key for alternun.co in Tláo; E2E of #321",
       "id": "next",
       "priority": 1
     }

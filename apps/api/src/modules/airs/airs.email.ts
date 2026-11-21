@@ -100,8 +100,8 @@ function resolveSenderName(env: Record<string, string | undefined>): string {
       env.AIRS_EMAIL_SENDER_NAME,
       env.AUTH_EMAIL_SENDER_NAME,
       env.SUPABASE_SMTP_SENDER_NAME,
-      'Alternun AIRS',
-    ]) ?? 'Alternun AIRS'
+      'Airs',
+    ]) ?? 'Airs'
   );
 }
 
@@ -174,8 +174,7 @@ async function loadSmtpSecret(
     username,
     password,
     from,
-    senderName:
-      firstNonEmptyTrimmed([payload.senderName, resolveSenderName(env)]) ?? 'Alternun AIRS',
+    senderName: firstNonEmptyTrimmed([payload.senderName, resolveSenderName(env)]) ?? 'Airs',
     secure,
     requireTls,
   };

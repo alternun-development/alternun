@@ -95,7 +95,7 @@ SMTP_HOST=$(first_non_empty "${ALTERNUN_SMTP_HOST:-}" "${NODEMAILER_HOST_INFO:-}
 SMTP_PORT=$(first_non_empty "${ALTERNUN_SMTP_PORT:-}" "${NODEMAILER_PORT_INFO:-}" "587")
 SMTP_USERNAME=$(first_non_empty "${ALTERNUN_NOTIFICATIONS_EMAIL:-}")
 SMTP_PASSWORD=$(first_non_empty "${ALTERNUN_NOTIFICATIONS_PASSWORD:-}")
-SENDER_NAME=$(first_non_empty "${EMAIL_SENDER_NAME:-}" "Alternun")
+SENDER_NAME=$(first_non_empty "${EMAIL_SENDER_NAME:-}" "Airs")
 
 case "$(printf '%s' "$SMTP_HOST" | tr '[:upper:]' '[:lower:]')" in
   *postmark*)

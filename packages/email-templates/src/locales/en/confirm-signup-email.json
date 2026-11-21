@@ -1,11 +1,11 @@
 {
-  "subject": "Confirm your Alternun account",
-  "preview": "Your Alternun verification code is inside.",
-  "greeting": "Hi {{email}},",
-  "intro": "Welcome to Alternun. Type this code in the app to confirm your email and start using Airs.",
-  "codeLabel": "Verification code",
+  "subject": "Confirm your Airs account",
+  "preview": "Your code to confirm your email on Airs.",
+  "greeting": "Hi,",
+  "intro": "Welcome to Airs. Type this code in the app to confirm your email.",
+  "codeLabel": "Confirmation code",
   "ctaLabel": "Confirm my account",
   "ignoreNotice": "If you did not create this account, you can safely ignore this email.",
-  "closing": "Your regenerative journey starts here.",
-  "footer": "Alternun Security Team"
+  "closing": "What you do for the planet, stays.",
+  "footer": "The Airs team"
 }
