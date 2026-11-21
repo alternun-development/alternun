@@ -124,13 +124,9 @@ Current version: **1.2.19**
 
 ## 📋 Latest Changes (v1.2.19)
 
-### Bug Fixes
-
-- **repo:** feat: Swing Golf tournament fixes, enterprise gallery and English text
-
 ### Features
 
-- Swing Golf tournament fixes, enterprise gallery and English text ([46a07cc](https://github.com/alternun-development/alternun/commit/46a07cc34eee7bcda89498b1e2da5482a05727cb)), closes [#321](https://github.com/alternun-development/alternun/issues/321)
+- **repo:** Swing Golf tournament fixes, enterprise gallery and English text ([46a07cc](https://github.com/alternun-development/alternun/commit/46a07cc34eee7bcda89498b1e2da5482a05727cb))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
