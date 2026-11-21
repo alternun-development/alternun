@@ -4,7 +4,7 @@ Schema: 1.1
 Version: 1.0.294
 Phase: building
 
-Next micro-step: Merge the v1.2.17 PR (tier modal from the dot) after CI; team E2E tests on testnet and prod before Saturday
+Next micro-step: Merge the v1.2.18 release PR (welcome email once, project save fix); E2E of the Swing Golf awards on 21-Nov
 
 Milestone: Alternun Wallet System (non-custodial, multi-chain) (id: wallet-system)
 Roadmap: .versioning/ROADMAP.md
