@@ -2,11 +2,7 @@
 
 ### Bug Fixes
 
-- **repo:** fix(email): phase 0 copy for the tournament emails
-
-### Bug Fixes
-
-- **email:** phase 0 copy for the tournament emails ([86e17b3](https://github.com/alternun-development/alternun/commit/86e17b3180d1d451189570cdad7820bcc34ee1f9)), closes [#321](https://github.com/alternun-development/alternun/issues/321)
+- **email:** phase 0 copy for the tournament emails ([86e17b3](https://github.com/alternun-development/alternun/commit/86e17b3180d1d451189570cdad7820bcc34ee1f9))
 
 ## [1.2.22](https://github.com/alternun-development/alternun/compare/v1.2.21...v1.2.22) (2026-11-21)
 
