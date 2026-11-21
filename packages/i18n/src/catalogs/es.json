@@ -976,6 +976,7 @@
         "rbi": "Tu trayectoria en Airs no vence y queda como parte de tu legado.",
         "eligibility": "La disponibilidad depende de las reglas de participación y elegibilidad de cada programa. Alcanzar un nivel no concede automáticamente todos los beneficios.",
         "descriptions": {
+          "green": "Green es tu nivel base: toda cuenta empieza aquí. Cada acción de impacto positivo suma Airs y te acerca a Bronce.",
           "bronze": "Tu camino en Airs empieza aquí. Construye una trayectoria visible con acciones de impacto positivo junto a marcas y proyectos aliados.",
           "silver": "Una trayectoria que crece. Plata reconoce las acciones de impacto positivo que llevaron tus Airs acumulados hasta este hito.",
           "gold": "Un hito significativo en tu camino regenerativo. Oro hace visibles tu contribución acumulada y tu compromiso dentro del ecosistema.",

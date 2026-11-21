@@ -1,6 +1,6 @@
 import TierAvatarBorder from '../profile/TierAvatarBorder';
 import { getContentGutter } from '../../utils/layout';
-import { resolveTier, TIERS } from '@alternun/ui';
+import { resolveTier, tierSpecOf } from '@alternun/ui';
 import { useAirsDashboardSnapshot } from './AirsDashboardProvider';
 import { useAuth } from '../auth/AppAuthProvider';
 import { getLocaleLabel } from '@alternun/i18n';
@@ -256,14 +256,25 @@ export default function TopNav({
         dangerBg: 'rgba(239,68,68,0.08)',
       };
 
-  const tier =
-    signedIn && airsScore != null && Number.isFinite(airsScore) ? resolveTier(airsScore) : null;
-  const tierColor = tier ? TIERS[tier].color : null;
-  const tierTextColor = tier
+  const hasStatus = signedIn && airsScore != null && Number.isFinite(airsScore);
+  const tier = hasStatus && airsScore != null ? resolveTier(airsScore) : null;
+  // Below Bronze a person is at Green, the base level, and it shows like any other tier.
+  const statusSpec = hasStatus ? tierSpecOf(tier) : null;
+  const tierColor = statusSpec?.color ?? null;
+  const tierTextColor = statusSpec
     ? isDark
-      ? TIERS[tier].color
-      : { bronze: '#86501f', silver: '#4c6078', gold: '#756019', platinum: '#505d78' }[tier]
+      ? statusSpec.color
+      : {
+          green: '#1d6e4b',
+          bronze: '#86501f',
+          silver: '#4c6078',
+          gold: '#756019',
+          platinum: '#505d78',
+        }[tier ?? 'green']
     : p.accent;
+  const statusLabel = statusSpec
+    ? t(`profile.tierLabels.${tier ?? 'none'}`, undefined, statusSpec.label)
+    : null;
   if (tierColor) {
     p.pillBg = isDark ? '#111e21' : '#f8faf9';
     p.pillBorder = tierColor;
@@ -403,9 +414,7 @@ export default function TopNav({
                   style={[styles.dropScoreText, { color: tierTextColor, flexShrink: 1 }]}
                 >
                   {airsScore.toLocaleString()} Airs
-                  {tier
-                    ? ` · ${t(`profile.tierLabels.${tier}`, undefined, TIERS[tier].label)}`
-                    : ''}
+                  {statusLabel ? ` · ${statusLabel}` : ''}
                 </Text>
               </View>
             )}
@@ -787,9 +796,7 @@ export default function TopNav({
                           numberOfLines={1}
                         >
                           {airsScore.toLocaleString()} Airs
-                          {tier
-                            ? ` · ${t(`profile.tierLabels.${tier}`, undefined, TIERS[tier].label)}`
-                            : ''}
+                          {statusLabel ? ` · ${statusLabel}` : ''}
                         </Text>
                       )}
                     </View>

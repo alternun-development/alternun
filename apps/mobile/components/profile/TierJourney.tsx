@@ -21,7 +21,7 @@ export function TierJourney({
   c: ColorPalette;
 }): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
-  const [selectedTier, setSelectedTier] = useState<AirsTier | null>(null);
+  const [selectedTier, setSelectedTier] = useState<AirsTier | 'green' | null>(null);
   const hasScore = score !== null;
   const safeScore = score ?? 0;
   const tiers = (Object.keys(TIERS) as AirsTier[]).map((id) => ({
@@ -57,10 +57,10 @@ export function TierJourney({
     return () => loop.stop();
   }, [hasScore, motionLevel, pulse]);
   const markerColor = currentIdx >= 0 ? tiers[currentIdx].color : '#1de9b6';
-  // The dot and the stretch before Bronze open the tier the person is heading to (their own tier
-  // at the top), so the modal shows their balance and what is left for it.
+  // The dot opens the person's own status (Green below Bronze), with their balance and what is
+  // left for the next tier; the stretch before Bronze is Green.
   const currentTier = hasScore ? resolveTier(safeScore) : null;
-  const nextTier: AirsTier = currentTier ? TIERS[currentTier].next ?? currentTier : 'bronze';
+  const currentStatus: AirsTier | 'green' = currentTier ?? 'green';
   const firstNodeX = lineWidth > 0 ? lineWidth / (2 * tiers.length) : 0;
   const airsLabel = t(
     'profile.tierJourneyAirs',
@@ -148,7 +148,7 @@ export function TierJourney({
             accessibilityRole='button'
             accessibilityLabel={airsLabel}
             accessibilityHint={openDetailsLabel}
-            onPress={() => setSelectedTier(nextTier)}
+            onPress={() => setSelectedTier('green')}
             style={{
               position: 'absolute',
               top: 0,
@@ -167,7 +167,7 @@ export function TierJourney({
             accessibilityRole='button'
             accessibilityLabel={airsLabel}
             accessibilityHint={openDetailsLabel}
-            onPress={() => setSelectedTier(nextTier)}
+            onPress={() => setSelectedTier(currentStatus)}
             hitSlop={10}
             style={{
               position: 'absolute',

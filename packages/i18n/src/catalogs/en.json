@@ -976,6 +976,7 @@
         "rbi": "Your Airs track record never expires and becomes part of your legacy.",
         "eligibility": "Availability depends on each program’s participation and eligibility rules. Reaching a tier does not automatically grant every benefit.",
         "descriptions": {
+          "green": "Green is your base level: every account starts here. Each positive-impact action adds Airs and brings you closer to Bronze.",
           "bronze": "Your Airs journey starts here. Build a visible track record through positive-impact actions with partner brands and projects.",
           "silver": "A growing track record. Silver recognizes the positive-impact actions that brought your accumulated Airs to this milestone.",
           "gold": "A significant milestone in your regenerative journey. Gold makes your accumulated contribution and commitment visible within the ecosystem.",

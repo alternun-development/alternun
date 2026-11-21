@@ -16,6 +16,7 @@ jest.mock('../AirsDashboardProvider', () => ({
 }));
 jest.mock('@alternun/ui', () => ({
   TIERS: { bronze: { label: 'Bronze', color: '#cd7f32' } },
+  tierSpecOf: () => ({ label: 'Bronze', color: '#cd7f32' }),
   resolveTier: () => 'bronze',
 }));
 jest.mock('@alternun/i18n', () => ({ getLocaleLabel: () => 'English' }));
