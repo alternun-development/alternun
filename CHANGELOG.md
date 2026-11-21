@@ -1,3 +1,15 @@
+## [1.2.22](https://github.com/alternun-development/alternun/compare/v1.2.21...v1.2.22) (2026-11-21)
+
+### Bug Fixes
+
+- **explore:** keep the photo in focus centered when the gallery is resized ([24c1eb8](https://github.com/alternun-development/alternun/commit/24c1eb8351070de4aa332c3c9e60cebacd5857ce))
+
+## [1.2.21](https://github.com/alternun-development/alternun/compare/v1.2.20...v1.2.21) (2026-11-21)
+
+### Features
+
+- **explore:** the enterprise gallery slides photo by photo ([ffeec08](https://github.com/alternun-development/alternun/commit/ffeec08d6f1465199e8eaea97b91499bc4e0793d))
+
 ## [1.2.20](https://github.com/alternun-development/alternun/compare/v1.2.19...v1.2.20) (2026-11-20)
 
 ### Bug Fixes
