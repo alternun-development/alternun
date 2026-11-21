@@ -124,14 +124,13 @@ Current version: **1.2.18**
 
 ## 📋 Latest Changes (v1.2.18)
 
+### Changes
+
+- **reentry:** next step after the welcome and project save fixes ([c4142dd](https://github.com/alternun-development/alternun/commit/c4142ddcdbc1fe933902bc7e7a72c8b7b8d6b9a1))
+
 ### Bug Fixes
 
-- **repo:** chore(reentry): next step after the welcome and project save fixes
-- **repo:** fix: the welcome email goes out once and project admins can save their page
-
-### Bug Fixes
-
-- the welcome email goes out once and project admins can save their page ([d4644a7](https://github.com/alternun-development/alternun/commit/d4644a7ca9ded825bdb456431a8b1bb1e62c6663))
+- **repo:** the welcome email goes out once and project admins can save their page ([d4644a7](https://github.com/alternun-development/alternun/commit/d4644a7ca9ded825bdb456431a8b1bb1e62c6663))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
