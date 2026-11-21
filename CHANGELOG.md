@@ -1,3 +1,13 @@
+## [1.2.22](https://github.com/alternun-development/alternun/compare/v1.2.21...v1.2.22) (2026-11-21)
+
+### Bug Fixes
+
+- **repo:** fix(explore): keep the photo in focus centered when the gallery is resized
+
+### Bug Fixes
+
+- **explore:** keep the photo in focus centered when the gallery is resized ([24c1eb8](https://github.com/alternun-development/alternun/commit/24c1eb8351070de4aa332c3c9e60cebacd5857ce)), closes [#322](https://github.com/alternun-development/alternun/issues/322) [#321](https://github.com/alternun-development/alternun/issues/321)
+
 ## [1.2.21](https://github.com/alternun-development/alternun/compare/v1.2.20...v1.2.21) (2026-11-21)
 
 ### Features

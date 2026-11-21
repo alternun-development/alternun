@@ -1,22 +1,22 @@
 {
-  "version": "1.2.21-dev.0",
+  "version": "1.2.22-dev.0",
   "build": 0,
-  "lastUpdated": "2026-11-21T05:12:42.810Z",
+  "lastUpdated": "2026-11-21T05:29:32.056Z",
   "environment": "development",
   "lastDeployment": {
     "id": "development-0",
-    "version": "1.2.21-dev.0",
+    "version": "1.2.22-dev.0",
     "build": 0,
-    "date": "2026-11-21T05:12:42.810Z",
-    "message": "Release 1.2.21-dev.0"
+    "date": "2026-11-21T05:29:32.056Z",
+    "message": "Release 1.2.22-dev.0"
   },
   "deploymentHistory": [
     {
       "id": "development-0",
-      "version": "1.2.21-dev.0",
+      "version": "1.2.22-dev.0",
       "build": 0,
-      "date": "2026-11-21T05:12:42.810Z",
-      "message": "Release 1.2.21-dev.0"
+      "date": "2026-11-21T05:29:32.056Z",
+      "message": "Release 1.2.22-dev.0"
     },
     {
       "id": "development-1",
