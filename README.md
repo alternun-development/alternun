@@ -120,17 +120,17 @@ Routine production releases must use `pnpm release:patch` followed by `pnpm rele
 The root README is kept aligned with the current release state by the local README maintenance hook. `pnpm version:validate` now includes the README guard, and the release flow refreshes the version line, latest changes block, and support contact automatically.
 The CI test job now generates `apps/mobile/coverage/lcov.info` and uploads it to Codecov.
 
-Current version: **1.2.18**
+Current version: **1.2.19**
 
-## 📋 Latest Changes (v1.2.18)
-
-### Changes
-
-- **reentry:** next step after the welcome and project save fixes ([c4142dd](https://github.com/alternun-development/alternun/commit/c4142ddcdbc1fe933902bc7e7a72c8b7b8d6b9a1))
+## 📋 Latest Changes (v1.2.19)
 
 ### Bug Fixes
 
-- **repo:** the welcome email goes out once and project admins can save their page ([d4644a7](https://github.com/alternun-development/alternun/commit/d4644a7ca9ded825bdb456431a8b1bb1e62c6663))
+- **repo:** feat: Swing Golf tournament fixes, enterprise gallery and English text
+
+### Features
+
+- Swing Golf tournament fixes, enterprise gallery and English text ([46a07cc](https://github.com/alternun-development/alternun/commit/46a07cc34eee7bcda89498b1e2da5482a05727cb)), closes [#321](https://github.com/alternun-development/alternun/issues/321)
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 

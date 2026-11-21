@@ -1,3 +1,13 @@
+## [1.2.19](https://github.com/alternun-development/alternun/compare/v1.2.18...v1.2.19) (2026-11-21)
+
+### Bug Fixes
+
+- **repo:** feat: Swing Golf tournament fixes, enterprise gallery and English text
+
+### Features
+
+- Swing Golf tournament fixes, enterprise gallery and English text ([46a07cc](https://github.com/alternun-development/alternun/commit/46a07cc34eee7bcda89498b1e2da5482a05727cb)), closes [#321](https://github.com/alternun-development/alternun/issues/321)
+
 ## [1.2.18](https://github.com/alternun-development/alternun/compare/v1.2.17...v1.2.18) (2026-11-20)
 
 ### Changes
