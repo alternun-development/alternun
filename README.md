@@ -126,11 +126,7 @@ Current version: **1.2.20**
 
 ### Bug Fixes
 
-- **repo:** fix(profile): the journey dot opens the person's own status, Green below Bronze
-
-### Bug Fixes
-
-- **profile:** the journey dot opens the person's own status, Green below Bronze ([0b0837e](https://github.com/alternun-development/alternun/commit/0b0837ef87925c56a360a47abd6680d781c0ab05)), closes [#321](https://github.com/alternun-development/alternun/issues/321)
+- **profile:** the journey dot opens the person's own status, Green below Bronze ([0b0837e](https://github.com/alternun-development/alternun/commit/0b0837ef87925c56a360a47abd6680d781c0ab05))
 
 For full version history, see [CHANGELOG.md](./CHANGELOG.md) and [GitHub releases](https://github.com/alternun-development/alternun/releases)
 
