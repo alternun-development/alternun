@@ -57,7 +57,7 @@ test('the recipient email for an existing account says the Airs were credited', 
   assert.match(email.text, /^Hola:/);
 });
 
-test('a report with a galardón medal shows the award and its art in the email', () => {
+test('a report with a medal names the medal and shows its art in the email', () => {
   const honorAward = {
     title: 'Manglar Verde',
     eventName: 'Tour Callaway Colombia',
@@ -66,19 +66,24 @@ test('a report with a galardón medal shows the award and its art in the email',
   const credited = renderAirsReportRecipientEmail(
     context({ report: report({ status: 'released' }), honorAward })
   );
-  assert.match(credited.subject, /^Recibiste el galardón Manglar Verde y 1,250 Airs/);
-  assert.match(credited.text, /recibiste el galardón Manglar Verde · Tour Callaway Colombia/);
+  assert.match(credited.subject, /^Recibiste la medalla Manglar Verde y 1,250 Airs/);
+  assert.match(credited.subject, /You received the Manglar Verde medal/);
+  assert.match(credited.text, /recibiste la medalla Manglar Verde · Tour Callaway Colombia/);
+  assert.match(credited.text, /Cantidad: 1,250 Airs/);
+  assert.match(credited.text, /Quantity: 1,250 Airs/);
+  assert.doesNotMatch(credited.text, /galardón|Monto|award/);
   assert.match(credited.text, /claim it in your profile, under Legacy/);
   assert.match(credited.html, /<img src="https:\/\/cdn\.example\.test\/manglar-verde\.png"/);
   assert.match(credited.html, /href="https:\/\/airs\.example\.test\/profile"/);
 
   const waiting = renderAirsReportRecipientEmail(context({ honorAward }));
-  assert.match(waiting.text, /al crear tu cuenta lo reclamas/);
+  assert.match(waiting.text, /cuando crees tu cuenta, la reclamas/);
+  assert.match(waiting.text, /Entra a Airs con este correo/);
   assert.match(waiting.html, /href="https:\/\/airs\.example\.test\/"/);
 
   const plain = renderAirsReportRecipientEmail(context({ report: report({ status: 'released' }) }));
   assert.doesNotMatch(plain.html, /<img/);
-  assert.doesNotMatch(plain.text, /galardón/);
+  assert.doesNotMatch(plain.text, /medalla/);
 });
 
 test('email content escapes anything the issuer typed', () => {

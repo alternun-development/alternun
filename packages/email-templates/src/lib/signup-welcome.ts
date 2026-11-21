@@ -22,7 +22,9 @@ export interface SignupWelcomeEmail {
 interface SignupWelcomeTemplate {
   subject: string;
   preview: string;
+  /** With the person's name, and without it when the account has none. */
   greeting: string;
+  greetingNoName: string;
   intro: string;
   body: string;
   ctaLabel: string;
@@ -31,35 +33,37 @@ interface SignupWelcomeTemplate {
 
 const DEFAULT_DASHBOARD_URL = 'https://airs.alternun.co/';
 
+// Copy from the 19-Nov-2026 email audit (Ficha 10), checked with the Airs language guardrail.
 const SIGNUP_WELCOME_TEMPLATES: Record<EmailLocale, SignupWelcomeTemplate> = {
   en: {
-    subject: 'Welcome to Alternun AIRS',
-    preview: 'Your account has been successfully created. Start your regenerative journey today.',
-    greeting: 'Welcome {{displayName}},',
-    intro:
-      'Thank you for joining Alternun! Your account has been successfully created and is ready to use.',
-    body: 'You are now part of a community dedicated to regenerative commerce. Explore our platform, connect your wallet, and start accumulating AIRS through sustainable actions and allied commerce. Every action counts towards a more sustainable future.',
-    ctaLabel: 'Start exploring',
-    footer: 'Welcome to the Alternun community',
+    subject: 'Your Airs account is ready',
+    preview: 'You can now start earning Airs with your positive-impact actions.',
+    greeting: 'Hi {{displayName}},',
+    greetingNoName: 'Hi,',
+    intro: 'Thanks for joining Airs. Your account is ready.',
+    body: 'Airs recognizes your positive-impact actions with partner brands and projects and turns them into a track record that stays. Explore the projects and see how to earn Airs.',
+    ctaLabel: 'Explore Airs',
+    footer: 'Welcome to the Airs community',
   },
   es: {
-    subject: 'Bienvenido a Alternun AIRS',
-    preview: 'Tu cuenta ha sido creada exitosamente. Comienza tu jornada regenerativa hoy.',
-    greeting: 'Bienvenido {{displayName}},',
-    intro:
-      'Gracias por unirte a Alternun! Tu cuenta ha sido creada exitosamente y está lista para usar.',
-    body: 'Ya eres parte de una comunidad dedicada al comercio regenerativo. Explora nuestra plataforma, conecta tu billetera y comienza a acumular AIRS a través de acciones sustentables y comercio aliado. Cada acción cuenta hacia un futuro más sustentable.',
-    ctaLabel: 'Comenzar a explorar',
-    footer: 'Bienvenido a la comunidad de Alternun',
+    subject: 'Tu cuenta de Airs está lista',
+    preview: 'Ya puedes empezar a sumar Airs con tus acciones de impacto positivo.',
+    greeting: 'Hola, {{displayName}}:',
+    greetingNoName: 'Hola:',
+    intro: 'Gracias por unirte a Airs. Tu cuenta quedó creada.',
+    body: 'Airs reconoce tus acciones de impacto positivo con marcas y proyectos aliados y las convierte en una trayectoria que queda. Explora los proyectos y descubre cómo sumar.',
+    ctaLabel: 'Explorar Airs',
+    footer: 'Te damos la bienvenida a la comunidad Airs',
   },
   th: {
-    subject: 'ยินดีต้อนรับสู่ Alternun AIRS',
-    preview: 'บัญชีของคุณได้สร้างเรียบร้อยแล้ว เริ่มการเดินทางด้านการสร้างสรรค์ของคุณวันนี้',
-    greeting: 'ยินดีต้อนรับ {{displayName}},',
-    intro: 'ขอบคุณที่เข้าร่วม Alternun! บัญชีของคุณได้สร้างเรียบร้อยแล้วและพร้อมใช้งาน',
-    body: 'คุณเป็นส่วนหนึ่งของชุมชนที่อุทิศให้กับการค้าเพื่อการสร้างสรรค์ สำรวจแพลตฟอร์มของเรา เชื่อมต่อกระเป๋าของคุณ และเริ่มสะสม AIRS ผ่านการกระทำที่ยั่งยืนและการค้าเครือข่ายพันธมิตร ทุกการกระทำมีส่วนสนับสนุนต่ออนาคตที่ยั่งยืนขึ้น',
-    ctaLabel: 'เริ่มสำรวจ',
-    footer: 'ยินดีต้อนรับสู่ชุมชน Alternun',
+    subject: 'บัญชี Airs ของคุณพร้อมแล้ว',
+    preview: 'ตอนนี้คุณเริ่มสะสม Airs จากการกระทำที่สร้างผลกระทบเชิงบวกได้แล้ว',
+    greeting: 'สวัสดี {{displayName}}',
+    greetingNoName: 'สวัสดี',
+    intro: 'ขอบคุณที่เข้าร่วม Airs บัญชีของคุณพร้อมแล้ว',
+    body: 'Airs ยกย่องการกระทำที่สร้างผลกระทบเชิงบวกของคุณร่วมกับแบรนด์และโครงการพันธมิตร และเปลี่ยนให้เป็นเส้นทางที่คงอยู่ สำรวจโครงการและดูว่าจะสะสม Airs ได้อย่างไร',
+    ctaLabel: 'สำรวจ Airs',
+    footer: 'ยินดีต้อนรับสู่ชุมชน Airs',
   },
 };
 
@@ -103,14 +107,15 @@ function stripTrailingSlashes(value: string): string {
 }
 
 export function renderSignupWelcomeEmail(input: SignupWelcomeEmailInput): SignupWelcomeEmail {
-  const locale = normalizeEmailLocale(input.locale, 'en');
+  // Spanish by default, because a new account often has no locale yet.
+  const locale = normalizeEmailLocale(input.locale, 'es');
   const template =
     locale === 'es'
       ? SIGNUP_WELCOME_TEMPLATES.es
       : locale === 'th'
       ? SIGNUP_WELCOME_TEMPLATES.th
       : SIGNUP_WELCOME_TEMPLATES.en;
-  const displayName = (input.displayName?.trim() ?? 'AIRS member').trim();
+  const displayName = input.displayName?.trim() ?? '';
   const dashboardUrl = stripTrailingSlashes(input.dashboardUrl?.trim() ?? DEFAULT_DASHBOARD_URL);
   const params = {
     displayName,
@@ -118,7 +123,7 @@ export function renderSignupWelcomeEmail(input: SignupWelcomeEmailInput): Signup
 
   const subject = interpolate(template.subject, params);
   const preview = interpolate(template.preview, params);
-  const greeting = interpolate(template.greeting, params);
+  const greeting = displayName ? interpolate(template.greeting, params) : template.greetingNoName;
   const intro = interpolate(template.intro, params);
   const body = interpolate(template.body, params);
   const ctaLabel = template.ctaLabel;

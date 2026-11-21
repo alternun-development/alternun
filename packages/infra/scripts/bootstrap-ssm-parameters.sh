@@ -152,7 +152,7 @@ case "$stage_normalized" in
 esac
 
 SUPABASE_KEY=$(resolve_publishable_key "$stage_key_suffix")
-EMAIL_SENDER_NAME_VALUE=$(first_non_empty "${EMAIL_SENDER_NAME:-}" "Alternun")
+EMAIL_SENDER_NAME_VALUE=$(first_non_empty "${EMAIL_SENDER_NAME:-}" "Airs")
 EMAIL_FROM_VALUE=$(first_non_empty "${EMAIL_FROM:-}" "noreply@alternun.co")
 
 if [ -z "${SUPABASE_KEY:-}" ]; then

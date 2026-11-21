@@ -35,7 +35,8 @@ test('verification email shows the 6-digit code and no link when no URL is given
     assert.equal(sent.length, 1);
     const [message] = sent;
     assert.match(message.html, /482913/);
-    assert.match(message.html, /Código de verificación/);
+    assert.match(message.html, /Código de confirmación/);
+    assert.match(message.html, /Equipo Airs/);
     assert.doesNotMatch(message.html, /<a href=/);
     assert.match(message.text, /482913/);
     assert.doesNotMatch(message.text, /Confirmar mi cuenta/);
