@@ -64,6 +64,11 @@ export async function loadMarketplaceEnterprise(
         : null,
     websiteUrl: safeEnterpriseUrl(payload.websiteUrl),
     bannerUrl: safeEnterpriseUrl(payload.bannerUrl),
+    // Only safe https photos; older API responses have no gallery.
+    gallery: (payload.gallery ?? []).flatMap((image) => {
+      const url = safeEnterpriseUrl(image.url);
+      return url ? [{ url, altText: image.altText }] : [];
+    }),
   };
 }
 
@@ -265,6 +270,28 @@ export function MarketplaceEnterpriseDetailView({
               </Text>
             </View>
           ) : null}
+          {enterprise.gallery?.length ? (
+            <View testID='enterprise-detail-gallery' style={styles.gallery}>
+              <Text style={[styles.sectionTitle, { color: palette.text }]}>
+                {t('explorer.detail.gallery')}
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.galleryRow}
+              >
+                {enterprise.gallery.map((image, index) => (
+                  <Image
+                    key={`${index}-${image.url}`}
+                    source={{ uri: image.url }}
+                    accessibilityLabel={image.altText || enterprise.displayName}
+                    style={styles.galleryImage}
+                    resizeMode='cover'
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          ) : null}
           <ProductsSection products={enterprise.products} palette={palette} t={t} />
           <HonorAwardCatalogSection
             source={{ kind: 'enterprise', slug: enterprise.slug }}
@@ -368,6 +395,9 @@ const styles = StyleSheet.create({
   banner: { alignSelf: 'stretch', height: 140, marginTop: -22, marginHorizontal: -22 },
   about: { borderWidth: 1, borderRadius: 20, padding: 18, gap: 10 },
   description: { fontSize: 15, lineHeight: 22 },
+  gallery: { gap: 12 },
+  galleryRow: { gap: 12 },
+  galleryImage: { width: 260, height: 180, borderRadius: 18 },
   logo: { width: 96, height: 96, borderRadius: 20 },
   logoFallback: {
     width: 96,

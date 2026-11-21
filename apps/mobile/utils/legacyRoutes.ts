@@ -19,6 +19,18 @@ export const LEGACY_ROUTE_PREFIXES: ReadonlyArray<readonly [string, string]> = [
   ['/portafolio', '/portfolio'],
 ];
 
+/** Renamed enterprise pages (old slug → current one), so links already shared keep working. */
+export const RENAMED_ENTERPRISE_SLUGS: Readonly<Record<string, string>> = {
+  'torneo-swing-golf-rincon-cajica': 'swing-golf-colombia',
+};
+
+/** The current slug of an enterprise page, or null when the slug was never renamed. */
+export function renamedEnterpriseSlug(slug: string): string | null {
+  return Object.prototype.hasOwnProperty.call(RENAMED_ENTERPRISE_SLUGS, slug)
+    ? RENAMED_ENTERPRISE_SLUGS[slug]
+    : null;
+}
+
 export function resolveLegacyRoute(pathname: string): string | null {
   for (const [legacy, current] of LEGACY_ROUTE_PREFIXES) {
     if (pathname === legacy || pathname.startsWith(`${legacy}/`)) {

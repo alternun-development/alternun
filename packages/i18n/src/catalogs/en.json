@@ -251,7 +251,14 @@
           "reward": "Referral Reward",
           "certificate": "Certificate Issued",
           "verification": "Verification Completed",
-          "wallet": "Wallet Connected"
+          "wallet": "Wallet Connected",
+          "conservation": "Conservation action",
+          "positive": "Positive-impact action"
+        },
+        "sources": {
+          "joinedCommunity": "Joined the {{partner}} community",
+          "joinedEvent": "Took part in {{event}}",
+          "allyReport": "Reported by an ally"
         },
         "typeLabels": {
           "compensation": "Compensation",
@@ -838,7 +845,7 @@
         "silver": "Silver",
         "gold": "Gold",
         "platinum": "Platinum",
-        "none": "No tier yet"
+        "none": "Green"
       },
       "stats": {
         "airs": "AIRS",
@@ -958,21 +965,22 @@
         "open": "View tier details and benefits",
         "title": "{{tier}} status",
         "close": "Close tier details",
-        "threshold": "{{amount}}+ AIRS",
+        "threshold": "{{amount}}+ Airs",
         "current": "Your current tier",
         "unavailable": "Your score is currently unavailable",
-        "remaining": "{{amount}} AIRS to reach this tier",
+        "remaining": "{{amount}} Airs to reach this tier",
         "reached": "Milestone reached",
-        "benefits": "What AIRS opens up",
-        "reputation": "A visible, verifiable reputation built from your contribution.",
+        "benefits": "What Airs opens up",
+        "reputation": "A visible reputation built from your positive-impact actions.",
         "opportunities": "Access to eligible ecosystem benefits, discounts, projects and opportunities.",
-        "rbi": "Your AIRS track record informs participation in Regenerative Basic Income (RBI), when eligible.",
+        "rbi": "Your Airs track record never expires and becomes part of your legacy.",
         "eligibility": "Availability depends on each program’s participation and eligibility rules. Reaching a tier does not automatically grant every benefit.",
         "descriptions": {
-          "bronze": "Your AIRS journey starts here. Build a visible track record through eligible, verified actions that contribute to the regenerative ecosystem.",
-          "silver": "A growing track record of contribution. Silver recognizes the verified actions that have brought your cumulative AIRS score to this milestone.",
+          "green": "Green is your base level: every account starts here. Each positive-impact action adds Airs and brings you closer to Bronze.",
+          "bronze": "Your Airs journey starts here. Build a visible track record through positive-impact actions with partner brands and projects.",
+          "silver": "A growing track record. Silver recognizes the positive-impact actions that brought your accumulated Airs to this milestone.",
           "gold": "A significant milestone in your regenerative journey. Gold makes your accumulated contribution and commitment visible within the ecosystem.",
-          "platinum": "The highest tier in the current AIRS journey. Platinum recognizes an extensive track record of verified contribution, built over time."
+          "platinum": "The highest Airs tier. Platinum recognizes an extensive track record of positive impact, built over time."
         },
         "balance": "You have {{amount}} Airs.",
         "balanceToReach": "You have {{amount}} Airs. {{remaining}} Airs to go for {{tier}}."
@@ -1044,7 +1052,7 @@
       },
       "milestoneDetails": {
         "close": "Close achievement details",
-        "caption": "I just reached {{milestone}} on AIRS by Alternun! 🌱 https://airs.alternun.co #AIRS #Alternun",
+        "caption": "I just reached {{milestone}} on Airs by Alternun! 🌱 https://airs.alternun.co #Airs #Alternun",
         "earned": "Achievement unlocked",
         "locked": "Not yet achieved",
         "reached": "You reached the {{amount}} AIRS milestone. Celebrate your progress in the Alternun ecosystem.",
@@ -1094,7 +1102,8 @@
         "supportedBy": "Supported by:",
         "airsAmount": "+{{amount}} Airs",
         "obtained": "Earned: {{date}}",
-        "shareMessage": "I earned the \"{{title}}\" legacy medal on Airs{{partner}}.",
+        "shareMessage": "I earned the \"{{title}}\" legacy medal on Airs by Alternun! 🌱 #Airs #Alternun",
+        "shareMessageWithPartner": "I earned the \"{{title}}\" legacy medal with {{partner}} on Airs by Alternun! 🌱 #Airs #Alternun",
         "claim": {
           "headline": "New legacy medal!",
           "inspect": "View mission",
@@ -1182,7 +1191,8 @@
           "slotLabel": "{{title}}: medal to earn"
         },
         "share": {
-          "title": "Share your legacy medal"
+          "title": "Share your legacy medal",
+          "cardLabel": "Legacy medal"
         },
         "codes": {
           "title": "Claim codes",
@@ -1287,6 +1297,7 @@
       "enterprise": {
         "title": "Manage enterprise",
         "back": "Back to the enterprise",
+        "translationHint": "Fields you leave empty in {{language}} show the Spanish text.",
         "tabs": {
           "info": "Information",
           "images": "Images",
@@ -1302,7 +1313,9 @@
         },
         "images": {
           "logo": "Logo",
-          "banner": "Banner"
+          "banner": "Banner",
+          "gallery": "Photo gallery",
+          "galleryHint": "Up to {{max}} photos for your public page."
         },
         "products": {
           "intro": "What your customers earn in Airs with each product or service.",

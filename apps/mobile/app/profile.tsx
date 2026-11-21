@@ -376,7 +376,7 @@ function ProfileHeader({
     silver: t('profile.tierLabels.silver', undefined, 'Silver'),
     gold: t('profile.tierLabels.gold', undefined, 'Gold'),
     platinum: t('profile.tierLabels.platinum', undefined, 'Platinum'),
-    none: t('profile.tierLabels.none', undefined, 'Aún sin nivel'),
+    none: t('profile.tierLabels.none', undefined, 'Green'),
   };
   const spec = resolveTierSpec(tier, tierLabels);
   const [tierRevealOpen, setTierRevealOpen] = useState(false);
@@ -2719,7 +2719,15 @@ function PerfilTab({
 
         {/* Honor awards */}
         {user?.id ? (
-          <HonorAwardsSection scope={HONOR_AWARDS_ME_SCOPE} getToken={getHonorAwardToken} c={c} />
+          <HonorAwardsSection
+            scope={HONOR_AWARDS_ME_SCOPE}
+            getToken={getHonorAwardToken}
+            c={c}
+            // The name the milestone share images carry, so a shared medal reads the same.
+            holderName={
+              airsSnapshot?.displayName?.trim() ? airsSnapshot.displayName : profile.displayName
+            }
+          />
         ) : null}
 
         {/* Referrals */}

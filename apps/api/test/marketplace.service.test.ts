@@ -6,7 +6,11 @@ import { test } from 'node:test';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import type { AdminPrincipal } from '../src/common/admin-auth/admin-auth.guard';
-import { CreateProjectMediaDto } from '../src/modules/marketplace/marketplace.dto';
+import {
+  CreateProjectMediaDto,
+  UpdateEnterpriseDto,
+  UpdateProjectDto,
+} from '../src/modules/marketplace/marketplace.dto';
 import { MarketplaceApiError } from '../src/modules/marketplace/marketplace.errors';
 import type { MarketplaceActivityRepository } from '../src/modules/marketplace/marketplace-activity.repository';
 import { MarketplaceActivityService } from '../src/modules/marketplace/marketplace-activity.service';
@@ -230,6 +234,42 @@ test('scoped content roles can edit copy but cannot write protected project fiel
     expectApiError('PERMISSION_DENIED', 403)
   );
   assert.equal(audits.filter((entry) => entry.result === 'denied').length, 2);
+});
+
+test('a validated update body counts only the fields that were sent', async () => {
+  // The validation pipe hands the service a DTO instance that declares every field of its class.
+  const profileUpdates: Array<Record<string, unknown>> = [];
+  const { repository } = adminRepository({
+    updateProjectProfile: async (_id: string, profile: Record<string, unknown>) => {
+      profileUpdates.push(profile);
+    },
+  });
+  const service = new MarketplaceAdminService(repository);
+
+  const contentBody = plainToInstance(UpdateProjectDto, { content });
+  assert.equal('internalNotes' in contentBody, true);
+  const copy = await service.updateProject(principal('moderator'), 'r1', 'p1', contentBody);
+  assert.equal(copy.id, 'p1');
+
+  const profileBody = plainToInstance(UpdateProjectDto, { content, alternateName: 'Batis' });
+  await service.updateProject(principal('partner_operator'), 'r2', 'p1', profileBody);
+  assert.deepEqual(profileUpdates, [{ alternateName: 'Batis' }]);
+
+  await assert.rejects(
+    service.updateProject(
+      principal('partner_operator'),
+      'r3',
+      'p1',
+      plainToInstance(UpdateProjectDto, { internalNotes: 'Solo equipo Alternun' })
+    ),
+    expectApiError('PROTECTED_FIELD_WRITE_DENIED', 403)
+  );
+  await service.updateEnterprise(
+    principal('partner_operator'),
+    'r4',
+    'e1',
+    plainToInstance(UpdateEnterpriseDto, { displayName: 'Swing Golf' })
+  );
 });
 
 test('partner operator edits enterprise presentation but not protected legal identity', async () => {

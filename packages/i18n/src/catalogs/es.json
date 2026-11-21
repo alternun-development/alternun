@@ -251,7 +251,14 @@
           "reward": "Recompensa de referido",
           "certificate": "Certificado emitido",
           "verification": "Verificación completada",
-          "wallet": "Wallet conectada"
+          "wallet": "Wallet conectada",
+          "conservation": "Acción de conservación",
+          "positive": "Acción de impacto positivo"
+        },
+        "sources": {
+          "joinedCommunity": "Se unió a la comunidad de {{partner}}",
+          "joinedEvent": "Participó en {{event}}",
+          "allyReport": "Reportado por un aliado"
         },
         "typeLabels": {
           "compensation": "Compensación",
@@ -838,7 +845,7 @@
         "silver": "Plata",
         "gold": "Oro",
         "platinum": "Platino",
-        "none": "Aún sin nivel"
+        "none": "Green"
       },
       "stats": {
         "airs": "AIRS",
@@ -958,21 +965,22 @@
         "open": "Ver detalles y beneficios del nivel",
         "title": "Estatus {{tier}}",
         "close": "Cerrar detalles del nivel",
-        "threshold": "{{amount}}+ AIRS",
+        "threshold": "{{amount}}+ Airs",
         "current": "Tu nivel actual",
         "unavailable": "Tu puntuación no está disponible en este momento",
-        "remaining": "{{amount}} AIRS para alcanzar este nivel",
+        "remaining": "{{amount}} Airs para alcanzar este nivel",
         "reached": "Hito alcanzado",
-        "benefits": "Lo que AIRS hace posible",
-        "reputation": "Una reputación visible y verificable construida con tu contribución.",
+        "benefits": "Lo que Airs hace posible",
+        "reputation": "Una reputación visible, construida con tus acciones de impacto positivo.",
         "opportunities": "Acceso a beneficios, descuentos, proyectos y oportunidades del ecosistema según los requisitos de cada programa.",
-        "rbi": "Tu trayectoria AIRS contribuye a determinar tu participación en el Ingreso Básico Regenerativo (RBI), cuando cumples los requisitos.",
+        "rbi": "Tu trayectoria en Airs no vence y queda como parte de tu legado.",
         "eligibility": "La disponibilidad depende de las reglas de participación y elegibilidad de cada programa. Alcanzar un nivel no concede automáticamente todos los beneficios.",
         "descriptions": {
-          "bronze": "Tu camino en AIRS comienza aquí. Construye una trayectoria visible mediante acciones elegibles y verificadas que contribuyen al ecosistema regenerativo.",
-          "silver": "Una trayectoria de contribución en crecimiento. Plata reconoce las acciones verificadas que han llevado tu puntuación AIRS acumulada hasta este hito.",
+          "green": "Green es tu nivel base: toda cuenta empieza aquí. Cada acción de impacto positivo suma Airs y te acerca a Bronce.",
+          "bronze": "Tu camino en Airs empieza aquí. Construye una trayectoria visible con acciones de impacto positivo junto a marcas y proyectos aliados.",
+          "silver": "Una trayectoria que crece. Plata reconoce las acciones de impacto positivo que llevaron tus Airs acumulados hasta este hito.",
           "gold": "Un hito significativo en tu camino regenerativo. Oro hace visibles tu contribución acumulada y tu compromiso dentro del ecosistema.",
-          "platinum": "El nivel más alto del camino AIRS actual. Platino reconoce una amplia trayectoria de contribución verificada, construida a lo largo del tiempo."
+          "platinum": "El nivel más alto de Airs. Platino reconoce una trayectoria amplia de impacto positivo, construida con el tiempo."
         },
         "balance": "Tienes {{amount}} Airs.",
         "balanceToReach": "Tienes {{amount}} Airs. Te faltan {{remaining}} Airs para {{tier}}."
@@ -1044,7 +1052,7 @@
       },
       "milestoneDetails": {
         "close": "Cerrar detalles del logro",
-        "caption": "¡Acabo de alcanzar {{milestone}} en AIRS by Alternun! 🌱 https://airs.alternun.co #AIRS #Alternun",
+        "caption": "¡Acabo de alcanzar {{milestone}} en Airs by Alternun! 🌱 https://airs.alternun.co #Airs #Alternun",
         "earned": "Logro desbloqueado",
         "locked": "Aún no alcanzado",
         "reached": "Alcanzaste el hito de {{amount}} AIRS. Celebra tu progreso en el ecosistema Alternun.",
@@ -1094,7 +1102,8 @@
         "supportedBy": "Con el apoyo de:",
         "airsAmount": "+{{amount}} Airs",
         "obtained": "Obtenida: {{date}}",
-        "shareMessage": "Obtuve la medalla de legado \"{{title}}\" en Airs{{partner}}.",
+        "shareMessage": "¡Obtuve la medalla de legado \"{{title}}\" en Airs by Alternun! 🌱 #Airs #Alternun",
+        "shareMessageWithPartner": "¡Obtuve la medalla de legado \"{{title}}\" con {{partner}} en Airs by Alternun! 🌱 #Airs #Alternun",
         "claim": {
           "headline": "¡Nueva medalla de legado!",
           "inspect": "Ver misión",
@@ -1182,7 +1191,8 @@
           "slotLabel": "{{title}}: medalla por obtener"
         },
         "share": {
-          "title": "Comparte tu medalla de legado"
+          "title": "Comparte tu medalla de legado",
+          "cardLabel": "Medalla de legado"
         },
         "codes": {
           "title": "Códigos para reclamar",
@@ -1287,6 +1297,7 @@
       "enterprise": {
         "title": "Administrar empresa",
         "back": "Volver a la empresa",
+        "translationHint": "Los campos que dejes vacíos en {{language}} se muestran en español.",
         "tabs": {
           "info": "Información",
           "images": "Imágenes",
@@ -1302,7 +1313,9 @@
         },
         "images": {
           "logo": "Logo",
-          "banner": "Banner"
+          "banner": "Banner",
+          "gallery": "Galería de fotos",
+          "galleryHint": "Hasta {{max}} fotos para tu página pública."
         },
         "products": {
           "intro": "Lo que tus clientes suman en Airs con cada producto o servicio.",

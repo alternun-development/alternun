@@ -53,7 +53,7 @@ from (
 with links as (
   select
     (select id from public.projects where slug = 'fundacion-batis') as project_id,
-    (select id from public.enterprises where slug = 'torneo-swing-golf-rincon-cajica') as partner_id
+    (select id from public.enterprises where slug = 'swing-golf-colombia') as partner_id
 )
 update public.honor_award_recipes recipe
 set
@@ -80,7 +80,7 @@ where recipe.created_by_subject = 'testnet-honor-awards'
 with links as (
   select
     (select id from public.projects where slug = 'fundacion-batis') as project_id,
-    (select id from public.enterprises where slug = 'torneo-swing-golf-rincon-cajica') as partner_id
+    (select id from public.enterprises where slug = 'swing-golf-colombia') as partner_id
 )
 insert into public.honor_award_recipes (
   kind, tier, audience, title, classification, purpose, event_name, event_year, event_dates,

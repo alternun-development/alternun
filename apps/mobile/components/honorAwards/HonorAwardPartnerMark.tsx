@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, Text, View } from 'react-native';
 import { presetArt } from './honorAwardArt';
-import { honorCountryName } from './honorAwardTheme';
+import { honorPartnerCountry } from './honorAwardTheme';
 import type { HonorAwardPartnerMarkProps } from './honorAwards.types';
 
 const INK = '#111318';
@@ -45,16 +45,27 @@ export default function HonorAwardPartnerMark({
   }
   const words = partner.displayName.trim().split(/\s+/);
   const last = words.length > 1 ? words.pop() ?? '' : '';
-  const country = honorCountryName(partner.countryCode);
+  const country = honorPartnerCountry(partner);
   return (
-    <View accessibilityLabel={partner.displayName} style={{ alignItems: 'center' }}>
-      <Text numberOfLines={1} style={{ fontSize: 27 * scale, fontWeight: '900', color: ink }}>
+    // Stretched so a long name ends in "…" inside its box instead of spilling over both sides.
+    <View accessibilityLabel={partner.displayName} style={{ alignSelf: 'stretch' }}>
+      <Text
+        numberOfLines={1}
+        style={{ fontSize: 27 * scale, fontWeight: '900', color: ink, textAlign: 'center' }}
+      >
         {words.join(' ')}
         {last ? <Text style={{ color: light ? ink : GREEN }}>{` ${last}`}</Text> : null}
       </Text>
       {country ? (
         <Text
-          style={{ fontSize: 13 * scale, fontWeight: '700', color: ink, marginTop: -2 * scale }}
+          numberOfLines={1}
+          style={{
+            fontSize: 13 * scale,
+            fontWeight: '700',
+            color: ink,
+            marginTop: -2 * scale,
+            textAlign: 'center',
+          }}
         >
           {country}
         </Text>

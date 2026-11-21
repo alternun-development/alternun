@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ScreenShell from '../../../components/common/ScreenShell';
 import { useAppTranslation } from '../../../components/i18n/useAppTranslation';
@@ -7,6 +7,7 @@ import { useAppTheme } from '../../../components/theme/useAppTheme';
 import { MarketplaceEnterpriseDetailView } from '../../../components/marketplace/MarketplaceEnterpriseDetail';
 import type { DetailPalette } from '../../../components/marketplace/types';
 import { useAdminAccess } from '../../../hooks/useAdminAccess';
+import { renamedEnterpriseSlug } from '../../../utils/legacyRoutes';
 
 export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{ slug?: string | string[] }>();
@@ -14,7 +15,15 @@ export default function MarketplaceEnterpriseDetailScreen(): React.JSX.Element {
   const adminAccess = useAdminAccess();
   const { language, themeMode } = useAppPreferences();
   const { t } = useAppTranslation('mobile');
-  const slug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
+  const requestedSlug = Array.isArray(params.slug) ? params.slug[0] ?? '' : params.slug ?? '';
+  // A renamed page loads under its current slug, and the address bar follows.
+  const renamedSlug = renamedEnterpriseSlug(requestedSlug);
+  const slug = renamedSlug ?? requestedSlug;
+  useEffect(() => {
+    if (renamedSlug) {
+      router.replace({ pathname: '/explore/enterprise/[slug]', params: { slug: renamedSlug } });
+    }
+  }, [renamedSlug, router]);
   const theme = useAppTheme();
   const basePalette: DetailPalette =
     themeMode === 'dark'

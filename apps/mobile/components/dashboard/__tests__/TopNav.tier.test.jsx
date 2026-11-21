@@ -21,16 +21,29 @@ jest.mock('../AirsDashboardProvider', () => ({
     snapshot: mockBalance == null ? null : { balanceAIRS: mockBalance },
   }),
 }));
-jest.mock('@alternun/ui', () => ({
-  TIERS: {
+jest.mock('@alternun/ui', () => {
+  const tiers = {
     bronze: { label: 'Bronze', color: '#cd7f32' },
     silver: { label: 'Silver', color: '#a8b8cc' },
     gold: { label: 'Gold', color: '#d4b96a' },
     platinum: { label: 'Platinum', color: '#9ba9c4' },
-  },
-  resolveTier: (score) =>
-    score >= 20000 ? 'platinum' : score >= 5000 ? 'gold' : score >= 1000 ? 'silver' : 'bronze',
-}));
+  };
+  return {
+    TIERS: tiers,
+    tierSpecOf: (tier) => (tier ? tiers[tier] : { label: 'Green', color: '#2fb67c' }),
+    // Below 30 there is no tier yet: the person is at Green, the base level.
+    resolveTier: (score) =>
+      score >= 20000
+        ? 'platinum'
+        : score >= 5000
+        ? 'gold'
+        : score >= 1000
+        ? 'silver'
+        : score >= 30
+        ? 'bronze'
+        : null,
+  };
+});
 jest.mock('@alternun/i18n', () => ({ getLocaleLabel: () => 'English' }));
 jest.mock('../../i18n/useAppTranslation', () => ({
   useAppTranslation: () => ({ t: (key, _params, fallback) => fallback ?? key }),
@@ -201,3 +214,29 @@ it('ends the skeleton with a neutral account badge if the initial balance fails'
   ).toBe(false);
   act(() => tree.unmount());
 });
+
+it.each(['dark', 'light'])(
+  'shows Green with its color below the first tier in %s mode',
+  (themeMode) => {
+    mockBalance = 19;
+    let tree;
+    act(() => {
+      tree = renderer.create(<TopNav {...props} themeMode={themeMode} activeSection='dashboard' />);
+    });
+    expect(
+      tree.root
+        .findAllByType(Text)
+        .some((node) => JSON.stringify(node.props.children).includes('Green'))
+    ).toBe(true);
+    const trigger = tree.root
+      .findAllByType(TouchableOpacity)
+      .find((node) => StyleSheet.flatten(node.props.style)?.borderColor === '#2fb67c');
+    expect(trigger).toBeDefined();
+    act(() => trigger.props.onPress());
+    const dropdownBadge = tree.root.findAllByProps({ testID: 'dropdown-tier-badge' })[0];
+    expect(StyleSheet.flatten(dropdownBadge.props.style)).toMatchObject({
+      borderColor: '#2fb67c80',
+    });
+    act(() => tree.unmount());
+  }
+);

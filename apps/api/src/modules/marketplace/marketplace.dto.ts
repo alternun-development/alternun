@@ -109,6 +109,51 @@ export class EnterpriseEventDetailsDto {
   @IsOptional() @ValidateNested() @Type(() => EventVenueDto) venue?: EventVenueDto;
 }
 
+export class EnterpriseGalleryImageDto {
+  /** https URL on an allowed gallery image host. */
+  @IsString() @MinLength(1) @MaxLength(2048) url!: string;
+  @IsString() @MaxLength(240) altText!: string;
+}
+
+// Translations hold the other languages (Spanish stays in the base fields), with the same limits
+// as those fields. Only the locales declared below are accepted.
+export class EnterpriseTranslationDto {
+  @IsOptional() @IsString() @MaxLength(160) sector?: string;
+  @IsOptional() @IsString() @MaxLength(4000) description?: string;
+}
+
+export class EnterpriseTranslationsDto {
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => EnterpriseTranslationDto)
+  en?: EnterpriseTranslationDto;
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => EnterpriseTranslationDto)
+  th?: EnterpriseTranslationDto;
+}
+
+export class EnterpriseProductTranslationDto {
+  @IsOptional() @IsString() @MaxLength(160) name?: string;
+  @IsOptional() @IsString() @MaxLength(1000) description?: string;
+  @IsOptional() @IsString() @MaxLength(160) airsNote?: string;
+}
+
+export class EnterpriseProductTranslationsDto {
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => EnterpriseProductTranslationDto)
+  en?: EnterpriseProductTranslationDto;
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => EnterpriseProductTranslationDto)
+  th?: EnterpriseProductTranslationDto;
+}
+
 class EnterpriseProfileDto {
   @IsOptional() @IsIn(ENTERPRISE_KINDS) kind?: (typeof ENTERPRISE_KINDS)[number];
   @IsOptional() @IsString() @MaxLength(160) sector?: string;
@@ -122,6 +167,19 @@ class EnterpriseProfileDto {
   @IsOptional() @IsString() @MaxLength(2048) logoUrl?: string;
   /** https URL on an allowed cover host; an empty string clears it. */
   @IsOptional() @IsString() @MaxLength(2048) bannerUrl?: string;
+  /** Photos of the public page, in display order; replaces the stored list. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(12)
+  @ValidateNested({ each: true })
+  @Type(() => EnterpriseGalleryImageDto)
+  gallery?: EnterpriseGalleryImageDto[];
+  /** Replaces the stored translations. */
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => EnterpriseTranslationsDto)
+  translations?: EnterpriseTranslationsDto;
   @IsOptional()
   @ValidateNested()
   @Type(() => EnterpriseEventDetailsDto)
@@ -173,6 +231,12 @@ export class CreateEnterpriseProductDto {
   @IsOptional() @IsInt() @Min(0) airsMin?: number;
   @IsOptional() @IsInt() @Min(0) airsMax?: number;
   @IsOptional() @IsString() @MaxLength(160) airsNote?: string;
+  /** Replaces the stored translations. */
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => EnterpriseProductTranslationsDto)
+  translations?: EnterpriseProductTranslationsDto;
   @IsOptional() @IsInt() @Min(0) sortOrder?: number;
   @IsOptional() @IsBoolean() isActive?: boolean;
 }
@@ -184,8 +248,8 @@ export class LinkProjectEnterpriseDto {
 }
 
 export class CreateUploadUrlDto {
-  /** project: logo | cover | gallery_image; enterprise: logo | banner. */
-  @IsIn(['logo', 'cover', 'gallery_image', 'banner']) kind!: string;
+  /** project: logo | cover | gallery_image; enterprise: logo | banner | gallery. */
+  @IsIn(['logo', 'cover', 'gallery_image', 'banner', 'gallery']) kind!: string;
   @IsIn(UPLOAD_IMAGE_TYPES) contentType!: (typeof UPLOAD_IMAGE_TYPES)[number];
 }
 

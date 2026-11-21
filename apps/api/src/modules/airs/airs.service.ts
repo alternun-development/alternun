@@ -181,26 +181,11 @@ export async function processAirsOnboarding(
   let welcomeEmailSkipped = false;
 
   if (dashboardState.shouldSendWelcomeEmail && dashboardState.email) {
-    const email = dependencies.renderWelcomeEmail({
-      locale: input.locale ?? dashboardState.locale ?? null,
-      displayName: dashboardState.displayName ?? tokenClaims.displayName ?? dashboardState.email,
-      dashboardUrl: dependencies.dashboardUrl ?? resolveDashboardUrl(env),
-      bonusAirs: dependencies.bonusAirs ?? 10,
-    });
-
-    const sendResult = await dependencies.sendWelcomeEmail(
-      {
-        to: dashboardState.email,
-        email,
-      },
-      env
-    );
-
-    welcomeEmailSent = sendResult.sent;
-    welcomeEmailSkipped = sendResult.skipped;
-
-    if (sendResult.sent) {
-      await dependencies.markWelcomeEmailSent(
+    // Mark first and send only when this call took the mark: the app opens onboarding more than
+    // once per sign-in, and the welcome email goes out once per person. A failure here never
+    // fails onboarding, because a retried onboarding would send it again.
+    try {
+      const mark = await dependencies.markWelcomeEmailSent(
         {
           userId: tokenClaims.appUserId,
           locale: input.locale ?? dashboardState.locale ?? null,
@@ -209,6 +194,36 @@ export async function processAirsOnboarding(
           },
         },
         env
+      );
+
+      if (mark.marked) {
+        const email = dependencies.renderWelcomeEmail({
+          locale: input.locale ?? dashboardState.locale ?? null,
+          displayName:
+            dashboardState.displayName ?? tokenClaims.displayName ?? dashboardState.email,
+          dashboardUrl: dependencies.dashboardUrl ?? resolveDashboardUrl(env),
+          bonusAirs: dependencies.bonusAirs ?? 10,
+        });
+
+        const sendResult = await dependencies.sendWelcomeEmail(
+          {
+            to: dashboardState.email,
+            email,
+          },
+          env
+        );
+
+        welcomeEmailSent = sendResult.sent;
+        welcomeEmailSkipped = sendResult.skipped;
+      } else {
+        welcomeEmailSkipped = true;
+      }
+    } catch (error) {
+      welcomeEmailSkipped = true;
+      console.error(
+        `[airs] Welcome email step failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
     }
   } else if (dashboardState.shouldSendWelcomeEmail && !dashboardState.email) {

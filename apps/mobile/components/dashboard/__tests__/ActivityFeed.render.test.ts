@@ -18,8 +18,13 @@ jest.mock('../../common/SearchFilterBar', () => ({
 
 jest.mock('../../i18n/useAppTranslation', () => ({
   useAppTranslation: () => ({
-    t: (key: string): string => {
+    t: (key: string, params?: Record<string, string>): string => {
       const translations: Record<string, string> = {
+        'dashboard.activityFeed.activityTypes.conservation': 'Acción de conservación',
+        'dashboard.activityFeed.activityTypes.positive': 'Acción de impacto positivo',
+        'dashboard.activityFeed.sources.joinedCommunity': 'Se unió a la comunidad de {{partner}}',
+        'dashboard.activityFeed.sources.joinedEvent': 'Participó en {{event}}',
+        'dashboard.activityFeed.sources.allyReport': 'Reportado por un aliado',
         'dashboard.activityFeed.title': 'Actividad de AIRS',
         'dashboard.activityFeed.subtitle.user': 'Actividad de AIRS en tu cuenta',
         'dashboard.activityFeed.subtitle.global': 'Actividad de AIRS en la red',
@@ -45,7 +50,10 @@ jest.mock('../../i18n/useAppTranslation', () => ({
         'dashboard.activityFeed.empty': 'No hay actividad para mostrar',
       };
 
-      return translations[key] ?? key;
+      return (translations[key] ?? key).replace(
+        /\{\{(\w+)\}\}/g,
+        (_match, name: string) => params?.[name] ?? ''
+      );
     },
   }),
 }));
@@ -342,5 +350,57 @@ describe('ActivityFeed render', () => {
     expect(lastRequest().searchParams.get('sort')).toBe('source');
     expect(lastRequest().searchParams.get('direction')).toBe('asc');
     expect(lastRequest().searchParams.get('page')).toBe('1');
+  });
+  it('says in words what Airs from an ally report recognize, never the internal reference', async () => {
+    const entry = (id: string, origin: unknown): Record<string, unknown> => ({
+      id,
+      sourceKind: 'admin_airs_report',
+      sourceRef: `airs-report:${id}`,
+      notes: null,
+      airsDelta: 14,
+      recordedAt: '2026-11-20T10:00:00.000Z',
+      ...(origin ? { origin } : {}),
+    });
+    globalThis.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        entries: [
+          entry('cb2f08f9-fc40-44c9-9d72-eff900f29e7d', {
+            action: 'conservation',
+            kind: 'community',
+            partnerName: 'Swing Golf Colombia',
+            eventName: 'Comunidad Swing Golf',
+          }),
+          entry('11111111-2222-4333-8444-555555555555', {
+            action: 'positive_impact',
+            kind: 'event',
+            partnerName: 'Swing Golf Colombia',
+            eventName: 'Tour Callaway Colombia',
+          }),
+          entry('99999999-2222-4333-8444-555555555555', null),
+        ],
+        totalCount: 3,
+        page: 1,
+        pageSize: 10,
+        totalPages: 1,
+      }),
+    } as never) as unknown as typeof fetch;
+
+    renderState = renderActivityFeed(
+      React.createElement(ActivityFeed, { isDark: false, client: createClient(), signedIn: true })
+    );
+    await act(async () => {
+      await flushEffects();
+      await flushEffects();
+    });
+
+    const text = renderState.container.textContent ?? '';
+    expect(text).toContain('Acción de conservación');
+    expect(text).toContain('Se unió a la comunidad de Swing Golf Colombia');
+    expect(text).toContain('Acción de impacto positivo');
+    expect(text).toContain('Participó en Tour Callaway Colombia');
+    expect(text).toContain('Reportado por un aliado');
+    expect(text).not.toContain('airs-report:');
+    expect(text).not.toContain('Perfil');
   });
 });

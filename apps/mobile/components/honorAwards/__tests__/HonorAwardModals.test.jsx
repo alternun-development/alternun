@@ -7,6 +7,13 @@ import HonorAwardCard from '../HonorAwardCard';
 
 const mockPush = jest.fn();
 let mockMotion = 'off';
+// The share card is drawn on a web canvas; here it is off unless a test turns it on.
+let mockCanDraw = false;
+const mockRenderCard = jest.fn(() => Promise.resolve('data:image/png;base64,CARD'));
+jest.mock('../honorAwardShareCard', () => ({
+  canDrawHonorShareCard: () => mockCanDraw,
+  renderHonorShareCard: (...args) => mockRenderCard(...args),
+}));
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock('expo-haptics', () => ({
   notificationAsync: jest.fn(() => Promise.resolve()),
@@ -81,6 +88,8 @@ const button = (tree, label) =>
 beforeEach(() => {
   mockPush.mockClear();
   mockMotion = 'off';
+  mockCanDraw = false;
+  mockRenderCard.mockClear();
 });
 
 describe('claim animation', () => {
@@ -197,8 +206,16 @@ describe('inspect view', () => {
 });
 
 describe('sharing a medal', () => {
+  const ShareSheet = require('../../share/ShareSheet').default;
+  const HonorAwardMedalPocket = require('../HonorAwardMedalPocket').default;
+  const HonorAwardSharePreview = require('../HonorAwardSharePreview').default;
+  const { ActivityIndicator, Image } = require('react-native');
+  const cardImage = (tree) =>
+    tree.root.findAll(
+      (node) => node.type === Image && node.props.source?.uri === 'data:image/png;base64,CARD'
+    );
+
   it('opens the shared share sheet with the medal, its message and the project link', () => {
-    const ShareSheet = require('../../share/ShareSheet').default;
     let tree;
     act(() => {
       tree = renderer.create(<HonorAwardInspectModal award={award} onClose={jest.fn()} />);
@@ -209,11 +226,156 @@ describe('sharing a medal', () => {
     expect(sheet.visible).toBe(true);
     expect(sheet.content).toMatchObject({
       title: 'Comparte tu medalla de legado',
-      message: 'Obtuve la medalla de legado "Manglar Verde" en Airs · Swing Golf.',
+      message:
+        '¡Obtuve la medalla de legado "Manglar Verde" con Swing Golf en Airs by Alternun! 🌱 #Airs #Alternun',
     });
     expect(sheet.content.url).toMatch(/\/explore\/fundacion-batis$/);
+    // Without a canvas the medal card itself is the preview (and the medal art is shared).
+    expect(tree.root.findAllByType(HonorAwardMedalPocket)).toHaveLength(2);
+    expect(mockRenderCard).not.toHaveBeenCalled();
     act(() => sheet.onClose());
     expect(tree.root.findByType(ShareSheet).props.visible).toBe(false);
+    act(() => tree.unmount());
+  });
+
+  it('previews and shares the card drawn with the person name, from the medal view', async () => {
+    mockCanDraw = true;
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardInspectModal award={award} holderName='Ana Pérez' onClose={jest.fn()} />
+      );
+    });
+    act(() => button(tree, 'Compartir').props.onPress());
+    // While it is drawn the sheet shows a spinner where the image goes.
+    expect(
+      tree.root.findByType(HonorAwardSharePreview).findAllByType(ActivityIndicator)
+    ).toHaveLength(1);
+    await act(async () => {});
+    expect(mockRenderCard).toHaveBeenCalledTimes(1);
+    expect(mockRenderCard.mock.calls[0][0]).toEqual({
+      brand: 'Airs by Alternun',
+      title: 'Manglar Verde',
+      detail: 'Medalla de legado · Swing Golf Colombia',
+      holder: 'Ana Pérez',
+      site: 'airs.alternun.co',
+    });
+    expect(tree.root.findByType(ShareSheet).props.content.image.fileName).toBe(
+      'airs-manglar-verde.png'
+    );
+    expect(cardImage(tree)).toHaveLength(1);
+    expect(cardImage(tree)[0].props.accessibilityLabel).toBe('Manglar Verde');
+    act(() => tree.unmount());
+  });
+
+  it('shares with the name from the claim animation too, and falls back if drawing fails', async () => {
+    mockCanDraw = true;
+    mockRenderCard.mockImplementationOnce(() => Promise.reject(new Error('no canvas')));
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardClaimCinematic
+          award={award}
+          holderName='Ana Pérez'
+          onInspect={jest.fn()}
+          onClose={jest.fn()}
+        />
+      );
+    });
+    act(() => button(tree, 'Compartir').props.onPress());
+    await act(async () => {});
+    expect(mockRenderCard.mock.calls[0][0].holder).toBe('Ana Pérez');
+    expect(cardImage(tree)).toHaveLength(0);
+    expect(
+      tree.root.findByType(HonorAwardSharePreview).findAllByType(HonorAwardMedalPocket)
+    ).toHaveLength(1);
+    act(() => tree.unmount());
+  });
+});
+
+describe('medal card', () => {
+  const HonorAwardMedalPocket = require('../HonorAwardMedalPocket').default;
+
+  it('keeps the text inside a rectangle that grows with it, and names the country once', () => {
+    const named = {
+      ...award,
+      recipe: { ...award.recipe, title: 'Taybo Rodadero Santa Marta Caribe' },
+      partner: { ...award.partner, displayName: 'Swing Golf Colombia' },
+    };
+    let tree;
+    act(() => {
+      tree = renderer.create(<HonorAwardMedalPocket award={named} width={240} />);
+    });
+    const { View } = require('react-native');
+    const [root] = tree.root.findAll(
+      (node) => node.type === View && node.props.accessibilityLabel === named.recipe.title
+    );
+    const style = StyleSheet.flatten(root.props.style);
+    // A rectangle sized by its content: no fixed height, nothing positioned over its edges.
+    expect(style).toMatchObject({ width: 240, overflow: 'hidden' });
+    expect(style.height).toBeUndefined();
+    const lines = tree.root.findAllByType(Text);
+    expect(lines.map((node) => flatten(node.props.children))).toEqual([
+      'Taybo Rodadero Santa Marta Caribe',
+      'Swing Golf Colombia',
+    ]);
+    for (const line of lines) {
+      expect(line.props.numberOfLines).toBe(2);
+      expect(StyleSheet.flatten(line.props.style).alignSelf).toBe('stretch');
+    }
+    act(() => tree.unmount());
+  });
+});
+
+describe('card text stays inside the card', () => {
+  const HonorAwardPartnerMark = require('../HonorAwardPartnerMark').default;
+  const { View } = require('react-native');
+  const line = (tree, value) =>
+    tree.root.findAllByType(Text).find((node) => flatten(node.props.children) === value);
+
+  it('wraps a long title on the back clear of the stamp, and bounds the other lines', () => {
+    const title = 'Taybo Rodadero Santa Marta Caribe';
+    let tree;
+    act(() => {
+      tree = renderer.create(
+        <HonorAwardCard
+          award={{ ...award, recipe: { ...award.recipe, title } }}
+          side='back'
+          width={316}
+        />
+      );
+    });
+    expect(line(tree, title).props.numberOfLines).toBe(2);
+    expect(StyleSheet.flatten(line(tree, title).parent.props.style)).toMatchObject({
+      left: 18,
+      right: 100,
+    });
+    expect(line(tree, 'Misión de impacto positivo:').props.numberOfLines).toBe(2);
+    expect(line(tree, 'Pueblo Viejo Country Club').props.numberOfLines).toBe(2);
+    expect(line(tree, 'Cota, Cundinamarca – CO.').props.numberOfLines).toBe(1);
+    act(() => tree.unmount());
+  });
+
+  it('cuts a long ally wordmark inside its box and writes the country once', () => {
+    const mark = (displayName) => {
+      let tree;
+      act(() => {
+        tree = renderer.create(
+          <HonorAwardPartnerMark partner={{ ...award.partner, displayName }} width={316} />
+        );
+      });
+      return tree;
+    };
+    let tree = mark('Swing Golf Colombia');
+    const [box] = tree.root.findAll(
+      (node) => node.type === View && node.props.accessibilityLabel === 'Swing Golf Colombia'
+    );
+    expect(StyleSheet.flatten(box.props.style).alignSelf).toBe('stretch');
+    expect(line(tree, 'Swing Golf Colombia').props.numberOfLines).toBe(1);
+    expect(texts(tree)).not.toContain('Colombia');
+    act(() => tree.unmount());
+    tree = mark('Swing Golf');
+    expect(line(tree, 'Colombia').props.numberOfLines).toBe(1);
     act(() => tree.unmount());
   });
 });

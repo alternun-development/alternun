@@ -1,3 +1,25 @@
+## [1.2.20](https://github.com/alternun-development/alternun/compare/v1.2.19...v1.2.20) (2026-11-20)
+
+### Bug Fixes
+
+- **profile:** the journey dot opens the person's own status, Green below Bronze ([0b0837e](https://github.com/alternun-development/alternun/commit/0b0837ef87925c56a360a47abd6680d781c0ab05))
+
+## [1.2.19](https://github.com/alternun-development/alternun/compare/v1.2.18...v1.2.19) (2026-11-20)
+
+### Features
+
+- **repo:** Swing Golf tournament fixes, enterprise gallery and English text ([46a07cc](https://github.com/alternun-development/alternun/commit/46a07cc34eee7bcda89498b1e2da5482a05727cb))
+
+## [1.2.18](https://github.com/alternun-development/alternun/compare/v1.2.17...v1.2.18) (2026-11-20)
+
+### Changes
+
+- **reentry:** next step after the welcome and project save fixes ([c4142dd](https://github.com/alternun-development/alternun/commit/c4142ddcdbc1fe933902bc7e7a72c8b7b8d6b9a1))
+
+### Bug Fixes
+
+- **repo:** the welcome email goes out once and project admins can save their page ([d4644a7](https://github.com/alternun-development/alternun/commit/d4644a7ca9ded825bdb456431a8b1bb1e62c6663))
+
 ## [1.2.17](https://github.com/alternun-development/alternun/compare/v1.2.16...v1.2.17) (2026-11-19)
 
 ### Changes

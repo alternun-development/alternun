@@ -54,6 +54,11 @@ export interface EnterpriseEventDetails {
   venue?: ProfileLocation & { name?: string; web?: string };
 }
 
+export interface EnterpriseGalleryImage {
+  url: string;
+  altText: string;
+}
+
 export interface MarketplaceEnterprise {
   id: string;
   slug: string;
@@ -70,6 +75,7 @@ export interface MarketplaceEnterprise {
   location?: ProfileLocation;
   publicContact?: ProfileContact;
   bannerUrl?: string | null;
+  gallery?: EnterpriseGalleryImage[];
   eventDetails?: EnterpriseEventDetails;
   sites?: EnterpriseSite[];
   products?: EnterpriseProduct[];
@@ -102,7 +108,8 @@ export interface MarketplacePublicProject {
   partnershipStatus?: PartnershipStatus;
   locationDetails?: ProfileLocation;
   publicContact?: ProfileContact;
-  enterprise: { id?: string; slug: string; displayName: string };
+  /** `listed: false`: the owner has no public page (Alternun itself), so no link is shown. */
+  enterprise: { id?: string; slug: string; displayName: string; listed?: boolean };
   media: MarketplaceProjectMedia[];
 }
 

@@ -139,7 +139,28 @@ export function lockedHonorAward(item: HonorAwardCatalogItem): HonorAward {
 /** "Swing Golf Colombia": the ally and its country, as the medal view writes it. */
 export function honorPartnerLine(partner: HonorAward['partner']): string {
   if (!partner) return '';
-  return [partner.displayName, honorCountryName(partner.countryCode)].filter(Boolean).join(' ');
+  return [partner.displayName, honorPartnerCountry(partner)].filter(Boolean).join(' ');
+}
+
+/** The words of a text, lowercase and without accents, padded with spaces for whole-word search. */
+function foldedWords(value: string): string {
+  const words = value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  return ` ${words} `;
+}
+
+/**
+ * The ally's country for its name line, or nothing when the name already says it: "Swing Golf
+ * Colombia" (CO) is not written "Swing Golf Colombia Colombia".
+ */
+export function honorPartnerCountry(partner: NonNullable<HonorAward['partner']>): string {
+  const country = honorCountryName(partner.countryCode);
+  if (!country) return '';
+  return foldedWords(partner.displayName).includes(foldedWords(country)) ? '' : country;
 }
 
 /** Country name for an ISO code; the code itself when it is not known. */

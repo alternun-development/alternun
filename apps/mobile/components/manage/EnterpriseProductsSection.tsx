@@ -1,24 +1,40 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { EnterpriseLocaleTabs } from './EnterpriseLocaleTabs';
 import { ManageField } from './ManageField';
 import { manageStyles } from './styles';
 import type { EnterpriseSectionProps, ProductDraft, ProductRowProps } from './types';
-import { productInput, type ManagedProduct } from '../../utils/enterpriseManage';
+import {
+  productInput,
+  type EnterpriseLocale,
+  type ManagedProduct,
+  type ProductTextField,
+} from '../../utils/enterpriseManage';
 
-const EMPTY: ProductDraft = { name: '', description: '', airsMin: '', airsMax: '', airsNote: '' };
+const EMPTY: ProductDraft = {
+  name: '',
+  description: '',
+  airsMin: '',
+  airsMax: '',
+  airsNote: '',
+  en: { name: '', description: '', airsNote: '' },
+};
 
 export function productDraftFrom(product: ManagedProduct): ProductDraft {
+  const en = product.translations?.en;
   return {
     name: product.name,
     description: product.description ?? '',
     airsMin: product.airsMin === null ? '' : String(product.airsMin),
     airsMax: product.airsMax === null ? '' : String(product.airsMax),
     airsNote: product.airsNote ?? '',
+    en: { name: en?.name ?? '', description: en?.description ?? '', airsNote: en?.airsNote ?? '' },
   };
 }
 
 function ProductRow({
   initial,
+  locale,
   palette,
   t,
   busy,
@@ -28,14 +44,28 @@ function ProductRow({
   testID,
 }: ProductRowProps): React.JSX.Element {
   const [draft, setDraft] = useState(initial);
-  const field = (key: keyof ProductDraft, numeric = false) => (
+  // Text follows the selected language; Spanish is the base text.
+  const textField = (key: ProductTextField) => (
+    <ManageField
+      testID={`${testID}-${key}`}
+      label={t(`manage.enterprise.products.${key}`)}
+      value={locale === 'es' ? draft[key] : draft.en[key]}
+      onChange={(value) =>
+        setDraft(
+          locale === 'es'
+            ? { ...draft, [key]: value }
+            : { ...draft, en: { ...draft.en, [key]: value } }
+        )
+      }
+      palette={palette}
+    />
+  );
+  const airsField = (key: 'airsMin' | 'airsMax') => (
     <ManageField
       testID={`${testID}-${key}`}
       label={t(`manage.enterprise.products.${key}`)}
       value={draft[key]}
-      onChange={(value) =>
-        setDraft({ ...draft, [key]: numeric ? value.replace(/[^\d]/g, '') : value })
-      }
+      onChange={(value) => setDraft({ ...draft, [key]: value.replace(/[^\d]/g, '') })}
       palette={palette}
     />
   );
@@ -44,13 +74,13 @@ function ProductRow({
       testID={testID}
       style={[manageStyles.card, { borderColor: palette.border, backgroundColor: palette.surface }]}
     >
-      {field('name')}
-      {field('description')}
+      {textField('name')}
+      {textField('description')}
       <View style={manageStyles.row}>
-        <View style={{ flex: 1, minWidth: 120 }}>{field('airsMin', true)}</View>
-        <View style={{ flex: 1, minWidth: 120 }}>{field('airsMax', true)}</View>
+        <View style={{ flex: 1, minWidth: 120 }}>{airsField('airsMin')}</View>
+        <View style={{ flex: 1, minWidth: 120 }}>{airsField('airsMax')}</View>
       </View>
-      {field('airsNote')}
+      {textField('airsNote')}
       <View style={manageStyles.row}>
         <Pressable
           testID={`${testID}-submit`}
@@ -92,6 +122,7 @@ export function EnterpriseProductsSection({
   t,
 }: EnterpriseSectionProps): React.JSX.Element {
   const [products, setProducts] = useState<ManagedProduct[] | null>(null);
+  const [locale, setLocale] = useState<EnterpriseLocale>('es');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -120,10 +151,11 @@ export function EnterpriseProductsSection({
   }
 
   function submitWith(
-    save: (input: NonNullable<ReturnType<typeof productInput>>) => Promise<unknown>
+    save: (input: NonNullable<ReturnType<typeof productInput>>) => Promise<unknown>,
+    stored?: ManagedProduct['translations']
   ) {
     return async (draft: ProductDraft): Promise<boolean> => {
-      const input = productInput(draft);
+      const input = productInput(draft, stored);
       if (!input) {
         setError(t('manage.enterprise.products.invalid'));
         return false;
@@ -137,6 +169,13 @@ export function EnterpriseProductsSection({
       <Text style={[manageStyles.muted, { color: palette.muted }]}>
         {t('manage.enterprise.products.intro')}
       </Text>
+      <EnterpriseLocaleTabs
+        testID='enterprise-products-locale'
+        selected={locale}
+        onSelect={setLocale}
+        palette={palette}
+        t={t}
+      />
       {error ? <Text style={manageStyles.error}>{error}</Text> : null}
       {products?.length === 0 ? (
         <Text style={[manageStyles.muted, { color: palette.muted }]}>
@@ -148,23 +187,31 @@ export function EnterpriseProductsSection({
           key={`${product.id}-${product.name}-${product.airsMin}-${product.airsMax}`}
           testID={`enterprise-product-${product.id}`}
           initial={productDraftFrom(product)}
+          locale={locale}
           palette={palette}
           t={t}
           busy={busy}
           submitLabel={t('manage.enterprise.products.save')}
-          onSubmit={submitWith((input) => client.updateProduct(product.id, input))}
+          onSubmit={submitWith(
+            (input) => client.updateProduct(product.id, input),
+            product.translations
+          )}
           onDelete={() => void run(() => client.deleteProduct(product.id))}
         />
       ))}
-      <ProductRow
-        testID='enterprise-product-new'
-        initial={EMPTY}
-        palette={palette}
-        t={t}
-        busy={busy}
-        submitLabel={t('manage.enterprise.products.add')}
-        onSubmit={submitWith((input) => client.createProduct(input))}
-      />
+      {/* New products start in Spanish, the base text; English is added once they exist. */}
+      {locale === 'es' ? (
+        <ProductRow
+          testID='enterprise-product-new'
+          initial={EMPTY}
+          locale={locale}
+          palette={palette}
+          t={t}
+          busy={busy}
+          submitLabel={t('manage.enterprise.products.add')}
+          onSubmit={submitWith((input) => client.createProduct(input))}
+        />
+      ) : null}
     </View>
   );
 }

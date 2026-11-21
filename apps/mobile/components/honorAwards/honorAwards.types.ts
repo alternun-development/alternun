@@ -1,4 +1,6 @@
+import type React from 'react';
 import type { ImageSourcePropType } from 'react-native';
+import type { ShareImage } from '../share/share.types';
 import type {
   HonorAward,
   HonorAwardAllyDesk,
@@ -124,6 +126,8 @@ export interface HonorMedalActionsProps {
   demo: boolean;
   /** A medal not earned yet: no sharing, and a note on how to get it. */
   locked?: boolean;
+  /** Name of the person who holds the medal, written on the image it is shared with. */
+  holderName?: string | null;
   onViewMission: () => void;
   onClose: () => void;
 }
@@ -134,6 +138,8 @@ export interface HonorAwardClaimCinematicProps {
   onClose: () => void;
   /** Preview from an empty slot: nothing was earned, the copy says so. */
   demo?: boolean;
+  /** Name written on the image the medal is shared with. */
+  holderName?: string | null;
 }
 
 export interface HonorAwardInspectModalProps {
@@ -147,6 +153,31 @@ export interface HonorAwardInspectModalProps {
   locked?: boolean;
   /** Shown under the purpose as "¿Cómo obtenerla?" (public pages). */
   howToEarn?: string;
+  /** Name written on the image the medal is shared with. */
+  holderName?: string | null;
+}
+
+/** Texts of the image a medal is shared with, laid out like the milestone share images. */
+export interface HonorShareCard {
+  /** "Airs by Alternun", at the top. */
+  brand: string;
+  /** The mission ("Manglar Verde"). */
+  title: string;
+  /** "Medalla de legado · Swing Golf Colombia". */
+  detail: string;
+  /** The person's name; empty when unknown. */
+  holder: string;
+  /** "airs.alternun.co", at the bottom. */
+  site: string;
+}
+
+export interface HonorAwardSharePreviewProps {
+  /** The image being shared; one made on demand (`load`) is drawn here once it is ready. */
+  image?: ShareImage | null;
+  /** Accessible name of the drawn image. */
+  label: string;
+  /** Shown when the image cannot be drawn (no `load`, or it failed). */
+  fallback: React.ReactNode;
 }
 
 export interface HonorAwardCatalogSectionProps {
@@ -204,6 +235,8 @@ export interface HonorAwardsSectionProps {
   hideWhenEmpty?: boolean;
   /** Tests and stories pass their own client. */
   client?: HonorAwardClient;
+  /** Name of the person whose legacy this is, written on the image a medal is shared with. */
+  holderName?: string | null;
 }
 
 export type LoadState =
@@ -219,3 +252,33 @@ export interface HonorDemoCopy {
   projectLocation: string;
   projectDescription: string;
 }
+
+/** A text line of the medal share card: which card field it draws and how. */
+export interface HonorShareCardLine {
+  field: keyof HonorShareCard;
+  font: 'Sculpin-Bold' | 'Sculpin-Medium';
+  size: number;
+  minSize: number;
+  baseline: number;
+  color: string;
+}
+
+/** The part of a 2D canvas context the medal share card draws with. */
+export type HonorCardContext = Pick<
+  CanvasRenderingContext2D,
+  | 'fillStyle'
+  | 'strokeStyle'
+  | 'lineWidth'
+  | 'font'
+  | 'textAlign'
+  | 'textBaseline'
+  | 'fillRect'
+  | 'beginPath'
+  | 'moveTo'
+  | 'arcTo'
+  | 'closePath'
+  | 'stroke'
+  | 'fillText'
+  | 'measureText'
+  | 'drawImage'
+>;

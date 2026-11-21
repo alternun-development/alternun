@@ -9,15 +9,18 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Award, X, type LucideProps } from 'lucide-react-native';
-import { resolveTier, TIERS, type AirsTier } from '@alternun/ui';
+import { Award, Leaf, X, type LucideProps } from 'lucide-react-native';
+import { resolveTier, tierSpecOf, TIERS, type AirsTier } from '@alternun/ui';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import { STATUS_DETAIL_BADGES } from './badgeAssets';
 
 const CloseIcon = X as React.FC<LucideProps>;
 const AwardIcon = Award as React.FC<LucideProps>;
+const LeafIcon = Leaf as React.FC<LucideProps>;
 
-const DESCRIPTIONS: Record<AirsTier, string> = {
+const DESCRIPTIONS: Record<AirsTier | 'green', string> = {
+  green:
+    'Green is your base level: every account starts here. Each positive-impact action adds Airs and brings you closer to Bronze.',
   bronze:
     'Your AIRS journey starts here. Build a visible track record through eligible, verified actions that contribute to the regenerative ecosystem.',
   silver:
@@ -32,7 +35,8 @@ export function TierDetailsModal({
   score,
   onClose,
 }: {
-  tier: AirsTier | null;
+  /** A tier, or 'green': the base level every account starts at, before Bronze. */
+  tier: AirsTier | 'green' | null;
   score: number | null;
   onClose: () => void;
 }): React.JSX.Element | null {
@@ -40,13 +44,16 @@ export function TierDetailsModal({
   const { width, height } = useWindowDimensions();
   if (!tier) return null;
 
-  const spec = TIERS[tier];
-  const label = t(`profile.tierLabels.${tier}`, undefined, spec.label);
+  const level = tier === 'green' ? null : tier;
+  const spec = tierSpecOf(level);
+  const label = t(`profile.tierLabels.${level ?? 'none'}`, undefined, spec.label);
   const title = t('profile.tierDetails.title', { tier: label }, '{{tier}} status');
   const closeLabel = t('profile.tierDetails.close', undefined, 'Close tier details');
   const compact = width < 600;
   const remaining = score === null ? null : Math.max(0, spec.min - score);
-  const current = score !== null && resolveTier(score) === tier;
+  const current = score !== null && resolveTier(score) === level;
+  // At the current level, the balance line counts toward the next tier instead.
+  const ahead = current && spec.next ? TIERS[spec.next] : null;
   const status = current
     ? t('profile.tierDetails.current', undefined, 'Your current tier')
     : remaining === null
@@ -59,16 +66,27 @@ export function TierDetailsModal({
       )
     : t('profile.tierDetails.reached', undefined, 'Milestone reached');
   // The person's own balance, and what is left for this tier when it is still ahead.
+  const balanceGoal =
+    score === null
+      ? null
+      : ahead && spec.next
+      ? {
+          remaining: ahead.min - score,
+          tier: t(`profile.tierLabels.${spec.next}`, undefined, ahead.label),
+        }
+      : remaining !== null && remaining > 0 && !current
+      ? { remaining, tier: label }
+      : null;
   const balance =
     score === null
       ? null
-      : remaining !== null && remaining > 0 && !current
+      : balanceGoal
       ? t(
           'profile.tierDetails.balanceToReach',
           {
             amount: score.toLocaleString(locale),
-            remaining: remaining.toLocaleString(locale),
-            tier: label,
+            remaining: balanceGoal.remaining.toLocaleString(locale),
+            tier: balanceGoal.tier,
           },
           'You have {{amount}} Airs. {{remaining}} Airs to go for {{tier}}.'
         )
@@ -121,16 +139,20 @@ export function TierDetailsModal({
           <ScrollView contentContainerStyle={[styles.content, compact && styles.compact]}>
             <View style={[styles.layout, compact && styles.stacked]}>
               <View style={styles.artwork}>
-                {STATUS_DETAIL_BADGES[tier] ? (
+                {level && STATUS_DETAIL_BADGES[level] ? (
                   <Image
-                    source={STATUS_DETAIL_BADGES[tier]}
+                    source={STATUS_DETAIL_BADGES[level]}
                     resizeMode='contain'
                     accessible={false}
                     style={{ width: compact ? 144 : 192, height: compact ? 144 : 192 }}
                   />
                 ) : (
                   <View style={[styles.fallback, { borderColor: spec.color }]}>
-                    <AwardIcon size={80} color={spec.color} />
+                    {level ? (
+                      <AwardIcon size={80} color={spec.color} />
+                    ) : (
+                      <LeafIcon size={80} color={spec.color} />
+                    )}
                   </View>
                 )}
               </View>

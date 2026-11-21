@@ -6,13 +6,14 @@ import type { HonorAwardClaimCinematicProps } from './honorAwards.types';
 
 /**
  * The reveal of a legacy medal (on claim, or as a demo from an empty slot): the medal on its
- * holographic pocket spins in, then sharing and the mission are offered, as in the design.
+ * holographic card spins in, then sharing and the mission are offered, as in the design.
  */
 export default function HonorAwardClaimCinematic({
   award,
   onInspect,
   onClose,
   demo = false,
+  holderName,
 }: HonorAwardClaimCinematicProps): React.JSX.Element | null {
   if (!award) return null;
   return (
@@ -27,6 +28,7 @@ export default function HonorAwardClaimCinematic({
       <HonorMedalActions
         award={award}
         demo={demo}
+        holderName={holderName}
         onViewMission={() => onInspect(award)}
         onClose={onClose}
       />

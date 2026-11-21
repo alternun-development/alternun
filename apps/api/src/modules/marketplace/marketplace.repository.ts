@@ -69,6 +69,21 @@ function rowArray(value: unknown): Row[] {
     ? value.filter((item): item is Row => !!item && typeof item === 'object')
     : [];
 }
+// Translated text per locale. Blank or non-text values are left out, so they read as missing and
+// fall back to the base column.
+function translations(value: unknown): Record<string, Record<string, string>> {
+  return Object.fromEntries(
+    Object.entries(record(value)).map(([locale, fields]) => [
+      locale,
+      Object.fromEntries(
+        Object.entries(record(fields)).filter(
+          (entry): entry is [string, string] =>
+            typeof entry[1] === 'string' && entry[1].trim() !== ''
+        )
+      ),
+    ])
+  );
+}
 
 function mapEnterprise(row: Row): EnterpriseRecord {
   return {
@@ -90,6 +105,10 @@ function mapEnterprise(row: Row): EnterpriseRecord {
     publicContact: record(row.public_contact),
     logoUrl: nullableText(row.logo_url),
     bannerUrl: nullableText(row.banner_url),
+    gallery: rowArray(row.gallery)
+      .filter((image) => typeof image.url === 'string')
+      .map((image) => ({ url: text(image.url), altText: text(image.altText) })),
+    translations: translations(row.translations),
     eventDetails: record(row.event_details),
     sites: rowArray(row.sites) as unknown as EnterpriseRecord['sites'],
     internalContacts: rowArray(
@@ -111,6 +130,7 @@ function mapProduct(row: Row): EnterpriseProductRecord {
     airsMin: nullableNumber(row.airs_min),
     airsMax: nullableNumber(row.airs_max),
     airsNote: nullableText(row.airs_note),
+    translations: translations(row.translations),
     sortOrder: Number(row.sort_order ?? 0),
     isActive: row.is_active === true,
     createdAt: text(row.created_at),
@@ -133,6 +153,8 @@ const ENTERPRISE_COLUMNS: Record<string, string> = {
   publicContact: 'public_contact',
   logoUrl: 'logo_url',
   bannerUrl: 'banner_url',
+  gallery: 'gallery',
+  translations: 'translations',
   eventDetails: 'event_details',
   sites: 'sites',
   internalContacts: 'internal_contacts',
@@ -157,6 +179,7 @@ const PRODUCT_COLUMNS: Record<string, string> = {
   airsMin: 'airs_min',
   airsMax: 'airs_max',
   airsNote: 'airs_note',
+  translations: 'translations',
   sortOrder: 'sort_order',
   isActive: 'is_active',
 };

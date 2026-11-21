@@ -10,9 +10,11 @@ import type {
 } from '../../utils/projectManage';
 import type { ClientsClient, ProjectClient, ProofFile } from '../../utils/projectClients';
 import type {
+  EnterpriseLocale,
   EnterpriseManageClient,
   EnterpriseManageOverview,
   ManagedEnterprise,
+  ProductTextField,
 } from '../../utils/enterpriseManage';
 
 export type ManageTab = 'info' | 'images' | 'team' | 'clients' | 'comments';
@@ -97,6 +99,15 @@ export interface EnterpriseImagesSectionProps extends EnterpriseSectionProps {
   pickFile?: () => Promise<(Blob & { type: string; size: number }) | null>;
 }
 
+export interface EnterpriseLocaleTabsProps {
+  selected: EnterpriseLocale;
+  onSelect: (locale: EnterpriseLocale) => void;
+  palette: DetailPalette;
+  t: Translate;
+  /** Prefix of each tab's testID; the locale is appended. */
+  testID: string;
+}
+
 export interface EnterpriseManageViewProps {
   client: EnterpriseManageClient;
   palette: DetailPalette;
@@ -177,10 +188,14 @@ export interface ProductDraft {
   airsMin: string;
   airsMax: string;
   airsNote: string;
+  /** English text; a blank field shows the Spanish one. */
+  en: Record<ProductTextField, string>;
 }
 
 export interface ProductRowProps {
   initial: ProductDraft;
+  /** Language whose text the row edits; Airs are the same in every language. */
+  locale: EnterpriseLocale;
   palette: DetailPalette;
   t: Translate;
   busy: boolean;
