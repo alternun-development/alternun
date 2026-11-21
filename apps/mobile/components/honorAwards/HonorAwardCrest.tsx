@@ -101,6 +101,17 @@ export function bannerLines(title: string): [string, string] {
   return best;
 }
 
+/**
+ * The largest banner font size (up to 7.6) at which each line fits the banner where it sits:
+ * it narrows towards the point, so about 70 wide for the first line, 44 for the second and 60
+ * for a single one (letters ~0.75 of the size, plus the 0.4 letter spacing).
+ */
+export function bannerFontSize(line1: string, line2: string): number {
+  const fit = (text: string, width: number): number =>
+    text ? (width / Array.from(text).length - 0.4) / 0.75 : Number.POSITIVE_INFINITY;
+  return Math.min(7.6, line2 ? Math.min(fit(line1, 70), fit(line2, 44)) : fit(line1, 60));
+}
+
 function Laurels({ palette }: { palette: HonorCrestPalette }): React.JSX.Element {
   const leaves = LEFT_LEAVES.flatMap(([cx, cy, angle], index) => [
     { key: `l${index}`, cx, cy, angle, accent: index % 2 === 1 },
@@ -284,8 +295,7 @@ export default function HonorAwardCrest({
   const skyId = `honor-crest-sky-${preset}`;
   const clipId = 'honor-crest-window';
   const [line1, line2] = bannerLines(title);
-  const longest = Math.max(line1.length, line2.length);
-  const fontSize = longest > 12 ? 5.6 : longest > 9 ? 6.6 : 7.6;
+  const fontSize = bannerFontSize(line1, line2);
   return (
     <Svg width={size} height={size * 1.1} viewBox='0 0 120 132'>
       <Defs>

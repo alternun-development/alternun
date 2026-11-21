@@ -36,6 +36,7 @@ import {
   type PublicEnterprise,
   type PublicEnterpriseDetail,
   type PublicProject,
+  type Translations,
 } from './marketplace.types';
 import { hidesTestnetOnly } from './marketplace-visibility';
 
@@ -72,6 +73,12 @@ const UPLOAD_EXTENSIONS: Readonly<Record<string, string>> = {
   'image/png': 'png',
   'image/webp': 'webp',
 };
+// Enterprise image kinds and the project media kind whose host allowlist each one follows.
+const ENTERPRISE_IMAGE_MEDIA_KINDS: Readonly<Record<string, string>> = {
+  logo: 'logo',
+  banner: 'cover',
+  gallery: 'gallery_image',
+};
 
 function isGlobal(principal: AdminPrincipal): boolean {
   return principal.roles.some((role) =>
@@ -86,7 +93,7 @@ function hasRole(principal: AdminPrincipal, ...roles: string[]): boolean {
 const FALLBACK_LOCALE = 'en';
 
 function resolveLocale(
-  content: ProjectContent,
+  content: Record<string, unknown>,
   requested: string | undefined,
   acceptLanguage: string | undefined,
   fallback: string
@@ -108,6 +115,15 @@ function resolveLocale(
     if (matching) return matching;
   }
   return fallback;
+}
+
+/** Alternun's own enterprise: a project it hosts belongs to its foundation or ally, not to it. */
+const PLATFORM_ENTERPRISE_SLUG = 'alternun';
+
+/** Whether a project's owner gets a link: never Alternun, and never a page hidden here. */
+function ownerHasPublicPage(enterprise: EnterpriseRecord): boolean {
+  if (enterprise.slug === PLATFORM_ENTERPRISE_SLUG) return false;
+  return !(hidesTestnetOnly() && enterprise.testnetOnly);
 }
 
 function publicProject(
@@ -145,6 +161,7 @@ function publicProject(
       displayName: enterprise.displayName,
       countryCode: enterprise.countryCode,
       websiteUrl: safePublicHttpsUrl(enterprise.websiteUrl),
+      listed: ownerHasPublicPage(enterprise),
     },
     media: media.filter((item) => item.isActive),
     firstPublishedAt: project.firstPublishedAt ?? project.publishedAt ?? '',
@@ -162,6 +179,24 @@ function safePublicHttpsUrl(value: string | null): string | null {
   }
 }
 
+/** Default language of enterprises and their products: it lives in the base columns. */
+const ENTERPRISE_BASE_LOCALE = 'es';
+
+/** The reader's translation of an enterprise or product; each missing field shows the base one. */
+function translationFor<Field extends string>(
+  translations: Translations<Field> = {},
+  requested?: string,
+  acceptLanguage?: string
+): Partial<Record<Field, string>> {
+  const locale = resolveLocale(
+    { [ENTERPRISE_BASE_LOCALE]: {}, ...translations },
+    requested,
+    acceptLanguage,
+    ENTERPRISE_BASE_LOCALE
+  );
+  return translations[locale] ?? {};
+}
+
 function publicEnterprise(
   listings: EnterpriseListing[],
   products: EnterpriseProductRecord[],
@@ -169,6 +204,7 @@ function publicEnterprise(
   acceptLanguage?: string
 ): PublicEnterprise {
   const enterprise = listings[0].listedEnterprise;
+  const translated = translationFor(enterprise.translations, requested, acceptLanguage);
   let logo: PublicEnterprise['logo'] = null;
   if (safePublicHttpsUrl(enterprise.logoUrl)) {
     logo = { url: enterprise.logoUrl!, altText: enterprise.displayName };
@@ -207,24 +243,30 @@ function publicEnterprise(
     websiteUrl: safePublicHttpsUrl(enterprise.websiteUrl),
     projectCount: listings.length,
     kind: enterprise.kind,
-    sector: enterprise.sector,
-    description: enterprise.description,
+    sector: translated.sector ?? enterprise.sector,
+    description: translated.description ?? enterprise.description,
     partnershipStatus: enterprise.partnershipStatus,
     location: enterprise.location,
     publicContact: enterprise.publicContact,
     bannerUrl: safePublicHttpsUrl(enterprise.bannerUrl),
+    gallery: (enterprise.gallery ?? [])
+      .filter((image) => safePublicHttpsUrl(image.url) !== null)
+      .map(({ url, altText }) => ({ url, altText: altText || enterprise.displayName })),
     eventDetails: enterprise.eventDetails,
     sites: enterprise.sites,
     products: products
       .filter((product) => product.enterpriseId === enterprise.id && product.isActive)
-      .map(({ id, name, description, airsMin, airsMax, airsNote }) => ({
-        id,
-        name,
-        description,
-        airsMin,
-        airsMax,
-        airsNote,
-      })),
+      .map(({ id, name, description, airsMin, airsMax, airsNote, translations }) => {
+        const text = translationFor(translations, requested, acceptLanguage);
+        return {
+          id,
+          name: text.name ?? name,
+          description: text.description ?? description,
+          airsMin,
+          airsMax,
+          airsNote: text.airsNote ?? airsNote,
+        };
+      }),
   };
 }
 
@@ -948,8 +990,8 @@ export class MarketplaceAdminService {
 
   /**
    * Issues a one-time signed URL to upload an image to the public marketplace bucket. The client
-   * uploads the file there, then saves the returned publicUrl as project media or as the
-   * enterprise logo/banner through the regular endpoints, which validate it again.
+   * uploads the file there, then saves the returned publicUrl as project media or as an
+   * enterprise logo, banner or gallery photo through the regular endpoints, which validate it again.
    */
   async createUploadUrl(
     principal: AdminPrincipal,
@@ -975,11 +1017,12 @@ export class MarketplaceAdminService {
       folder = `projects/${project.id}/${input.kind}`;
       mediaKinds = [input.kind];
     } else {
-      if (!['logo', 'banner'].includes(input.kind)) marketplaceError('VALIDATION_FAILED');
+      const mediaKind = ENTERPRISE_IMAGE_MEDIA_KINDS[input.kind];
+      if (!mediaKind) marketplaceError('VALIDATION_FAILED');
       const enterprise = await this.getEnterprise(principal, requestId, target.id);
       await this.authorize(principal, 'enterprises:update', requestId, 'enterprise', enterprise.id);
       folder = `enterprises/${enterprise.id}/${input.kind}`;
-      mediaKinds = [input.kind === 'banner' ? 'cover' : 'logo'];
+      mediaKinds = [mediaKind];
     }
     const extension = UPLOAD_EXTENSIONS[input.contentType];
     if (!extension) marketplaceError('VALIDATION_FAILED');
@@ -992,14 +1035,17 @@ export class MarketplaceAdminService {
     return upload;
   }
 
-  // Enterprise logo and banner follow the project logo/cover host allowlist.
+  // Enterprise logo, banner and gallery follow the project logo/cover/gallery host allowlist.
   private async validateEnterpriseImages(input: {
     logoUrl?: string | null;
     bannerUrl?: string | null;
+    gallery?: Array<{ url: string }>;
   }): Promise<void> {
+    const hosts: Record<string, Promise<string[]>> = {};
     for (const [value, kind] of [
       [input.logoUrl, 'logo'],
       [input.bannerUrl, 'cover'],
+      ...(input.gallery ?? []).map(({ url }) => [url, 'gallery_image'] as const),
     ] as const) {
       if (!value) continue;
       let url: URL;
@@ -1010,7 +1056,8 @@ export class MarketplaceAdminService {
       }
       if (url.protocol !== 'https:' || url.username || url.password || isIP(url.hostname) !== 0)
         marketplaceError('MEDIA_URL_INVALID');
-      if (!(await this.repository.allowedHosts(kind)).includes(url.hostname.toLowerCase()))
+      hosts[kind] ??= this.repository.allowedHosts(kind);
+      if (!(await hosts[kind]).includes(url.hostname.toLowerCase()))
         marketplaceError('MEDIA_HOST_NOT_ALLOWED');
     }
   }

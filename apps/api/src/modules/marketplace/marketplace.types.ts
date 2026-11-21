@@ -65,6 +65,17 @@ export interface EnterpriseEventDetails {
   venue?: ProfileLocation & { name?: string; web?: string };
 }
 
+export interface EnterpriseGalleryImage {
+  url: string;
+  altText: string;
+}
+
+/**
+ * Public text in other languages, keyed by locale ("en", "th"). Spanish, the default language,
+ * stays in the base columns, and each missing field falls back to it.
+ */
+export type Translations<Field extends string> = Record<string, Partial<Record<Field, string>>>;
+
 export interface EnterpriseProductRecord {
   id: string;
   enterpriseId: string;
@@ -73,6 +84,7 @@ export interface EnterpriseProductRecord {
   airsMin: number | null;
   airsMax: number | null;
   airsNote: string | null;
+  translations?: Translations<'name' | 'description' | 'airsNote'>;
   sortOrder: number;
   isActive: boolean;
   createdAt: string;
@@ -214,6 +226,9 @@ export interface EnterpriseRecord {
   publicContact: PublicContact;
   logoUrl: string | null;
   bannerUrl: string | null;
+  /** Photos of the public page, in display order. */
+  gallery?: EnterpriseGalleryImage[];
+  translations?: Translations<'sector' | 'description'>;
   eventDetails: EnterpriseEventDetails;
   sites: EnterpriseSite[];
   /** Admin only. */
@@ -305,6 +320,8 @@ export interface PublicProject {
     displayName: string;
     countryCode: string | null;
     websiteUrl: string | null;
+    /** False when the owner has no public page to link to (Alternun itself, or hidden here). */
+    listed: boolean;
   };
   media: ProjectMediaRecord[];
   firstPublishedAt: string;
@@ -326,6 +343,7 @@ export interface PublicEnterprise {
   location: ProfileLocation;
   publicContact: PublicContact;
   bannerUrl: string | null;
+  gallery: EnterpriseGalleryImage[];
   eventDetails: EnterpriseEventDetails;
   sites: EnterpriseSite[];
   products: PublicEnterpriseProduct[];

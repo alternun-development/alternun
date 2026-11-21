@@ -100,6 +100,7 @@ const publicProfile = {
   location: { municipality: 'Santa Marta', department: 'Magdalena' },
   publicContact: { web: 'https://forest.example', phone: 'POR CONFIRMAR' },
   bannerUrl: null,
+  gallery: [],
   eventDetails: {},
   sites: [],
   products: [],
@@ -166,6 +167,7 @@ test('public enterprise detail returns localized published projects without inte
     'description',
     'displayName',
     'eventDetails',
+    'gallery',
     'id',
     'kind',
     'location',
@@ -323,4 +325,41 @@ test('production keeps testnet-only enterprises off the directory; testnet lists
     ['swing-golf']
   );
   await assert.rejects(service.findEnterpriseBySlug(enterprise.slug, 'en'), expectNotFound);
+});
+
+test('a project links its owner only when the owner has a public page', async (t) => {
+  const previous = process.env.APP_STAGE;
+  t.after(() => {
+    if (previous === undefined) delete process.env.APP_STAGE;
+    else process.env.APP_STAGE = previous;
+  });
+  const ownerListed = async (owner: EnterpriseRecord, stage: string): Promise<boolean> => {
+    process.env.APP_STAGE = stage;
+    const service = new MarketplacePublicService(
+      repository([{ project, enterprise: owner, media: [] }])
+    );
+    const enterprises = await service.listEnterprises('en', undefined, 1, 20);
+    const detail = await service.findEnterpriseBySlug(enterprises.data[0].slug, 'en');
+    return detail.projects[0].enterprise.listed;
+  };
+
+  assert.equal(await ownerListed(enterprise, 'production'), true);
+  // Alternun hosts the project; the project page names its foundation, not Alternun.
+  assert.equal(await ownerListed({ ...enterprise, slug: 'alternun' }, 'dev'), false);
+  assert.equal(await ownerListed({ ...enterprise, testnetOnly: true }, 'dev'), true);
+
+  process.env.APP_STAGE = 'production';
+  const hiddenOwner = new MarketplacePublicService(
+    repository(
+      [{ project, enterprise: { ...enterprise, testnetOnly: true }, media: [] }],
+      [
+        {
+          projectId: project.id,
+          enterprise: { ...enterprise, id: 'sponsor-1', slug: 'swing-golf' },
+        },
+      ]
+    )
+  );
+  const sponsorPage = await hiddenOwner.findEnterpriseBySlug('swing-golf', 'en');
+  assert.equal(sponsorPage.projects[0].enterprise.listed, false);
 });

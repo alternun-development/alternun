@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, {
-  ClipPath,
-  Defs,
-  Image as SvgImage,
-  LinearGradient,
-  Path,
-  Stop,
-} from 'react-native-svg';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { FileText, X } from 'lucide-react-native';
 import ShareButton from '../share/ShareButton';
 import ShareSheet from '../share/ShareSheet';
+import type { ShareContent } from '../share/share.types';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import HonorAwardEmblem from './HonorAwardEmblem';
+import HonorAwardSharePreview from './HonorAwardSharePreview';
 import { HONOR_FOIL } from './honorAwardArt';
 import { honorShareContent } from './honorAwardShare';
 import { honorPartnerLine, honorText } from './honorAwardTheme';
@@ -21,21 +16,15 @@ import type { HonorMedalActionsProps, HonorMedalPocketProps } from './honorAward
 const MINT = '#1de9b6';
 const NAVY = '#2b2f7a';
 const LILAC = '#5b5fc7';
-/** A medal not held yet: a silver pocket instead of the foil. */
+/** A medal not held yet: a silver card instead of the foil. */
 const GRAY_STOPS = ['#eceef1', '#c9ccd3', '#e4e6ea', '#b9bdc6'] as const;
-/** Holographic pocket (100 × 100): rounded on top, pointed at the bottom. */
-const POCKET =
-  'M8 0 H92 Q100 0 100 8 V58 Q100 63 96 66.5 L57 96 Q50 101 43 96 L4 66.5 Q0 63 0 58 V8 Q0 0 8 0 Z';
-/** Medal size and how far it rises over the pocket, relative to the pocket width. */
-const EMBLEM = 0.66;
-const RISE = 0.12;
+/** Medal size relative to the card width. */
+const EMBLEM = 0.62;
 
-/** Height of the pocket with the medal rising over it, for a given width. */
-export function honorPocketHeight(width: number): number {
-  return width * (1 + RISE);
-}
-
-/** The medal on its holographic pocket with the mission and the ally, as in the design. */
+/**
+ * The medal on its holographic card with the mission and the ally. The card is a rectangle and
+ * its text flows inside it (wrapping, then making the card taller), so it never leaves the card.
+ */
 export default function HonorAwardMedalPocket({
   award,
   width,
@@ -43,18 +32,30 @@ export default function HonorAwardMedalPocket({
 }: HonorMedalPocketProps): React.JSX.Element {
   const { recipe, partner } = award;
   const partnerLine = honorPartnerLine(partner);
-  const rise = width * RISE;
   const s = width / 256;
-  // Ids per state: several pockets can be on screen (the medal view and the share preview).
+  // Ids per state: several cards can be on screen (the medal view and the share preview).
   const id = grayscale ? 'honor-pocket-gray' : 'honor-pocket-foil';
   return (
-    <View accessibilityLabel={recipe.title} style={{ width, height: honorPocketHeight(width) }}>
-      <View style={[styles.pocket, { top: rise }]}>
-        <Svg width={width} height={width} viewBox='0 0 100 100' preserveAspectRatio='none'>
+    <View
+      accessibilityLabel={recipe.title}
+      style={[
+        styles.pocket,
+        {
+          width,
+          borderRadius: 18 * s,
+          paddingTop: 14 * s,
+          paddingHorizontal: 16 * s,
+          paddingBottom: 16 * s,
+        },
+      ]}
+    >
+      {grayscale ? null : (
+        // The same holographic foil as the cards.
+        <Image source={HONOR_FOIL} style={StyleSheet.absoluteFill} resizeMode='cover' />
+      )}
+      <View style={StyleSheet.absoluteFill} pointerEvents='none'>
+        <Svg width='100%' height='100%'>
           <Defs>
-            <ClipPath id={`${id}-clip`}>
-              <Path d={POCKET} />
-            </ClipPath>
             <LinearGradient id={`${id}-gray`} x1='0' y1='0' x2='1' y2='1'>
               {GRAY_STOPS.map((color, index) => (
                 <Stop
@@ -71,69 +72,58 @@ export default function HonorAwardMedalPocket({
             </LinearGradient>
           </Defs>
           {grayscale ? (
-            <Path d={POCKET} fill={`url(#${id}-gray)`} />
-          ) : (
-            // The same holographic foil as the cards, cut to the pocket.
-            <SvgImage
-              href={HONOR_FOIL}
-              x={0}
-              y={0}
-              width={100}
-              height={100}
-              preserveAspectRatio='xMidYMid slice'
-              clipPath={`url(#${id}-clip)`}
-            />
-          )}
-          <Path d={POCKET} fill={`url(#${id}-sheen)`} />
-        </Svg>
-        <View style={[styles.copy, { top: width * 0.6, left: width * 0.1, right: width * 0.1 }]}>
-          <Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            style={[styles.title, grayscale && styles.grayText, { fontSize: 19 * s }]}
-          >
-            {recipe.title}
-          </Text>
-          {partnerLine ? (
-            <Text
-              numberOfLines={2}
-              style={[
-                styles.partner,
-                grayscale && styles.grayText,
-                { fontSize: 12.5 * s, lineHeight: 15 * s },
-              ]}
-            >
-              {partnerLine}
-            </Text>
+            <Rect x='0' y='0' width='100%' height='100%' fill={`url(#${id}-gray)`} />
           ) : null}
-        </View>
+          <Rect x='0' y='0' width='100%' height='100%' fill={`url(#${id}-sheen)`} />
+        </Svg>
       </View>
-      <View style={styles.emblem}>
-        <HonorAwardEmblem
-          tier={recipe.tier}
-          kind={recipe.kind}
-          title={recipe.title}
-          imageUrl={recipe.badgeImageUrl}
-          artPreset={recipe.artPreset}
-          size={width * EMBLEM}
-          grayscale={grayscale}
-        />
-      </View>
+      <HonorAwardEmblem
+        tier={recipe.tier}
+        kind={recipe.kind}
+        title={recipe.title}
+        imageUrl={recipe.badgeImageUrl}
+        artPreset={recipe.artPreset}
+        size={width * EMBLEM}
+        grayscale={grayscale}
+      />
+      <Text
+        numberOfLines={2}
+        style={[
+          styles.title,
+          grayscale && styles.grayText,
+          { fontSize: 19 * s, lineHeight: 23 * s, marginTop: 6 * s },
+        ]}
+      >
+        {recipe.title}
+      </Text>
+      {partnerLine ? (
+        <Text
+          numberOfLines={2}
+          style={[
+            styles.partner,
+            grayscale && styles.grayText,
+            { fontSize: 12.5 * s, lineHeight: 15 * s, marginTop: 2 * s },
+          ]}
+        >
+          {partnerLine}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-/** Share and "Ver misión" under the pocket, and the close button. */
+/** Share and "Ver misión" under the medal card, and the close button. */
 export function HonorMedalActions({
   award,
   demo,
   locked = false,
+  holderName,
   onViewMission,
   onClose,
 }: HonorMedalActionsProps): React.JSX.Element {
   const { t } = useAppTranslation('mobile');
-
-  const [sharing, setSharing] = useState(false);
+  // Made once per opening, so the preview and the shared file are the same drawn image.
+  const [sharing, setSharing] = useState<ShareContent | null>(null);
 
   return (
     <View style={styles.actionsBox}>
@@ -159,7 +149,7 @@ export function HonorMedalActions({
         {demo || locked ? null : (
           <ShareButton
             label={honorText(t, 'profile.honorAwards.inspect.share', 'Compartir')}
-            onPress={() => setSharing(true)}
+            onPress={() => setSharing(honorShareContent(award, t, holderName))}
           />
         )}
         <Pressable
@@ -182,20 +172,24 @@ export function HonorMedalActions({
         <X size={16} color='#ffffff' />
       </Pressable>
       <ShareSheet
-        visible={sharing}
-        content={sharing ? honorShareContent(award, t) : null}
-        preview={<HonorAwardMedalPocket award={award} width={200} />}
-        onClose={() => setSharing(false)}
+        visible={sharing !== null}
+        content={sharing}
+        preview={
+          <HonorAwardSharePreview
+            image={sharing?.image}
+            label={award.recipe.title}
+            fallback={<HonorAwardMedalPocket award={award} width={200} />}
+          />
+        }
+        onClose={() => setSharing(null)}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  pocket: { position: 'absolute', left: 0, right: 0 },
-  emblem: { position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center' },
-  copy: { position: 'absolute', alignItems: 'center' },
-  // Stretch so the text wraps inside the pocket (centered text otherwise grows past it on web).
+  pocket: { alignItems: 'center', overflow: 'hidden' },
+  // Stretch so the text wraps inside the card (centered text otherwise grows past it on web).
   title: { alignSelf: 'stretch', color: NAVY, fontFamily: 'Sculpin-Bold', textAlign: 'center' },
   partner: {
     alignSelf: 'stretch',

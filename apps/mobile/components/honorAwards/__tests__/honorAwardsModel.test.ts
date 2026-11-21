@@ -258,14 +258,19 @@ describe('sharing a legacy medal', () => {
       },
       t
     );
+    // Reads like a shared milestone: first person, the brand and the hashtags.
     expect(content.message).toBe(
-      'Obtuve la medalla de legado "Manglar Verde" en Airs · Swing Golf.'
+      '¡Obtuve la medalla de legado "Manglar Verde" con Swing Golf en Airs by Alternun! 🌱 #Airs #Alternun'
     );
     expect(content.url).toMatch(/\/explore\/batis$/);
+    // Off the web there is no canvas to draw the card on: the medal itself is shared.
     expect(content.image).toEqual({
       source: presetBadge('golf_mangrove', 'generic'),
       fileName: 'airs-manglar-verde.webp',
     });
+    expect(honorShareContent(base, t, 'Ana').message).toBe(
+      '¡Obtuve la medalla de legado "Manglar Verde" en Airs by Alternun! 🌱 #Airs #Alternun'
+    );
   });
 
   it('prefers the medal image of the recipe, then the card, then no image', () => {
@@ -413,6 +418,46 @@ describe('card template details', () => {
     expect(theme.honorCountryName('co')).toBe('Colombia');
     expect(theme.honorCountryName('ZZ')).toBe('ZZ');
     expect(theme.honorCountryName(null)).toBe('');
+  });
+
+  it('writes the country once, even when the ally name already has it', () => {
+    const ally = (displayName: string, countryCode: string | null = 'CO') => ({
+      id: 'e',
+      slug: 's',
+      displayName,
+      description: null,
+      logoUrl: null,
+      websiteUrl: null,
+      countryCode,
+    });
+    expect(theme.honorPartnerLine(ally('Swing Golf'))).toBe('Swing Golf Colombia');
+    expect(theme.honorPartnerLine(ally('Swing Golf Colombia'))).toBe('Swing Golf Colombia');
+    // Case, accents and punctuation do not matter; only whole words count.
+    expect(theme.honorPartnerLine(ally('SWING GOLF (colombia)'))).toBe('SWING GOLF (colombia)');
+    expect(theme.honorPartnerLine(ally('Golf Mexico', 'MX'))).toBe('Golf Mexico');
+    expect(theme.honorPartnerLine(ally('Golf México', 'mx'))).toBe('Golf México');
+    expect(theme.honorPartnerLine(ally('Colombiana de Golf'))).toBe('Colombiana de Golf Colombia');
+    expect(theme.honorPartnerLine(ally('Golf Panamá', 'PA'))).toBe('Golf Panamá');
+    expect(theme.honorPartnerLine(ally('Swing Golf', null))).toBe('Swing Golf');
+    expect(theme.honorPartnerLine(null)).toBe('');
+    expect(theme.honorPartnerCountry(ally('Swing Golf Colombia'))).toBe('');
+    expect(theme.honorPartnerCountry(ally('Swing Golf'))).toBe('Colombia');
+  });
+
+  it('sizes the crest banner so each line fits where the banner narrows', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { bannerFontSize } = require('../HonorAwardCrest') as typeof import('../HonorAwardCrest');
+    // Width of a line at a size: ~0.75 of the size per letter plus the 0.4 letter spacing.
+    const width = (line: string, size: number) => line.length * (0.75 * size + 0.4);
+    expect(bannerFontSize('MANGLAR', 'VERDE')).toBe(7.6);
+    expect(bannerFontSize('GOLF', '')).toBe(7.6);
+    const size = bannerFontSize('TAYBO RODADERO', 'SANTA MARTA CARIBE');
+    expect(size).toBeLessThan(5.6);
+    expect(width('TAYBO RODADERO', size)).toBeLessThanOrEqual(70);
+    expect(width('SANTA MARTA CARIBE', size)).toBeLessThanOrEqual(44);
+    expect(
+      width('CORAL VIVO DEL CARIBE', bannerFontSize('CORAL VIVO DEL CARIBE', ''))
+    ).toBeLessThanOrEqual(60);
   });
 
   it('bundles the medals and back photo of the golf preset only', () => {

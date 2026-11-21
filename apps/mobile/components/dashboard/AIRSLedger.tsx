@@ -47,6 +47,7 @@ const REFERENCE_TYPE_ICONS: Record<AIRSEntry['referenceType'], React.ElementType
   profile_completion_bonus: Gift,
   correction: DollarSign,
   referral_bonus: Users,
+  admin_airs_report: Leaf,
 };
 
 const REFERENCE_TYPE_LABELS: Record<AIRSEntry['referenceType'], string> = {
@@ -56,6 +57,7 @@ const REFERENCE_TYPE_LABELS: Record<AIRSEntry['referenceType'], string> = {
   profile_completion_bonus: 'Bono de perfil',
   correction: 'Corrección',
   referral_bonus: 'Bono de referido',
+  admin_airs_report: 'Acción de impacto positivo',
 };
 
 const REFERENCE_TYPE_COLORS: Record<AIRSEntry['referenceType'], string> = {
@@ -65,6 +67,7 @@ const REFERENCE_TYPE_COLORS: Record<AIRSEntry['referenceType'], string> = {
   profile_completion_bonus: '#818cf8',
   correction: '#f87171',
   referral_bonus: '#a78bfa',
+  admin_airs_report: '#34d399',
 };
 
 function getPalette(isDark: boolean): Palette {

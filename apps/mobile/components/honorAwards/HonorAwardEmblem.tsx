@@ -177,7 +177,8 @@ export default function HonorAwardEmblem({
           <SvgText
             x={50}
             y={92}
-            fontSize={label.length > 10 ? 7 : 8.5}
+            // Sized by length so it stays inside the banner (about 56 wide at the baseline).
+            fontSize={Math.min(8.5, 56 / (label.length * 0.75))}
             fontWeight='700'
             fill='#fff8e8'
             textAnchor='middle'

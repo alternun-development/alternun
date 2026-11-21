@@ -316,17 +316,19 @@ export function MarketplaceProjectDetailView({
                   resizeMode='contain'
                 />
               ) : null}
-              <Pressable
-                testID='project-detail-enterprise'
-                accessibilityRole='button'
-                onPress={() => onOpenEnterprise(project.enterprise.slug)}
-                style={styles.enterpriseLink}
-              >
-                <Building2 size={16} color={palette.primaryDeep} />
-                <Text style={[styles.enterpriseName, { color: palette.primaryDeep }]}>
-                  {project.enterprise.displayName}
-                </Text>
-              </Pressable>
+              {project.enterprise.listed !== false ? (
+                <Pressable
+                  testID='project-detail-enterprise'
+                  accessibilityRole='button'
+                  onPress={() => onOpenEnterprise(project.enterprise.slug)}
+                  style={styles.enterpriseLink}
+                >
+                  <Building2 size={16} color={palette.primaryDeep} />
+                  <Text style={[styles.enterpriseName, { color: palette.primaryDeep }]}>
+                    {project.enterprise.displayName}
+                  </Text>
+                </Pressable>
+              ) : null}
               <Text style={[styles.theme, { color: palette.primary }]}>{project.theme}</Text>
               <Text style={[styles.title, { color: palette.text }]}>{project.title}</Text>
               {project.alternateName ? (

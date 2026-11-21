@@ -25,8 +25,11 @@ import { honorText } from './honorAwardTheme';
 import type { HonorAwardInspectModalProps } from './honorAwards.types';
 
 const MINT = '#1de9b6';
-/** From this sheet width the card sits in its own column, as in the design. */
-const TWO_COLUMNS = 400;
+/**
+ * From this sheet width the card sits in its own column, as in the design. Phones stay stacked:
+ * in two columns their card would be too small to read.
+ */
+const TWO_COLUMNS = 560;
 
 function SectionHeading({ label }: { label: string }): React.JSX.Element {
   return (
@@ -64,7 +67,7 @@ function ProjectMark({ size }: { size: number }): React.JSX.Element {
 }
 
 /**
- * A legacy medal: first the medal on its holographic pocket (share it or see the mission),
+ * A legacy medal: first the medal on its holographic card (share it or see the mission),
  * then the mission: the flippable card on the left; the purpose, the ally and the project.
  */
 export default function HonorAwardInspectModal({
@@ -74,6 +77,7 @@ export default function HonorAwardInspectModal({
   initialStage = 'medal',
   locked = false,
   howToEarn,
+  holderName,
 }: HonorAwardInspectModalProps): React.JSX.Element | null {
   const { t, locale } = useAppTranslation('mobile');
   const { motionLevel } = useAppPreferences();
@@ -153,6 +157,7 @@ export default function HonorAwardInspectModal({
               award={award}
               demo={demo}
               locked={locked}
+              holderName={holderName}
               onViewMission={() => setStage('mission')}
               onClose={onClose}
             />

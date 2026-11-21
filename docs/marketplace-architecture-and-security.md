@@ -63,9 +63,9 @@ Denied attempts return a stable error code (`marketplace.errors.ts`) and are wri
 
 ## Production catalog
 
-Production shows only the catalog approved for launch. Projects and enterprises have a `testnet_only` flag (`20261119_0003`). When `APP_STAGE=production`, the public API hides flagged rows: the project list and detail, and the enterprise directory, detail and honor awards. A flagged primary owner still appears on its visible project's card. Testnet, local and every admin view show all rows.
+Production shows only the catalog approved for launch. Projects and enterprises have a `testnet_only` flag (`20261119_0003`). When `APP_STAGE=production`, the public API hides flagged rows: the project list and detail, and the enterprise directory, detail and honor awards. A flagged primary owner still appears on its visible project's card, but the project page only links an owner that has a public page: never a hidden one, and never Alternun's own enterprise (`alternun`), which hosts projects such as Fundación Batis (`enterprise.listed: false` in the public project). Testnet, local and every admin view show all rows.
 
-At launch only `fundacion-batis` (project) and `torneo-swing-golf-rincon-cajica` (Swing Golf Colombia) are visible; the migration flagged every other row in each database. New rows default to visible. To publish another one in production, set its `testnet_only` to false.
+At launch only `fundacion-batis` (project) and Swing Golf Colombia (enterprise, slug `swing-golf-colombia`, renamed from `torneo-swing-golf-rincon-cajica` on 20-Nov-2026) are visible; the migration flagged every other row in each database. Renamed enterprise slugs keep working through `RENAMED_ENTERPRISE_SLUGS` in `apps/mobile/utils/legacyRoutes.ts`. New rows default to visible. To publish another one in production, set its `testnet_only` to false.
 
 The explorer's featured slider appears only when at least two projects with media can be featured; until then the explorer shows the intents card alone.
 

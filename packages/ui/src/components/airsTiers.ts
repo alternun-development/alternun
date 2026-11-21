@@ -6,7 +6,8 @@ import { palette } from '../tokens/colors';
 import type { AirsTier, TierSpec } from './airsTiers.types';
 
 // Thresholds on accumulated Airs: the T&C Status thresholds (3.000 / 7.000 / 12.000) with
-// Bronze as the first tier at 1.000. Below 1.000 a person has no tier yet.
+// Bronze as the first tier at 1.000. Below 1.000 a person is at Green, the base level every
+// account starts with (T&C, Status section 2).
 export const TIERS: Record<AirsTier, TierSpec> = {
   bronze: {
     label: 'Bronze',
@@ -46,11 +47,11 @@ export const TIERS: Record<AirsTier, TierSpec> = {
   },
 };
 
-/** The state before the first tier: the way to Bronze. */
+/** Green, the base level before the first tier: the way to Bronze. */
 export const UNRANKED_TIER: TierSpec = {
-  label: 'No tier yet',
-  color: '#8fa8a2',
-  trackColor: 'rgba(143,168,162,0.28)',
+  label: 'Green',
+  color: '#2fb67c',
+  trackColor: 'rgba(47,182,124,0.28)',
   min: 0,
   max: TIERS.bronze.min,
   next: 'bronze',

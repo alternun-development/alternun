@@ -48,7 +48,7 @@ export default function AchievementDetailsModal({
   const caption = t(
     'profile.milestoneDetails.caption',
     { milestone: def.label },
-    'I just reached {{milestone}} on AIRS by Alternun! 🌱 https://airs.alternun.co #AIRS #Alternun'
+    'I just reached {{milestone}} on Airs by Alternun! 🌱 https://airs.alternun.co #Airs #Alternun'
   ).replace('https://airs.alternun.co', image?.shareUrl ?? 'https://airs.alternun.co');
   const closeLabel = copy('close', 'Close achievement details');
 

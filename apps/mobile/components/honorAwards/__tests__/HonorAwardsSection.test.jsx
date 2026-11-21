@@ -160,6 +160,13 @@ it('opens the medal view for a claimed award', async () => {
   expect(HonorAwardInspectModal.mock.calls.at(-1)[0].initialStage).toBe('medal');
 });
 
+it('hands the person name to the medal views, for the image a medal is shared with', async () => {
+  const client = makeClient({ awards: [award('a', 'claimed')] });
+  await render({ client, holderName: 'Ana Pérez' });
+  expect(HonorAwardInspectModal.mock.calls.at(-1)[0].holderName).toBe('Ana Pérez');
+  expect(HonorAwardClaimCinematic.mock.calls.at(-1)[0].holderName).toBe('Ana Pérez');
+});
+
 it('tells the person when a claim fails', async () => {
   const tree = await render({
     client: makeClient({ awards: [award('a', 'pending')], claimFails: true }),

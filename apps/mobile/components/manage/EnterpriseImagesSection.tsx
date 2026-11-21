@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
+import { ManageField } from './ManageField';
 import { manageStyles } from './styles';
 import { uploadErrorKey } from './ManageImagesSection';
 import type { EnterpriseImagesSectionProps } from './types';
 import { pickImageFile } from '../../utils/projectManage';
-import type { EnterpriseImageKind } from '../../utils/enterpriseManage';
+import { GALLERY_MAX, type EnterpriseImageKind } from '../../utils/enterpriseManage';
 
 const SLOTS: ReadonlyArray<{ kind: EnterpriseImageKind; field: 'logoUrl' | 'bannerUrl' }> = [
   { kind: 'logo', field: 'logoUrl' },
@@ -20,10 +21,13 @@ export function EnterpriseImagesSection({
   canPickFiles,
   pickFile = pickImageFile,
 }: EnterpriseImagesSectionProps): React.JSX.Element {
-  const [busy, setBusy] = useState<EnterpriseImageKind | null>(null);
+  // The image kind, or the gallery photo URL, being changed.
+  const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [alt, setAlt] = useState('');
+  const gallery = overview.enterprise.gallery ?? [];
 
-  async function run(kind: EnterpriseImageKind, action: () => Promise<void>): Promise<void> {
+  async function run(kind: string, action: () => Promise<void>): Promise<void> {
     setBusy(kind);
     setError(null);
     try {
@@ -39,6 +43,15 @@ export function EnterpriseImagesSection({
   async function upload(kind: EnterpriseImageKind): Promise<void> {
     const file = await pickFile();
     if (file) await run(kind, () => client.uploadImage(kind, file));
+  }
+
+  async function addPhoto(): Promise<void> {
+    const file = await pickFile();
+    if (file)
+      await run('gallery', async () => {
+        await client.addGalleryImage(file, alt);
+        setAlt('');
+      });
   }
 
   return (
@@ -116,6 +129,76 @@ export function EnterpriseImagesSection({
           </View>
         );
       })}
+      <View
+        testID='enterprise-manage-images-gallery'
+        style={[
+          manageStyles.card,
+          { borderColor: palette.border, backgroundColor: palette.surface },
+        ]}
+      >
+        <Text style={[manageStyles.sectionTitle, { color: palette.text }]}>
+          {t('manage.enterprise.images.gallery')}
+        </Text>
+        <Text style={[manageStyles.muted, { color: palette.muted }]}>
+          {t('manage.enterprise.images.galleryHint', { max: GALLERY_MAX })}
+        </Text>
+        {gallery.length === 0 ? (
+          <Text style={[manageStyles.muted, { color: palette.muted }]}>
+            {t('manage.images.empty')}
+          </Text>
+        ) : (
+          <View style={manageStyles.row}>
+            {gallery.map((image, index) => (
+              <View key={`${index}-${image.url}`} style={{ gap: 6 }}>
+                <Image
+                  source={{ uri: image.url }}
+                  accessibilityLabel={image.altText || overview.enterprise.displayName}
+                  style={{ width: 144, height: 96, borderRadius: 12 }}
+                  resizeMode='cover'
+                />
+                <Pressable
+                  testID={`enterprise-manage-gallery-remove-${index}`}
+                  accessibilityRole='button'
+                  disabled={busy !== null}
+                  onPress={() => void run(image.url, () => client.removeGalleryImage(image.url))}
+                  style={[manageStyles.secondaryButton, { borderColor: palette.border }]}
+                >
+                  <Text style={[manageStyles.secondaryButtonText, { color: palette.text }]}>
+                    {t('manage.images.remove')}
+                  </Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        )}
+        {canPickFiles && gallery.length < GALLERY_MAX ? (
+          <>
+            <ManageField
+              testID='enterprise-manage-gallery-alt'
+              label={t('manage.images.alt')}
+              value={alt}
+              onChange={setAlt}
+              palette={palette}
+            />
+            <View style={manageStyles.row}>
+              <Pressable
+                testID='enterprise-manage-images-upload-gallery'
+                accessibilityRole='button'
+                disabled={busy !== null}
+                onPress={() => void addPhoto()}
+                style={[
+                  manageStyles.primaryButton,
+                  { backgroundColor: palette.fill, opacity: busy ? 0.6 : 1 },
+                ]}
+              >
+                <Text style={manageStyles.primaryButtonText}>
+                  {busy === 'gallery' ? t('manage.images.uploading') : t('manage.images.upload')}
+                </Text>
+              </Pressable>
+            </View>
+          </>
+        ) : null}
+      </View>
     </View>
   );
 }

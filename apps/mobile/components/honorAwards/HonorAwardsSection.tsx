@@ -72,6 +72,7 @@ export default function HonorAwardsSection({
   subtitle,
   hideWhenEmpty = false,
   client: injectedClient,
+  holderName,
 }: HonorAwardsSectionProps): React.JSX.Element | null {
   const { t } = useAppTranslation('mobile');
   const scopeKey = JSON.stringify(scope);
@@ -431,6 +432,7 @@ export default function HonorAwardsSection({
       <HonorAwardClaimCinematic
         award={celebrating?.award ?? null}
         demo={celebrating?.demo ?? false}
+        holderName={holderName}
         onClose={() => setCelebrating(null)}
         onInspect={(award) => {
           setInspecting({ award, demo: celebrating?.demo ?? false, stage: 'mission' });
@@ -442,6 +444,7 @@ export default function HonorAwardsSection({
         demo={inspecting?.demo ?? false}
         initialStage={inspecting?.stage ?? 'medal'}
         locked={inspecting?.locked ?? false}
+        holderName={holderName}
         onClose={() => setInspecting(null)}
       />
       {client.redeem ? (

@@ -15,7 +15,7 @@
   },
   "currentPhase": "building",
   "dependencies": [],
-  "lastUpdated": "2026-11-21T03:36:28.897Z",
+  "lastUpdated": "2026-11-21T04:26:45.713Z",
   "milestone": {
     "id": "wallet-system",
     "title": "Alternun Wallet System (non-custodial, multi-chain)"
@@ -23,7 +23,7 @@
   "milestones": [],
   "nextSteps": [
     {
-      "description": "Merge the v1.2.18 release PR (welcome email once, project save fix); E2E of the Swing Golf awards on 21-Nov",
+      "description": "Merge the release PR, then load the Swing Golf gallery and the production storage host in prod; run the E2E of #321",
       "id": "next",
       "priority": 1
     }

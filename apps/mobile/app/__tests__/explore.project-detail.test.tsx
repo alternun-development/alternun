@@ -161,6 +161,13 @@ describe('Marketplace project detail', () => {
     expect(onOpenEnterprise).toHaveBeenCalledWith('bosque-vivo');
   });
 
+  it('hides the owner link when the owner has no public page', async () => {
+    const renderer = await render(() =>
+      Promise.resolve({ ...project, enterprise: { ...project.enterprise, listed: false } })
+    );
+    expect(renderer.root.findAllByProps({ testID: 'project-detail-enterprise' })).toHaveLength(0);
+  });
+
   it('shows the project admin link only to people who can manage the project', async () => {
     const plain = await render(() => Promise.resolve(project));
     expect(plain.root.findAllByProps({ testID: 'project-detail-admin' })).toHaveLength(0);

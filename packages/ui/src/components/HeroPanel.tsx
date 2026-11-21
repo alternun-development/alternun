@@ -123,7 +123,7 @@ export function HeroPanel({
   greetingPrefix = 'Hola,',
   subtitle = 'Tu puntuación regenerativa es:',
   statusLabel = 'Status {{tier}}',
-  unrankedLabel = 'No tier yet',
+  unrankedLabel = 'Green',
   progressLabel = 'Progreso a {{nextTier}} —',
   progressHint,
   maxTierMessage,

@@ -29,6 +29,7 @@ import { ANEK_EXPANDED_FAMILY } from '../theme/fonts';
 import { useAppTranslation } from '../i18n/useAppTranslation';
 import type {
   AIRSEntry,
+  ActivityOrigin,
   ActivitySortDirection as SortDirection,
   ActivitySortKey as SortKey,
 } from './types';
@@ -49,7 +50,15 @@ const NextIcon = ChevronRight as React.FC<LucideProps>;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ActivityType = 'compensation' | 'purchase' | 'profile' | 'account' | 'reward' | 'certificate';
+type ActivityType =
+  | 'compensation'
+  | 'purchase'
+  | 'profile'
+  | 'account'
+  | 'reward'
+  | 'certificate'
+  | 'conservation'
+  | 'positive';
 
 interface ActivityItem {
   id: string;
@@ -94,6 +103,7 @@ interface ActivityLedgerEntry {
   notes: string | null;
   airsDelta: number;
   recordedAt: string;
+  origin?: ActivityOrigin;
 }
 
 interface ActivityResult {
@@ -122,6 +132,8 @@ function mapSourceKindToType(referenceType: AIRSEntry['referenceType']): Activit
       return 'reward';
     case 'referral_bonus' as AIRSEntry['referenceType']:
       return 'account';
+    case 'admin_airs_report':
+      return 'positive';
     case 'correction':
       return 'profile';
     default:
@@ -141,24 +153,64 @@ function formatEntryDate(timestamp: Date): string {
   }
 }
 
-function airsEntryToActivityItem(entry: AIRSEntry): ActivityItem {
+const AIRS_REPORT_REF = /^airs-report:/;
+
+/** Where an entry came from, in words: never an internal reference such as airs-report:<id>. */
+function describeSource(
+  entry: Pick<ActivityLedgerEntry, 'sourceKind' | 'sourceRef' | 'origin'>,
+  translate: (key: string, params?: Record<string, string>) => string
+): string {
+  const { origin } = entry;
+  if (origin?.kind === 'community' && origin.partnerName) {
+    return translate('dashboard.activityFeed.sources.joinedCommunity', {
+      partner: origin.partnerName,
+    });
+  }
+  if (origin?.kind === 'event' && origin.eventName) {
+    return translate('dashboard.activityFeed.sources.joinedEvent', { event: origin.eventName });
+  }
+  if (
+    origin !== undefined ||
+    entry.sourceKind === 'admin_airs_report' ||
+    AIRS_REPORT_REF.test(entry.sourceRef ?? '')
+  ) {
+    return translate('dashboard.activityFeed.sources.allyReport');
+  }
+  return entry.sourceRef ?? entry.sourceKind;
+}
+
+function activityTypeOf(entry: Pick<ActivityLedgerEntry, 'sourceKind' | 'origin'>): ActivityType {
+  if (entry.origin) return entry.origin.action === 'conservation' ? 'conservation' : 'positive';
+  return mapSourceKindToType(entry.sourceKind);
+}
+
+function airsEntryToActivityItem(
+  entry: AIRSEntry,
+  translate: (key: string, params?: Record<string, string>) => string
+): ActivityItem {
   return {
     id: entry.id,
     type: mapSourceKindToType(entry.referenceType),
     action: entry.reason ?? '',
-    source: entry.reference ?? entry.referenceType,
+    source: describeSource(
+      { sourceKind: entry.referenceType, sourceRef: entry.reference },
+      translate
+    ),
     airs: entry.amountAIRS,
     date: formatEntryDate(entry.timestamp),
     time: entry.timestamp.getTime(),
   };
 }
 
-function ledgerEntryToActivityItem(entry: ActivityLedgerEntry): ActivityItem {
+function ledgerEntryToActivityItem(
+  entry: ActivityLedgerEntry,
+  translate: (key: string, params?: Record<string, string>) => string
+): ActivityItem {
   return {
     id: entry.id,
-    type: mapSourceKindToType(entry.sourceKind),
+    type: activityTypeOf(entry),
     action: entry.notes ?? entry.sourceKind,
-    source: entry.sourceRef ?? entry.sourceKind,
+    source: describeSource(entry, translate),
     airs: entry.airsDelta,
     date: formatEntryDate(new Date(entry.recordedAt)),
     time: Date.parse(entry.recordedAt) || 0,
@@ -169,7 +221,10 @@ function getIcon(type: ActivityType, color: string): React.ReactNode {
   const props = { size: 16, color };
   switch (type) {
     case 'compensation':
+    case 'conservation':
       return <LeafIcon {...props} />;
+    case 'positive':
+      return <AwardIcon {...props} />;
     case 'purchase':
       return <CartIcon {...props} />;
     case 'profile':
@@ -358,9 +413,10 @@ export default function ActivityFeed({
     void fetchActivity();
   }, [fetchActivity]);
 
-  const localActivities = entries.map(airsEntryToActivityItem);
+  const translate = (key: string, params?: Record<string, string>): string => t.t(key, params);
+  const localActivities = entries.map((entry) => airsEntryToActivityItem(entry, translate));
   const activities: ActivityItem[] = remoteResult
-    ? remoteResult.entries.map(ledgerEntryToActivityItem)
+    ? remoteResult.entries.map((entry) => ledgerEntryToActivityItem(entry, translate))
     : localActivities;
 
   const getActivityActionText = (type: ActivityType): string => {
@@ -377,6 +433,10 @@ export default function ActivityFeed({
         return t.t('dashboard.activityFeed.activityTypes.reward');
       case 'certificate':
         return t.t('dashboard.activityFeed.activityTypes.certificate');
+      case 'conservation':
+        return t.t('dashboard.activityFeed.activityTypes.conservation');
+      case 'positive':
+        return t.t('dashboard.activityFeed.activityTypes.positive');
     }
   };
 

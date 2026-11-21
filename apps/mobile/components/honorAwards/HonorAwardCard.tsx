@@ -69,7 +69,10 @@ export default function HonorAwardCard({
             { paddingTop: 20 * s, paddingHorizontal: 18 * s, paddingBottom: 12 * s },
           ]}
         >
-          <Text style={[styles.overline, ink, { fontSize: 12.5 * s, letterSpacing: 0.6 * s }]}>
+          <Text
+            numberOfLines={1}
+            style={[styles.overline, ink, { fontSize: 12.5 * s, letterSpacing: 0.6 * s }]}
+          >
             {missionLabel}
           </Text>
           <Text
@@ -169,9 +172,12 @@ export default function HonorAwardCard({
           <View style={[StyleSheet.absoluteFill, { backgroundColor: '#1f5f3a' }]} />
         )}
         <View style={styles.headerShade} />
-        <View style={{ position: 'absolute', left: 18 * s, bottom: 8 * s }}>
-          <Text style={[styles.headerOverline, { fontSize: 11 * s }]}>{missionLabel}</Text>
-          <Text numberOfLines={1} style={[styles.headerTitle, { fontSize: 21 * s }]}>
+        {/* Bounded on the right, clear of the stamp, so a long title wraps instead of escaping. */}
+        <View style={{ position: 'absolute', left: 18 * s, right: 100 * s, bottom: 8 * s }}>
+          <Text numberOfLines={1} style={[styles.headerOverline, { fontSize: 11 * s }]}>
+            {missionLabel}
+          </Text>
+          <Text numberOfLines={2} style={[styles.headerTitle, { fontSize: 21 * s }]}>
             {recipe.title}
           </Text>
         </View>
@@ -198,7 +204,7 @@ export default function HonorAwardCard({
           </View>
         ) : null}
         {recipe.classification ? (
-          <Text style={[styles.classification, { fontSize: 13.5 * s }]}>
+          <Text numberOfLines={2} style={[styles.classification, { fontSize: 13.5 * s }]}>
             {`${recipe.classification}:`}
           </Text>
         ) : null}
@@ -213,9 +219,11 @@ export default function HonorAwardCard({
         <View style={{ flex: 1 }} />
         {recipe.venueName ? (
           <View style={[styles.divider, { paddingTop: 5 * s }]}>
-            <Text style={[styles.venue, { fontSize: 12 * s }]}>{recipe.venueName}</Text>
+            <Text numberOfLines={2} style={[styles.venue, { fontSize: 12 * s }]}>
+              {recipe.venueName}
+            </Text>
             {recipe.venueLocation ? (
-              <Text style={[styles.venueLocation, { fontSize: 12 * s }]}>
+              <Text numberOfLines={1} style={[styles.venueLocation, { fontSize: 12 * s }]}>
                 {recipe.venueLocation}
               </Text>
             ) : null}

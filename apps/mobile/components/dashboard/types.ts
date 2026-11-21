@@ -65,7 +65,8 @@ export interface AIRSEntry {
     | 'compensation'
     | 'profile_completion_bonus'
     | 'correction'
-    | 'referral_bonus';
+    | 'referral_bonus'
+    | 'admin_airs_report';
   amountAIRS: number;
   timestamp: Date;
   reference: string;
@@ -119,3 +120,11 @@ export interface ToastMessage {
 /** Columns of the recent activity table that can be sorted. */
 export type ActivitySortKey = 'action' | 'source' | 'airs' | 'date';
 export type ActivitySortDirection = 'asc' | 'desc';
+
+/** What Airs from an ally's report recognize (see describeAirsReportEntries in the API). */
+export interface ActivityOrigin {
+  action: 'conservation' | 'positive_impact';
+  kind: 'community' | 'event' | 'report';
+  partnerName: string | null;
+  eventName: string | null;
+}

@@ -111,6 +111,17 @@ export interface AirsDashboardLedgerEntry {
   metadata: Record<string, unknown>;
   recordedAt: string;
   createdAt: string;
+  /** For Airs from an ally's report: what they recognize, so the history can say it in words. */
+  origin?: AirsLedgerEntryOrigin;
+}
+
+export interface AirsLedgerEntryOrigin {
+  /** From the category of the project the report supports. */
+  action: 'conservation' | 'positive_impact';
+  /** community: joined the ally's community; event: took part in its event; report: other. */
+  kind: 'community' | 'event' | 'report';
+  partnerName: string | null;
+  eventName: string | null;
 }
 
 export interface AirsDashboardSnapshot {
@@ -836,7 +847,7 @@ export async function getAirsActivity(
     const end = start + pageSize;
     const combinedTotalCount = compensationResult.totalCount + regenerativeResult.totalCount;
     return {
-      entries: mergedEntries.slice(start, end),
+      entries: await describeAirsReportEntries(mergedEntries.slice(start, end), env),
       totalCount: combinedTotalCount,
       page,
       pageSize,
@@ -859,12 +870,89 @@ export async function getAirsActivity(
   );
 
   return {
-    entries: body.entries,
+    entries: await describeAirsReportEntries(body.entries, env),
     totalCount: body.totalCount,
     page: body.page > 0 ? body.page : page,
     pageSize: body.pageSize,
     totalPages: Math.max(1, Math.ceil(body.totalCount / pageSize)),
   };
+}
+
+async function supabaseSelect(
+  table: string,
+  query: Record<string, string>,
+  env: Record<string, string | undefined>
+): Promise<Record<string, unknown>[]> {
+  const config = resolveAirsSupabaseConfig(env);
+  if (!config) {
+    throw new Error(`Supabase is not configured for AIRS table ${table}.`);
+  }
+  const url = new URL(`${config.url.replace(/\/$/, '')}/rest/v1/${table}`);
+  for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
+  const response = await fetch(url, {
+    headers: {
+      apikey: config.key,
+      Authorization: `Bearer ${config.key}`,
+      Accept: 'application/json',
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Supabase select ${table} failed [${response.status}]`);
+  }
+  return asRecordArray(await response.json());
+}
+
+const AIRS_REPORT_REF = /^airs-report:([0-9a-f-]{36})$/i;
+const AIRS_REPORT_ORIGIN_SELECT =
+  'id,project:projects(category_code),medal:project_medals(recipe:honor_award_recipes(event_name,event_dates,venue_name,partner:enterprises(display_name)))';
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function airsReportIdOf(entry: AirsDashboardLedgerEntry): string | null {
+  if ((entry.sourceKind as string) !== 'admin_airs_report') return null;
+  return (
+    asText(entry.metadata.airsReportId) ?? AIRS_REPORT_REF.exec(entry.sourceRef ?? '')?.[1] ?? null
+  );
+}
+
+function airsReportOrigin(row: Record<string, unknown>): AirsLedgerEntryOrigin {
+  const recipe = asRecord(asRecord(row.medal).recipe);
+  const hasRecipe = Object.keys(recipe).length > 0;
+  // An event medal has a date or a venue; a community medal has neither.
+  const isEvent = Boolean(asText(recipe.event_dates) ?? asText(recipe.venue_name));
+  return {
+    action:
+      asText(asRecord(row.project).category_code) === 'conservation'
+        ? 'conservation'
+        : 'positive_impact',
+    kind: !hasRecipe ? 'report' : isEvent ? 'event' : 'community',
+    partnerName: asText(asRecord(recipe.partner).display_name),
+    eventName: asText(recipe.event_name),
+  };
+}
+
+/** Adds what each ally-report entry recognizes. The history still loads if this lookup fails. */
+export async function describeAirsReportEntries(
+  entries: AirsDashboardLedgerEntry[],
+  env: Record<string, string | undefined> = process.env,
+  select: typeof supabaseSelect = supabaseSelect
+): Promise<AirsDashboardLedgerEntry[]> {
+  const ids = [...new Set(entries.map(airsReportIdOf).filter((id): id is string => id !== null))];
+  if (ids.length === 0) return entries;
+  const rows = await select(
+    'airs_reports',
+    { id: `in.(${ids.join(',')})`, select: AIRS_REPORT_ORIGIN_SELECT },
+    env
+  ).catch((): Record<string, unknown>[] => []);
+  const origins = new Map(rows.map((row) => [asText(row.id), airsReportOrigin(row)]));
+  return entries.map((entry) => {
+    const origin = origins.get(airsReportIdOf(entry));
+    return origin ? { ...entry, origin } : entry;
+  });
 }
 
 export async function getAirsEligibleUsersCount(

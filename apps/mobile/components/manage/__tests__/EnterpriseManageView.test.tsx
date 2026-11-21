@@ -65,6 +65,8 @@ function client(extra: Partial<EnterpriseManageClient> = {}): EnterpriseManageCl
     updateEnterprise: jest.fn(async () => overview.enterprise),
     uploadImage: jest.fn(async () => undefined),
     removeImage: jest.fn(async () => undefined),
+    addGalleryImage: jest.fn(async () => undefined),
+    removeGalleryImage: jest.fn(async () => undefined),
     listProducts: jest.fn(async () => [
       {
         id: 'p1',
@@ -190,25 +192,134 @@ describe('EnterpriseManageView', () => {
     await press(r, 'enterprise-product-p1-delete');
     expect(c.deleteProduct).toHaveBeenCalledWith('p1');
   });
+
+  it('edits the English profile and product text without touching the Spanish one', async () => {
+    const c = client({
+      overview: jest.fn(async () => ({
+        ...overview,
+        enterprise: { ...overview.enterprise, translations: { en: { sector: 'Hotels' } } },
+      })),
+    });
+    const r = await render(
+      <EnterpriseManageView client={c} palette={palette} t={t} onBack={jest.fn()} canPickFiles />
+    );
+    const hint = () => r.root.findAll((n) => n.props.testID === 'enterprise-manage-locale-hint');
+    expect(hint()).toHaveLength(0);
+    await press(r, 'enterprise-manage-locale-en');
+    expect(hint().length).toBeGreaterThan(0);
+    expect(input(r, 'enterprise-manage-sector').props.value).toBe('Hotels');
+    await act(async () =>
+      input(r, 'enterprise-manage-description').props.onChangeText(' Hotels in El Rodadero ')
+    );
+    await press(r, 'enterprise-manage-locale-es');
+    expect(input(r, 'enterprise-manage-sector').props.value).toBe('Hotelería');
+    await press(r, 'enterprise-manage-save');
+    expect((c.updateEnterprise as jest.Mock).mock.calls[0][0]).toMatchObject({
+      sector: 'Hotelería',
+      description: '',
+      translations: { en: { sector: 'Hotels', description: 'Hotels in El Rodadero' } },
+    });
+
+    await press(r, 'enterprise-manage-tab-products');
+    await press(r, 'enterprise-products-locale-en');
+    // New products start in Spanish.
+    expect(r.root.findAll((n) => n.props.testID === 'enterprise-product-new')).toHaveLength(0);
+    expect(input(r, 'enterprise-product-p1-name').props.value).toBe('');
+    await act(async () => input(r, 'enterprise-product-p1-name').props.onChangeText('Night'));
+    await act(async () => input(r, 'enterprise-product-p1-airsMax').props.onChangeText('9'));
+    await press(r, 'enterprise-product-p1-submit');
+    expect(c.updateProduct).toHaveBeenCalledWith('p1', {
+      name: 'Noche',
+      description: null,
+      airsMin: 5,
+      airsMax: 9,
+      airsNote: 'por noche',
+      translations: { en: { name: 'Night' } },
+    });
+  });
 });
 
 describe('enterprise helpers', () => {
-  it('compacts the profile patch', () => {
+  it('compacts the profile patch and merges the English text into the translations', () => {
     expect(
-      enterpriseInfoPatch({
-        displayName: ' Taybo ',
-        sector: '',
-        description: 'D',
-        location: { municipality: 'SM', address: ' ' },
-        publicContact: { web: '' },
-      })
+      enterpriseInfoPatch(
+        {
+          displayName: ' Taybo ',
+          sector: '',
+          description: 'D',
+          location: { municipality: 'SM', address: ' ' },
+          publicContact: { web: '' },
+          en: { sector: ' ', description: ' Hotels ' },
+        },
+        { translations: { en: { sector: 'Hotels' }, th: { description: 'โรงแรม' } } }
+      )
     ).toEqual({
       displayName: 'Taybo',
       sector: '',
       description: 'D',
       location: { municipality: 'SM' },
       publicContact: {},
+      // A blank English field is cleared, so readers get the Spanish one.
+      translations: { en: { description: 'Hotels' }, th: { description: 'โรงแรม' } },
     });
+  });
+
+  it('adds gallery photos with their description and removes them', async () => {
+    const c = client();
+    const file = { type: 'image/jpeg', size: 10 } as never;
+    const onChanged = jest.fn();
+    const withGallery = {
+      ...overview,
+      enterprise: {
+        ...overview.enterprise,
+        gallery: [{ url: 'https://cdn.test/hoyo-1.jpg', altText: 'Hoyo 1' }],
+      },
+    };
+    const r = await render(
+      <EnterpriseImagesSection
+        client={c}
+        overview={withGallery}
+        palette={palette}
+        t={t}
+        onChanged={onChanged}
+        canPickFiles
+        pickFile={jest.fn(async () => file)}
+      />
+    );
+    await act(async () =>
+      input(r, 'enterprise-manage-gallery-alt').props.onChangeText('Premiación')
+    );
+    await press(r, 'enterprise-manage-images-upload-gallery');
+    expect(c.addGalleryImage).toHaveBeenCalledWith(file, 'Premiación');
+    expect(input(r, 'enterprise-manage-gallery-alt').props.value).toBe('');
+    await press(r, 'enterprise-manage-gallery-remove-0');
+    expect(c.removeGalleryImage).toHaveBeenCalledWith('https://cdn.test/hoyo-1.jpg');
+    expect(onChanged).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops offering uploads once the gallery is full', async () => {
+    const full = {
+      ...overview,
+      enterprise: {
+        ...overview.enterprise,
+        gallery: Array.from({ length: 12 }, (_, index) => ({
+          url: `https://cdn.test/${index}.jpg`,
+          altText: '',
+        })),
+      },
+    };
+    const r = await render(
+      <EnterpriseImagesSection
+        client={client()}
+        overview={full}
+        palette={palette}
+        t={t}
+        onChanged={jest.fn()}
+        canPickFiles
+      />
+    );
+    expect(pressable(r, 'enterprise-manage-gallery-remove-11')).toBeTruthy();
+    expect(pressable(r, 'enterprise-manage-images-upload-gallery')).toBeUndefined();
   });
 
   it('uploads and removes the logo and banner', async () => {
